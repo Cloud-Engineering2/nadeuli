@@ -141,6 +141,21 @@
 <!--            <artifactId>java-jwt</artifactId>-->
 <!--            <version>4.4.0</version>-->
 <!--        </dependency>-->
+        <dependency>
+            <groupId>com.theokanning.openai-gpt3-java</groupId>
+            <artifactId>service</artifactId>
+            <version>0.18.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>6.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+            <version>3.4.2</version>
+        </dependency>
 
     </dependencies>
 
