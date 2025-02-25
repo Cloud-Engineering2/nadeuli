@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
- *
+ * 이홍비    2025.02.25     columnDefinition = "TEXT" 명시
  * ========================================================
  */
 
@@ -39,11 +39,11 @@ public class Journal extends BaseTimeEntity{
     private ItineraryEvent ieid;
 
     @Lob
-    @Column(name = "content")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
     @Lob
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     // 생성자

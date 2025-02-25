@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
- *
+ * 이홍비    2025.02.25     Date 쪽 자료형 변경
  * ========================================================
  */
 
@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -38,14 +39,14 @@ public class Itinerary extends BaseTimeEntity{
     private String itineraryName;
 
     @Column(name = "start_date", nullable = false)
-    private Instant startDate;
+    private LocalDateTime startDate;
 
     @Column(name = "end_date", nullable = false)
-    private Instant endDate;
+    private LocalDateTime endDate;
 
 
     // 생성자
-    public Itinerary(String itineraryName, Instant startDate, Instant endDate) {
+    public Itinerary(String itineraryName, LocalDateTime startDate, LocalDateTime endDate) {
 
         // 초기화
         this.itineraryName = itineraryName;
@@ -54,7 +55,7 @@ public class Itinerary extends BaseTimeEntity{
     }
 
     // static factory method
-    public static Itinerary of (String itineraryName, Instant startDate, Instant endDate) {
+    public static Itinerary of (String itineraryName, LocalDateTime startDate, LocalDateTime endDate) {
         return new Itinerary(itineraryName, startDate, endDate);
     }
 
