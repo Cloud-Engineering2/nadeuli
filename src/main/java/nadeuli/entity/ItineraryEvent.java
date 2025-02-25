@@ -15,15 +15,11 @@ package nadeuli.entity;
  */
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @Entity
 @Table(name = "itinerary_event")
 public class ItineraryEvent extends BaseTimeEntity{
@@ -43,9 +39,9 @@ public class ItineraryEvent extends BaseTimeEntity{
     private Place pid;
 
     @Column(name = "start_date", nullable = false)
-    private Instant startDate;
+    private LocalDateTime startDate;
 
     @Column(name = "end_date", nullable = false)
-    private Instant endDate;
+    private LocalDateTime endDate;
 
 }
