@@ -1,4 +1,3 @@
-package nadeuli.entity;
 /* BaseTimeEntity.java
  * BaseTimeEntity 엔티티 (for auditing)
  * 작성자 : 박한철
@@ -13,6 +12,8 @@ package nadeuli.entity;
  *
  * ========================================================
  */
+package nadeuli.entity;
+
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;

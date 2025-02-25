@@ -1,4 +1,3 @@
-package nadeuli.entity;
 /* Place.java
  * Place 엔티티
  * 작성자 : 박한철
@@ -13,6 +12,8 @@ package nadeuli.entity;
  *
  * ========================================================
  */
+package nadeuli.entity;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 

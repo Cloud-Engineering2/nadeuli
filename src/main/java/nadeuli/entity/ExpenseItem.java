@@ -1,4 +1,3 @@
-package nadeuli.entity;
 /* ExpenseItem.java
  * ExpenseItem 엔티티
  * 작성자 : 박한철
@@ -13,6 +12,8 @@ package nadeuli.entity;
  *
  * ========================================================
  */
+package nadeuli.entity;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.OnDelete;
