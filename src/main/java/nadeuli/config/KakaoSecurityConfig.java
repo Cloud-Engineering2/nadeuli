@@ -9,10 +9,10 @@ package nadeuli.config;
  * ========================================================
  * 프로그램 수정 / 보완 이력
  * ========================================================
- * 작업자       날짜       수정 / 보완 내용
+ * 작업자        날짜        수정 / 보완 내용
  * ========================================================
- * 김대환      2.24        카카오 길찾기 URL 반환 매핑 경로 권한
- *
+ * 김대환    2025.02.24     카카오 길찾기 URL 반환 매핑 경로 권한
+ * 이홍비    2025.02.25     journal test - permitAll() 처리
  * ========================================================
  */
 
@@ -36,6 +36,7 @@ public class KakaoSecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/itineraries/**").permitAll() // journal test 용 추후 삭제
                         .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("api/admin/unlink/**").permitAll()
                         .requestMatchers("/travel/**").permitAll()
