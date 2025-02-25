@@ -51,14 +51,7 @@ public class ExpenseBook extends BaseTimeEntity {
     private Integer totalExpenses;
 
 
-//    // 생성자
-//    public ExpenseBook(Itinerary iid, Integer totalBudget, Integer totalExpenses) {
 //
-//        // 초기화
-//        this.iid = iid;
-//        this.totalBudget = totalBudget;
-//        this.totalExpenses = totalExpenses;
-//    }
 
     // static factory method
     public static ExpenseBook of (Itinerary iid, Integer totalBudget, Integer totalExpenses) {

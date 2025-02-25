@@ -29,8 +29,6 @@ public class ExpenseBookDTO {
     private Integer totalBudget;
     private Integer totalExpenses;
 
-//    private TravelerDTO travelerDto;
-
 
     // static factory method
     public static ExpenseBookDTO of (Long id, ItineraryDTO itineraryDTO, Integer totalBudget, Integer totalExpenses) {
