@@ -18,11 +18,6 @@ package nadeuli.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import nadeuli.dto.ItineraryEventDTO;
-import nadeuli.entity.Itinerary;
-import nadeuli.entity.ItineraryEvent;
-
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter

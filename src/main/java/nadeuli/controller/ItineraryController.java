@@ -20,8 +20,6 @@ import nadeuli.service.ItineraryService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-
 @Controller
 @RequestMapping("/itinerary")
 @RequiredArgsConstructor

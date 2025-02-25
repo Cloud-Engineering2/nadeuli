@@ -15,10 +15,7 @@
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
-
-import nadeuli.dto.ItineraryCollaboratorDTO;
 import nadeuli.dto.ItineraryDTO;
-import nadeuli.dto.ItineraryEventDTO;
 import nadeuli.dto.response.ItineraryEventSimpleDTO;
 import nadeuli.dto.response.ItineraryResponseDTO;
 import nadeuli.dto.response.ItineraryTotalResponseDTO;
@@ -31,10 +28,9 @@ import nadeuli.repository.ItineraryEventRepository;
 import nadeuli.repository.ItineraryRepository;
 import nadeuli.repository.UserRepository;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
