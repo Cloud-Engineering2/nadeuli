@@ -10,6 +10,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     최초 작성
+ * 이홍비    2025.02.25     @ToString 추가
  * ========================================================
  */
 
@@ -18,6 +19,7 @@ package nadeuli.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import nadeuli.entity.Journal;
 
 import java.time.LocalDateTime;
@@ -25,6 +27,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class JournalDTO {
     private Long id;
     private ItineraryEventDTO itineraryEventDTO;
