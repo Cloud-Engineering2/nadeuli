@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 성공</title>
+</head>
+<body>
+<h1>카카오 로그인 성공!</h1>
+<p>닉네임: <span th:text="${nickname}"></span></p>
+<p>이메일: <span th:text="${email}"></span></p>
+<img th:src="${profileImage}" alt="프로필 이미지">
+</body>
+</html>
