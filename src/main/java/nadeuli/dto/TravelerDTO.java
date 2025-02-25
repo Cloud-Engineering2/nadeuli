@@ -18,6 +18,7 @@ package nadeuli.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.entity.Itinerary;
 import nadeuli.entity.Traveler;
 
 @Getter
@@ -25,30 +26,30 @@ import nadeuli.entity.Traveler;
 @NoArgsConstructor
 public class TravelerDTO {
     private Integer id;
-    private ItineraryDTO itineraryDTO;
+    private Long itineraryId;
     private String travelerName;
 
     // static factory method
-    public static TravelerDTO of (Integer id, ItineraryDTO itineraryDTO, String travelerName) {
-        return new TravelerDTO(id, itineraryDTO, travelerName);
+    public static TravelerDTO of (Integer id, Long itineraryId, String travelerName) {
+        return new TravelerDTO(id, itineraryId, travelerName);
     }
 
-    public static TravelerDTO of (ItineraryDTO itineraryDTO, String travelerName) {
-        return new TravelerDTO(null, itineraryDTO, travelerName);
+    public static TravelerDTO of (Long itineraryId, String travelerName) {
+        return new TravelerDTO(null, itineraryId, travelerName);
     }
 
     // entity -> dto
     public static TravelerDTO from(Traveler traveler) {
         return new TravelerDTO(
                 traveler.getId(),
-                ItineraryDTO.from(traveler.getIid()),
+                traveler.getIid().getId(),
                 traveler.getTravelerName()
         );
     }
 
     // dto => entity
-    public Traveler toEntity() {
-        return Traveler.of(itineraryDTO.toEntity(), travelerName);
+    public Traveler toEntity(Itinerary itinerary) {
+        return Traveler.of(itinerary, travelerName);
     }
 
 }

@@ -18,7 +18,7 @@ package nadeuli.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import nadeuli.entity.Traveler;
 import nadeuli.entity.WithWhom;
 
 @Getter
@@ -49,8 +49,8 @@ public class WithWhomDTO {
     }
 
     // dto => entity
-    public WithWhom toEntity() {
-        return WithWhom.of(expenseItemDTO.toEntity(), travelerDTO.toEntity());
+    public WithWhom toEntity(Traveler traveler) {
+        return WithWhom.of(expenseItemDTO.toEntity(traveler), traveler);
     }
 
 }

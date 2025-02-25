@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.ExpenseItem;
+import nadeuli.entity.Traveler;
 
 import java.time.LocalDateTime;
 
@@ -61,7 +62,7 @@ public class ExpenseItemDTO {
     }
 
     // dto => entity
-    public ExpenseItem toEntity() {
-        return ExpenseItem.of(expenseBookDTO.toEntity(), itineraryEventDTO.toEntity(), travelerDTO.toEntity(), content, expense);
+    public ExpenseItem toEntity(Traveler traveler) {
+        return ExpenseItem.of(expenseBookDTO.toEntity(), itineraryEventDTO.toEntity(), traveler, content, expense);
     }
 }
