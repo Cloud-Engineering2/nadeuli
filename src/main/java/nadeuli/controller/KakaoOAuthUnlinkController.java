@@ -11,7 +11,7 @@ package nadeuli.controller;
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
+ * 김대환       2.25      Entity 변경에 따른 코드 수정
  *
  * ========================================================
  */
@@ -35,25 +35,22 @@ public class KakaoOAuthUnlinkController {
     private final KakaoUnlinkService kakaoUnlinkService;
     private final KakaoUserRepository kakaoUserRepository;
 
-    @DeleteMapping("/admin/unlink/{email}")
-    public ResponseEntity<String> adminUnlinkUserByEmail(@PathVariable String email) {
+    @DeleteMapping("/admin/unlink/{uid}")
+    public ResponseEntity<String> adminUnlinkUserByUid(@PathVariable Long uid) {
 
-        Optional<KakaoUser> kakaoUserOptional = kakaoUserRepository.findByEmail(email);
+        Optional<KakaoUser> kakaoUserOptional = kakaoUserRepository.findByUid(uid);
 
         if (kakaoUserOptional.isPresent()) {
-            KakaoUser kakaoUser = kakaoUserOptional.get();
-            Long userId = Long.parseLong(kakaoUser.getId());
-
-            boolean isUnlinked = kakaoUnlinkService.unlinkUser(userId);
+            boolean isUnlinked = kakaoUnlinkService.unlinkUser(uid);
 
             if (isUnlinked) {
-                kakaoUserService.deleteUserByEmail(email);
-                return ResponseEntity.ok("정상적으로 카카오 서비스 연결 해제 및 탈퇴 처리되었습니다.\n 사용자: " + email);
+                kakaoUserService.deleteUserByUid(uid);
+                return ResponseEntity.ok("정상적으로 카카오 서비스 연결 해제 및 탈퇴 처리되었습니다.\n 사용자: " + uid);
             } else {
                 return ResponseEntity.status(500).body("카카오 서비스 연결 해제 실패 했습니다 (기타오류)");
             }
         } else {
-            return ResponseEntity.badRequest().body("해당 이메일을 가진 사용자를 찾을 수 없습니다: " + email);
+            return ResponseEntity.badRequest().body("해당 UID를 가진 사용자를 찾을 수 없습니다: " + uid);
         }
     }
 }
