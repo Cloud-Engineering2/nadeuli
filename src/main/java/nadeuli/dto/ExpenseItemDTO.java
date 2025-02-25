@@ -18,10 +18,10 @@ package nadeuli.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.entity.ExpenseBook;
 import nadeuli.entity.ExpenseItem;
+import nadeuli.entity.ItineraryEvent;
 import nadeuli.entity.Traveler;
-
-import java.time.LocalDateTime;
 
 
 @Getter
@@ -29,40 +29,40 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ExpenseItemDTO {
     private Long id;
-    private ExpenseBookDTO expenseBookDTO;
-    private ItineraryEventDTO itineraryEventDTO;
+    private Long expenseBookId;
+    private Long itineraryEventId;
     private TravelerDTO travelerDTO;
     private String content;
     private Integer expense;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+//    private LocalDateTime createdAt;
+//    private LocalDateTime modifiedAt;
 
 
     // static factory method
-    public static ExpenseItemDTO of (Long id, ExpenseBookDTO expenseBookDTO, ItineraryEventDTO itineraryEventDTO, TravelerDTO travelerDTO, String content, Integer expense, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new ExpenseItemDTO(id, expenseBookDTO, itineraryEventDTO, travelerDTO, content, expense, createdAt, modifiedAt);
+    public static ExpenseItemDTO of (Long id, Long expenseBookId, Long itineraryEventId, TravelerDTO travelerDTO, String content, Integer expense) {
+        return new ExpenseItemDTO(id, expenseBookId, itineraryEventId, travelerDTO, content, expense);
     }
 
-    public static ExpenseItemDTO of (ExpenseBookDTO expenseBookDTO, ItineraryEventDTO itineraryEventDTO, TravelerDTO travelerDTO, String content, Integer expense, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new ExpenseItemDTO(null, expenseBookDTO, itineraryEventDTO, travelerDTO, content, expense, createdAt, modifiedAt);
+    public static ExpenseItemDTO of (Long expenseBookId, Long itineraryEventId, TravelerDTO travelerDTO, String content, Integer expense) {
+        return new ExpenseItemDTO(null, expenseBookId, itineraryEventId, travelerDTO, content, expense);
     }
 
     // entity -> dto
     public static ExpenseItemDTO from(ExpenseItem expenseItem) {
         return new ExpenseItemDTO(
                 expenseItem.getId(),
-                ExpenseBookDTO.from(expenseItem.getEbid()),
-                ItineraryEventDTO.from(expenseItem.getIeid()),
+                expenseItem.getEbid().getId(),
+                expenseItem.getIeid().getId(),
                 TravelerDTO.from(expenseItem.getPayer()),
                 expenseItem.getContent(),
-                expenseItem.getExpense(),
-                expenseItem.getCreatedDate(),
-                expenseItem.getModifiedDate()
+                expenseItem.getExpense()
+//                expenseItem.getCreatedDate(),
+//                expenseItem.getModifiedDate()
         );
     }
 
     // dto => entity
-    public ExpenseItem toEntity(Traveler traveler) {
-        return ExpenseItem.of(expenseBookDTO.toEntity(), itineraryEventDTO.toEntity(), traveler, content, expense);
+    public ExpenseItem toEntity(ExpenseBook expenseBook, ItineraryEvent itineraryEvent,  Traveler traveler) {
+        return ExpenseItem.of(expenseBook, itineraryEvent, traveler, content, expense);
     }
 }
