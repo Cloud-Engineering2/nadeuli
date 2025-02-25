@@ -12,7 +12,7 @@ package nadeuli.config;
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 김대환      2.24        카카오 길찾기 URL 반환 매핑 경로 권한
- *
+ * 박한철      2.25        비로그인상에서 테스트하기위한 권한 추가
  * ========================================================
  */
 
@@ -36,7 +36,7 @@ public class KakaoSecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/","/api/**", "/itinerary/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("api/admin/unlink/**").permitAll()
                         .requestMatchers("/travel/**").permitAll()
                         .requestMatchers("/kakao-direction").permitAll()

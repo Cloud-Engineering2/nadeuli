@@ -14,8 +14,12 @@
  */
 package nadeuli.repository;
 
+import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface ItineraryEventRepository extends JpaRepository<ItineraryEvent, Long> {
+    List<ItineraryEvent> findByItinerary(Itinerary itinerary);  // itinerary로 itineraryEvent 찾기
 }

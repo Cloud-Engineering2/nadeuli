@@ -17,5 +17,9 @@ package nadeuli.repository;
 import nadeuli.entity.ItineraryCollaborator;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface ItineraryCollaboratorRepository extends JpaRepository<ItineraryCollaborator, Integer> {
+    List<ItineraryCollaborator> findByUser_Id(Long userId); // User의 id로 찾기 Collborator
 }
