@@ -46,4 +46,8 @@ public class ItineraryController {
         return "/itinerary/calender_test";  // itinerary/calender_test.html을 반환
     }
 
+    @GetMapping("/write")
+    public String showWriteTestPage() {
+        return "/itinerary/write_test";  // itinerary/write_test.html을 반환
+    }
 }
