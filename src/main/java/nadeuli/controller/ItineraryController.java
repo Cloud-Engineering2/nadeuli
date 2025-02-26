@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 박한철    2025.02.25     일정생성페이지(테스트용) 추가
- *
+ * 박한철    2025.02.26     일정리스트페이지(테스트용) 추가
  * ========================================================
  */
 
@@ -33,6 +33,11 @@ public class ItineraryController {
     @GetMapping("/create")
     public String showCreateItineraryPage() {
         return "/itinerary/create";  // itinerary/create.html을 반환
+    }
+
+    @GetMapping("/mylist")
+    public String showMyItineraryPage() {
+        return "/itinerary/mylist";  // itinerary/mylist.html을 반환
     }
 
 

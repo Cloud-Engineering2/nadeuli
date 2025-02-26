@@ -8,7 +8,7 @@
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
+ * 박한철    2025.02.26     페이징 방식의 내 일정리스트 조회로 변경
  *
  * ========================================================
  */
@@ -27,7 +27,11 @@ import nadeuli.repository.ItineraryCollaboratorRepository;
 import nadeuli.repository.ItineraryEventRepository;
 import nadeuli.repository.ItineraryRepository;
 import nadeuli.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -64,35 +68,41 @@ public class ItineraryService {
     //  READ: 내 일정 리스트 조회
     // ===========================
 
-    public List<ItineraryResponseDTO> getMyItineraries(Long userId) {
-        List<Itinerary> itineraries = itineraryCollaboratorRepository.findByUser_Id(userId)
-                .stream()
-                .map(ItineraryCollaborator::getItinerary)
-                .toList();  // ✅ 변경됨
+    public Page<ItineraryResponseDTO> getMyItineraries(Long userId, Pageable pageable) {
+        // 1. 사용자(userId)가 참여한 일정(Itinerary) 조회
+        Page<Object[]> results = itineraryRepository.findByUserIdWithRole(userId, pageable);
 
-        return itineraries.stream()
-                .map(ItineraryResponseDTO::from)
-                .toList();  // ✅ 변경됨
+        // 2. 결과 변환
+        return results.map(row -> {
+            Itinerary itinerary = (Itinerary) row[0];  // Itinerary 객체
+            String role = (String) row[1];  // Collaborator 역할 정보
+
+            return ItineraryResponseDTO.from(itinerary, role);
+        });
     }
-
 
     // ===========================
     //  READ: 특정 일정 조회 - Events 포함
     // ===========================
 
-    public ItineraryTotalResponseDTO getItineraryTotal(Long itineraryId) {
+    public ItineraryTotalResponseDTO getItineraryTotal(Long itineraryId, Long userId) {
         // 1. 일정 조회 (없으면 예외 발생)
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("일정을 찾을 수 없습니다. ID: " + itineraryId));
 
-        // 2. 해당 일정의 이벤트 목록 조회
+        // 2. 해당 일정에 속한 현재 사용자의 Collaborator 정보 조회
+        ItineraryCollaborator collaborator = itineraryCollaboratorRepository
+                .findByItinerary_IdAndUser_Id(itineraryId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("이 일정에 대한 권한이 없습니다."));
+
+        // 3. 해당 일정의 이벤트 목록 조회
         List<ItineraryEvent> itineraryEvents = itineraryEventRepository.findByItinerary(itinerary);
 
         // 3. DTO 변환 후 반환
         return new ItineraryTotalResponseDTO(
-                ItineraryResponseDTO.from(itinerary),
+                ItineraryResponseDTO.from(collaborator),  // ✅ Collaborator를 기반으로 DTO 변환
                 itineraryEvents.stream()
-                        .map(ItineraryEventSimpleDTO::from)  // ✅ 이벤트 DTO 변환
+                        .map(ItineraryEventSimpleDTO::from)
                         .toList()
         );
     }

@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 박한철    2025.02.25     최초 작성
- *
+ * 박한철    2025.02.26     DTO 변환방식 오버로딩 방식으로 추가
  * ========================================================
  */
 package nadeuli.dto.response;
@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.Itinerary;
-
+import nadeuli.entity.ItineraryCollaborator;
 import java.time.LocalDateTime;
 
 @Getter
@@ -31,16 +31,36 @@ public class ItineraryResponseDTO {
     private LocalDateTime endDate;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
+    private String role;
 
-    // entity -> response dto 변환
-    public static ItineraryResponseDTO from(Itinerary itinerary) {
+
+
+    // entity -> response dto 변환 (READ: 내 일정 리스트 조회)
+    public static ItineraryResponseDTO from(Itinerary itinerary, String role) {
         return new ItineraryResponseDTO(
                 itinerary.getId(),
                 itinerary.getItineraryName(),
                 itinerary.getStartDate(),
                 itinerary.getEndDate(),
                 itinerary.getCreatedDate(),
-                itinerary.getModifiedDate()
+                itinerary.getModifiedDate(),
+                role
+        );
+    }
+
+
+    // entity -> response dto 변환 (READ: 특정 일정 조회 - Events 포함)
+    public static ItineraryResponseDTO from(ItineraryCollaborator collaborator) {
+
+        Itinerary itinerary = collaborator.getItinerary();
+        return new ItineraryResponseDTO(
+                itinerary.getId(),
+                itinerary.getItineraryName(),
+                itinerary.getStartDate(),
+                itinerary.getEndDate(),
+                itinerary.getCreatedDate(),
+                itinerary.getModifiedDate(),
+                collaborator.getIcRole()
         );
     }
 }
