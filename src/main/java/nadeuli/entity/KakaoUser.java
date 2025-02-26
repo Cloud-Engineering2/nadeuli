@@ -11,33 +11,37 @@ package nadeuli.entity;
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
+ * 김대환       2.25     카카오 유저 트랜잭션 처리 Email -> UID 및 객체 항목 변경
  *
  * ========================================================
  */
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "kakao_user")
+@Table(name = "users")
 @Getter
 @NoArgsConstructor
 public class KakaoUser {
     @Id
-    private String id;
+    private Long uid;
 
-    private String nickname;
-    private String profileImage;
-    private String email;
+    private String user_email;
+    private String user_pw;
+    private String user_name;
+    private String provider;
+    private String image_url;
+    private String user_role;
 
-    public KakaoUser(String id, String nickname, String profileImage, String email) {
-        this.id = id;
-        this.nickname = nickname;
-        this.profileImage = profileImage;
-        this.email = email;
+    public KakaoUser(Long uid, String user_email, String user_pw, String user_name, String provider, String image_url, String user_role) {
+        this.uid = uid;
+        this.user_email = user_email;
+        this.user_pw = user_pw;
+        this.user_name = user_name;
+        this.provider = provider;
+        this.image_url = image_url;
+        this.user_role = user_role;
     }
 }
