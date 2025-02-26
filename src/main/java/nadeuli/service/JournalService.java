@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     기행 crud
- *
+ * 이홍비    2025.02.26     추후 기능 확장 (프로필 사진) 고려 => JOURNAL 구분 처리
  * ========================================================
  */
 
@@ -36,6 +36,8 @@ public class JournalService {
     private final ItineraryEventRepository itineraryEventRepository;
     private final S3Service s3Service;
 
+    private final String JOURNAL = "journal";
+
     // 기행문 조회
     public JournalDTO getJournal(Long ieid) throws NoSuchElementException {
         System.out.println("🔥 기행문 조회 로직 실행됨!");
@@ -53,7 +55,7 @@ public class JournalService {
         ItineraryEvent event = itineraryEventRepository.findById(ieid)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않는 ieid 입니다."));
 
-        String imageUrl = s3Service.uploadFile(file);
+        String imageUrl = s3Service.uploadFile(file, JOURNAL);
 
         Journal journal;
         if (journalRepository.findById(ieid).isPresent()) {
@@ -79,10 +81,10 @@ public class JournalService {
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // 기존 사진 삭제
-        s3Service.deleteFile(journal.getImageUrl());
+        s3Service.deleteFile(journal.getImageUrl(), JOURNAL);
 
         // 새로운 사진 올리고 image url 저장
-        String imageUrl = s3Service.uploadFile(file);
+        String imageUrl = s3Service.uploadFile(file, JOURNAL);
         journal.saveImageURL(imageUrl);
         journalRepository.save(journal);
 
@@ -97,7 +99,7 @@ public class JournalService {
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // 사진 삭제 후 url 값 null 로 저장
-        s3Service.deleteFile(journal.getImageUrl());
+        s3Service.deleteFile(journal.getImageUrl(), JOURNAL);
         journal.saveImageURL(null);
         journalRepository.save(journal);
 
