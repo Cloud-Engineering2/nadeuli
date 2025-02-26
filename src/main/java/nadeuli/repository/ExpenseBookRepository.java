@@ -15,7 +15,12 @@
 package nadeuli.repository;
 
 import nadeuli.entity.ExpenseBook;
+import nadeuli.entity.Itinerary;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface ExpenseBookRepository extends JpaRepository<ExpenseBook, Long> {
+
+    Optional<ExpenseBook> findByIid(Itinerary itinerary);
 }

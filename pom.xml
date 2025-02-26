@@ -166,7 +166,17 @@
             <version>0.18.2</version>
         </dependency>
 
-
+        <!-- RTO : jakarta.validation.* 어노테이션 -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>8.0.1.Final</version> <!-- 최신 버전 확인 가능 -->
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version> <!-- 최신 버전 확인 가능 -->
+        </dependency>
 
 
     </dependencies>
