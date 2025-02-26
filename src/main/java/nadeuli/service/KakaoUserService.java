@@ -11,7 +11,7 @@ package nadeuli.service;
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
+ * 김대환       2.25      Entity 변경에 따른 코드 수정
  *
  * ========================================================
  */
@@ -28,14 +28,14 @@ public class KakaoUserService {
     private final KakaoUserRepository kakaoUserRepository;
 
     @Transactional
-    public boolean deleteUserByEmail(String email) {
-        if (kakaoUserRepository.findByEmail(email).isEmpty()) {
-            System.err.println("삭제 실패: 해당 이메일이 데이터베이스에 없음 → " + email);
+    public boolean deleteUserByUid(Long uid) {
+        if (kakaoUserRepository.findByUid(uid).isEmpty()) {
+            System.err.println("삭제 실패: 해당 UID가 데이터베이스에 없음 → " + uid);
             return false;
         }
 
-        kakaoUserRepository.deleteByEmail(email);
-        System.out.println("삭제 완료: " + email);
+        kakaoUserRepository.deleteByUid(uid);
+        System.out.println("삭제 완료: " + uid);
         return true;
     }
 }

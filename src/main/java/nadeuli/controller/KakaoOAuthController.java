@@ -11,7 +11,7 @@ package nadeuli.controller;
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
+ * 김대환       2.25      Entity 변경에 따른 코드 수정
  *
  * ========================================================
  */
@@ -36,7 +36,7 @@ public class KakaoOAuthController {
     @GetMapping("/loginSuccess")
     public String loginSuccess(@AuthenticationPrincipal OAuth2User user, Model model) {
         Map<String, Object> attributes = user.getAttributes();
-        String id = attributes.get("id").toString();
+        Long uid = Long.parseLong(attributes.get("id").toString());
         Map<String, String> properties = (Map<String, String>) attributes.get("properties");
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
 
@@ -44,19 +44,15 @@ public class KakaoOAuthController {
         String profileImage = properties.get("profile_image");
         String email = kakaoAccount.get("email").toString();
 
-
-        kakaoUserRepository.findByEmail(email).ifPresentOrElse(
+        kakaoUserRepository.findByUid(uid).ifPresentOrElse(
                 existingUser -> {
-                    if (!existingUser.getNickname().equals(nickname) ||
-                            !existingUser.getProfileImage().equals(profileImage) ||
-                            !existingUser.getId().equals(id)) {
-
-                        KakaoUser updatedUser = new KakaoUser(id, nickname, profileImage, email);
+                    if (!existingUser.getUser_name().equals(nickname) || !existingUser.getImage_url().equals(profileImage)) {
+                        KakaoUser updatedUser = new KakaoUser(uid, email, "", nickname, "kakao", profileImage, "ROLE_USER");
                         kakaoUserRepository.save(updatedUser);
                     }
                 },
                 () -> {
-                    kakaoUserRepository.save(new KakaoUser(id, nickname, profileImage, email));
+                    kakaoUserRepository.save(new KakaoUser(uid, email, "", nickname, "kakao", profileImage, "ROLE_USER"));
                 }
         );
 
