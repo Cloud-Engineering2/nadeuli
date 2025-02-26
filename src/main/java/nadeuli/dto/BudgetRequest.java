@@ -1,6 +1,5 @@
-/* OpenAITravelResponse.java
- * OPEN API 연동
- * 작성자 : 김대환
+/* BudgetRequest.java
+ * 작성자 : 고민정
  * 최초 작성 날짜 : 2025-02-21
  *
  * ========================================================
@@ -23,7 +22,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
-public class BudgetReq {
+public class BudgetRequest {
     @NotNull(message = "남은 예산 : ")
     private Integer totalBudget;
 }
