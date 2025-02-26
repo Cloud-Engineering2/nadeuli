@@ -24,21 +24,41 @@
                 };
             }
 
-            // 모든 date-range 필드에 Date Range Picker 적용
-            $('.date-range').daterangepicker({
-                locale: {
-                    format: 'YYYY-MM-DD',
-                    applyLabel: "적용",
-                    cancelLabel: "취소",
-                    fromLabel: "시작",
-                    toLabel: "종료",
-                    daysOfWeek: ["일", "월", "화", "수", "목", "금", "토"],
-                    monthNames: [
-                        "1월", "2월", "3월", "4월", "5월", "6월",
-                        "7월", "8월", "9월", "10월", "11월", "12월"
-                    ],
-                },
-                opens: 'center'
+            function initializeDatePicker(selector) {
+                $(selector).daterangepicker({
+                    locale: {
+                        format: 'YYYY-MM-DD',
+                        applyLabel: "적용",
+                        cancelLabel: "취소",
+                        fromLabel: "시작",
+                        toLabel: "종료",
+                        daysOfWeek: ["일", "월", "화", "수", "목", "금", "토"],
+                        monthNames: [
+                            "1월", "2월", "3월", "4월", "5월", "6월",
+                            "7월", "8월", "9월", "10월", "11월", "12월"
+                        ],
+                    },
+                    opens: 'center',
+                    autoUpdateInput: false
+                });
+
+                // 날짜 선택 시 자동 입력
+                $(selector).on('apply.daterangepicker', function (ev, picker) {
+                    $(this).val(picker.startDate.format('YYYY-MM-DD') + " - " + picker.endDate.format('YYYY-MM-DD'));
+                });
+
+                // 초기화 버튼 클릭 시 값 삭제
+                $(selector).on('cancel.daterangepicker', function (ev, picker) {
+                    $(this).val('');
+                });
+            }
+
+            // 페이지 로드 시 초기화
+            initializeDatePicker('.date-range');
+
+            // 모달이 열릴 때 DateRangePicker 다시 적용 (모달 내 input 초기화 방지)
+            $('#itineraryModal').on('shown.bs.modal', function () {
+                initializeDatePicker('#dateRangeModal');
             });
 
             function createItinerary(formClass, resultId) {
@@ -77,12 +97,9 @@
             $("#createModalBtn").on("click", debounce(function () {
                 createItinerary("modal-form", "modalResult");
             }, 500));
-
-            $("#createPanelBtn").on("click", debounce(function () {
-                createItinerary("panel-form", "panelResult");
-            }, 500));
         });
     </script>
+
 </head>
 <body>
 
@@ -116,25 +133,6 @@
     </div>
 </div>
 
-<!-- 플로팅 패널 -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="floatingPanel" aria-labelledby="floatingPanelLabel">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="floatingPanelLabel">일정 생성 (플로팅 패널)</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-        <form class="panel-form">
-            <label for="itineraryNamePanel">일정 이름:</label>
-            <input type="text" id="itineraryNamePanel" class="form-control itinerary-name" required>
-            <br>
-            <label for="dateRangePanel">날짜 선택:</label>
-            <input type="text" id="dateRangePanel" class="form-control date-range" required>
-            <br>
-            <button type="button" class="btn btn-primary" id="createPanelBtn">일정 생성</button>
-        </form>
-        <p id="panelResult" class="mt-3"></p>
-    </div>
-</div>
 
 </body>
 </html>
