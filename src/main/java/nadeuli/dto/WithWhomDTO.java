@@ -10,6 +10,8 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     최초 작성
+ * 고민정    2025;02.25     필드 수정
+ *
  * ========================================================
  */
 
@@ -18,7 +20,8 @@ package nadeuli.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import nadeuli.entity.ExpenseItem;
+import nadeuli.entity.Traveler;
 import nadeuli.entity.WithWhom;
 
 @Getter
@@ -26,16 +29,16 @@ import nadeuli.entity.WithWhom;
 @NoArgsConstructor
 public class WithWhomDTO {
     private Integer id;
-    private ExpenseItemDTO expenseItemDTO;
+    private Long emid;
     private TravelerDTO travelerDTO;
 
 
     // static factory method
-    public static WithWhomDTO of (Integer id, ExpenseItemDTO emid, TravelerDTO tid) {
+    public static WithWhomDTO of (Integer id, Long emid, TravelerDTO tid) {
         return new WithWhomDTO(id, emid, tid);
     }
 
-    public static WithWhomDTO of (ExpenseItemDTO emid, TravelerDTO tid) {
+    public static WithWhomDTO of (Long emid, TravelerDTO tid) {
         return new WithWhomDTO(null, emid, tid);
     }
 
@@ -43,14 +46,14 @@ public class WithWhomDTO {
     public static WithWhomDTO from(WithWhom whom) {
         return new WithWhomDTO(
                 whom.getId(),
-                ExpenseItemDTO.from(whom.getEmid()),
+                whom.getEmid().getId(),
                 TravelerDTO.from(whom.getTid())
         );
     }
 
     // dto => entity
-    public WithWhom toEntity() {
-        return WithWhom.of(expenseItemDTO.toEntity(), travelerDTO.toEntity());
+    public WithWhom toEntity(ExpenseItem expenseItem, Traveler traveler) {
+        return WithWhom.of(expenseItem, traveler);
     }
 
 }
