@@ -11,5 +11,4 @@ public class NadeuliApplication {
     public static void main(String[] args) {
         SpringApplication.run(NadeuliApplication.class, args);
     }
-
 }
