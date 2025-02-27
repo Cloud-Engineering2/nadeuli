@@ -10,7 +10,7 @@
  * ========================================================
  * 박한철    2025.02.25     일정생성페이지(테스트용) 추가
  * 박한철    2025.02.26     일정리스트페이지(테스트용) 추가
- * 박한철    2025.02.26     캘린더선택페이지(테스트용) 추가
+ * 박한철    2025.02.26     캘린더선택페이지(테스트용) 추가 -> 삭제
  * ========================================================
  */
 
@@ -39,11 +39,6 @@ public class ItineraryController {
     @GetMapping("/mylist")
     public String showMyItineraryPage() {
         return "/itinerary/mylist";  // itinerary/mylist.html을 반환
-    }
-
-    @GetMapping("/calender")
-    public String showCalenderTestPage() {
-        return "/itinerary/calender_test";  // itinerary/calender_test.html을 반환
     }
 
     @GetMapping("/write")

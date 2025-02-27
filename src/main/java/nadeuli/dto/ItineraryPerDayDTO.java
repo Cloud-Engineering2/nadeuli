@@ -9,6 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 박한철    2025.02.27     최초 작성 (DB 구조 수정)
+ * 박한철    2025.02.27     toEntity(itinerary) 추가
  * ========================================================
  */
 package nadeuli.dto;
@@ -16,6 +17,7 @@ package nadeuli.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryPerDay;
 import java.time.LocalTime;
 
@@ -44,13 +46,11 @@ public class ItineraryPerDayDTO {
 
     // dto -> entity
     public ItineraryPerDay toEntity() {
-        return new ItineraryPerDay(
-                id,
-                itineraryDTO.toEntity(),
-                dayCount,
-                startTime,
-                endTime,
-                dayOfWeek
-        );
+        return new ItineraryPerDay(id, itineraryDTO.toEntity(), dayCount, startTime, endTime, dayOfWeek);
     }
+
+    public ItineraryPerDay toEntity(Itinerary itinerary) {
+        return new ItineraryPerDay(id, itinerary, dayCount, startTime, endTime, dayOfWeek);
+    }
+
 }
