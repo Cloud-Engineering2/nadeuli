@@ -1,0 +1,91 @@
+@font-face {
+    font-family: 'GriunNoltoTAENGGU';
+    /*src: url('../fonts/Griun_NoltoTAENGGU-Rg.woff2') format('woff2');*/
+    src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
+}
+
+body {
+    font-family: 'GriunNoltoTAENGGU';
+    background-color: #E9DCBE;
+    color: #343434;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    display: flex;
+    max-width: 1200px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.left-space, .right-space {
+    flex: 1;
+    padding: 10px;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+.content {
+    margin-top: 10px;
+    min-height: 100px;
+}
+.divider {
+    border: 1px solid #343434;
+}
+.image-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 200px;
+    background-color: #8E8B82;
+    border-radius: 10px;
+    cursor: pointer;
+    overflow: hidden;
+}
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.image-container .plus {
+    font-size: 40px;
+    color: #F3F3F3;
+    position: absolute;
+}
+.edit-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+.modal.active {
+    display: block;
+}

@@ -10,6 +10,7 @@
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
  * 고민정    2025.02.25     생성자 접근수준, Itinerary 다대일->일대일 관계 수정
+ * 고민정    2025.02.26     예산 설정 메서드 추가
  *
  * ========================================================
  */
@@ -56,6 +57,10 @@ public class ExpenseBook extends BaseTimeEntity {
     // static factory method
     public static ExpenseBook of (Itinerary iid, Integer totalBudget, Integer totalExpenses) {
         return new ExpenseBook(null, iid, totalBudget, totalExpenses);
+    }
+
+    public void updateBudget(Integer budget) {
+        this.totalBudget = budget;
     }
 
 

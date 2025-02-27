@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
- *
+ * 박한철    2025.02.25     uid->user, iid->itinerary로 변수명 수정
  * ========================================================
  */
 
@@ -35,28 +35,28 @@ public class ItineraryCollaborator {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "uid", nullable = false)
-    private User uid;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "iid", nullable = false)
-    private Itinerary iid;
+    private Itinerary itinerary;
 
     @Column(name = "ic_role", nullable = false, length = 20)
     private String icRole;
 
 
     // 생성자
-    public ItineraryCollaborator(User uid, Itinerary iid) {
+    public ItineraryCollaborator(User user, Itinerary itinerary) {
 
         // 초기화
-        this.uid = uid;
-        this.iid = iid;
+        this.user = user;
+        this.itinerary = itinerary;
         this.icRole = "ROLE_OWNER"; // default => ROLE_OWNER
     }
 
     // static factory method
-    public static ItineraryCollaborator of (User uid, Itinerary iid) {
-        return new ItineraryCollaborator(uid, iid);
+    public static ItineraryCollaborator of (User user, Itinerary itinerary) {
+        return new ItineraryCollaborator(user, itinerary);
     }
 }
