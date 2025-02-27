@@ -13,6 +13,7 @@ package nadeuli.config;
  * ========================================================
  * 김대환    2025.02.24     카카오 길찾기 URL 반환 매핑 경로 권한
  * 이홍비    2025.02.25     journal test - permitAll() 처리
+ * 이홍비    2025.02.25     정적 자원 - fonts - permitAll() 처리
  * ========================================================
  */
 
@@ -36,8 +37,8 @@ public class KakaoSecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/itineraries/**").permitAll() // journal test 용 추후 삭제
-                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/api/itineraries/**", "/itineraries/**").permitAll() // journal test 용 추후 삭제
+                        .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/fonts/**", "favicon.ico").permitAll()
                         .requestMatchers("api/admin/unlink/**").permitAll()
                         .requestMatchers("/travel/**").permitAll()
                         .requestMatchers("/kakao-direction").permitAll()
