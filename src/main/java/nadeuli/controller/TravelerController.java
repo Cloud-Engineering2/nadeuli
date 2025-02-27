@@ -54,6 +54,16 @@ public class TravelerController {
         return ResponseEntity.ok(response);
     }
 
+    // 여행자 삭제
+    @DeleteMapping("/{iid}/travelers/{travelerName}")
+    public ResponseEntity<List<TravelerDTO>> deleteTraveler(@PathVariable Integer iid, @PathVariable String travelerName) {
+        Long itineraryId = Long.valueOf(iid);
+        List<TravelerDTO> travelerDtos = travelerService.deleteTraveler(travelerName, itineraryId);
+
+        return ResponseEntity.ok(travelerDtos);
+    }
+
+
 
 
 }

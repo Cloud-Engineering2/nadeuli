@@ -15,6 +15,7 @@
  */
 package nadeuli.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.TravelerDTO;
@@ -25,6 +26,7 @@ import nadeuli.repository.TravelerRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,5 +64,26 @@ public class TravelerService {
         Traveler traveler = travelerRepository.findByTravelerName(travelerName)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Traveler 존재하지 않습니다"));
         return TravelerDTO.from(traveler);
+    }
+
+
+    public List<TravelerDTO> deleteTraveler(String travelerName, Long itineraryId) {
+        List<Traveler> travelers = travelerRepository.findAllByIid(itineraryId);
+
+        // 삭제할 대상 필터링
+        Traveler deletion = travelers.stream()
+                                        .filter(traveler -> traveler.getTravelerName().equals(travelerName))
+                                        .findFirst()
+                                        .orElseThrow(() -> new EntityNotFoundException("해당 Traveler 존재하지 않습니다"));
+
+        // 삭제 수행
+        travelerRepository.delete(deletion);
+
+        // 남아 있는 여행자 리스트 변환 후 반환
+        List<Traveler> remainedTravelers = travelerRepository.findAllByIid(itineraryId);
+        return remainedTravelers.stream()
+                                    .map(TravelerDTO::from)
+                                    .collect(Collectors.toList());
+
     }
 }
