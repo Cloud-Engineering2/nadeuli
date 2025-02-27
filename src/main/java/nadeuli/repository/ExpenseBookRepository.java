@@ -8,14 +8,19 @@
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
+ * 고민정     2025.02.26  repository 생성
  *
  * ========================================================
  */
 package nadeuli.repository;
 
 import nadeuli.entity.ExpenseBook;
+import nadeuli.entity.Itinerary;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface ExpenseBookRepository extends JpaRepository<ExpenseBook, Long> {
+
+    Optional<ExpenseBook> findByIid(Itinerary itinerary);
 }
