@@ -40,11 +40,4 @@ public class ExpenseBookController {
 
         return ResponseEntity.ok(expenseBookDto);
     }
-
-
-    @GetMapping
-    public String tester() {
-        System.out.println("tester");
-        return "여기";
-    }
 }

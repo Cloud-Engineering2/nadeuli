@@ -64,7 +64,7 @@ public class ExpenseItemDTO {
     }
 
     // dto => entity
-    public ExpenseItem toEntity(ExpenseBook expenseBook, ItineraryEvent itineraryEvent,  Traveler traveler) {
+    public ExpenseItem toEntity(ExpenseBook expenseBook, ItineraryEvent itineraryEvent, Traveler traveler) {
         return ExpenseItem.of(expenseBook, itineraryEvent, traveler, content, expense);
     }
 }

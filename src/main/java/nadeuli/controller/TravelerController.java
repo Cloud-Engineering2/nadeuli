@@ -35,12 +35,12 @@ public class TravelerController {
 
     // 여행자 추가
     @PostMapping("/{iid}/traveler")
-    public ResponseEntity<TravelerDTO> registerTraveler(@RequestBody @Valid TravelerRequest travelerRequest,
+    public ResponseEntity<Void> registerTraveler(@RequestBody @Valid TravelerRequest travelerRequest,
                                                 @PathVariable("iid") Long iid,
                                                 BindingResult bindingResult) {
         String travelerName = travelerRequest.getTravelerName();
         TravelerDTO travelerDto = TravelerDTO.of(iid, travelerName);
-        travelerService.addTraveler(travelerDto);
+        Integer tid = travelerService.addTraveler(travelerDto);
         return ResponseEntity.ok().build();
     }
 

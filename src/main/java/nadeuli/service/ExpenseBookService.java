@@ -40,4 +40,13 @@ public class ExpenseBookService {
         expenseBook.updateBudget(budget);
         return ExpenseBookDTO.from(expenseBook);
     }
+
+    // ExpenseBook 조회 by Itinerary
+    public Long get(Long iid) {
+        Itinerary itinerary = itineraryRepository.findById(iid)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary 존재하지 않습니다"));
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다"));
+        return expenseBook.getId();
+    }
 }

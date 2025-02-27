@@ -28,4 +28,6 @@ public interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
         WHERE ic.user.id = :userId
     """)
     Page<Object[]> findByUserIdWithRole(@Param("userId") Long userId, Pageable pageable);
+
+
 }

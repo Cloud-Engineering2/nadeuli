@@ -17,7 +17,8 @@ package nadeuli.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import nadeuli.entity.Traveler;
+
+import java.util.List;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -28,9 +29,11 @@ public class ExpenseItemRequest {
     private String content;
 
     @NotNull
-    private Traveler payer;
+    private String payer;
 
     @NotBlank
     private Integer expense;
+
+    private List<String> withWhom;
 
 }

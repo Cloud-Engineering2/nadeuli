@@ -34,13 +34,15 @@ public class TravelerService {
 
     // 여행자 추가
     @Transactional
-    public void addTraveler(TravelerDTO travelerDto) {
+    public Integer addTraveler(TravelerDTO travelerDto) {
         Long itineraryId = travelerDto.getItineraryId();
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
 
         Traveler traveler = travelerDto.toEntity(itinerary);
         travelerRepository.save(traveler);
+
+        return traveler.getId();
     }
 
     // 여행자들 조회
@@ -55,4 +57,10 @@ public class TravelerService {
                 .toList();
     }
 
+    // 이름으로 조회
+    public TravelerDTO get(String travelerName) {
+        Traveler traveler = travelerRepository.findByTravelerName(travelerName)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Traveler 존재하지 않습니다"));
+        return TravelerDTO.from(traveler);
+    }
 }
