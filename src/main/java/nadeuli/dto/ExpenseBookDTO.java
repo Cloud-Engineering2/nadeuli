@@ -28,16 +28,16 @@ import nadeuli.entity.ExpenseBook;
 public class ExpenseBookDTO {
     private Long id;
     private ItineraryDTO itineraryDTO;
-    private Integer totalBudget;
-    private Integer totalExpenses;
+    private Long totalBudget;
+    private Long totalExpenses;
 
 
     // static factory method
-    public static ExpenseBookDTO of (Long id, ItineraryDTO itineraryDTO, Integer totalBudget, Integer totalExpenses) {
+    public static ExpenseBookDTO of (Long id, ItineraryDTO itineraryDTO, Long totalBudget, Long totalExpenses) {
         return new ExpenseBookDTO(id, itineraryDTO, totalBudget, totalExpenses);
     }
 
-    public static ExpenseBookDTO of (ItineraryDTO itineraryDTO, Integer totalBudget, Integer totalExpenses) {
+    public static ExpenseBookDTO of (ItineraryDTO itineraryDTO, Long totalBudget, Long totalExpenses) {
         return new ExpenseBookDTO(null, itineraryDTO, totalBudget, totalExpenses);
     }
 

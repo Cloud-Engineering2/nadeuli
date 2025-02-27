@@ -35,7 +35,7 @@ public class ExpenseBookController {
     public ResponseEntity<ExpenseBookDTO> planBudget(@RequestBody @Valid BudgetRequest budgetRequest,
                                              @PathVariable("iid") Long iid,
                                              BindingResult bindingResult) {
-        Integer budget = budgetRequest.getTotalBudget();
+        Long budget = budgetRequest.getTotalBudget();
         ExpenseBookDTO expenseBookDto = expenseBookService.setBudget(iid, budget);
 
         return ResponseEntity.ok(expenseBookDto);

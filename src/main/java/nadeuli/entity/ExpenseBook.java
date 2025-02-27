@@ -45,21 +45,21 @@ public class ExpenseBook extends BaseTimeEntity {
 
     @Column(name = "total_budget", columnDefinition = "INT UNSIGNED not null default 0")
     @ColumnDefault("0")
-    private Integer totalBudget;
+    private Long totalBudget;
 
     @Column(name = "total_expenses", columnDefinition = "INT UNSIGNED not null default 0")
     @ColumnDefault("0")
-    private Integer totalExpenses;
+    private Long totalExpenses;
 
 
 //
 
     // static factory method
-    public static ExpenseBook of (Itinerary iid, Integer totalBudget, Integer totalExpenses) {
+    public static ExpenseBook of (Itinerary iid, Long totalBudget, Long totalExpenses) {
         return new ExpenseBook(null, iid, totalBudget, totalExpenses);
     }
 
-    public void updateBudget(Integer budget) {
+    public void updateBudget(Long budget) {
         this.totalBudget = budget;
     }
 

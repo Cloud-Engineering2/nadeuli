@@ -31,7 +31,7 @@ public class ExpenseBookService {
 
     // 예산 설정
     @Transactional
-    public ExpenseBookDTO setBudget(Long iid, Integer budget) {
+    public ExpenseBookDTO setBudget(Long iid, Long budget) {
         Itinerary itinerary = itineraryRepository.findById(iid)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다. ID: " + iid));
         ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)

@@ -24,7 +24,7 @@ import lombok.*;
 @Builder
 public class BudgetRequest {
     @NotNull(message = "남은 예산 : ")
-    private Integer totalBudget;
+    private Long totalBudget;
 }
 
 
