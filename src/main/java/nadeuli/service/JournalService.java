@@ -38,12 +38,21 @@ public class JournalService {
 
     private final String JOURNAL = "journal";
 
-    // 기행문 조회
+    // 기행문 조회 - if 없다 => 생성하도록 구현
     public JournalDTO getJournal(Long ieid) throws NoSuchElementException {
         System.out.println("🔥 기행문 조회 로직 실행됨!");
 
+//        Journal journal = journalRepository.findById(ieid)
+//                .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
+
         Journal journal = journalRepository.findById(ieid)
-                .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
+                .orElseGet(() -> {
+                    // 존재하지 않을 경우 새로운 기행문 생성 및 저장
+                    Journal newJournal = Journal.of(itineraryEventRepository.findById(ieid).orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다.")), null, null);
+                    journalRepository.save(newJournal);
+
+                    return newJournal;
+                });
 
         return JournalDTO.from(journal);
     }
