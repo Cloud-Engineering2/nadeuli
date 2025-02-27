@@ -39,7 +39,7 @@ public class KakaoSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/","/api/**", "/itinerary/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "favicon.ico").permitAll()
-//                         .requestMatchers("/api/itineraries/**", "/itineraries/**").permitAll() // journal test 용 추후 삭제
+                        .requestMatchers("/api/itineraries/**", "/itineraries/**").permitAll() // journal test 용 추후 삭제
                         .requestMatchers("api/admin/unlink/**").permitAll()
                         .requestMatchers("/travel/**").permitAll()
                         .requestMatchers("/kakao-direction").permitAll()
