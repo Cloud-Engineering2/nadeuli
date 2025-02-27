@@ -14,14 +14,30 @@
 package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
+import nadeuli.dto.ExpenseItemRequest;
+import nadeuli.entity.Traveler;
 import nadeuli.service.ExpenseItemService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import nadeuli.service.TravelerService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/api/itineraries", produces = "application/json")
+@RequestMapping(value = "/api/itineraries")
 @RequiredArgsConstructor
 public class ExpenseItemController {
     private final ExpenseItemService expenseItemService;
+    private final TravelerService travelerService;
+
+    // 지출 추가
+    @PostMapping("/{iid}/expenses")
+    public ResponseEntity createExpense(@PathVariable Integer iid, @RequestBody ExpenseItemRequest expenseItemRequest) {
+        String content = expenseItemRequest.getContent();
+        Traveler payer = expenseItemRequest.getPayer();
+        Integer expense = expenseItemRequest.getExpense();
+
+        return null;
+    }
+
+
 
 }

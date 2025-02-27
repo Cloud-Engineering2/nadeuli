@@ -39,8 +39,6 @@ public class ExpenseBookController {
         ExpenseBookDTO expenseBookDto = expenseBookService.setBudget(iid, budget);
 
         return ResponseEntity.ok(expenseBookDto);
-
-
     }
 
 
