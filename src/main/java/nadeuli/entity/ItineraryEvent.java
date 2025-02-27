@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
- *
+ * 박한철    2025.02.25     iid->itinerary, pid->place 로 변수명 수정
  * ========================================================
  */
 
@@ -37,12 +37,12 @@ public class ItineraryEvent extends BaseTimeEntity{
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "iid", nullable = false)
-    private Itinerary iid;
+    private Itinerary itinerary;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "pid", nullable = false)
-    private Place pid;
+    private Place place;
 
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
@@ -52,18 +52,18 @@ public class ItineraryEvent extends BaseTimeEntity{
 
 
     // 생성자
-    public ItineraryEvent(Itinerary iid, Place pid, LocalDateTime startDate, LocalDateTime endDate) {
+    public ItineraryEvent(Itinerary itinerary, Place place, LocalDateTime startDate, LocalDateTime endDate) {
 
         // 초기화
-        this.iid = iid;
-        this.pid = pid;
+        this.itinerary = itinerary;
+        this.place = place;
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
     // static factory method
-    public static ItineraryEvent of(Itinerary iid, Place pid, LocalDateTime startDate, LocalDateTime endDate) {
-        return new ItineraryEvent(iid, pid, startDate, endDate);
+    public static ItineraryEvent of(Itinerary itinerary, Place place, LocalDateTime startDate, LocalDateTime endDate) {
+        return new ItineraryEvent(itinerary, place, startDate, endDate);
     }
 
 

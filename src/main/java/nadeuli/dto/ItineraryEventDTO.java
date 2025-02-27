@@ -10,6 +10,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     최초 작성
+ * 박한철    2025.02.25     엔티티의 변수명이 변경되어 getItinerary(),getPlace()로 getter 명 수정
  * ========================================================
  */
 
@@ -46,8 +47,8 @@ public class ItineraryEventDTO {
     public static ItineraryEventDTO from(ItineraryEvent itineraryEvent) {
         return new ItineraryEventDTO(
                 itineraryEvent.getId(),
-                ItineraryDTO.from(itineraryEvent.getIid()),
-                PlaceDTO.from(itineraryEvent.getPid()),
+                ItineraryDTO.from(itineraryEvent.getItinerary()),
+                PlaceDTO.from(itineraryEvent.getPlace()),
                 itineraryEvent.getStartDate(),
                 itineraryEvent.getEndDate()
         );
