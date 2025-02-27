@@ -10,6 +10,7 @@
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
  * 이홍비    2025.02.25     columnDefinition = "TEXT" 명시
+ * 이홍비    2025.02.25     content, imageURL save 함수 구현
  * ========================================================
  */
 
@@ -59,5 +60,16 @@ public class Journal extends BaseTimeEntity{
     public static Journal of(ItineraryEvent ieid, String content, String imageUrl) {
         return new Journal(ieid, content, imageUrl);
     }
+
+    // imageURL 저장
+    public void saveImageURL(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    // content 저장
+    public void saveContent(String content) {
+        this.content = content;
+    }
+
 
 }
