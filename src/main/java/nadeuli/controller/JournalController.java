@@ -10,6 +10,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     최초 작성 : JournalController
+ * 이홍비    2025.02.26     GetMapping 쪽 수정
  * ========================================================
  */
 
@@ -20,11 +21,12 @@ import nadeuli.dto.JournalDTO;
 import nadeuli.service.JournalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/itineraries/{iid}/events/{ieid}")
+//@RequestMapping("/api/itineraries/{iid}/events/{ieid}")
 @Controller
 public class JournalController {
     private final JournalService journalService;
@@ -40,17 +42,32 @@ public class JournalController {
     * */
 
     // 기행문 조회 (열람)
-    @GetMapping("/journal")
-    public ResponseEntity<JournalDTO> getJournal(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
+    @GetMapping("/itineraries/{iid}/events/{ieid}/journal")
+    public String getJournal(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, ModelMap model) {
+        JournalDTO journalDTO = journalService.getJournal(ieid);
+
+        System.out.println("📌 조회한 기행문 : " + journalDTO);
+
+        model.addAttribute("journal", journalDTO);
+
+        //return ResponseEntity.ok(journalDTO);
+
+        return "journal/journal";
+    }
+
+    // 기행문 조회 (열람)
+    @GetMapping("api/itineraries/{iid}/events/{ieid}/journal")
+    public ResponseEntity<JournalDTO> getJournalTest(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
         JournalDTO journalDTO = journalService.getJournal(ieid);
 
         System.out.println("📌 조회한 기행문 : " + journalDTO);
 
         return ResponseEntity.ok(journalDTO);
+
     }
 
     // 사진 등록
-    @PostMapping("/photo")
+    @PostMapping("/api/itineraries/{iid}/events/{ieid}/photo")
     public ResponseEntity<JournalDTO> uploadPhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("file") MultipartFile file) {
         JournalDTO journalDTO = journalService.uploadPhoto(ieid, file);
 
@@ -60,7 +77,7 @@ public class JournalController {
     }
 
     // 사진 수정
-    @PutMapping("/photo")
+    @PutMapping("/api/itineraries/{iid}/events/{ieid}/photo")
     public ResponseEntity<JournalDTO> modifiedPhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("file") MultipartFile file) {
         JournalDTO journalDTO = journalService.modifiedPhoto(ieid, file);
 
@@ -70,7 +87,7 @@ public class JournalController {
     }
 
     // 사진 삭제
-    @DeleteMapping("/photo")
+    @DeleteMapping("/api/itineraries/{iid}/events/{ieid}/photo")
     public ResponseEntity<String> deletePhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
         JournalDTO journalDTO = journalService.deletePhoto(ieid);
 
@@ -80,7 +97,7 @@ public class JournalController {
     }
 
     // 사진 등록 - test
-    @PostMapping("/photo-test")
+    @PostMapping("/api/itineraries/{iid}/events/{ieid}/photo-test")
     public ResponseEntity<JournalDTO> uploadPhotoTest(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("imageURL") String imageURL) {
         JournalDTO journalDTO = journalService.uploadPhotoTest(ieid, imageURL);
 
@@ -88,7 +105,7 @@ public class JournalController {
     }
 
     // 글 작성
-    @PostMapping("/content")
+    @PostMapping("/api/itineraries/{iid}/events/{ieid}/content")
     public ResponseEntity<JournalDTO> writeContent(@PathVariable Long iid, @PathVariable Long ieid, @RequestParam("content") String content) {
         JournalDTO journalDTO = journalService.writeContent(ieid, content);
 
@@ -98,8 +115,8 @@ public class JournalController {
     }
 
     // 글 수정
-    @PutMapping("/content")
-    public ResponseEntity<JournalDTO> modifiedContent(@PathVariable Long iid, @PathVariable Long ieid, @RequestBody String content) {
+    @PutMapping("/api/itineraries/{iid}/events/{ieid}/content")
+    public ResponseEntity<JournalDTO> modifiedContent(@PathVariable Long iid, @PathVariable Long ieid, @RequestParam("content") String content) {
         JournalDTO journalDTO = journalService.modifiedContent(ieid, content);
 
         System.out.println("📌 기행문 수정 : " + journalDTO);
@@ -108,7 +125,7 @@ public class JournalController {
     }
 
     // 글 삭제
-    @DeleteMapping("/content")
+    @DeleteMapping("/api/itineraries/{iid}/events/{ieid}/content")
     public ResponseEntity<JournalDTO> deleteContent(@PathVariable Long iid, @PathVariable Long ieid) {
         JournalDTO journalDTO = journalService.deleteContent(ieid);
 
