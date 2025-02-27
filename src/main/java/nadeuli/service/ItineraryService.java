@@ -9,7 +9,7 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 박한철    2025.02.26     페이징 방식의 내 일정리스트 조회로 변경
- *
+ * 박한철    2025.02.26     DB 구조 변경으로 인한 getItineraryTotal 수정 ,  일정 생성 파트 주석처리
  * ========================================================
  */
 package nadeuli.service;
@@ -17,20 +17,14 @@ package nadeuli.service;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
 import nadeuli.dto.response.ItineraryEventSimpleDTO;
+import nadeuli.dto.response.ItineraryPerDaySimpleDTO;
 import nadeuli.dto.response.ItineraryResponseDTO;
 import nadeuli.dto.response.ItineraryTotalResponseDTO;
-import nadeuli.entity.Itinerary;
-import nadeuli.entity.ItineraryCollaborator;
-import nadeuli.entity.ItineraryEvent;
-import nadeuli.entity.User;
-import nadeuli.repository.ItineraryCollaboratorRepository;
-import nadeuli.repository.ItineraryEventRepository;
-import nadeuli.repository.ItineraryRepository;
-import nadeuli.repository.UserRepository;
+import nadeuli.entity.*;
+import nadeuli.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,27 +36,28 @@ public class ItineraryService {
     private final ItineraryRepository itineraryRepository;
     private final ItineraryCollaboratorRepository itineraryCollaboratorRepository;
     private final UserRepository userRepository;
-    private final ItineraryEventRepository itineraryEventRepository; // ✅ 이벤트 리포지토리 추가
+    private final ItineraryPerDayRepository itineraryPerDayRepository;
+    private final ItineraryEventRepository itineraryEventRepository;
 
     // ===========================
     //  CREATE: 일정 생성
     // ===========================
 
-    public ItineraryDTO createItinerary(String itineraryName, LocalDateTime startDate, LocalDateTime endDate, Long ownerId) {
-        // 사용자 확인
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + ownerId));
-
-        // 일정 생성
-        Itinerary itinerary = Itinerary.of(itineraryName, startDate, endDate);
-        itinerary = itineraryRepository.save(itinerary);
-
-        // 소유자 자동 등록
-        ItineraryCollaborator collaborator = ItineraryCollaborator.of(owner, itinerary);
-        itineraryCollaboratorRepository.save(collaborator);
-
-        return ItineraryDTO.from(itinerary);
-    }
+//    public ItineraryDTO createItinerary(String itineraryName, LocalDateTime startDate, LocalDateTime endDate, Long ownerId) {
+//        // 사용자 확인
+//        User owner = userRepository.findById(ownerId)
+//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + ownerId));
+//
+//        // 일정 생성
+//        Itinerary itinerary = Itinerary.of(itineraryName, startDate, endDate);
+//        itinerary = itineraryRepository.save(itinerary);
+//
+//        // 소유자 자동 등록
+//        ItineraryCollaborator collaborator = ItineraryCollaborator.of(owner, itinerary);
+//        itineraryCollaboratorRepository.save(collaborator);
+//
+//        return ItineraryDTO.from(itinerary);
+//    }
 
     // ===========================
     //  READ: 내 일정 리스트 조회
@@ -81,9 +76,9 @@ public class ItineraryService {
         });
     }
 
-    // ===========================
-    //  READ: 특정 일정 조회 - Events 포함
-    // ===========================
+// ===========================
+//  READ: 특정 일정 조회 - Events 포함
+// ===========================
 
     public ItineraryTotalResponseDTO getItineraryTotal(Long itineraryId, Long userId) {
         // 1. 일정 조회 (없으면 예외 발생)
@@ -95,16 +90,23 @@ public class ItineraryService {
                 .findByItinerary_IdAndUser_Id(itineraryId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("이 일정에 대한 권한이 없습니다."));
 
-        // 3. 해당 일정의 이벤트 목록 조회
-        List<ItineraryEvent> itineraryEvents = itineraryEventRepository.findByItinerary(itinerary);
+        // 3. 해당 일정의 perDay 목록 조회
+        List<ItineraryPerDay> itineraryPerDays = itineraryPerDayRepository.findByItinerary(itinerary);
 
-        // 3. DTO 변환 후 반환
+        // 4. 해당 일정의 perDay 목록을 이용하여 각 perDay의 이벤트 목록 조회
+        List<ItineraryEvent> itineraryEvents = itineraryEventRepository.findByItineraryPerDayIn(itineraryPerDays);
+
+        // 5. DTO 변환 후 반환
         return new ItineraryTotalResponseDTO(
                 ItineraryResponseDTO.from(collaborator),  // ✅ Collaborator를 기반으로 DTO 변환
+                itineraryPerDays.stream()
+                        .map(ItineraryPerDaySimpleDTO::from)
+                        .toList(), // ✅ ItineraryPerDay -> ItineraryPerDaySimpleDTO 변환
                 itineraryEvents.stream()
                         .map(ItineraryEventSimpleDTO::from)
-                        .toList()
+                        .toList()  // ✅ ItineraryEvent -> ItineraryEventSimpleDTO 변환
         );
     }
+
 
 }

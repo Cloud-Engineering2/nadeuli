@@ -28,12 +28,11 @@ public class ItineraryResponseDTO {
     private Long id;
     private String itineraryName;
     private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private int totalDays;  // 기존 endDate 제거 -> totalDays 추가
+    private int transportationType; // 교통수단 추가
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
     private String role;
-
-
 
     // entity -> response dto 변환 (READ: 내 일정 리스트 조회)
     public static ItineraryResponseDTO from(Itinerary itinerary, String role) {
@@ -41,26 +40,27 @@ public class ItineraryResponseDTO {
                 itinerary.getId(),
                 itinerary.getItineraryName(),
                 itinerary.getStartDate(),
-                itinerary.getEndDate(),
+                itinerary.getTotalDays(),  // totalDays 사용
+                itinerary.getTransportationType(), // transportationType 사용
                 itinerary.getCreatedDate(),
                 itinerary.getModifiedDate(),
                 role
         );
     }
 
-
     // entity -> response dto 변환 (READ: 특정 일정 조회 - Events 포함)
     public static ItineraryResponseDTO from(ItineraryCollaborator collaborator) {
-
         Itinerary itinerary = collaborator.getItinerary();
         return new ItineraryResponseDTO(
                 itinerary.getId(),
                 itinerary.getItineraryName(),
                 itinerary.getStartDate(),
-                itinerary.getEndDate(),
+                itinerary.getTotalDays(),  // totalDays 사용
+                itinerary.getTransportationType(), // transportationType 사용
                 itinerary.getCreatedDate(),
                 itinerary.getModifiedDate(),
                 collaborator.getIcRole()
         );
     }
 }
+
