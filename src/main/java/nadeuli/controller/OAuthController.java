@@ -11,6 +11,8 @@
  * ========================================================
  * 국경민      2.25        구글 및 카카오 통합 OAuth 2.0 인증 컨트롤러 구현
  * 국경민      2.26        로그인 성공 시 예외처리
+ * 국경민      2.27        JWT 토큰 생성 및 로그인 성공 후 반환
+ * 국경민      2.27        Redis를 사용한 액세스 토큰 및 리프레시 토큰 관리
  * ========================================================
  */
 
@@ -18,12 +20,13 @@ package nadeuli.controller;
 
 import nadeuli.entity.User;
 import nadeuli.repository.UserRepository;
+import nadeuli.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Map;
 
@@ -32,53 +35,76 @@ import java.util.Map;
 public class OAuthController {
 
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/loginSuccess")
-    public String loginSuccess(@AuthenticationPrincipal OAuth2User user, Model model) {
+    public RedirectView loginSuccess(@AuthenticationPrincipal OAuth2User user) {
         Map<String, Object> attributes = user.getAttributes();
-        String provider = (String) attributes.get("provider"); // 제공자 정보 획득
-        String id = attributes.get("id") != null ? attributes.get("id").toString() : "Unknown";
-        String email, nickname, profileImage;
+        String provider = user.getAttribute("provider");
+
+        String email = "Unknown";
+        String nickname = "Unknown";
+        String profileImage = "defaultImage";
 
         if ("google".equals(provider)) {
             // 구글 로그인 처리
-            email = attributes.get("email") != null ? attributes.get("email").toString() : "Unknown";
-            nickname = attributes.get("name") != null ? attributes.get("name").toString() : "Unknown";
-            profileImage = attributes.get("picture") != null ? attributes.get("picture").toString() : "Unknown";
-        } else {
+            email = user.getAttribute("email");
+            nickname = user.getAttribute("name");
+            profileImage = user.getAttribute("picture") != null ? user.getAttribute("picture") : "defaultImage";
+        } else if ("kakao".equals(provider)) {
             // 카카오 로그인 처리
-            Map<String, String> properties = (Map<String, String>) attributes.get("properties");
-            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+            Map<String, Object> properties = user.getAttribute("properties");
+            Map<String, Object> kakaoAccount = user.getAttribute("kakao_account");
 
             // properties 값이 null인 경우 기본값 설정
-            nickname = properties != null && properties.get("nickname") != null ? properties.get("nickname") : "Unknown";
-            profileImage = properties != null && properties.get("profile_image") != null ? properties.get("profile_image") : "Unknown";
-            email = kakaoAccount != null && kakaoAccount.get("email") != null ? kakaoAccount.get("email").toString() : "Unknown";
+            email = kakaoAccount != null ? (String) kakaoAccount.get("email") : "Unknown";
+            nickname = properties != null ? (String) properties.get("nickname") : "Unknown";
+            profileImage = properties != null ? (String) properties.get("profile_image") : "defaultImage";
         }
+
+        final String finalEmail = email;
+        final String finalNickname = nickname;
+        final String finalProfileImage = profileImage;
 
         // 사용자 정보 저장 또는 업데이트
         userRepository.findByEmail(email).ifPresentOrElse(
                 existingUser -> {
-                    if (!existingUser.getUserName().equals(nickname) ||
-                            !existingUser.getProfileImage().equals(profileImage) ||
-                            !existingUser.getId().equals(Long.parseLong(id))) {
-
-                        User updatedUser = new User(email, nickname, profileImage, provider, existingUser.getRefreshToken());
-                        userRepository.save(updatedUser);
-                    }
+                    // 기존 사용자 업데이트
+                    User updatedUser = new User(
+                            existingUser.getId(),
+                            finalEmail,
+                            finalNickname,
+                            finalProfileImage,
+                            provider,
+                            existingUser.getRefreshToken()
+                    );
+                    userRepository.save(updatedUser);
                 },
                 () -> {
-                    userRepository.save(new User(email, nickname, profileImage, provider, "YOUR_DEFAULT_REFRESH_TOKEN"));
+                    // 새로운 사용자 생성
+                    User newUser = new User(
+                            null,
+                            finalEmail,
+                            finalNickname,
+                            finalProfileImage,
+                            provider,
+                            "defaultToken"
+                    );
+                    userRepository.save(newUser);
                 }
         );
 
+        // 액세스 토큰 및 리프레시 토큰 생성
+        String accessToken = jwtTokenProvider.createAccessToken(email);
+        String refreshToken = jwtTokenProvider.createRefreshToken(email);
 
+        // Redis에 토큰 저장
+        jwtTokenProvider.storeToken("accessToken:" + email, accessToken, 30 * 60 * 1000L); // 30분
+        jwtTokenProvider.storeToken("refreshToken:" + email, refreshToken, 7 * 24 * 60 * 60 * 1000L); // 1주일
 
-        // 모델에 사용자 정보 추가
-        model.addAttribute("nickname", nickname);
-        model.addAttribute("profileImage", profileImage);
-        model.addAttribute("email", email);
-
-        return "hello";
+        // JWT 액세스 토큰을 리디렉션 URL에 포함하여 반환
+        return new RedirectView("/profile?token=" + accessToken);
     }
 }
+
+

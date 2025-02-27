@@ -11,6 +11,7 @@
  * ========================================================
  * 국경민      2.25        구글 및 카카오 통합 OAuth 2.0 언링크 컨트롤러 구현
  * 국경민      2.26         refreshToken 필드 추가
+ * 국경민      2.27        Redis를 사용한 토큰 관리
  * ========================================================
  */
 
@@ -18,6 +19,7 @@ package nadeuli.controller;
 
 import nadeuli.service.OAuthUserService;
 import nadeuli.service.OAuthUnlinkService;
+import nadeuli.util.JwtTokenProvider;
 import nadeuli.entity.User;
 import nadeuli.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class OAuthUnlinkController {
 
     private final OAuthUserService oAuthUserService;
     private final OAuthUnlinkService oAuthUnlinkService;
+    private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
 
     @DeleteMapping("/admin/unlink/{email}")
@@ -49,6 +52,10 @@ public class OAuthUnlinkController {
             boolean isUnlinked = oAuthUnlinkService.unlinkUser(userId, provider, refreshToken);
 
             if (isUnlinked) {
+                // Redis에서 토큰 삭제
+                jwtTokenProvider.deleteToken("accessToken:" + email);
+                jwtTokenProvider.deleteToken("refreshToken:" + email);
+
                 oAuthUserService.deleteUserByEmail(email);
                 return ResponseEntity.ok("정상적으로 서비스 연결 해제 및 탈퇴 처리되었습니다.\n 사용자: " + email);
             } else {
