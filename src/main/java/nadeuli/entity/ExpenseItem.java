@@ -74,4 +74,14 @@ public class ExpenseItem extends BaseTimeEntity {
         return new ExpenseItem(null, ebid, ieid, payer, content, expense);
     }
 
+    public void updateExpense(Long expense) {
+        this.expense = expense;
+    }
+    public void updateContent(String content) {
+        this.content = content;
+    }
+    public void updatePayer(Traveler payer) {
+        this.payer = payer;
+    }
+
 }

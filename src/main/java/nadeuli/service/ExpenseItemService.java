@@ -14,8 +14,10 @@
  */
 package nadeuli.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseItemDTO;
+import nadeuli.dto.ExpenseItemUpdateRequest;
 import nadeuli.dto.TravelerDTO;
 import nadeuli.entity.ExpenseBook;
 import nadeuli.entity.ExpenseItem;
@@ -26,6 +28,10 @@ import nadeuli.repository.ExpenseItemRepository;
 import nadeuli.repository.ItineraryEventRepository;
 import nadeuli.repository.TravelerRepository;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +42,7 @@ public class ExpenseItemService {
     private final TravelerRepository travelerRepository;
 
     // 지출 내역 추가
+    @Transactional
     public void addExpense(ExpenseItemDTO expenseItemDto) {
         Long ebid = expenseItemDto.getExpenseBookId();
         TravelerDTO payerDto = expenseItemDto.getTravelerDTO();
@@ -53,4 +60,46 @@ public class ExpenseItemService {
         expenseItemRepository.save(expensItem);
     }
 
+
+    // 지출 내역 조회
+    @Transactional
+    public List<ExpenseItemDTO> getAll(Long itineraryEventId) {
+        List<ExpenseItem> expenseItems = expenseItemRepository.findAllByIeid(itineraryEventId);
+        List<ExpenseItemDTO> expenseItemDtos = expenseItems.stream()
+                                                    .map(ExpenseItemDTO::from)
+                                                    .collect(Collectors.toList());
+        return expenseItemDtos;
+    }
+
+    // 지출 내역 수정
+    @Transactional
+    public ExpenseItemDTO updateExpenseItem(Long expenseItemId, ExpenseItemUpdateRequest expenseItemUpdateRequest) {
+        ExpenseItem expenseItem = expenseItemRepository.findById(expenseItemId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ExpenseItem이 존재하지 않습니다"));
+
+        if (expenseItemUpdateRequest.getExpense() != null) {
+            Long expense = Long.valueOf(expenseItemUpdateRequest.getExpense());
+            expenseItem.updateExpense(expense);
+        }
+        if (expenseItemUpdateRequest.getContent() != null) {
+            String content = expenseItemUpdateRequest.getContent();
+            expenseItem.updateContent(content);
+        }
+        if (expenseItemUpdateRequest.getPayer() != null) {
+            String payerName = expenseItemUpdateRequest.getPayer();
+            Traveler payer = travelerRepository.findByTravelerName(payerName)
+                    .orElseThrow(() -> new EntityNotFoundException("해당 Traveler가 존재하지 않습니다"));
+            expenseItem.updatePayer(payer);
+        }
+
+        return ExpenseItemDTO.from(expenseItem);
+
+    }
+
+    // 지출 내역 삭제
+    @Transactional
+    public void deleteExpenseItem(Long expenseItemId) {
+        expenseItemRepository.deleteById(expenseItemId);
+
+    }
 }
