@@ -18,28 +18,32 @@ package nadeuli.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.dto.ItineraryDTO;
+import nadeuli.dto.ItineraryPerDayDTO;
 import nadeuli.dto.PlaceDTO;
 import nadeuli.entity.ItineraryEvent;
+import nadeuli.entity.ItineraryPerDay;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItineraryEventSimpleDTO {
+public class ItineraryPerDaySimpleDTO {
     private Long id;
-    private PlaceDTO placeDTO;
-    private int startMinuteSinceStartDay;
-    private int endMinuteSinceStartDay;
-    private int movingMinuteFromPrevPlace;
+    private int dayCount;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Integer dayOfWeek;
 
-    public static ItineraryEventSimpleDTO from(ItineraryEvent event) {
-        return new ItineraryEventSimpleDTO(
-                event.getId(),
-                PlaceDTO.from(event.getPlace()),
-                event.getStartMinuteSinceStartDay(),
-                event.getEndMinuteSinceStartDay(),
-                event.getMovingMinuteFromPrevPlace()
+    // entity -> dto
+    public static ItineraryPerDaySimpleDTO from(ItineraryPerDay itineraryPerDay) {
+        return new ItineraryPerDaySimpleDTO(
+                itineraryPerDay.getId(),
+                itineraryPerDay.getDayCount(),
+                itineraryPerDay.getStartTime(),
+                itineraryPerDay.getEndTime(),
+                itineraryPerDay.getDayOfWeek()
         );
     }
 }

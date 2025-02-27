@@ -25,5 +25,6 @@ import java.util.List;
 @NoArgsConstructor
 public class ItineraryTotalResponseDTO {
     private ItineraryResponseDTO itinerary;
+    private List<ItineraryPerDaySimpleDTO> itineraryPerDay;
     private List<ItineraryEventSimpleDTO> itineraryEvents;
 }
