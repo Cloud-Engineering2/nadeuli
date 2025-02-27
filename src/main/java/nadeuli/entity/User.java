@@ -9,7 +9,8 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     생성자 + static factory method 추가 // 컨버터 추가
- *
+ * 이홍비    2025.02.25     컨버터 위치 이동 => import 수정
+ * 이홍비    2025.02.25     content, imageURL 저장 관련 함수 추가
  * ========================================================
  */
 
@@ -20,7 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.constant.UserRole;
-import nadeuli.util.UserRoleAttributeConverter;
+import nadeuli.common.util.UserRoleAttributeConverter;
 
 @Getter
 @Entity
