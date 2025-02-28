@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="/css/journal.css">
   <title>기행문 보기</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
 </head>
 <body>
 
@@ -66,6 +65,18 @@
     }
   });
 
+  try {
+    String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+    String s3Key;
+    if (kind == PhotoType.PROFILE) {
+      s3Key = PROFILE_DIR_NAME + "/" + fileName;
+    }
+    else if (kind == PhotoType.JOURNAL) {
+      s3Key = JOURNAL_DIR_NAME + "/" + fileName;
+    }
+    else {
+      s3Key = ETC_DIR_NAME + "/" + fileName;
+    }
   function getJournalContent() {
     // Simulate getting the journal content
     // Return the content if available, otherwise return null
