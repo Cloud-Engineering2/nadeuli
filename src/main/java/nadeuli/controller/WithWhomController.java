@@ -62,6 +62,6 @@ public class WithWhomController {
 
         List<WithWhomDTO> withWhoms = withWhomService.listWitWhoms(expenseItemId);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(withWhoms);
     }
 }
