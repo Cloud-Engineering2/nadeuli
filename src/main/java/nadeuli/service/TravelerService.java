@@ -62,8 +62,20 @@ public class TravelerService {
     // 이름으로 조회
     public TravelerDTO get(String travelerName) {
         Traveler traveler = travelerRepository.findByTravelerName(travelerName)
-                .orElseThrow(() -> new IllegalArgumentException("해당 Traveler 존재하지 않습니다"));
+                .orElseThrow(() -> new IllegalArgumentException("해당 Traveler가 존재하지 않습니다"));
         return TravelerDTO.from(traveler);
+    }
+
+    // 일정에 있는 Traveler 조회
+    public List<TravelerDTO> getIds(Long itineraryId, List<String> withWhomNames) {
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
+
+        List<Traveler> travelers = travelerRepository.findByIidAndTravelerNameIn(itinerary, withWhomNames);
+
+        return travelers.stream()
+                .map(TravelerDTO::from)
+                .collect(Collectors.toList());
     }
 
 
@@ -74,8 +86,7 @@ public class TravelerService {
         Traveler deletion = travelers.stream()
                                         .filter(traveler -> traveler.getTravelerName().equals(travelerName))
                                         .findFirst()
-                                        .orElseThrow(() -> new EntityNotFoundException("해당 Traveler 존재하지 않습니다"));
-
+                                        .orElseThrow(() -> new EntityNotFoundException("해당 Traveler가 존재하지 않습니다"));
         // 삭제 수행
         travelerRepository.delete(deletion);
 

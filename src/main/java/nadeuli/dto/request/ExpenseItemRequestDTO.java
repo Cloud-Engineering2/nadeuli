@@ -1,4 +1,4 @@
-/* ExpenseItemRequest.java
+/* ExpenseItemRequestDTO.java
  * 작성자 : 고민정
  * 최초 작성 날짜 : 2025-02-26
  *
@@ -12,7 +12,7 @@
  * ========================================================
  */
 
-package nadeuli.dto;
+package nadeuli.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,7 +22,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
-public class ExpenseItemRequest {
+public class ExpenseItemRequestDTO {
     private String content;
 
     @NotNull

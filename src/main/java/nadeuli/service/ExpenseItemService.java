@@ -17,7 +17,7 @@ package nadeuli.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseItemDTO;
-import nadeuli.dto.ExpenseItemUpdateRequest;
+import nadeuli.dto.request.ExpenseItemUpdateRequestDTO;
 import nadeuli.dto.TravelerDTO;
 import nadeuli.entity.ExpenseBook;
 import nadeuli.entity.ExpenseItem;
@@ -73,20 +73,20 @@ public class ExpenseItemService {
 
     // 지출 내역 수정
     @Transactional
-    public ExpenseItemDTO updateExpenseItem(Long expenseItemId, ExpenseItemUpdateRequest expenseItemUpdateRequest) {
+    public ExpenseItemDTO updateExpenseItem(Long expenseItemId, ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
         ExpenseItem expenseItem = expenseItemRepository.findById(expenseItemId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 ExpenseItem이 존재하지 않습니다"));
 
-        if (expenseItemUpdateRequest.getExpense() != null) {
-            Long expense = Long.valueOf(expenseItemUpdateRequest.getExpense());
+        if (expenseItemUpdateRequestDTO.getExpense() != null) {
+            Long expense = Long.valueOf(expenseItemUpdateRequestDTO.getExpense());
             expenseItem.updateExpense(expense);
         }
-        if (expenseItemUpdateRequest.getContent() != null) {
-            String content = expenseItemUpdateRequest.getContent();
+        if (expenseItemUpdateRequestDTO.getContent() != null) {
+            String content = expenseItemUpdateRequestDTO.getContent();
             expenseItem.updateContent(content);
         }
-        if (expenseItemUpdateRequest.getPayer() != null) {
-            String payerName = expenseItemUpdateRequest.getPayer();
+        if (expenseItemUpdateRequestDTO.getPayer() != null) {
+            String payerName = expenseItemUpdateRequestDTO.getPayer();
             Traveler payer = travelerRepository.findByTravelerName(payerName)
                     .orElseThrow(() -> new EntityNotFoundException("해당 Traveler가 존재하지 않습니다"));
             expenseItem.updatePayer(payer);

@@ -16,7 +16,7 @@ package nadeuli.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import nadeuli.dto.BudgetRequest;
+import nadeuli.dto.request.BudgetRequestDTO;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.service.ExpenseBookService;
 import org.springframework.http.ResponseEntity;
@@ -32,10 +32,10 @@ public class ExpenseBookController {
 
     // 예산 설정  /api/itineraries/{iid}/budget
     @PutMapping("/{iid}/budget")
-    public ResponseEntity<ExpenseBookDTO> planBudget(@RequestBody @Valid BudgetRequest budgetRequest,
+    public ResponseEntity<ExpenseBookDTO> updateBudget(@RequestBody @Valid BudgetRequestDTO budgetRequestDTO,
                                              @PathVariable("iid") Long iid,
                                              BindingResult bindingResult) {
-        Long budget = budgetRequest.getTotalBudget();
+        Long budget = budgetRequestDTO.getTotalBudget();
         ExpenseBookDTO expenseBookDto = expenseBookService.setBudget(iid, budget);
 
         return ResponseEntity.ok(expenseBookDto);

@@ -10,7 +10,8 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     최초 작성
- * 고민정    2025;02.25     필드 수정
+ * 고민정    2025.02.25     필드 수정
+ * 고민정    2025.02.28     from 메서드 수정
  *
  * ========================================================
  */
@@ -34,15 +35,15 @@ public class WithWhomDTO {
 
 
     // static factory method
-    public static WithWhomDTO of (Integer id, Long emid, TravelerDTO tid) {
-        return new WithWhomDTO(id, emid, tid);
+    public static WithWhomDTO of (Integer id, Long emid, TravelerDTO travelerDTO) {
+        return new WithWhomDTO(id, emid, travelerDTO);
     }
 
-    public static WithWhomDTO of (Long emid, TravelerDTO tid) {
-        return new WithWhomDTO(null, emid, tid);
+    public static WithWhomDTO of (Long emid, TravelerDTO travelerDTO) {
+        return new WithWhomDTO(null, emid, travelerDTO);
     }
 
-    // entity -> dto
+
     public static WithWhomDTO from(WithWhom whom) {
         return new WithWhomDTO(
                 whom.getId(),
@@ -50,6 +51,8 @@ public class WithWhomDTO {
                 TravelerDTO.from(whom.getTid())
         );
     }
+
+
 
     // dto => entity
     public WithWhom toEntity(ExpenseItem expenseItem, Traveler traveler) {

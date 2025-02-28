@@ -1,6 +1,6 @@
-/* BudgetRequest.java
+/* TravelerRequestDTO.java
  * 작성자 : 고민정
- * 최초 작성 날짜 : 2025-02-21
+ * 최초 작성 날짜 : 2025-02-26
  *
  * ========================================================
  * 프로그램 수정 / 보완 이력
@@ -12,9 +12,9 @@
  * ========================================================
  */
 
-package nadeuli.dto;
+package nadeuli.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 
@@ -22,9 +22,9 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
-public class BudgetRequest {
-    @NotNull(message = "남은 예산 : ")
-    private Long totalBudget;
+public class TravelerRequestDTO {
+    @NotBlank(message = "이름을 입력하세요")
+    private String travelerName;
 }
 
 

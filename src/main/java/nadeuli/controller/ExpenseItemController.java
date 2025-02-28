@@ -8,15 +8,16 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 고민정    2025.02.26   Controller 생성
- * 고민정    2025.02.27   지출 작성 메서드 추가
+ * 고민정    2025.02.27   지출 내역 CRUD 추가
  * ========================================================
  */
 package nadeuli.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseItemDTO;
-import nadeuli.dto.ExpenseItemRequest;
-import nadeuli.dto.ExpenseItemUpdateRequest;
+import nadeuli.dto.request.ExpenseItemRequestDTO;
+import nadeuli.dto.request.ExpenseItemUpdateRequestDTO;
 import nadeuli.dto.TravelerDTO;
 import nadeuli.service.ExpenseBookService;
 import nadeuli.service.ExpenseItemService;
@@ -38,10 +39,10 @@ public class ExpenseItemController {
 
     // 지출 내역 추가
     @PostMapping("/{iid}/events/{ieid}/expense")
-    public ResponseEntity<Void> createExpense(@PathVariable Integer iid, @PathVariable Integer ieid, @RequestBody ExpenseItemRequest expenseItemRequest) {
-        String content = expenseItemRequest.getContent();
-        String payerName = expenseItemRequest.getPayer();
-        Long expense = Long.valueOf(expenseItemRequest.getExpense());
+    public ResponseEntity<Void> createExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @RequestBody @Valid ExpenseItemRequestDTO expenseItemRequestDTO) {
+        String content = expenseItemRequestDTO.getContent();
+        String payerName = expenseItemRequestDTO.getPayer();
+        Long expense = Long.valueOf(expenseItemRequestDTO.getExpense());
 
         // PathVariable
         Long itineraryId = Long.valueOf(iid);
@@ -69,7 +70,7 @@ public class ExpenseItemController {
 
     // 지출 내역 조회 (ItineraryEvent 내 모든 지출 내역)
     @GetMapping("/{iid}/events/{ieid}/expense")
-    public ResponseEntity<List<ExpenseItemDTO>> getExpense(@PathVariable Integer ieid) {
+    public ResponseEntity<List<ExpenseItemDTO>> getExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid) {
         // PathVariable
         Long itineraryEventId = Long.valueOf(ieid);
 
@@ -80,11 +81,11 @@ public class ExpenseItemController {
 
     // 지출 내역 수정
     @PutMapping("/{iid}/events/{ieid}/expense/{eiid}")
-    public ResponseEntity<ExpenseItemDTO> updateExpense(@PathVariable Integer eiid, @RequestBody ExpenseItemUpdateRequest expenseItemUpdateRequest) {
+    public ResponseEntity<ExpenseItemDTO> updateExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("eiid") Integer eiid, @RequestBody @Valid ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
         // PathVariable
         Long expenseItemId = Long.valueOf(eiid);
 
-        ExpenseItemDTO expenseItemDTO = expenseItemService.updateExpenseItem(expenseItemId, expenseItemUpdateRequest);
+        ExpenseItemDTO expenseItemDTO = expenseItemService.updateExpenseItem(expenseItemId, expenseItemUpdateRequestDTO);
 
         return ResponseEntity.ok(expenseItemDTO);
     }

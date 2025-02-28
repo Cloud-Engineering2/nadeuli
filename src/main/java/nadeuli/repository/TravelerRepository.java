@@ -27,4 +27,6 @@ public interface TravelerRepository extends JpaRepository<Traveler, Integer> {
     Optional<Traveler> findByTravelerName(String travelerName);
 
     List<Traveler> findAllByIid(Long itineraryId);
+
+    List<Traveler> findByIidAndTravelerNameIn(Itinerary itinerary, List<String> withWhomNames);
 }

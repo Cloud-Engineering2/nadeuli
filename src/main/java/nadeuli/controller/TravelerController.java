@@ -7,7 +7,8 @@
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- * 고민정    2025.02.26   Controller 생성
+ * 고민정    2025.02.26   Controller 생성, 여행자 추가/조회 메서드 추가
+ * 고민정    2025.02.27   여행자 삭제 메서드 추가
  *
  * ========================================================
  */
@@ -17,8 +18,8 @@ package nadeuli.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.TravelerDTO;
-import nadeuli.dto.TravelerRequest;
-import nadeuli.dto.TravelerResponse;
+import nadeuli.dto.request.TravelerRequestDTO;
+import nadeuli.dto.response.TravelerResponseDTO;
 import nadeuli.service.TravelerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -35,10 +36,10 @@ public class TravelerController {
 
     // 여행자 추가
     @PostMapping("/{iid}/traveler")
-    public ResponseEntity<Void> registerTraveler(@RequestBody @Valid TravelerRequest travelerRequest,
+    public ResponseEntity<Void> registerTraveler(@RequestBody @Valid TravelerRequestDTO travelerRequestDTO,
                                                 @PathVariable("iid") Long iid,
                                                 BindingResult bindingResult) {
-        String travelerName = travelerRequest.getTravelerName();
+        String travelerName = travelerRequestDTO.getTravelerName();
         TravelerDTO travelerDto = TravelerDTO.of(iid, travelerName);
         Integer tid = travelerService.addTraveler(travelerDto);
         return ResponseEntity.ok().build();
@@ -46,17 +47,17 @@ public class TravelerController {
 
     // 여행자들 조회
     @GetMapping("/{iid}/travelers")
-    public ResponseEntity<TravelerResponse> retrieveTravelers(@PathVariable("iid") Long iid) {
+    public ResponseEntity<TravelerResponseDTO> retrieveTravelers(@PathVariable("iid") Long iid) {
         List<TravelerDTO> travelers = travelerService.getTravelers(iid);
 
-        TravelerResponse response = TravelerResponse.toResponse(travelers);
+        TravelerResponseDTO response = TravelerResponseDTO.toResponse(travelers);
 
         return ResponseEntity.ok(response);
     }
 
     // 여행자 삭제
     @DeleteMapping("/{iid}/travelers/{travelerName}")
-    public ResponseEntity<List<TravelerDTO>> deleteTraveler(@PathVariable Integer iid, @PathVariable String travelerName) {
+    public ResponseEntity<List<TravelerDTO>> deleteTraveler(@PathVariable("iid") Integer iid, @PathVariable("travelerName") String travelerName) {
         Long itineraryId = Long.valueOf(iid);
         List<TravelerDTO> travelerDtos = travelerService.deleteTraveler(travelerName, itineraryId);
 
