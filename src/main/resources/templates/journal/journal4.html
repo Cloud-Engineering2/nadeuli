@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/journal.css">
+  <title>기행문 보기</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <div class="left-space">
+    <div class="header1">
+      <span id="date-time" th:text="${#temporals.format(journal.getModifiedAt(), 'yyyy-MM-dd HH:mm:ss')}">2025-2-26 13:30</span>
+      <div class="button-header1">
+        <button id="edit-btn" onclick="enableEditMode()">✏️</button>
+        <button id="delete-btn" onclick="confirmDelete()" th:unless="${journal.getContent() == null or journal.getContent().trim() == ''}">❌</button>
+      </div>
+    </div>
+    <hr class="divider">
+
+    <div class="content" id="content">
+<!--      <p id="content-text" th:if="${journal.getContent() == }">소중한 나들이 순간을 기록하세요</p>-->
+      <div th:if="${journal.getContent() == null or journal.getContent().trim() == ''}">
+          소중한 나들이 순간을 기록하세요
+      </div>
+      <div th:unless="${journal.getContent() == null or journal.getContent().trim() == ''}" th:text="${journal.getContent()}"></div>
+
+    </div>
+
+    <!-- 수정 모드 -->
+    <div id="edit-content-area" style="display: none;">
+      <textarea id="content-input" rows="5"></textarea>
+      <div class="button-group">
+        <button onclick="saveContent()">저장</button>
+        <button onclick="cancelEdit()">취소</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="right-space">
+    <div class="image-container" id="image-container" onclick="uploadPhoto()">
+      <span class="plus" id="plus-icon">+</span>
+      <img id="image-preview" src="" style="display: none;">
+      <button class="edit-button" id="edit-photo-btn" style="display: none;" onclick="modifyPhoto(event)">+</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const iid = 1;  // 실제 데이터 반영 필요
+  const ieid = 1;  // 실제 데이터 반영 필요
+  let originalContent = ""; // 원래 내용 저장용
+
+  document.addEventListener('DOMContentLoaded', function() {
+    axios.get(`/api/itineraries/${iid}/events/${ieid}/content`)
+            .then(response => {
+              const journalContent = response.data.content;
+              updateContentView(journalContent);
+            })
+            .catch(error => {
+              console.error("Error fetching content:", error);
+              updateContentView(null);
+            });
+
+    // 사진 데이터 가져오기
+    axios.get(`/api/itineraries/${iid}/events/${ieid}/photo`)
+            .then(response => {
+              const imageUrl = response.data.imageUrl;
+              updateImageView(imageUrl);
+            })
+            .catch(error => {
+              console.error("Error fetching photo:", error);
+              updateImageView(null);
+            });
+  });
+
+  function updateContentView(journalContent) {
+    const contentTextElement = document.getElementById('content-text');
+
+    if (journalContent && journalContent.trim() !== "") {
+      contentTextElement.innerText = journalContent;
+    } else {
+      contentTextElement.innerText = "소중한 나들이 순간을 기록하세요";
+    }
+  }
+
+  function enableEditMode() {
+    const contentElement = document.getElementById('content');
+    const editContentArea = document.getElementById('edit-content-area');
+    const contentTextElement = document.getElementById('content-text');
+    const contentInput = document.getElementById('content-input');
+
+    originalContent = contentTextElement.innerText;
+
+    contentInput.value = originalContent;
+    contentElement.style.display = 'none';
+    editContentArea.style.display = 'block';
+  }
+
+  function cancelEdit() {
+    const contentElement = document.getElementById('content');
+    const editContentArea = document.getElementById('edit-content-area');
+    const contentTextElement = document.getElementById('content-text');
+
+    contentTextElement.innerText = originalContent;
+    editContentArea.style.display = 'none';
+    contentElement.style.display = 'block';
+  }
+
+  function saveContent() {
+    const contentInput = document.getElementById('content-input');
+    const newContent = contentInput.value.trim();
+
+    if (newContent === originalContent) {
+      cancelEdit();
+      return;
+    }
+
+    axios.put(`/api/itineraries/${iid}/events/${ieid}/content`, { content: newContent })
+            .then(response => {
+              updateContentView(response.data.content);
+              document.getElementById('edit-content-area').style.display = 'none';
+              document.getElementById('content').style.display = 'block';
+            })
+            .catch(error => console.error("Error saving content:", error));
+  }
+
+  function confirmDelete() {
+    if (confirm("글을 삭제하시겠습니까?")) {
+      deleteContent();
+    }
+  }
+
+  function deleteContent() {
+    axios.delete(`/api/itineraries/${iid}/events/${ieid}/content`)
+            .then(response => {
+              updateContentView(null);
+            })
+            .catch(error => console.error("Error deleting content:", error));
+  }
+
+  function uploadPhoto() {
+    // 사진 업로드 로직 추가
+  }
+
+  function modifyPhoto(event) {
+    event.stopPropagation();
+    // 사진 수정/삭제 옵션 로직 추가
+  }
+
+  function updateImageView(imageUrl) {
+    const imagePreview = document.getElementById('image-preview');
+    const plusIcon = document.getElementById('plus-icon');
+    const editPhotoBtn = document.getElementById('edit-photo-btn');
+
+    if (imageUrl) {
+      imagePreview.src = imageUrl;
+      imagePreview.style.display = 'block';
+      plusIcon.style.display = 'none';
+      editPhotoBtn.style.display = 'block';
+    } else {
+      imagePreview.style.display = 'none';
+      plusIcon.style.display = 'block';
+      editPhotoBtn.style.display = 'none';
+    }
+  }
+</script>
+
+</body>
+</html>

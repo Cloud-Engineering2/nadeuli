@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/journal.css">
+  <title>기행문 보기</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <div class="left-space">
+    <div class="header">
+      <span id="date-time">2025-2-26 13:30</span>
+      <button id="edit-btn" onclick="enableEditMode()">✏️</button>
+      <button id="delete-btn" onclick="confirmDelete()">❌</button>
+    </div>
+    <hr class="divider">
+
+    <div class="content" id="content"></div>
+
+    <div id="edit-content-area" style="display: none;">
+      <textarea id="content-input" rows="5"></textarea>
+      <div class="button-group">
+        <button onclick="saveContent()">저장</button>
+        <button onclick="cancelEdit()">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-space">
+    <div class="image-container" id="image-container" onclick="uploadPhoto()">
+      <span class="plus" id="plus-icon">+</span>
+      <img id="image-preview" src="" style="display: none;">
+      <div id="photo-options" style="display: none;">
+        <button onclick="modifyPhoto(event)">사진 변경</button>
+        <button onclick="deletePhoto(event)">사진 삭제</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const iid = 1;
+  const ieid = 1;
+  let originalContent = "";
+
+  document.addEventListener('DOMContentLoaded', function() {
+    axios.get(`/api/itineraries/${iid}/events/${ieid}/journal`)
+            .then(response => {
+              const journal = response.data;
+              updateContentView(journal.content);
+              updatePhotoView(journal.imageUrl);
+            })
+            .catch(error => console.error("Error fetching journal:", error));
+  });
+
+  function updateContentView(content) {
+    const contentElement = document.getElementById('content');
+    contentElement.innerText = content && content.trim() !== "" ? content : "소중한 나들이 순간을 기록하세요.";
+  }
+
+  function enableEditMode() {
+    originalContent = document.getElementById('content').innerText;
+    document.getElementById('content-input').value = originalContent;
+    document.getElementById('content').style.display = 'none';
+    document.getElementById('edit-content-area').style.display = 'block';
+  }
+
+  function cancelEdit() {
+    document.getElementById('edit-content-area').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  }
+
+  function saveContent() {
+    const newContent = document.getElementById('content-input').value.trim();
+    if (newContent === originalContent) {
+      cancelEdit();
+      return;
+    }
+    axios.put(`/api/itineraries/${iid}/events/${ieid}/content`, { content: newContent })
+            .then(response => {
+              updateContentView(response.data.content);
+              cancelEdit();
+            })
+            .catch(error => console.error("Error saving content:", error));
+  }
+
+  function confirmDelete() {
+    if (confirm("글을 삭제하시겠습니까?")) {
+      axios.delete(`/api/itineraries/${iid}/events/${ieid}/content`)
+              .then(() => updateContentView(null))
+              .catch(error => console.error("Error deleting content:", error));
+    }
+  }
+
+  function uploadPhoto() {
+    // 파일 업로드 로직 추가
+  }
+
+  function updatePhotoView(imageUrl) {
+    const imgElement = document.getElementById('image-preview');
+    if (imageUrl) {
+      imgElement.src = imageUrl;
+      imgElement.style.display = 'block';
+      document.getElementById('plus-icon').style.display = 'none';
+    } else {
+      imgElement.style.display = 'none';
+      document.getElementById('plus-icon').style.display = 'block';
+    }
+  }
+
+  function modifyPhoto(event) {
+    event.stopPropagation();
+    // 사진 수정 로직 추가
+  }
+
+  function deletePhoto(event) {
+    event.stopPropagation();
+    if (confirm("사진을 삭제하시겠습니까?")) {
+      axios.delete(`/api/itineraries/${iid}/events/${ieid}/photo`)
+              .then(() => updatePhotoView(null))
+              .catch(error => console.error("Error deleting photo:", error));
+    }
+  }
+</script>
+
+</body>
+</html>
