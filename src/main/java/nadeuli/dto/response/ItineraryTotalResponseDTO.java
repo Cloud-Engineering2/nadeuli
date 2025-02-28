@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 박한철    2025.02.25     최초 작성
- *
+ * 박한철    2025.02.27     itineraryPerDay -> itineraryPerDays 변수명 수정
  * ========================================================
  */
 
@@ -25,6 +25,6 @@ import java.util.List;
 @NoArgsConstructor
 public class ItineraryTotalResponseDTO {
     private ItineraryResponseDTO itinerary;
-    private List<ItineraryPerDaySimpleDTO> itineraryPerDay;
+    private List<ItineraryPerDaySimpleDTO> itineraryPerDays;
     private List<ItineraryEventSimpleDTO> itineraryEvents;
 }

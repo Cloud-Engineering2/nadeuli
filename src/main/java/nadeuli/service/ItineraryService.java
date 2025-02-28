@@ -10,24 +10,26 @@
  * ========================================================
  * 박한철    2025.02.26     페이징 방식의 내 일정리스트 조회로 변경
  * 박한철    2025.02.26     DB 구조 변경으로 인한 getItineraryTotal 수정 ,  일정 생성 파트 주석처리
+ * 박한철    2025.02.26     일정 생성 파트 수정 완료
  * ========================================================
  */
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
-import nadeuli.dto.response.ItineraryEventSimpleDTO;
-import nadeuli.dto.response.ItineraryPerDaySimpleDTO;
-import nadeuli.dto.response.ItineraryResponseDTO;
-import nadeuli.dto.response.ItineraryTotalResponseDTO;
+import nadeuli.dto.ItineraryPerDayDTO;
+import nadeuli.dto.request.ItineraryCreateRequestDTO;
+import nadeuli.dto.response.*;
 import nadeuli.entity.*;
 import nadeuli.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -43,21 +45,32 @@ public class ItineraryService {
     //  CREATE: 일정 생성
     // ===========================
 
-//    public ItineraryDTO createItinerary(String itineraryName, LocalDateTime startDate, LocalDateTime endDate, Long ownerId) {
-//        // 사용자 확인
-//        User owner = userRepository.findById(ownerId)
-//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + ownerId));
-//
-//        // 일정 생성
-//        Itinerary itinerary = Itinerary.of(itineraryName, startDate, endDate);
-//        itinerary = itineraryRepository.save(itinerary);
-//
-//        // 소유자 자동 등록
-//        ItineraryCollaborator collaborator = ItineraryCollaborator.of(owner, itinerary);
-//        itineraryCollaboratorRepository.save(collaborator);
-//
-//        return ItineraryDTO.from(itinerary);
-//    }
+    @Transactional
+    public ItineraryCreateResponseDTO createItinerary(ItineraryCreateRequestDTO requestDTO, Long ownerId) {
+        // 사용자 확인
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + ownerId));
+
+        // 일정 생성
+        ItineraryDTO itineraryDTO = requestDTO.getItinerary();
+        Itinerary itineraryToSave = itineraryDTO.toEntity();
+        Itinerary savedItinerary = itineraryRepository.save(itineraryToSave); // 새 변수로 저장
+
+        // 하루 일정 생성 및 저장
+        List<ItineraryPerDay> itineraryPerDayList = requestDTO.getItineraryPerDays().stream()
+                .map(itineraryPerDayDTO -> itineraryPerDayDTO.toEntity(savedItinerary))
+                .collect(Collectors.toList());
+
+        itineraryPerDayRepository.saveAll(itineraryPerDayList);
+
+        // 소유자 자동 등록
+        ItineraryCollaborator collaborator = ItineraryCollaborator.of(owner, savedItinerary);
+        itineraryCollaboratorRepository.save(collaborator);
+
+        // ResponseDTO 변환 후 반환
+        return ItineraryCreateResponseDTO.from(savedItinerary, itineraryPerDayList);
+    }
+
 
     // ===========================
     //  READ: 내 일정 리스트 조회
