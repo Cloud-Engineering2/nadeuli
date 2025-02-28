@@ -9,7 +9,8 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 박한철   2025.02.25   Repository 생성
- * 고민정   2025.02.26   iid로 조회 메서드 추가
+ * 고민정   2025.02.26   iid, travelerName으로 조회 메서드 추가
+ *
  * ========================================================
  */
 package nadeuli.repository;
@@ -17,6 +18,8 @@ package nadeuli.repository;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.Traveler;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,4 +32,7 @@ public interface TravelerRepository extends JpaRepository<Traveler, Integer> {
     List<Traveler> findAllByIid(Itinerary itinerary);
 
     List<Traveler> findByIidAndTravelerNameIn(Itinerary itinerary, List<String> withWhomNames);
+
+    @Query("SELECT t FROM Traveler t WHERE t.iid.id = :iid AND t.travelerName = :travelerName")
+    Optional<Traveler> findTravelerByItineraryIdAndTravelerName(@Param("iid") Long iid, @Param("travelerName") String travelerName);
 }

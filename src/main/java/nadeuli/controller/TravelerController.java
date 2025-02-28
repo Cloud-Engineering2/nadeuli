@@ -20,11 +20,8 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.TravelerDTO;
 import nadeuli.dto.request.TravelerRequestDTO;
 import nadeuli.dto.response.TravelerResponseDTO;
-import nadeuli.repository.ItineraryCollaboratorRepository;
-import nadeuli.repository.ItineraryRepository;
 import nadeuli.service.TravelerService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,14 +32,11 @@ import java.util.List;
 public class TravelerController {
 
     private final TravelerService travelerService;
-    private final ItineraryRepository itineraryRepository;
-    private final ItineraryCollaboratorRepository itineraryCollaboratorRepository;
 
     // 여행자 추가
     @PostMapping("/{iid}/traveler")
     public ResponseEntity<Void> registerTraveler(@RequestBody @Valid TravelerRequestDTO travelerRequestDTO,
-                                                @PathVariable("iid") Integer iid,
-                                                BindingResult bindingResult) {
+                                                @PathVariable("iid") Integer iid) {
         Long itineraryId = Long.valueOf(iid);
 
         String travelerName = travelerRequestDTO.getTravelerName();
@@ -56,7 +50,7 @@ public class TravelerController {
     public ResponseEntity<TravelerResponseDTO> retrieveTravelers(@PathVariable("iid") Integer iid) {
 
         Long itineraryId = Long.valueOf(iid);
-        List<TravelerDTO> travelers = travelerService.getTravelers(itineraryId);
+        List<TravelerDTO> travelers = travelerService.listTravelers(itineraryId);
 
         TravelerResponseDTO response = TravelerResponseDTO.toResponse(travelers);
 
@@ -64,7 +58,7 @@ public class TravelerController {
     }
 
     // 여행자 삭제
-    @DeleteMapping("/{iid}/travelers/{travelerName}")
+    @DeleteMapping("/{iid}/traveler/{travelerName}")
     public ResponseEntity<List<TravelerDTO>> deleteTraveler(@PathVariable("iid") Integer iid, @PathVariable("travelerName") String travelerName) {
         Long itineraryId = Long.valueOf(iid);
         List<TravelerDTO> travelerDtos = travelerService.deleteTraveler(travelerName, itineraryId);

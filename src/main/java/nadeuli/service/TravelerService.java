@@ -9,7 +9,7 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 박한철   2025.02.25   Service 생성
- * 고민정   2025.02.26   addTraveler 메서드 추가
+ * 고민정   2025.02.26   Traveler CRUD 메서드 추가
  *
  * ========================================================
  */
@@ -47,7 +47,7 @@ public class TravelerService {
 
     // 여행자들 조회
     @Transactional
-    public List<TravelerDTO> getTravelers(Long itineraryId) {
+    public List<TravelerDTO> listTravelers(Long itineraryId) {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
 
@@ -59,8 +59,8 @@ public class TravelerService {
 
     // 이름으로 조회
     @Transactional
-    public TravelerDTO get(String travelerName) {
-        Traveler traveler = travelerRepository.findByTravelerName(travelerName)
+    public TravelerDTO get(Long itineraryId, String travelerName) {
+        Traveler traveler = travelerRepository.findTravelerByItineraryIdAndTravelerName(itineraryId, travelerName)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Traveler가 존재하지 않습니다"));
         return TravelerDTO.from(traveler);
     }
@@ -78,6 +78,7 @@ public class TravelerService {
                 .collect(Collectors.toList());
     }
 
+    // Traveler 삭제
     @Transactional
     public List<TravelerDTO> deleteTraveler(String travelerName, Long itineraryId) {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)

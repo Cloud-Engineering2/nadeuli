@@ -14,7 +14,6 @@
 
 package nadeuli.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -28,7 +27,7 @@ public class ExpenseItemRequestDTO {
     @NotNull
     private String payer;
 
-    @NotBlank
+    @NotNull
     private Integer expense;
 
 }

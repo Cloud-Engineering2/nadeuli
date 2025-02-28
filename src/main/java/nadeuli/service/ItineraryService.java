@@ -41,7 +41,6 @@ public class ItineraryService {
     private final ItineraryPerDayRepository itineraryPerDayRepository;
     private final ItineraryEventRepository itineraryEventRepository;
     private final TravelerService travelerService;
-    private final TravelerRepository travelerRepository;
 
     // ===========================
     //  CREATE: 일정 생성

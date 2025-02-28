@@ -8,7 +8,7 @@
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
+ * 고민정    2025.02.27   지출 내역 crud 메서드 추가
  *
  * ========================================================
  */
@@ -75,7 +75,7 @@ public class ExpenseItemService {
 
     // 지출 내역 수정
     @Transactional
-    public ExpenseItemDTO updateExpenseItem(Long expenseItemId, ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
+    public ExpenseItemDTO updateExpenseItem(Long itineraryId, Long expenseItemId, ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
         ExpenseItem expenseItem = expenseItemRepository.findById(expenseItemId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 ExpenseItem이 존재하지 않습니다"));
 
@@ -89,7 +89,7 @@ public class ExpenseItemService {
         }
         if (expenseItemUpdateRequestDTO.getPayer() != null) {
             String payerName = expenseItemUpdateRequestDTO.getPayer();
-            Traveler payer = travelerRepository.findByTravelerName(payerName)
+            Traveler payer = travelerRepository.findTravelerByItineraryIdAndTravelerName(itineraryId, payerName)
                     .orElseThrow(() -> new EntityNotFoundException("해당 Traveler가 존재하지 않습니다"));
             expenseItem.updatePayer(payer);
         }

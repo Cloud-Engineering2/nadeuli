@@ -14,7 +14,6 @@
  */
 package nadeuli.repository;
 
-import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -25,5 +24,4 @@ public interface ItineraryCollaboratorRepository extends JpaRepository<Itinerary
 
     Optional<ItineraryCollaborator> findByItinerary_IdAndUser_Id(Long itineraryId, Long userId);
 
-    Optional<ItineraryCollaborator> findByItinerary(Itinerary itinerary);
 }

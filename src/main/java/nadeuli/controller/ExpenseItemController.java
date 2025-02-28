@@ -7,8 +7,8 @@
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- * 고민정    2025.02.26   Controller 생성
  * 고민정    2025.02.27   지출 내역 CRUD 추가
+ *
  * ========================================================
  */
 package nadeuli.controller;
@@ -47,7 +47,7 @@ public class ExpenseItemController {
         Long itineraryEventId = Long.valueOf(ieid);
 
         // Payer
-        TravelerDTO payer = travelerService.get(payerName);
+        TravelerDTO payer = travelerService.get(itineraryId, payerName);
 
         // ExpenseBook
         Long expenseBookId = expenseBookService.get(itineraryId);
@@ -81,9 +81,10 @@ public class ExpenseItemController {
     @PutMapping("/{iid}/events/{ieid}/expense/{eiid}")
     public ResponseEntity<ExpenseItemDTO> updateExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("eiid") Integer eiid, @RequestBody @Valid ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
         // PathVariable
+        Long itineraryId = Long.valueOf(iid);
         Long expenseItemId = Long.valueOf(eiid);
 
-        ExpenseItemDTO expenseItemDTO = expenseItemService.updateExpenseItem(expenseItemId, expenseItemUpdateRequestDTO);
+        ExpenseItemDTO expenseItemDTO = expenseItemService.updateExpenseItem(itineraryId, expenseItemId, expenseItemUpdateRequestDTO);
 
         return ResponseEntity.ok(expenseItemDTO);
     }
