@@ -16,12 +16,11 @@ package nadeuli.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseItemDTO;
+import nadeuli.dto.TravelerDTO;
 import nadeuli.dto.request.ExpenseItemRequestDTO;
 import nadeuli.dto.request.ExpenseItemUpdateRequestDTO;
-import nadeuli.dto.TravelerDTO;
 import nadeuli.service.ExpenseBookService;
 import nadeuli.service.ExpenseItemService;
-import nadeuli.service.ItineraryService;
 import nadeuli.service.TravelerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +34,6 @@ public class ExpenseItemController {
     private final ExpenseItemService expenseItemService;
     private final TravelerService travelerService;
     private final ExpenseBookService expenseBookService;
-    private final ItineraryService itineraryService;
 
     // 지출 내역 추가
     @PostMapping("/{iid}/events/{ieid}/expense")

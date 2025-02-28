@@ -15,10 +15,11 @@
 package nadeuli.repository;
 
 import nadeuli.entity.ExpenseItem;
+import nadeuli.entity.ItineraryEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
 public interface ExpenseItemRepository extends JpaRepository<ExpenseItem, Long> {
-    List<ExpenseItem> findAllByIeid(Long itineraryEventId);
+    List<ExpenseItem> findAllByIeid(ItineraryEvent itineraryEvent);
 }

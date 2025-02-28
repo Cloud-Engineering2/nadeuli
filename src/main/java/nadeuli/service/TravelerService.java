@@ -80,7 +80,9 @@ public class TravelerService {
 
 
     public List<TravelerDTO> deleteTraveler(String travelerName, Long itineraryId) {
-        List<Traveler> travelers = travelerRepository.findAllByIid(itineraryId);
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 Itinerary가 존재하지 않습니다"));
+        List<Traveler> travelers = travelerRepository.findAllByIid(itinerary);
 
         // 삭제할 대상 필터링
         Traveler deletion = travelers.stream()
@@ -91,7 +93,7 @@ public class TravelerService {
         travelerRepository.delete(deletion);
 
         // 남아 있는 여행자 리스트 변환 후 반환
-        List<Traveler> remainedTravelers = travelerRepository.findAllByIid(itineraryId);
+        List<Traveler> remainedTravelers = travelerRepository.findAllByIid(itinerary);
         return remainedTravelers.stream()
                                     .map(TravelerDTO::from)
                                     .collect(Collectors.toList());

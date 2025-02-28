@@ -17,7 +17,6 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.TravelerDTO;
 import nadeuli.dto.WithWhomDTO;
-import nadeuli.service.ExpenseItemService;
 import nadeuli.service.TravelerService;
 import nadeuli.service.WithWhomService;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +31,6 @@ public class WithWhomController {
 
     private final WithWhomService withWhomService;
     private final TravelerService travelerService;
-    private final ExpenseItemService expenseItemService;
 
     // WithWhom 추가
     @PostMapping("/{iid}/expense/{emid}/withWhom")

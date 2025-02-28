@@ -14,11 +14,12 @@
  */
 package nadeuli.repository;
 
+import nadeuli.entity.ExpenseItem;
 import nadeuli.entity.WithWhom;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
 public interface WithWhomRepository extends JpaRepository<WithWhom, Integer> {
-    List<WithWhom> findAllByEmid(Long expenseItemId);
+    List<WithWhom> findAllByEmid(ExpenseItem expenseItem);
 }

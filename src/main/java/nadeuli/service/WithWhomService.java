@@ -59,7 +59,9 @@ public class WithWhomService {
     }
 
     public List<WithWhomDTO> listWitWhoms(Long expenseItemId) {
-        List<WithWhom> withWhoms = withWhomRepository.findAllByEmid(expenseItemId);
+        ExpenseItem expenseItem = expenseItemRepository.findById(expenseItemId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseItem이 존재하지 않습니다"));
+        List<WithWhom> withWhoms = withWhomRepository.findAllByEmid(expenseItem);
         return withWhoms.stream().map(WithWhomDTO::from).collect(Collectors.toList());
     }
 }

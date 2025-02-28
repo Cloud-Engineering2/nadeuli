@@ -64,7 +64,9 @@ public class ExpenseItemService {
     // 지출 내역 조회
     @Transactional
     public List<ExpenseItemDTO> getAll(Long itineraryEventId) {
-        List<ExpenseItem> expenseItems = expenseItemRepository.findAllByIeid(itineraryEventId);
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(itineraryEventId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ItineraryEvent가 존재하지 않습니다"));
+        List<ExpenseItem> expenseItems = expenseItemRepository.findAllByIeid(itineraryEvent);
         List<ExpenseItemDTO> expenseItemDtos = expenseItems.stream()
                                                     .map(ExpenseItemDTO::from)
                                                     .collect(Collectors.toList());
