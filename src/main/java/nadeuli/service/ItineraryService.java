@@ -15,10 +15,12 @@
  */
 package nadeuli.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
 import nadeuli.dto.ItineraryPerDayDTO;
 import nadeuli.dto.request.ItineraryCreateRequestDTO;
+import nadeuli.dto.request.ItineraryTotalCreateRequestDTO;
 import nadeuli.dto.response.*;
 import nadeuli.entity.*;
 import nadeuli.repository.*;
@@ -28,7 +30,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -40,7 +44,7 @@ public class ItineraryService {
     private final UserRepository userRepository;
     private final ItineraryPerDayRepository itineraryPerDayRepository;
     private final ItineraryEventRepository itineraryEventRepository;
-
+    private final PlaceRepository placeRepository;
     // ===========================
     //  CREATE: 일정 생성
     // ===========================
@@ -120,6 +124,110 @@ public class ItineraryService {
                         .toList()  // ✅ ItineraryEvent -> ItineraryEventSimpleDTO 변환
         );
     }
+
+// =====================================
+//  CREATE & UPDATE: 특정 일정 저장 및 수정 ( Event 포함)
+// =====================================
+
+    public Itinerary saveOrUpdateItinerary(ItineraryTotalCreateRequestDTO requestDto) {
+        // 1. Itinerary 저장 또는 수정
+        Itinerary itinerary = saveOrUpdateItineraryDetails(requestDto.getItinerary());
+
+//        // 2. 일정별 하루 계획 저장 (ItineraryPerDays)
+//        saveOrUpdateItineraryPerDays(itinerary, requestDto.getItineraryPerDays());
+//
+//        // 3. 일정 내 이벤트 처리 (추가, 수정, 삭제)
+//        saveOrUpdateItineraryEvents(itinerary, requestDto.getItineraryEvents());
+
+        return itinerary;
+    }
+
+    private Itinerary saveOrUpdateItineraryDetails(ItineraryDTO dto) {
+        Itinerary itinerary;
+        if (dto.getId() != null) {
+            itinerary = itineraryRepository.findById(dto.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Itinerary not found with id " + dto.getId()));
+            itinerary.updateFromDto(dto); // 변경된 정보 업데이트
+        } else {
+            itinerary = dto.toEntity();
+        }
+        return itineraryRepository.save(itinerary);
+    }
+//
+//    private void saveOrUpdateItineraryPerDays(Itinerary itinerary, List<ItineraryPerDayDto> perDayDtos) {
+//        if (perDayDtos == null) return;
+//
+//        // 기존 하루 일정 리스트 가져오기
+//        List<ItineraryPerDay> existingDays = itinerary.getItineraryPerDays();
+//
+//        // 기존 ID 리스트 추출
+//        Set<Long> existingIds = existingDays.stream()
+//                .map(ItineraryPerDay::getId)
+//                .collect(Collectors.toSet());
+//
+//        List<ItineraryPerDay> updatedDays = new ArrayList<>();
+//        for (ItineraryPerDayDto dto : perDayDtos) {
+//            if (dto.getId() != null && existingIds.contains(dto.getId())) {
+//                // 기존 데이터 수정
+//                ItineraryPerDay existingDay = existingDays.stream()
+//                        .filter(day -> day.getId().equals(dto.getId()))
+//                        .findFirst()
+//                        .orElseThrow(() -> new EntityNotFoundException("Day not found"));
+//                existingDay.updateFromDto(dto);
+//                updatedDays.add(existingDay);
+//                existingIds.remove(dto.getId());
+//            } else {
+//                // 새 데이터 추가
+//                updatedDays.add(new ItineraryPerDay(dto, itinerary));
+//            }
+//        }
+//
+//        // 삭제된 일정 제거
+//        List<ItineraryPerDay> toDelete = existingDays.stream()
+//                .filter(day -> existingIds.contains(day.getId()))
+//                .collect(Collectors.toList());
+//        itinerary.getItineraryPerDays().removeAll(toDelete);
+//
+//        itinerary.getItineraryPerDays().addAll(updatedDays);
+//    }
+//
+//    private void saveOrUpdateItineraryEvents(Itinerary itinerary, List<ItineraryEventDto> eventDtos) {
+//        if (eventDtos == null) return;
+//
+//        List<ItineraryEvent> existingEvents = itinerary.getItineraryEvents();
+//        Set<Long> existingIds = existingEvents.stream()
+//                .map(ItineraryEvent::getId)
+//                .collect(Collectors.toSet());
+//
+//        List<ItineraryEvent> updatedEvents = new ArrayList<>();
+//        for (ItineraryEventDto dto : eventDtos) {
+//            if (dto.getId() != null && existingIds.contains(dto.getId())) {
+//                // 기존 이벤트 수정
+//                ItineraryEvent existingEvent = existingEvents.stream()
+//                        .filter(event -> event.getId().equals(dto.getId()))
+//                        .findFirst()
+//                        .orElseThrow(() -> new EntityNotFoundException("Event not found"));
+//                existingEvent.updateFromDto(dto);
+//                updatedEvents.add(existingEvent);
+//                existingIds.remove(dto.getId());
+//            } else {
+//                // 새 이벤트 추가
+//                Place place = placeRepository.findByGooglePlaceId(dto.getPlaceDTO().getGooglePlaceId())
+//                        .orElseGet(() -> placeRepository.save(new Place(dto.getPlaceDTO())));
+//                updatedEvents.add(new ItineraryEvent(dto, itinerary, place));
+//            }
+//        }
+//
+//        // 삭제된 이벤트 제거
+//        List<ItineraryEvent> toDelete = existingEvents.stream()
+//                .filter(event -> existingIds.contains(event.getId()))
+//                .collect(Collectors.toList());
+//        itineraryEventRepository.deleteAll(toDelete);
+//
+//        itinerary.getItineraryEvents().clear();
+//        itinerary.getItineraryEvents().addAll(updatedEvents);
+//    }
+
 
 
 }

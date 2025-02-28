@@ -21,6 +21,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.dto.ItineraryDTO;
 
 
 import java.time.Instant;
@@ -63,5 +64,11 @@ public class Itinerary extends BaseTimeEntity{
         return new Itinerary(itineraryName, startDate, totalDays, transportationType);
     }
 
+    public void updateFromDto(ItineraryDTO dto) {
+        this.itineraryName = dto.getItineraryName();
+        this.startDate = dto.getStartDate();
+        this.totalDays = dto.getTotalDays();
+        this.transportationType = dto.getTransportationType();
+    }
 
 }
