@@ -11,6 +11,7 @@
  * 이홍비    2025.02.25     생성자 + of() 추가
  * 이홍비    2025.02.25     columnDefinition = "TEXT" 명시
  * 이홍비    2025.02.25     content, imageURL save 함수 구현
+ * 이홍비    2025.02.27     ItineraryEvent 와 일대일 관계 설정
  * ========================================================
  */
 
@@ -34,7 +35,7 @@ public class Journal extends BaseTimeEntity{
     @Column(name = "jid", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "ieid", nullable = false)
     private ItineraryEvent ieid;
