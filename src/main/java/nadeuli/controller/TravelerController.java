@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.TravelerDTO;
 import nadeuli.dto.request.TravelerRequestDTO;
 import nadeuli.dto.response.TravelerResponseDTO;
+import nadeuli.repository.ItineraryCollaboratorRepository;
+import nadeuli.repository.ItineraryRepository;
 import nadeuli.service.TravelerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -33,22 +35,28 @@ import java.util.List;
 public class TravelerController {
 
     private final TravelerService travelerService;
+    private final ItineraryRepository itineraryRepository;
+    private final ItineraryCollaboratorRepository itineraryCollaboratorRepository;
 
     // 여행자 추가
     @PostMapping("/{iid}/traveler")
     public ResponseEntity<Void> registerTraveler(@RequestBody @Valid TravelerRequestDTO travelerRequestDTO,
-                                                @PathVariable("iid") Long iid,
+                                                @PathVariable("iid") Integer iid,
                                                 BindingResult bindingResult) {
+        Long itineraryId = Long.valueOf(iid);
+
         String travelerName = travelerRequestDTO.getTravelerName();
-        TravelerDTO travelerDto = TravelerDTO.of(iid, travelerName);
-        Integer tid = travelerService.addTraveler(travelerDto);
+        TravelerDTO travelerDto = TravelerDTO.of(itineraryId, travelerName);
+        travelerService.addTraveler(travelerDto);
         return ResponseEntity.ok().build();
     }
 
     // 여행자들 조회
     @GetMapping("/{iid}/travelers")
-    public ResponseEntity<TravelerResponseDTO> retrieveTravelers(@PathVariable("iid") Long iid) {
-        List<TravelerDTO> travelers = travelerService.getTravelers(iid);
+    public ResponseEntity<TravelerResponseDTO> retrieveTravelers(@PathVariable("iid") Integer iid) {
+
+        Long itineraryId = Long.valueOf(iid);
+        List<TravelerDTO> travelers = travelerService.getTravelers(itineraryId);
 
         TravelerResponseDTO response = TravelerResponseDTO.toResponse(travelers);
 

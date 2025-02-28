@@ -11,13 +11,14 @@
  * 박한철    2025.02.26     페이징 방식의 내 일정리스트 조회로 변경
  * 박한철    2025.02.26     DB 구조 변경으로 인한 getItineraryTotal 수정 ,  일정 생성 파트 주석처리
  * 박한철    2025.02.26     일정 생성 파트 수정 완료
+ * 고민정    2025.02.28     User -> Traveler로 등록
  * ========================================================
  */
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
-import nadeuli.dto.ItineraryPerDayDTO;
+import nadeuli.dto.TravelerDTO;
 import nadeuli.dto.request.ItineraryCreateRequestDTO;
 import nadeuli.dto.response.*;
 import nadeuli.entity.*;
@@ -27,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +40,8 @@ public class ItineraryService {
     private final UserRepository userRepository;
     private final ItineraryPerDayRepository itineraryPerDayRepository;
     private final ItineraryEventRepository itineraryEventRepository;
+    private final TravelerService travelerService;
+    private final TravelerRepository travelerRepository;
 
     // ===========================
     //  CREATE: 일정 생성
@@ -66,6 +68,10 @@ public class ItineraryService {
         // 소유자 자동 등록
         ItineraryCollaborator collaborator = ItineraryCollaborator.of(owner, savedItinerary);
         itineraryCollaboratorRepository.save(collaborator);
+
+        // User -> 여행자 등록
+        TravelerDTO travelerDTO = TravelerDTO.of(itineraryToSave.getId(), owner.getUserName());
+        travelerService.addTraveler(travelerDTO);
 
         // ResponseDTO 변환 후 반환
         return ItineraryCreateResponseDTO.from(savedItinerary, itineraryPerDayList);

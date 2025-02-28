@@ -20,9 +20,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
 import nadeuli.dto.ItineraryPerDayDTO;
-import nadeuli.dto.response.ItineraryEventSimpleDTO;
-import nadeuli.dto.response.ItineraryPerDaySimpleDTO;
-import nadeuli.dto.response.ItineraryResponseDTO;
 
 import java.util.List;
 

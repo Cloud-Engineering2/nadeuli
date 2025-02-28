@@ -36,15 +36,13 @@ public class TravelerService {
 
     // 여행자 추가
     @Transactional
-    public Integer addTraveler(TravelerDTO travelerDto) {
+    public void addTraveler(TravelerDTO travelerDto) {
         Long itineraryId = travelerDto.getItineraryId();
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
 
         Traveler traveler = travelerDto.toEntity(itinerary);
         travelerRepository.save(traveler);
-
-        return traveler.getId();
     }
 
     // 여행자들 조회
@@ -60,6 +58,7 @@ public class TravelerService {
     }
 
     // 이름으로 조회
+    @Transactional
     public TravelerDTO get(String travelerName) {
         Traveler traveler = travelerRepository.findByTravelerName(travelerName)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Traveler가 존재하지 않습니다"));
@@ -67,6 +66,7 @@ public class TravelerService {
     }
 
     // 일정에 있는 Traveler 조회
+    @Transactional
     public List<TravelerDTO> getIds(Long itineraryId, List<String> withWhomNames) {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
@@ -78,7 +78,7 @@ public class TravelerService {
                 .collect(Collectors.toList());
     }
 
-
+    @Transactional
     public List<TravelerDTO> deleteTraveler(String travelerName, Long itineraryId) {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 Itinerary가 존재하지 않습니다"));

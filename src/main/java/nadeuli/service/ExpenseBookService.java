@@ -42,6 +42,7 @@ public class ExpenseBookService {
     }
 
     // ExpenseBook 조회 by Itinerary
+    @Transactional
     public Long get(Long iid) {
         Itinerary itinerary = itineraryRepository.findById(iid)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary 존재하지 않습니다"));

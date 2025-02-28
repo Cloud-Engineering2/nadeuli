@@ -14,6 +14,7 @@
  */
 package nadeuli.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.TravelerDTO;
 import nadeuli.dto.WithWhomDTO;
@@ -36,6 +37,7 @@ public class WithWhomService {
     private final ItineraryRepository itineraryRepository;
 
     // WithWhom 추가
+    @Transactional
     public void addWithWhom(Long itineraryId, Long expenseItemId, List<TravelerDTO> travelerDtos) {
         // Itinerary 조회
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
@@ -52,12 +54,15 @@ public class WithWhomService {
     }
 
     // WithWhom 삭제
+    @Transactional
     public void cancelWithWhom(Integer withWhomId) {
         if (withWhomRepository.existsById(withWhomId)) {
             withWhomRepository.deleteById(withWhomId);
         }
     }
 
+    // WithWhom 조회
+    @Transactional
     public List<WithWhomDTO> listWitWhoms(Long expenseItemId) {
         ExpenseItem expenseItem = expenseItemRepository.findById(expenseItemId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseItem이 존재하지 않습니다"));
