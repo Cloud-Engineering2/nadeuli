@@ -53,7 +53,11 @@
                         results.forEach((place, index) => {
                             let li = document.createElement("li");
                             li.textContent = place.description;
-                            li.onclick = () => selectPlace(place.place_id);
+                            //객체로 전달
+                            li.onclick = () => selectPlace({
+                                place_id: place.place_id,
+                                main_text: place.structured_formatting.main_text
+                            });
                             list.appendChild(li);
                         });
                     })
@@ -61,25 +65,56 @@
             }, 300);
         }
 
-        function selectPlace(placeId) {
-            fetch(`/api/map/place-details?placeId=${placeId}`)
+        function updateMap(lat, lng) {
+            let map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat, lng },
+                zoom: 15
+            });
+
+            new google.maps.Marker({
+                position: { lat, lng },
+                map: map
+            });
+        }
+
+        function selectPlace({ place_id, main_text }) {
+            fetch(`/api/map/place-details`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ placeId: place_id, mainText: main_text })
+            })
                 .then(response => response.json())
                 .then(data => {
-                    let location = data.result.geometry.location;
-                    map.setCenter(location);
-                    map.setZoom(15);
+                    if (!data.result || !data.result.geometry) {
+                        console.error("Invalid response structure", data);
+                        return;
+                    }
 
-                    markers.forEach(marker => marker.setMap(null));
-                    markers = [];
+                    let result = data.result;
+                    let location = result.geometry.location;
 
-                    let marker = new google.maps.Marker({
-                        position: location,
-                        map: map
-                    });
-                    markers.push(marker);
+                    // 모달에 데이터 채우기
+                    document.getElementById("placeName").textContent = result.name;
+                    document.getElementById("placeAddress").textContent = result.formatted_address;
+                    document.getElementById("placeRating").textContent = result.rating || "N/A";
+                    document.getElementById("placeReviews").textContent = result.user_ratings_total || "0";
+                    document.getElementById("placeLat").textContent = location.lat;
+                    document.getElementById("placeLng").textContent = location.lng;
+                    document.getElementById("placeUrl").href = result.url;
+                    document.getElementById("nadeuliPlaceId").textContent = data.nadeuli_placeid || "N/A"; // 추가된 부분
+
+                    // 지도 업데이트
+                    updateMap(location.lat, location.lng);
+
+                    // 모달 표시
+                    let placeModal = new bootstrap.Modal(document.getElementById('placeDetailsModal'));
+                    placeModal.show();
                 })
                 .catch(error => console.error("Error:", error));
         }
+
+
+
 
         document.getElementById("searchInput").addEventListener("keyup", function(event) {
             if (event.key === "Enter") {
@@ -91,6 +126,8 @@
             }
         });
     </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -136,6 +173,30 @@
     <button onclick="searchPlaces()">검색</button>
 </div>
 <ul id="results"></ul>
+<!-- Bootstrap 모달 -->
+<div class="modal fade" id="placeDetailsModal" tabindex="-1" aria-labelledby="placeDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="placeDetailsLabel">장소 정보</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h4 id="placeName"></h4>
+                <p><strong>주소:</strong> <span id="placeAddress"></span></p>
+                <p><strong>평점:</strong> <span id="placeRating"></span> ⭐ (<span id="placeReviews"></span>개 리뷰)</p>
+                <p><strong>웹사이트:</strong> <a id="placeUrl" href="#" target="_blank">바로가기</a></p>
+                <p><strong>위치:</strong> <span id="placeLat"></span>, <span id="placeLng"></span></p>
+                <p><strong>Nadeuli Place ID:</strong> <span id="nadeuliPlaceId"></span></p>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div id="map"></div>
+
+
 </body>
 </html>

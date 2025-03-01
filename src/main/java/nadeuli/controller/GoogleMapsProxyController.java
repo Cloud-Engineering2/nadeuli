@@ -18,27 +18,27 @@ public class GoogleMapsProxyController {
         this.restTemplate = restTemplate;
     }
 
-    @GetMapping("/apikey")
-    public ResponseEntity<String> getApiKey() {
-        return ResponseEntity.ok(googleMapsApiKey);
-    }
+//    @GetMapping("/apikey")
+//    public ResponseEntity<String> getApiKey() {
+//        return ResponseEntity.ok(googleMapsApiKey);
+//    }
 
-    @GetMapping("/autocomplete")
-    public ResponseEntity<String> autocomplete(@RequestParam String input) {
-        String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json" +
-                "?input=" + input +
-                "&key=" + googleMapsApiKey +
-                "&components=country:KR&language=ko";
-
-        return restTemplate.getForEntity(url, String.class);
-    }
-
-    @GetMapping("/place-details")
-    public ResponseEntity<String> getPlaceDetails(@RequestParam String placeId) {
-        String url = "https://maps.googleapis.com/maps/api/place/details/json" +
-                "?place_id=" + placeId +
-                "&key=" + googleMapsApiKey;
-
-        return restTemplate.getForEntity(url, String.class);
-    }
+//    @GetMapping("/autocomplete")
+//    public ResponseEntity<String> autocomplete(@RequestParam String input) {
+//        String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json" +
+//                "?input=" + input +
+//                "&key=" + googleMapsApiKey +
+//                "&components=country:KR&language=ko";
+//
+//        return restTemplate.getForEntity(url, String.class);
+//    }
+//
+//    @GetMapping("/place-details")
+//    public ResponseEntity<String> getPlaceDetails(@RequestParam String placeId) {
+//        String url = "https://maps.googleapis.com/maps/api/place/details/json" +
+//                "?place_id=" + placeId +
+//                "&key=" + googleMapsApiKey;
+//
+//        return restTemplate.getForEntity(url, String.class);
+//    }
 }
