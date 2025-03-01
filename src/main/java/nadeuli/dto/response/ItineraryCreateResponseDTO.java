@@ -31,14 +31,12 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class ItineraryCreateResponseDTO {
     private ItineraryDTO itinerary;
-    private List<ItineraryPerDaySimpleDTO> itineraryPerDays;
-
-
+    private List<ItineraryPerDayDTO> itineraryPerDays;
 
     public static ItineraryCreateResponseDTO from(Itinerary itinerary, List<ItineraryPerDay> itineraryPerDayList) {
         return new ItineraryCreateResponseDTO(
                 ItineraryDTO.from(itinerary),
-                itineraryPerDayList.stream().map(ItineraryPerDaySimpleDTO::from).collect(Collectors.toList())
+                itineraryPerDayList.stream().map(ItineraryPerDayDTO::from).collect(Collectors.toList())
         );
     }
 }
