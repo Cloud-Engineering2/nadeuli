@@ -10,6 +10,7 @@
  * ========================================================
  * 이홍비    2025.02.25     생성자 + static factory method 추가 // 컨버터 추가
  * 국경민    2025.02.25     KakaoUser 속성 통합 + 생성자 추가
+ * 국경민    2025.03.01     @Enumerated(EnumType.STRING)사용
  * ========================================================
  */
 
@@ -20,7 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.constant.UserRole;
-import nadeuli.util.UserRoleAttributeConverter;
+
 
 @Getter
 @Entity
@@ -30,33 +31,30 @@ import nadeuli.util.UserRoleAttributeConverter;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "uid", nullable = false)
+    @Column(name = "uid")
     private Long id;
 
-    @Column(name = "user_email", nullable = false)
+    @Column(name = "user_email", nullable = false, unique = true)
     private String userEmail;
 
     @Lob
-    @Column(name = "user_token", nullable = false)
+    @Column(name = "user_token", columnDefinition = "TEXT DEFAULT ''", nullable = true)
     private String userToken;
 
-    @Column(name = "user_name", nullable = false, length = 20)
+    @Column(name = "user_name", nullable = false, length = 255)
     private String userName;
 
-    @Column(name = "image_url", columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "TEXT", nullable = true)
     private String profileImage;
 
     @Column(name = "provider", nullable = false, length = 20)
     private String provider;
 
-    @Column(name = "email", nullable = false)
-    private String email;
-
+    @Enumerated(EnumType.STRING) // 🔥 가독성 향상을 위해 추가
     @Column(name = "user_role", nullable = false, length = 20)
-    @Convert(converter = UserRoleAttributeConverter.class)
     private UserRole userRole;
 
-    @Column(name = "refresh_token", nullable = false)
+    @Column(name = "refresh_token", columnDefinition = "TEXT DEFAULT ''", nullable = true) // 🔥 필수 아님
     private String refreshToken;
 
     // 기본 생성자
@@ -67,8 +65,7 @@ public class User {
         this.provider = provider;
         this.userToken = "";
         this.userRole = UserRole.MEMBER;
-        this.email = userEmail;
-        this.refreshToken = "defaultToken"; // 기본 값 설정
+        this.refreshToken = "";
     }
 
     // 새로운 생성자 추가
@@ -80,7 +77,6 @@ public class User {
         this.provider = provider;
         this.userToken = "";
         this.userRole = UserRole.MEMBER;
-        this.email = userEmail;
         this.refreshToken = refreshToken;
     }
 
@@ -89,3 +85,4 @@ public class User {
         return new User(null, userEmail, userName, profileImage, provider, refreshToken);
     }
 }
+
