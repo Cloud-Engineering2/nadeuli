@@ -13,6 +13,7 @@
  * 이홍비    2025.02.26     s3 에서 파일 삭제 시 cloudfront cache 무효화 처리
  * 이홍비    2025.02.26     extractRelativePathFromUrl() 구현
  * 이홍비    2025.02.28     kind 를 열거형으로 변경함
+ * 이홍비    2025.03.01     @Transactional 추가
  * ========================================================
  */
 
@@ -21,6 +22,7 @@ package nadeuli.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.common.PhotoType;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class S3Service {
 
