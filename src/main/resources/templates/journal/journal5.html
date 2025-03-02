@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/journal.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <title>기행문 열람</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!--  <script src="/js/journal.js"></script>-->
+  <script type="module" src="/js/common.js"></script>
+  <script type="module" src="/js/journal.js"></script>
+  <script>
+    // url 경로에서 매개변수 추출
+    // function getParameterByName(name) {
+    //   const url = window.location.href;
+    //   name = name.replace(/[\[\]]/g, '\\$&');
+    //   const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+    //
+    //   const results = regex.exec(url);
+    //   if (!results)
+    //     return null;
+    //   if (!results[2])
+    //     return '';
+    //
+    //   console.log("getParameterByName" + decodeURIComponent(results[2].replace(/\+/g, ' ')));
+    //   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    // }
+
+    // const iid = getParameterByName('iid') || 2; // 기본값 1
+    // const ieid = getParameterByName('ieid') || 3; // 기본값 1
+
+    // window.onload = function() {
+    //   var iid = 2;
+    //   var ieid = 3;
+    //   fetchJournal(iid, ieid);
+    // };
+  </script>
+</head>
+<body>
+
+<div id="content-alert" class="nadeuli-alert" style="display: none;">
+  <p id="alert-message"> 소중한 나들이 순간을 남겨 주세요! <button class="nadeuli-alert-button" onclick="closeNadeuliAlert('content-alert')">✅</button></p>
+<!--  <button id="content-alert-button" onclick="closeContentAlert()">✅</button>-->
+</div>
+
+
+<div class="container">
+  <div class="left-space">
+    <div class="content-header">
+      <span id="date-time"></span>
+      <div class="content-header-button">
+        <button id="write-btn" onclick="enableEditMode()">✏️</button>
+        <button id="edit-btn" onclick="enableEditMode()">✏️</button>
+        <button id="delete-btn" onclick="confirmDelete()">❌</button>
+      </div>
+    </div>
+    <hr class="divider">
+
+    <div class="content" id="content">
+      <!--      <p id="content-text" th:if="${journal.getContent() == }">소중한 나들이 순간을 기록하세요</p>-->
+      <div id="no-content"></div>
+      <div id="has-content"></div>
+    </div>
+
+    <!-- 수정 모드 -->
+    <div id="edit-content-area" style="display: none;">
+      <textarea id="content-input" rows="5"></textarea>
+      <div class="button-group">
+        <button onclick="saveContent()">저장</button>
+        <button onclick="cancelEdit()">취소</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="right-space">
+    <div class="image-container" id="image-container" onclick="uploadPhoto()">
+      <span class="plus" id="plus-icon">+</span>
+      <img id="image-preview" src="" style="display: none;">
+      <button class="edit-button" id="edit-photo-btn" style="display: none;" onclick="modifyPhoto(event)">+</button>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>
