@@ -13,6 +13,8 @@
  * 이홍비    2025.02.28     S3Service.deleteFile() 변경에 따른 수정
  *                         getJournal() 에 따른 uploadPhoto(), writeContent() 정리 => 간략화
  *                         modifiedContent() 와 modifiedPhoto() 실행 방식 결정
+ * 이홍비    2025.03.01     단순 annotation 정리
+ * 이홍비    2025.03.03     DB 동기화 관련 처리 (진행 중)
  * ========================================================
  */
 
@@ -33,8 +35,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.NoSuchElementException;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class JournalService {
     private final JournalRepository journalRepository;
     private final ItineraryEventRepository itineraryEventRepository;
@@ -67,9 +69,9 @@ public class JournalService {
         String imageUrl = s3Service.uploadFile(file, PhotoType.JOURNAL);
 
         journal.saveImageURL(imageUrl); // 사진 url 저장
-        journalRepository.save(journal); // 저장
+        return JournalDTO.from(journalRepository.save(journal)); // 저장 후 반환
 
-        return JournalDTO.from(journal);
+        // return JournalDTO.from(journal); // 이러면 변경된 modified_date 값이 아니라 이전 modified_date 값인 JournalDTO 가 반환됨
     }
 
     // 사진 변경 : 성능 고려 (실행 시간 측정 결과 : 80ms) - controller 에서 현재 사용 중
@@ -86,9 +88,9 @@ public class JournalService {
         String imageUrl = s3Service.uploadFile(file, PhotoType.JOURNAL);
 
         journal.saveImageURL(imageUrl); // 사진 url 저장
-        journalRepository.save(journal); // 저장
+        return JournalDTO.from(journalRepository.save(journal)); // 저장 후 반환
 
-        return JournalDTO.from(journal);
+        // return JournalDTO.from(journal); // 이러면 변경된 modified_date 값이 아니라 이전 modified_date 값인 JournalDTO 가 반환됨
     }
 
     // 사진 변경 : 코드 재사용 => 일관성 + 가독성 + 유지 보수 (overhead o -실행 시간 측정 결과 : 338ms)
@@ -119,9 +121,10 @@ public class JournalService {
         // 사진 삭제 후 url 값 null 로 저장
         s3Service.deleteFile(journal.getImageUrl());
         journal.saveImageURL(null);
-        journalRepository.save(journal);
 
-        return JournalDTO.from(journal);
+        return JournalDTO.from(journalRepository.save(journal)); // 저장 후 반환
+
+        //return JournalDTO.from(journal); // 이러면 변경된 modified_date 값이 아니라 이전 modified_date 값인 JournalDTO 가 반환됨
     }
 
     // 사진 등록 - local test
@@ -142,21 +145,26 @@ public class JournalService {
             journalRepository.save(journal); // 저장
         }
 
-        return JournalDTO.from(journal);
+
+         return JournalDTO.from(journal);
     }
 
-
-    // 본문 작성
-    public JournalDTO writeContent(Long ieid, String content) {
-        System.out.println("🔥 기행문 - 본문 작성 로직 실행됨!");
+    public JournalDTO writeContent(Long ieid, String content) throws NoSuchElementException {
+        System.out.println("🔥 기행문 - 본문 수정 로직 실행됨!");
 
         Journal journal = journalRepository.findById(ieid)
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
-        journal.saveContent(content); // 글 저장
+        // 본문 내용 저장
+        journal.saveContent(content);
         journalRepository.save(journal); // 저장
 
+        // 최신 상태 - journal entity 저장
+        journal = journalRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
+
         return JournalDTO.from(journal);
+
     }
 
     // 본문 수정 - 직접 호출
@@ -168,9 +176,9 @@ public class JournalService {
 
         // 본문 내용 변경 후 저장
         journal.saveContent(content);
-        journalRepository.save(journal);
+        return JournalDTO.from(journalRepository.save(journal)); // 저장 후 반환
 
-        return JournalDTO.from(journal);
+        // return JournalDTO.from(journal); // 이러면 변경된 modified_date 값이 아니라 이전 modified_date 값인 JournalDTO 가 반환됨
 
     }
 
@@ -181,7 +189,7 @@ public class JournalService {
         return writeContent(ieid, content);
     }
 
-        // 본문 삭제
+    // 본문 삭제
     public JournalDTO deleteContent(Long ieid) throws NoSuchElementException {
         System.out.println("🔥 기행문 - 본문 삭제 로직 실행됨!");
 
