@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/css/journal.css">
-  <title>기행문 보기</title>
+  <title>기행문 열람</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
@@ -26,7 +26,6 @@
           소중한 나들이 순간을 기록하세요
       </div>
       <div th:unless="${journal.getContent() == null or journal.getContent().trim() == ''}" th:text="${journal.getContent()}"></div>
-
     </div>
 
     <!-- 수정 모드 -->
@@ -105,7 +104,7 @@
     const editContentArea = document.getElementById('edit-content-area');
     const contentTextElement = document.getElementById('content-text');
 
-    contentTextElement.innerText = originalContent;
+    contentTextElement.innerText = journal.content;
     editContentArea.style.display = 'none';
     contentElement.style.display = 'block';
   }
@@ -144,6 +143,24 @@
 
   function uploadPhoto() {
     // 사진 업로드 로직 추가
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/*";
+      fileInput.onchange = event => {
+          const file = event.target.files[0];
+          const formData = new FormData();
+          formData.append("file", file);
+
+          axios.post(`/api/itineraries/${iid}/events/${ieid}/photo`, formData)
+              .then(response => {
+                  document.getElementById("image-preview").src = response.data.imageUrl;
+                  document.getElementById("image-preview").style.display = "block";
+                  document.getElementById("plus-icon").style.display = "none";
+                  document.getElementById("edit-photo-btn").style.display = "block";
+              })
+              .catch(error => console.error(error));
+      };
+      fileInput.click();
   }
 
   function modifyPhoto(event) {
