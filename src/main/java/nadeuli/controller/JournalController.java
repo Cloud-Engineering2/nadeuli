@@ -45,7 +45,7 @@ public class JournalController {
     * 3. 기행 (글 + 사진) 조회
     * 3-1. 글 crud
     * 3-2. 사진 crud
-    *
+    * 3-3. 사진 다운로드
     * */
 
     // 기행문 조회 (열람)
@@ -54,10 +54,6 @@ public class JournalController {
         JournalDTO journalDTO = journalService.getJournal(ieid);
 
         System.out.println("📌 조회한 기행문 : " + journalDTO);
-
-        model.addAttribute("journal", journalDTO);
-
-        //return ResponseEntity.ok(journalDTO);
 
         return "journal/journal";
     }
