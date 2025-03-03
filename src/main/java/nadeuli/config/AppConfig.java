@@ -10,6 +10,7 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 국경민      2.25       RestTemplate Bean을 생성하여 OAuthUnlinkService에서 주입받게하기
+ * 국경민      3.03       파악을 위해 주석추가
  * ========================================================
  */
 package nadeuli.config;
@@ -21,9 +22,13 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class AppConfig {
 
+    /**
+     * ✅ RestTemplate Bean 등록 (OAuth API 호출용)
+     */
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 }
+
 
