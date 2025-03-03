@@ -14,6 +14,7 @@
  * 이홍비    2025.02.28     RestController 와 Controller 로 구분
  * 이홍비    2025.03.01     => 다시 되돌림
  * 이홍비                   사진 변경, 글 수정 시 사용할 함수 결정
+ * 이홍비    2025.03.03     사진 파일 다운로드 추가 구현
  * ========================================================
  */
 
@@ -22,6 +23,8 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.JournalDTO;
 import nadeuli.service.JournalService;
+import nadeuli.service.S3Service;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -33,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Controller
 public class JournalController {
     private final JournalService journalService;
+    private final S3Service s3Service;
 
     /*
     * 있어야 하는 거
@@ -131,6 +135,17 @@ public class JournalController {
         return ResponseEntity.ok(journalDTO);
     }
 
+    // 사진 다운로드
+    @ResponseBody
+    @GetMapping("/api/itineraries/{iid}/events/{ieid}/photo/download")
+    public ResponseEntity<Resource> downloadPhoto(@PathVariable("iid") long iid, @PathVariable("ieid") long ieid) throws Exception {
+        ResponseEntity<Resource> file = s3Service.downloadFile(journalService.getJournal(ieid).getImageUrl());
+
+        System.out.println("📌 사진 다운로드 : " + file);
+
+        return file;
+    }
+
     // 사진 등록
     @ResponseBody
     @PostMapping("/api/itineraries/{iid}/events/{ieid}/photo")
@@ -158,12 +173,12 @@ public class JournalController {
     // 사진 삭제
     @ResponseBody
     @DeleteMapping("/api/itineraries/{iid}/events/{ieid}/photo")
-    public ResponseEntity<String> deletePhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
+    public ResponseEntity<JournalDTO> deletePhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
         JournalDTO journalDTO = journalService.deletePhoto(ieid);
 
         System.out.println("📌 사진 삭제한 기행문 : " + journalDTO);
 
-        return ResponseEntity.ok("사진 삭제 완료");
+        return ResponseEntity.ok(journalDTO);
     }
 
     // 사진 등록 - test
