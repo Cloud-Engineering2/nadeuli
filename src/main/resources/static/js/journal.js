@@ -12,6 +12,7 @@
  * 이홍비    2025.02.27     최초 작성 : journal.js
  * 이홍비    2025.03.02     journal.html 에서 사용할 함수 정리
  * 이홍비    2025.03.03     사진 crud 관련 js 처리 + 다운로드 처리
+ *                         첨부 가능한 사진 파일, 파일 크기 제약 추가
  * ========================================================
  */
 
@@ -35,8 +36,6 @@ const timeFormat = {
 }
 
 async function fetchJournal(iid, ieid) {
-    // const iid = 2;  // 실제 데이터 반영 필요
-    // const ieid = 3;  // 실제 데이터 반영 필요
     this_iid = iid;
     this_ieid = ieid;
 
@@ -45,51 +44,6 @@ async function fetchJournal(iid, ieid) {
     console.log("fetchJournal - journal : " + journal); // 데이터 확인
     console.log("fetchJournal - journal.imageUrl : " + journal.imageUrl); // 데이터 확인
     console.log("fetchJournal - journal.content : " + journal.content); // 데이터 확인
-
-    // document.getElementById('date-time').textContent = new Intl.DateTimeFormat('ko-KR', timeFormat).format(new Date(journal.modifiedAt));
-
-    // const noContent = document.getElementById("no-content");
-    // const hasContent = document.getElementById("has-content");
-    // if ((journal.content === "") || (journal.content === null)) {
-    // if (journal.content === null) {
-    //     noContent.textContent = "소중한 나들이 순간을 기록하세요!";
-    //     noContent.style.display = "block";
-    //     hasContent.style.display = "none";
-    //
-    //     document.getElementById("write-btn").style.display = "block";
-    //     document.getElementById("edit-btn").style.display = "none";
-    //     document.getElementById("delete-btn").style.display = "none";
-    //     document.getElementById("edit-content-area").style.display = "none";
-    // }
-    // else {
-    //     hasContent.textContent = journal.content;
-    //     hasContent.style.display = "block";
-    //     noContent.style.display = "none";
-    //
-    //     document.getElementById("write-btn").style.display = "none";
-    //     document.getElementById("edit-btn").style.display = "block";
-    //     document.getElementById("delete-btn").style.display = "block";
-    //     document.getElementById("edit-content-area").style.display = "none";
-    // }
-
-    // const imagePreview = document.getElementById('image-preview');
-    // if ((journal.imageUrl !== "") && (journal.imageUrl !== null)){
-    // if (journal.imageUrl !== null){
-    //     console.log(journal.imageUrl);
-    //     imagePreview.src = journal.imageUrl;
-    //     imagePreview.style.display = "block";
-    //     document.getElementById("upload-btn").style.display = "none";
-    //     document.getElementById("plus-icon").style.display = "none";
-    //     document.getElementById("image-container").style.backgroundColor="#f3f3f3";
-    // }
-    // else if (journal.imageUrl === null)
-    // else
-    // {
-    //     imagePreview.src = "";
-    //     imagePreview.style.display = "none";
-    //     document.getElementById("plus-icon").style.display = "block";
-    //     document.getElementById("image-container").style.backgroundColor="#8E8B82";
-    // }
 
     updateContentView();
     updatePhotoView();
@@ -132,7 +86,6 @@ function saveContent() {
         axios.post(`/api/itineraries/${this_iid}/events/${this_ieid}/content`, formData)
             .then(response => {
                 journal = response.data;
-                // updateContentView(journal.content);
                 updateContentView();
             })
             .catch(error => console.error("Error saving content:", error));
@@ -149,14 +102,12 @@ function saveContent() {
         axios.put(`/api/itineraries/${this_iid}/events/${this_ieid}/content`, formData)
             .then(response => {
                 journal = response.data;
-                // updateContentView(journal.content);
                 updateContentView();
             })
             .catch(error => console.error("Error saving content:", error));
     }
 }
 
-// function updateContentView(journalContent) {
 function updateContentView() {
 
     if (journal.content && (journal.content.trim() !== ""))  {
@@ -201,19 +152,9 @@ function deleteContent() {
         .then(response => {
             journal = response.data;
             updateContentView();
-
-            // window.load = fetchJournal(this_ieid, this_ieid);
         })
         .catch(error => console.error("Error deleting content:", error));
 }
-
-// function showContentAlert() {
-//     document.getElementById("content-alert").style.display = 'block';
-// }
-//
-// function closeContentAlert() {
-//     document.getElementById("content-alert").style.display = 'none';
-// }
 
 
 function uploadPhoto() {
@@ -223,6 +164,23 @@ function uploadPhoto() {
     fileInput.accept = "image/*";
     fileInput.onchange = event => {
         const file = event.target.files[0];
+
+        // 첨부 가능한 사진 파일 종륲 제한
+        const validImageTypes = ['image/bmp', 'image/gif', 'image/jpeg', 'image/png', 'image/webp'];
+        if (!validImageTypes.includes(file.type)) {
+            showNadeuliAlert('photo-type-alert');
+
+            return;
+        }
+
+        // 파일 크기 제한 (20MB)
+        const maxSize = 20 * 1024 * 1024; // 20MB
+        if (file.size > maxSize) {
+            showNadeuliAlert('photo-size-alert');
+
+            return;
+        }
+
         const formData = new FormData();
         formData.append("file", file);
 
@@ -230,11 +188,6 @@ function uploadPhoto() {
             .then(response => {
                 journal = response.data;
                 updatePhotoView();
-
-                // document.getElementById("image-preview").src = response.data.imageUrl;
-                // document.getElementById("image-preview").style.display = "block";
-                // document.getElementById("plus-icon").style.display = "none";
-                // document.getElementById("edit-photo-btn").style.display = "block";
             })
             .catch(error => console.error(error));
     };
@@ -247,6 +200,23 @@ function modifyPhoto() {
     fileInput.accept = "image/*";
     fileInput.onchange = event => {
         const file = event.target.files[0];
+
+        // 첨부 가능한 사진 파일 종륲 제한
+        const validImageTypes = ['image/bmp', 'image/gif', 'image/jpeg', 'image/png', 'image/webp'];
+        if (!validImageTypes.includes(file.type)) {
+            showNadeuliAlert('photo-type-alert');
+
+            return;
+        }
+
+        // 파일 크기 제한 (20MB)
+        const maxSize = 20 * 1024 * 1024; // 20MB
+        if (file.size > maxSize) {
+            showNadeuliAlert('photo-size-alert');
+
+            return;
+        }
+
         const formData = new FormData();
         formData.append("file", file);
 
@@ -254,11 +224,6 @@ function modifyPhoto() {
             .then(response => {
                 journal = response.data;
                 updatePhotoView();
-
-                // document.getElementById("image-preview").src = response.data.imageUrl;
-                // document.getElementById("image-preview").style.display = "block";
-                // document.getElementById("plus-icon").style.display = "none";
-                // document.getElementById("edit-photo-btn").style.display = "block";
             })
             .catch(error => console.error(error));
     };
