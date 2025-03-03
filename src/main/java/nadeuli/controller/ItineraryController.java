@@ -45,4 +45,9 @@ public class ItineraryController {
     public String showWriteTestPage() {
         return "/itinerary/write_test";  // itinerary/write_test.html을 반환
     }
+
+    @GetMapping("/edit")
+    public String showEditTestPage() {
+        return "/itinerary/edit";  // itinerary/edit.html을 반환
+    }
 }
