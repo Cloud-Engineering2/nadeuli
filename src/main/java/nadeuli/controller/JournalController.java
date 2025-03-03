@@ -50,7 +50,7 @@ public class JournalController {
 
     // 기행문 조회 (열람)
     @GetMapping("/itineraries/{iid}/events/{ieid}/journal")
-    public String getJournal(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, ModelMap model) {
+    public String getJournal(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
         JournalDTO journalDTO = journalService.getJournal(ieid);
 
         System.out.println("📌 조회한 기행문 : " + journalDTO);
