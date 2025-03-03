@@ -14,6 +14,7 @@
  * 이홍비    2025.02.26     extractRelativePathFromUrl() 구현
  * 이홍비    2025.02.28     kind 를 열거형으로 변경함
  * 이홍비    2025.03.01     @Transactional 추가
+ * 이홍비    2025.03.03     파일 다운로드 관련 처리 추가
  * ========================================================
  */
 
@@ -22,13 +23,22 @@ package nadeuli.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.common.PhotoType;
+import nadeuli.repository.JournalRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Service
@@ -37,6 +47,7 @@ import java.util.UUID;
 public class S3Service {
 
     private final AmazonS3 amazonS3;
+    private final JournalRepository journalRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
@@ -84,9 +95,9 @@ public class S3Service {
 
     // 파일 삭제
     // cloud front cache 는 24시간 후 자동 소멸 => s3 파일 삭제 후 해당 url 접속할 일 x => 따로 처리 안 함
-    public void deleteFile(String fileName) {
+    public void deleteFile(String imageURL) {
 
-        String s3Key = extractRelativePathFromUrl(fileName);
+        String s3Key = extractRelativePathFromUrl(imageURL);
 
         // S3 - 사진 삭제
         System.out.println("🔥 사진 삭제 : " + s3Key);
@@ -104,6 +115,50 @@ public class S3Service {
         }
 
         return relativePath;
+    }
+
+    // journal 파일 다운로드
+    public ResponseEntity<Resource> downloadFile(String imageURL) throws UnsupportedEncodingException {
+        Resource resource = null;
+
+//        try {
+//            // key ; 경로 + 파일명
+//            String key = extractRelativePathFromUrl(imageURL);
+//            S3Object s3Object = amazonS3.getObject(bucketName, key);
+//            S3ObjectInputStream s3Is = s3Object.getObjectContent(); // 자동 매핑
+//            resource = new InputStreamResource(s3Is); // resource 로 매핑
+//
+//            String fileName = key.substring(key.lastIndexOf("/") + 1); // 파일 이름 저장
+//
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM); // 파일 다운로드 형식
+//            headers.set("Content-Disposition", "inline; filename=" + fileName);
+//
+//            return new ResponseEntity<Resource>(resource, headers, HttpStatus.OK);
+//
+//        } catch (Exception e) {
+//            return new ResponseEntity<Resource>(resource, null, HttpStatus.NO_CONTENT);
+//        }
+
+        // key ; 경로 + 파일명
+        String key = extractRelativePathFromUrl(imageURL);
+        S3Object s3Object = amazonS3.getObject(bucketName, key);
+        S3ObjectInputStream s3Is = s3Object.getObjectContent(); // 자동 매핑
+        resource = new InputStreamResource(s3Is); // resource 로 매핑
+
+        // 원본 파일 이름 추출
+        String fileName = key.substring(key.lastIndexOf("/") + 1); // 마지막 '/' 기준으로 '/' 이후 것을 저장
+        fileName = fileName.substring(fileName.lastIndexOf("_") + 1); // 마지막 '_' 기준으로 '_' 이후 것을 저장
+
+        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM); // 파일 다운로드 형식
+//        headers.set("Content-Disposition", "inline; filename=" + fileName);
+        headers.set("Content-Disposition", "inline; filename*=UTF-8''" + encodedFileName);
+
+        return new ResponseEntity<Resource>(resource, headers, HttpStatus.OK);
+
     }
 
 }
