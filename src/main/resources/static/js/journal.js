@@ -11,6 +11,7 @@
  * ========================================================
  * 이홍비    2025.02.27     최초 작성 : journal.js
  * 이홍비    2025.03.02     journal.html 에서 사용할 함수 정리
+ * 이홍비    2025.03.03     사진 crud 관련 js 처리 + 다운로드 처리
  * ========================================================
  */
 
@@ -45,49 +46,53 @@ async function fetchJournal(iid, ieid) {
     console.log("fetchJournal - journal.imageUrl : " + journal.imageUrl); // 데이터 확인
     console.log("fetchJournal - journal.content : " + journal.content); // 데이터 확인
 
-    document.getElementById('date-time').textContent = new Intl.DateTimeFormat('ko-KR', timeFormat).format(new Date(journal.modifiedAt));
+    // document.getElementById('date-time').textContent = new Intl.DateTimeFormat('ko-KR', timeFormat).format(new Date(journal.modifiedAt));
 
-    const noContent = document.getElementById("no-content");
-    const hasContent = document.getElementById("has-content");
+    // const noContent = document.getElementById("no-content");
+    // const hasContent = document.getElementById("has-content");
     // if ((journal.content === "") || (journal.content === null)) {
-    if (journal.content === null) {
-        noContent.textContent = "소중한 나들이 순간을 기록하세요!";
-        noContent.style.display = "block";
-        hasContent.style.display = "none";
+    // if (journal.content === null) {
+    //     noContent.textContent = "소중한 나들이 순간을 기록하세요!";
+    //     noContent.style.display = "block";
+    //     hasContent.style.display = "none";
+    //
+    //     document.getElementById("write-btn").style.display = "block";
+    //     document.getElementById("edit-btn").style.display = "none";
+    //     document.getElementById("delete-btn").style.display = "none";
+    //     document.getElementById("edit-content-area").style.display = "none";
+    // }
+    // else {
+    //     hasContent.textContent = journal.content;
+    //     hasContent.style.display = "block";
+    //     noContent.style.display = "none";
+    //
+    //     document.getElementById("write-btn").style.display = "none";
+    //     document.getElementById("edit-btn").style.display = "block";
+    //     document.getElementById("delete-btn").style.display = "block";
+    //     document.getElementById("edit-content-area").style.display = "none";
+    // }
 
-        document.getElementById("write-btn").style.display = "block";
-        document.getElementById("edit-btn").style.display = "none";
-        document.getElementById("delete-btn").style.display = "none";
-        document.getElementById("edit-content-area").style.display = "none";
-    }
-    else {
-        hasContent.textContent = journal.content;
-        hasContent.style.display = "block";
-        noContent.style.display = "none";
-
-        document.getElementById("write-btn").style.display = "none";
-        document.getElementById("edit-btn").style.display = "block";
-        document.getElementById("delete-btn").style.display = "block";
-        document.getElementById("edit-content-area").style.display = "none";
-    }
-
-    const imagePreview = document.getElementById('image-preview');
+    // const imagePreview = document.getElementById('image-preview');
     // if ((journal.imageUrl !== "") && (journal.imageUrl !== null)){
-    if (journal.imageUrl !== null){
-        console.log(journal.imageUrl);
-        imagePreview.src = journal.imageUrl;
-        imagePreview.style.display = "block";
-        document.getElementById("plus-icon").style.display = "none";
-        document.getElementById("image-container").style.backgroundColor="#f3f3f3";
-    }
+    // if (journal.imageUrl !== null){
+    //     console.log(journal.imageUrl);
+    //     imagePreview.src = journal.imageUrl;
+    //     imagePreview.style.display = "block";
+    //     document.getElementById("upload-btn").style.display = "none";
+    //     document.getElementById("plus-icon").style.display = "none";
+    //     document.getElementById("image-container").style.backgroundColor="#f3f3f3";
+    // }
     // else if (journal.imageUrl === null)
-    else
-    {
-        imagePreview.src = "";
-        imagePreview.style.display = "none";
-        document.getElementById("plus-icon").style.display = "block";
-        document.getElementById("image-container").style.backgroundColor="#8E8B82";
-    }
+    // else
+    // {
+    //     imagePreview.src = "";
+    //     imagePreview.style.display = "none";
+    //     document.getElementById("plus-icon").style.display = "block";
+    //     document.getElementById("image-container").style.backgroundColor="#8E8B82";
+    // }
+
+    updateContentView();
+    updatePhotoView();
 }
 
 
@@ -194,8 +199,10 @@ function confirmDelete() {
 function deleteContent() {
     axios.delete(`/api/itineraries/${this_iid}/events/${this_ieid}/content`)
         .then(response => {
-            // updateContentView(null);
-            window.load = fetchJournal(this_ieid, this_ieid);
+            journal = response.data;
+            updateContentView();
+
+            // window.load = fetchJournal(this_ieid, this_ieid);
         })
         .catch(error => console.error("Error deleting content:", error));
 }
@@ -221,14 +228,121 @@ function uploadPhoto() {
 
         axios.post(`/api/itineraries/${this_iid}/events/${this_ieid}/photo`, formData)
             .then(response => {
-                document.getElementById("image-preview").src = response.data.imageUrl;
-                document.getElementById("image-preview").style.display = "block";
-                document.getElementById("plus-icon").style.display = "none";
-                document.getElementById("edit-photo-btn").style.display = "block";
+                journal = response.data;
+                updatePhotoView();
+
+                // document.getElementById("image-preview").src = response.data.imageUrl;
+                // document.getElementById("image-preview").style.display = "block";
+                // document.getElementById("plus-icon").style.display = "none";
+                // document.getElementById("edit-photo-btn").style.display = "block";
             })
             .catch(error => console.error(error));
     };
     fileInput.click();
+}
+
+function modifyPhoto() {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.onchange = event => {
+        const file = event.target.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+
+        axios.put(`/api/itineraries/${this_iid}/events/${this_ieid}/photo`, formData)
+            .then(response => {
+                journal = response.data;
+                updatePhotoView();
+
+                // document.getElementById("image-preview").src = response.data.imageUrl;
+                // document.getElementById("image-preview").style.display = "block";
+                // document.getElementById("plus-icon").style.display = "none";
+                // document.getElementById("edit-photo-btn").style.display = "block";
+            })
+            .catch(error => console.error(error));
+    };
+    fileInput.click();
+
+}
+
+function confirmPhotoDelete() {
+    if (confirm("사진을 삭제하시겠습니까?")) {
+        deletePhoto();
+    }
+}
+
+function deletePhoto() {
+    axios.delete(`/api/itineraries/${this_iid}/events/${this_ieid}/photo`)
+        .then(response => {
+            journal = response.data;
+            updatePhotoView();
+        })
+        .catch(error => console.error("Error deleting photo:", error));
+}
+
+function updatePhotoView() {
+
+    document.getElementById('date-time').textContent = new Intl.DateTimeFormat('ko-KR', timeFormat).format(new Date(journal.modifiedAt));
+
+    const imagePreview = document.getElementById("image-preview");
+    if (journal.imageUrl !== null) {
+        imagePreview.src = journal.imageUrl;
+        imagePreview.style.display = "block";
+        document.getElementById("plus-icon").style.display = "none";
+        document.getElementById("image-container").style.backgroundColor="#F3F3F3";
+
+        document.getElementById('upload-btn').style.display = 'none';
+        document.getElementById("download-btn").style.display = 'block';
+        document.getElementById('modify-btn').style.display = 'block';
+        document.getElementById("remove-btn").style.display = 'block';
+    }
+    else {
+        // 사진 삭제
+        imagePreview.src = '';
+        imagePreview.style.display = 'none';
+        document.getElementById('plus-icon').style.display = 'block';
+        document.getElementById("image-container").style.backgroundColor="#8E8B82";
+
+        document.getElementById('upload-btn').style.display = 'block';
+        document.getElementById("download-btn").style.display = 'none';
+        document.getElementById('modify-btn').style.display = 'none';
+        document.getElementById("remove-btn").style.display = 'none';
+    }
+}
+
+function downloadPhoto() {
+    axios.get(`/api/itineraries/${this_iid}/events/${this_ieid}/photo/download`, { responseType: 'arraybuffer' })
+        .then(response => {
+            // console.log(response.data);
+            // console.log(response.headers);
+            // console.log("Response data type: ", response.data instanceof ArrayBuffer);
+            // console.log("Response data type: ", response.data instanceof Blob);
+
+            const disposition = response.headers['content-disposition'];
+            // const matches = disposition && disposition.match(/filename="?([^";]+)"?/);
+            // const fileName = matches && matches[1] ? matches[1].trim() : 'photo.jpg'
+
+            const matches = disposition && disposition.match(/filename\*?=['"]?UTF-8''([^;]+)['"]?|filename="?([^";]+)"?/);
+            const encodedFileName = matches && (matches[1] || matches[2]) ? (matches[1] || matches[2]).trim() : 'photo.jpg';
+            const fileName = decodeURIComponent(encodedFileName);
+
+            // console.log("disposition : " + disposition);
+            // console.log("matches : " + matches);
+            // console.log("fileName : " + fileName);
+
+            const blob = new Blob([response.data], { type: 'application/octet-stream' });
+            const imageUrl = URL.createObjectURL(blob); // Blob을 URL로 변환
+            // const imageUrl = URL.createObjectURL(response.data); // Blob을 URL로 변환
+            const link = document.createElement('a'); // 다운로드 링크 생성
+            link.href = imageUrl; // 이미지 URL을 링크에 설정
+            link.download = fileName; // 파일 이름 설정
+            link.click(); // 다운로드 실행
+
+            // URL 객체 해제 (메모리 누수 방지)
+            URL.revokeObjectURL(imageUrl);
+        })
+        .catch(error => console.error("Error deleting photo:", error));
 }
 
 // 전역 범위 할달
@@ -237,3 +351,6 @@ window.saveContent = saveContent;
 window.confirmDelete = confirmDelete;
 window.cancelEdit = cancelEdit;
 window.uploadPhoto = uploadPhoto;
+window.modifyPhoto = modifyPhoto;
+window.confirmPhotoDelete = confirmPhotoDelete;
+window.downloadPhoto = downloadPhoto;
