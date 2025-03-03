@@ -13,6 +13,7 @@
  * 이홍비    2025.03.02     journal.html 에서 사용할 함수 정리
  * 이홍비    2025.03.03     사진 crud 관련 js 처리 + 다운로드 처리
  *                         첨부 가능한 사진 파일, 파일 크기 제약 추가
+ *                         url 에서 iid, ieid 추출
  * ========================================================
  */
 
@@ -51,8 +52,17 @@ async function fetchJournal(iid, ieid) {
 
 
 window.onload = function() {
-    var iid = 2;
-    var ieid = 3;
+
+    // iid, ieid 추출 과정
+    const pathParts = window.location.pathname.split("/");
+
+    // 예상 URL 구조: /itineraries/{iid}/events/{ieid}/journal
+    const iid = pathParts[2]; // 2번째 요소 (0-based index)
+    const ieid = pathParts[4]; // 4번째 요소
+
+    console.log("iid : ", iid);
+    console.log("ieid : ", ieid);
+
     fetchJournal(iid, ieid);
 };
 
