@@ -15,6 +15,7 @@
  *                         modifiedContent() 와 modifiedPhoto() 실행 방식 결정
  * 이홍비    2025.03.01     단순 annotation 정리
  * 이홍비    2025.03.03     Persistence Context - DB : 동기화 관련 처리 (flush())
+ *                         => 삭제 쪽 함수에도 flush() 처리
  * ========================================================
  */
 
@@ -124,7 +125,7 @@ public class JournalService {
         s3Service.deleteFile(journal.getImageUrl());
         journal.saveImageURL(null);
         journalRepository.save(journal);
-//        journalRepository.flush(); // Persistence Context - DB : 동기화
+        journalRepository.flush(); // Persistence Context - DB : 동기화
 
         return JournalDTO.from(journal);
     }
@@ -197,6 +198,7 @@ public class JournalService {
         // null 값으로 변경 후 저장
         journal.saveContent(null);
         journalRepository.save(journal);
+        journalRepository.flush(); // Persistence Context - DB : 동기화
 
         return JournalDTO.from(journal);
     }
