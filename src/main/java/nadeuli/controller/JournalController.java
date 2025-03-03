@@ -11,6 +11,11 @@
  * ========================================================
  * 이홍비    2025.02.25     최초 작성 : JournalController
  * 이홍비    2025.02.26     GetMapping 쪽 수정
+ * 이홍비    2025.02.28     RestController 와 Controller 로 구분
+ * 이홍비    2025.03.01     => 다시 되돌림
+ * 이홍비                   사진 변경, 글 수정 시 사용할 함수 결정
+ * 이홍비    2025.03.03     사진 파일 다운로드 추가 구현
+ *                         불필요한 것 정리
  * ========================================================
  */
 
@@ -19,6 +24,8 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.JournalDTO;
 import nadeuli.service.JournalService;
+import nadeuli.service.S3Service;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -26,10 +33,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
-//@RequestMapping("/api/itineraries/{iid}/events/{ieid}")
 @Controller
 public class JournalController {
     private final JournalService journalService;
+    private final S3Service s3Service;
 
     /*
     * 있어야 하는 거
@@ -56,19 +63,39 @@ public class JournalController {
     }
 
     // 기행문 조회 (열람)
-    @GetMapping("api/itineraries/{iid}/events/{ieid}/journal")
-    public ResponseEntity<JournalDTO> getJournalTest(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
+    @ResponseBody
+    @GetMapping("/api/itineraries/{iid}/events/{ieid}/journal")
+    public ResponseEntity<JournalDTO> getJournal4(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
         JournalDTO journalDTO = journalService.getJournal(ieid);
 
         System.out.println("📌 조회한 기행문 : " + journalDTO);
+//        System.out.println("JournalDTO.getContent()" + journalDTO.getContent());
+//        System.out.println("journalDTO.getImageUrl() : " + journalDTO.getImageUrl());
+//        System.out.println("journalDTO.getImageUrl() == null : " + (journalDTO.getImageUrl() == null));
+//        System.out.println("journalDTO.getImageUrl().equals(\"\") : " + (journalDTO.getImageUrl().equals("")));
+//        System.out.println("journalDTO.getImageUrl().equals(\"null\") : " + (journalDTO.getImageUrl().equals("null")));
+//        System.out.println("journalDTO.getImageUrl().isEmpty() : " + (journalDTO.getImageUrl().isEmpty()));
 
         return ResponseEntity.ok(journalDTO);
+    }
 
+    // 사진 다운로드
+    @ResponseBody
+    @GetMapping("/api/itineraries/{iid}/events/{ieid}/photo/download")
+    public ResponseEntity<Resource> downloadPhoto(@PathVariable("iid") long iid, @PathVariable("ieid") long ieid) throws Exception {
+        ResponseEntity<Resource> file = s3Service.downloadFile(journalService.getJournal(ieid).getImageUrl());
+
+        System.out.println("📌 사진 다운로드 : " + file);
+
+        return file;
     }
 
     // 사진 등록
+    @ResponseBody
     @PostMapping("/api/itineraries/{iid}/events/{ieid}/photo")
     public ResponseEntity<JournalDTO> uploadPhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("file") MultipartFile file) {
+        // Front : FormData() 에 file 추가하여 post 
+
         JournalDTO journalDTO = journalService.uploadPhoto(ieid, file);
 
         System.out.println("📌 사진 등록한 기행문 : " + journalDTO);
@@ -77,9 +104,10 @@ public class JournalController {
     }
 
     // 사진 수정
+    @ResponseBody
     @PutMapping("/api/itineraries/{iid}/events/{ieid}/photo")
     public ResponseEntity<JournalDTO> modifiedPhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("file") MultipartFile file) {
-        JournalDTO journalDTO = journalService.modifiedPhoto(ieid, file);
+        JournalDTO journalDTO = journalService.modifiedPhotoVer1(ieid, file);
 
         System.out.println("📌 사진 수정한 기행문 : " + journalDTO);
 
@@ -87,24 +115,18 @@ public class JournalController {
     }
 
     // 사진 삭제
+    @ResponseBody
     @DeleteMapping("/api/itineraries/{iid}/events/{ieid}/photo")
-    public ResponseEntity<String> deletePhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
+    public ResponseEntity<JournalDTO> deletePhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
         JournalDTO journalDTO = journalService.deletePhoto(ieid);
 
         System.out.println("📌 사진 삭제한 기행문 : " + journalDTO);
-
-        return ResponseEntity.ok("사진 삭제 완료");
-    }
-
-    // 사진 등록 - test
-    @PostMapping("/api/itineraries/{iid}/events/{ieid}/photo-test")
-    public ResponseEntity<JournalDTO> uploadPhotoTest(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("imageURL") String imageURL) {
-        JournalDTO journalDTO = journalService.uploadPhotoTest(ieid, imageURL);
 
         return ResponseEntity.ok(journalDTO);
     }
 
     // 글 작성
+    @ResponseBody
     @PostMapping("/api/itineraries/{iid}/events/{ieid}/content")
     public ResponseEntity<JournalDTO> writeContent(@PathVariable Long iid, @PathVariable Long ieid, @RequestParam("content") String content) {
         JournalDTO journalDTO = journalService.writeContent(ieid, content);
@@ -115,9 +137,10 @@ public class JournalController {
     }
 
     // 글 수정
+    @ResponseBody
     @PutMapping("/api/itineraries/{iid}/events/{ieid}/content")
     public ResponseEntity<JournalDTO> modifiedContent(@PathVariable Long iid, @PathVariable Long ieid, @RequestParam("content") String content) {
-        JournalDTO journalDTO = journalService.modifiedContent(ieid, content);
+        JournalDTO journalDTO = journalService.modifiedContentVer2(ieid, content);
 
         System.out.println("📌 기행문 수정 : " + journalDTO);
 
@@ -125,6 +148,7 @@ public class JournalController {
     }
 
     // 글 삭제
+    @ResponseBody
     @DeleteMapping("/api/itineraries/{iid}/events/{ieid}/content")
     public ResponseEntity<JournalDTO> deleteContent(@PathVariable Long iid, @PathVariable Long ieid) {
         JournalDTO journalDTO = journalService.deleteContent(ieid);
@@ -133,7 +157,6 @@ public class JournalController {
 
         return ResponseEntity.ok(journalDTO);
     }
-
 
 
 }
