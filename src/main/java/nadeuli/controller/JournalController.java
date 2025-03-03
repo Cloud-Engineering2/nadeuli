@@ -15,6 +15,7 @@
  * 이홍비    2025.03.01     => 다시 되돌림
  * 이홍비                   사진 변경, 글 수정 시 사용할 함수 결정
  * 이홍비    2025.03.03     사진 파일 다운로드 추가 구현
+ *                         불필요한 것 정리
  * ========================================================
  */
 
@@ -32,7 +33,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
-//@RequestMapping("/itineraries/{iid}/events/{ieid}/journal")
 @Controller
 public class JournalController {
     private final JournalService journalService;
@@ -62,61 +62,6 @@ public class JournalController {
         return "journal/journal";
     }
 
-    @GetMapping("/itineraries/{iid}/events/{ieid}/journal2")
-    public String getJournal2(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, ModelMap model) {
-        JournalDTO journalDTO = journalService.getJournal(ieid);
-
-        System.out.println("📌 조회한 기행문 : " + journalDTO);
-
-        model.addAttribute("journal", journalDTO);
-
-        //return ResponseEntity.ok(journalDTO);
-
-        return "journal/journal2";
-    }
-
-    // 기행문 조회 (열람)
-    @GetMapping("/itineraries/{iid}/events/{ieid}/journal3")
-    public String getJournal3(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, ModelMap model) {
-        JournalDTO journalDTO = journalService.getJournal(ieid);
-
-        System.out.println("📌 조회한 기행문 : " + journalDTO);
-
-        model.addAttribute("journal", journalDTO);
-
-        //return ResponseEntity.ok(journalDTO);
-
-        return "journal/journal3";
-    }
-
-    // 기행문 조회 (열람)
-    @GetMapping("/itineraries/{iid}/events/{ieid}/journal4")
-    public String getJournal4(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, ModelMap model) {
-        JournalDTO journalDTO = journalService.getJournal(ieid);
-
-        System.out.println("📌 조회한 기행문 : " + journalDTO);
-
-        model.addAttribute("journal", journalDTO);
-
-        //return ResponseEntity.ok(journalDTO);
-
-        return "journal/journal4";
-    }
-
-    // 기행문 조회 (열람)
-    @GetMapping("/itineraries/{iid}/events/{ieid}/journal5")
-    public String getJournal5(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
-        JournalDTO journalDTO = journalService.getJournal(ieid);
-
-        System.out.println("📌 조회한 기행문 : " + journalDTO);
-
-//        model.addAttribute("journal", journalDTO);
-
-//        return ResponseEntity.ok(journalDTO);
-
-        return "journal/journal5";
-    }
-
     // 기행문 조회 (열람)
     @ResponseBody
     @GetMapping("/api/itineraries/{iid}/events/{ieid}/journal")
@@ -130,7 +75,6 @@ public class JournalController {
 //        System.out.println("journalDTO.getImageUrl().equals(\"\") : " + (journalDTO.getImageUrl().equals("")));
 //        System.out.println("journalDTO.getImageUrl().equals(\"null\") : " + (journalDTO.getImageUrl().equals("null")));
 //        System.out.println("journalDTO.getImageUrl().isEmpty() : " + (journalDTO.getImageUrl().isEmpty()));
-
 
         return ResponseEntity.ok(journalDTO);
     }
@@ -177,15 +121,6 @@ public class JournalController {
         JournalDTO journalDTO = journalService.deletePhoto(ieid);
 
         System.out.println("📌 사진 삭제한 기행문 : " + journalDTO);
-
-        return ResponseEntity.ok(journalDTO);
-    }
-
-    // 사진 등록 - test
-    @ResponseBody
-    @PostMapping("/api/itineraries/{iid}/events/{ieid}/photo-test")
-    public ResponseEntity<JournalDTO> uploadPhotoTest(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("imageURL") String imageURL) {
-        JournalDTO journalDTO = journalService.uploadPhotoTest(ieid, imageURL);
 
         return ResponseEntity.ok(journalDTO);
     }

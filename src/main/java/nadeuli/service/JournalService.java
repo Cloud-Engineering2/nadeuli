@@ -16,6 +16,7 @@
  * 이홍비    2025.03.01     단순 annotation 정리
  * 이홍비    2025.03.03     Persistence Context - DB : 동기화 관련 처리 (flush())
  *                         => 삭제 쪽 함수에도 flush() 처리
+ *                         불필요한 것 삭제
  * ========================================================
  */
 
@@ -26,7 +27,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.common.PhotoType;
 import nadeuli.dto.JournalDTO;
-import nadeuli.entity.ItineraryEvent;
 import nadeuli.entity.Journal;
 import nadeuli.repository.ItineraryEventRepository;
 import nadeuli.repository.JournalRepository;
@@ -112,8 +112,6 @@ public class JournalService {
         return uploadPhoto(ieid, file);
     }
 
-
-
     // 사진 삭제
     public JournalDTO deletePhoto(Long ieid) throws NoSuchElementException {
         System.out.println("🔥 기행문 - 사진 삭제 로직 실행됨!");
@@ -128,27 +126,6 @@ public class JournalService {
         journalRepository.flush(); // Persistence Context - DB : 동기화
 
         return JournalDTO.from(journal);
-    }
-
-    // 사진 등록 - local test
-    public JournalDTO uploadPhotoTest(Long ieid, String imageUrl) {
-        ItineraryEvent event = itineraryEventRepository.findById(ieid)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않는 ieid 입니다."));
-
-        Journal journal;
-        if (journalRepository.findById(ieid).isPresent()) {
-            // 해당 방문지 - 기행문 이미 존재함
-            journal = journalRepository.findById(ieid).get();
-            journal.saveImageURL(imageUrl); // 사진 url 저장
-            journalRepository.save(journal); // 저장
-        }
-        else {
-            // 해당 방문지 - 기행문 존재 x
-            journal = Journal.of(event, null, imageUrl); // Journal 객체 생성
-            journalRepository.save(journal); // 저장
-        }
-
-         return JournalDTO.from(journal);
     }
 
     public JournalDTO writeContent(Long ieid, String content) throws NoSuchElementException {

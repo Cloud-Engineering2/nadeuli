@@ -17,7 +17,6 @@
 package nadeuli.common;
 
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

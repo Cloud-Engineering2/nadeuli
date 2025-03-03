@@ -15,6 +15,7 @@
  * 이홍비    2025.02.28     kind 를 열거형으로 변경함
  * 이홍비    2025.03.01     @Transactional 추가
  * 이홍비    2025.03.03     파일 다운로드 관련 처리 추가
+ *                         불필요한 것 처리
  * ========================================================
  */
 
@@ -121,25 +122,6 @@ public class S3Service {
     public ResponseEntity<Resource> downloadFile(String imageURL) throws UnsupportedEncodingException {
         Resource resource = null;
 
-//        try {
-//            // key ; 경로 + 파일명
-//            String key = extractRelativePathFromUrl(imageURL);
-//            S3Object s3Object = amazonS3.getObject(bucketName, key);
-//            S3ObjectInputStream s3Is = s3Object.getObjectContent(); // 자동 매핑
-//            resource = new InputStreamResource(s3Is); // resource 로 매핑
-//
-//            String fileName = key.substring(key.lastIndexOf("/") + 1); // 파일 이름 저장
-//
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM); // 파일 다운로드 형식
-//            headers.set("Content-Disposition", "inline; filename=" + fileName);
-//
-//            return new ResponseEntity<Resource>(resource, headers, HttpStatus.OK);
-//
-//        } catch (Exception e) {
-//            return new ResponseEntity<Resource>(resource, null, HttpStatus.NO_CONTENT);
-//        }
-
         // key ; 경로 + 파일명
         String key = extractRelativePathFromUrl(imageURL);
         S3Object s3Object = amazonS3.getObject(bucketName, key);
@@ -154,7 +136,6 @@ public class S3Service {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM); // 파일 다운로드 형식
-//        headers.set("Content-Disposition", "inline; filename=" + fileName);
         headers.set("Content-Disposition", "inline; filename*=UTF-8''" + encodedFileName);
 
         return new ResponseEntity<Resource>(resource, headers, HttpStatus.OK);

@@ -13,7 +13,6 @@
  * ========================================================
  */
 
-
 package nadeuli.common;
 
 public enum PhotoType {
