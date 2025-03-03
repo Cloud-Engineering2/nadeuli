@@ -10,18 +10,22 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     최초 작성 : GlobalExceptionHandler
+ * 이홍비    2025.03.03     AmazonS3Exception 와 UnsupportedEncodingException 추가
  * ========================================================
  */
 
 package nadeuli.common;
 
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.UnsupportedEncodingException;
 import java.util.NoSuchElementException;
 
 @ControllerAdvice
@@ -52,5 +56,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage()); // 인증 실패 - 401 코드 반환
+    }
+
+    // AmazonS3 관련 예외 처리
+    @ExceptionHandler(AmazonS3Exception.class)
+    public ResponseEntity<String> handleAmazonS3Exception(AmazonS3Exception e) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("S3 오류 발생: " + e.getMessage());
+    }
+
+    // 인코딩 관련 예외 처리
+    @ExceptionHandler(UnsupportedEncodingException.class)
+    public ResponseEntity<String> handleIOException(UnsupportedEncodingException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 }
