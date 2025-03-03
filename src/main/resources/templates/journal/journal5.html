@@ -75,10 +75,18 @@
   </div>
 
   <div class="right-space">
-    <div class="image-container" id="image-container" onclick="uploadPhoto()">
+    <div class="image-header">
+      <div class="image-header-button">
+        <button id="upload-btn" onclick="uploadPhoto()">🖼️</button>
+        <button id="download-btn" onclick="downloadPhoto()">💾</button>
+        <button id="modify-btn" onclick="modifyPhoto()">🖼️</button>
+        <button id="remove-btn" onclick="confirmPhotoDelete()">❌</button>
+      </div>
+    </div>
+
+    <div class="image-container" id="image-container">
       <span class="plus" id="plus-icon">+</span>
       <img id="image-preview" src="" style="display: none;">
-      <button class="edit-button" id="edit-photo-btn" style="display: none;" onclick="modifyPhoto(event)">+</button>
     </div>
   </div>
 </div>

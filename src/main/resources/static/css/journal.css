@@ -176,7 +176,7 @@ body {
     color: #F3F3F3;
 }
 
-.content-header {
+.content-header, .image-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -184,12 +184,17 @@ body {
 
 }
 
-.content-header-button {
+.image-header {
+    /* 우측 배치 처리 */
+    justify-content: flex-end;
+}
+
+.content-header-button, .image-header-button {
     display: flex;
     gap: 10px;
 }
 
-.content-header-button button {
+.content-header-button button, .image-header-button button {
     background: none;
     border: none;
     padding: 0;
