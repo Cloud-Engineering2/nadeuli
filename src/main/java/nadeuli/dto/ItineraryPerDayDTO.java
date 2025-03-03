@@ -10,10 +10,12 @@
  * ========================================================
  * 박한철    2025.02.27     최초 작성 (DB 구조 수정)
  * 박한철    2025.02.27     toEntity(itinerary) 추가
+ * 박한철    2025.02.28     @JsonIgnore로 직렬화시 중첩된 데이터 출력되지 않게 적용
  * ========================================================
  */
 package nadeuli.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +28,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class ItineraryPerDayDTO {
     private Long id;
+    @JsonIgnore
     private ItineraryDTO itineraryDTO;
     private int dayCount;
     private LocalTime startTime;

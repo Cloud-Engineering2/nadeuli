@@ -9,6 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 박한철    2025.02.27     최초 작성 (DB 구조 수정)
+ * 박한철    2025.02.28     업데이트용 메소드 updateFromDto 추가
  * ========================================================
  */
 
@@ -18,6 +19,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.dto.ItineraryPerDayDTO;
+
 import java.time.LocalTime;
 
 @Getter
@@ -53,6 +56,14 @@ public class ItineraryPerDay extends BaseTimeEntity {
         this.startTime = startTime;
         this.endTime = endTime;
         this.dayOfWeek = dayOfWeek;
+    }
+
+
+    public void updateFromDto(ItineraryPerDayDTO dto) {
+        this.dayCount = dto.getDayCount();
+        this.startTime = dto.getStartTime();
+        this.endTime = dto.getEndTime();
+        this.dayOfWeek = dto.getDayOfWeek();
     }
 
     public static ItineraryPerDay of(Itinerary itinerary, int dayCount, LocalTime startTime, LocalTime endTime, Integer dayOfWeek) {

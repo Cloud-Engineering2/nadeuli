@@ -12,6 +12,8 @@
  * 이홍비    2025.02.25     Date 쪽 자료형 변경
  * 박한철    2025.02.27     DB 구조 수정 end_date -> totalDays로 카운팅하는식으로 변경
  *                         transportationType 추가
+ * 박한철    2025.02.28     업데이트용 메소드 updateFromDto 추가
+ *
  * ========================================================
  */
 
@@ -21,10 +23,12 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.dto.ItineraryDTO;
 
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Getter
 @Entity
@@ -49,8 +53,24 @@ public class Itinerary extends BaseTimeEntity{
     @Column(name = "transportation_type", nullable = false)
     private int transportationType;
 
-    // 생성자
+    public boolean hasChanges(ItineraryDTO dto) {
+        if (!Objects.equals(this.itineraryName, dto.getItineraryName())) {
+            return true;
+        }
+        if (!Objects.equals(this.startDate, dto.getStartDate())) {
+            return true;
+        }
+        if (this.totalDays != dto.getTotalDays()) {
+            return true;
+        }
+        if (this.transportationType != dto.getTransportationType()) {
+            return true;
+        }
+        return false; // 모든 필드가 동일하면 변경 없음
+    }
 
+
+    // 생성자
     public Itinerary(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType) {
         this.itineraryName = itineraryName;
         this.startDate = startDate;
@@ -63,5 +83,11 @@ public class Itinerary extends BaseTimeEntity{
         return new Itinerary(itineraryName, startDate, totalDays, transportationType);
     }
 
+    public void updateFromDto(ItineraryDTO dto) {
+        this.itineraryName = dto.getItineraryName();
+        this.startDate = dto.getStartDate();
+        this.totalDays = dto.getTotalDays();
+        this.transportationType = dto.getTransportationType();
+    }
 
 }

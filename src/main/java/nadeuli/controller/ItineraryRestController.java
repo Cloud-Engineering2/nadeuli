@@ -12,17 +12,19 @@
  * 박한철    2025.02.26     페이징 방식의 내 일정리스트 조회로 변경
  * 박한철    2025.02.27     DB 구조 변경으로 인한 일정 생성 파트 임시 주석처리
  * 박한철    2025.02.27     일정 생성 파트 주석해제후 수정완료
+ * 박한철    2025.02.28     전체 일정 Update 파트 개발 완료
  * ========================================================
  */
 
 package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
-import nadeuli.dto.ItineraryDTO;
 import nadeuli.dto.request.ItineraryCreateRequestDTO;
+import nadeuli.dto.request.ItineraryTotalUpdateRequestDTO;
 import nadeuli.dto.response.ItineraryCreateResponseDTO;
 import nadeuli.dto.response.ItineraryResponseDTO;
-import nadeuli.dto.response.ItineraryTotalResponseDTO;
+import nadeuli.dto.response.ItineraryTotalReadResponseDTO;
+import nadeuli.dto.response.ItineraryTotalUpdateResponseDTO;
 import nadeuli.service.ItineraryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,8 +34,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/itinerary")
 @RequiredArgsConstructor
@@ -42,15 +42,25 @@ public class ItineraryRestController {
     private final ItineraryService itineraryService;
 
     // ===========================
+    //  UPDATE(+CREATE/DELETE): 전체 일정 생성(+수정/삭제) - !!수정필요 : 세션이 현재 없어서 다음과 같이 id 하드코딩
+    // ===========================
+    @PostMapping("/update")
+    public ResponseEntity<ItineraryTotalUpdateResponseDTO> updateTotalItinerary(@RequestBody ItineraryTotalUpdateRequestDTO requestDTO) {
+        ItineraryTotalUpdateResponseDTO response = itineraryService.saveOrUpdateItinerary(requestDTO);
+        return ResponseEntity.ok(response);
+    }
+
+
+    // ===========================
     //  CREATE: 일정 탬플릿 생성 - !!수정필요 : 세션이 현재 없어서 다음과 같이 id 하드코딩
     // ===========================
     @PostMapping("/create")
     public ResponseEntity<ItineraryCreateResponseDTO> createItinerary(@RequestBody ItineraryCreateRequestDTO requestDTO) {
-        ItineraryCreateResponseDTO itinerary = itineraryService.createItinerary(
+        ItineraryCreateResponseDTO response = itineraryService.createItinerary(
                 requestDTO,
                 1L // 비로그인 테스트중이라 id 하드코딩
         );
-        return ResponseEntity.ok(itinerary);
+        return ResponseEntity.ok(response);
     }
 
     // ===========================
@@ -77,8 +87,8 @@ public class ItineraryRestController {
     //  READ: 특정 일정표 조회 (이벤트 포함)
     // ===========================
     @GetMapping("/{itineraryId}")
-    public ResponseEntity<ItineraryTotalResponseDTO> getItineraryTotal(@PathVariable Long itineraryId) {
-        ItineraryTotalResponseDTO response = itineraryService.getItineraryTotal(itineraryId, 1L);
+    public ResponseEntity<ItineraryTotalReadResponseDTO> getItineraryTotal(@PathVariable Long itineraryId) {
+        ItineraryTotalReadResponseDTO response = itineraryService.getItineraryTotal(itineraryId, 1L);
         return ResponseEntity.ok(response);
     }
 

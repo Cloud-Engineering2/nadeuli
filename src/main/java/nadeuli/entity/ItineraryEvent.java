@@ -12,6 +12,7 @@
  * 박한철    2025.02.25     iid->itinerary, pid->place 로 변수명 수정
  * 박한철    2025.02.27     DB 구조 수정 iid -> ipdid ,  *_date -> *_minute_since_start_day
  *                         moving_minute_from_prev_place 추가
+ * 박한철    2025.02.28     업데이트용 메소드 updateFromDto 추가
  * ========================================================
  */
 
@@ -21,9 +22,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.dto.request.ItineraryEventUpdateDTO;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -63,6 +64,16 @@ public class ItineraryEvent extends BaseTimeEntity{
         this.endMinuteSinceStartDay = endMinuteSinceStartDay;
         this.movingMinuteFromPrevPlace = movingMinuteFromPrevPlace;
     }
+
+    public void updateFromDto(ItineraryEventUpdateDTO dto, ItineraryPerDay itineraryPerDay) {
+        this.itineraryPerDay = itineraryPerDay; // 일정 날짜 업데이트
+        this.startMinuteSinceStartDay = dto.getStartMinuteSinceStartDay();
+        this.endMinuteSinceStartDay = dto.getEndMinuteSinceStartDay();
+        this.movingMinuteFromPrevPlace = dto.getMovingMinuteFromPrevPlace();
+    }
+
+
+
 
     // static factory method
     public static ItineraryEvent of(ItineraryPerDay itineraryPerDay, Place place, int startMinuteSinceStartDay, int endMinuteSinceStartDay, int movingMinuteFromPrevPlace) {
