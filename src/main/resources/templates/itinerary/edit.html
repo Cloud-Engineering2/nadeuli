@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일정 드래그 앤 드롭</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-sortablejs@latest/jquery-sortable.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #F3F3F3; /* 기존 배경색을 부드러운 White 계열로 변경 */
+        }
+        body {
+            overflow-x: hidden;
+        }
+        .container-fluid {
+            display: flex;
+            height: calc(100vh - 60px); /* 헤더 높이 제외 */
+            padding : 0px;
+            margin-top: 60px;
+        }
+        /* 왼쪽 패널 */
+        #sidebar {
+            background: #e7e7e7; /* 기존 배경을 Beige 계열로 변경 */
+            color: #343434; /* 텍스트를 Black 계열로 변경하여 가독성 향상 */
+            padding: 20px;
+            min-width: 300px;
+            max-width: 2000px;
+            width: 1000px; /* 기본 너비 */
+            overflow: auto;
+        }
+        /* 크기 조절 핸들 */
+        #resize-handle {
+            width: 10px;
+            cursor: ew-resize;
+
+            background: #8E8B82; /* 그레이톤 적용하여 자연스러운 느낌 추가 */
+            height: 100%;
+            position: absolute;  /* 상대 위치에서 벗어나 자유롭게 이동 */
+            left: 1000px;  /* 초기값: 사이드바 기본 크기 */
+            top: 0;
+            z-index: 10;
+        }
+        /* 오른쪽 컨텐츠 */
+        #content {
+            flex-grow: 1;
+            background: #F3F3F3; /* 전체적인 배경과 조화를 이루도록 White 적용 */
+        }
+        /* 헤더 스타일 */
+        #header {
+            background: #343434; /* 기존의 블루 계열을 차분한 Black 계열로 변경 */
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            z-index: 1000;
+        }
+
+
+        /* 🚀 일정 계획표 가로 배치 */
+        .schedule-container {
+            display: flex;
+            flex-direction: row; /* ✅ 가로 정렬 */
+            margin-right: 50px;
+            gap: 5px;
+            /*overflow-x: auto; !* ✅ 가로 스크롤 지원 *!*/
+            /*min-width: 800px; !* ✅ 최소 가로 길이 유지 *!*/
+        }
+        .day-column {
+            /* border: 1px #896b2782 solid; */
+            border-radius: 2px;
+            width: 280px;
+            min-width: 280px; /* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
+        }
+        .day-header {
+            background-color: #343434;
+            font-weight: bold;
+            /*text-align: center;*/
+            /*margin-bottom: 10px;*/
+            color: #dbd8d1;
+            /* Grey 적용하여 강조 */
+            padding: 8px;
+            border-bottom: 1px #e3e3e3 solid;
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between; /* 좌우 정렬 */
+            align-items: center; /* 세로 중앙 정렬 */
+            padding: 10px;
+            background: linear-gradient(88deg, #73685029, #ffffff00); /* White와 Beige 그라디언트 적용 */
+            border-radius: 10px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            position: sticky;
+            margin-bottom: 10px;
+            top: 0;
+            z-index: 10;
+        }
+
+
+        .schedule-header-name {
+            margin-left: 10px;
+            font-size: 1.5rem; /* 크고 강조된 텍스트 */
+            font-weight: bold;
+            color: #343434;
+            text-transform: uppercase; /* 대문자로 변환 */
+            letter-spacing: 1px; /* 글자 간격 */
+        }
+
+        .schedule-header-date {
+            margin-left: 10px;
+            font-size: 1rem;
+            color: #6c757d; /* 회색톤으로 보조 정보 느낌 */
+            font-weight: 500;
+        }
+
+        .schedule-settings-button {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .schedule-settings-button:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .event-container {
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+            background: #f9f9f9;
+            min-height: 70px;
+            padding: 10px;
+        }
+
+
+
+        .event {
+            display: flex;
+            width: 100%;
+        }
+
+        .event-wrapper {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            align-items: flex-start; /* 좌측 정렬 */
+        }
+
+        .travel-info {
+            margin-bottom: 8px; /* 이동 시간과 이벤트 내용 사이 간격 */
+        }
+
+        .event-content {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent; /* 배경색 추가 */
+
+            text-align: left;
+        }
+
+        .event-order {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 40px; /* 부모 컨테이너 크기 */
+            height: 70px; /* 선과 원을 포함한 높이 */
+        }
+
+
+
+        .event-order-line {
+            width: 1px;
+
+            background-color: #8E8B82; /* Grey 적용하여 자연스러움 추가 */
+
+            z-index: 0; /* 선을 원의 뒤로 배치 */
+        }
+
+
+
+        .event-order-line.top {
+            height: 30%;
+        }
+
+
+        .event-order-line.bottom {
+            height: 90%;
+        }
+
+        .event .event-order-line.transparent {
+            background-color: transparent !important;
+        }
+
+
+        .event-order-circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid gray;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            position: absolute;
+            top: 30%;
+            transform: translateY(-50%);
+            z-index: 1; /* 원이 선 위로 오도록 설정 */
+        }
+        .event-main {
+            display: flex;
+            width: 100%;
+            padding-top: 4px;
+            padding-left: 4px;
+            padding-bottom: 4px;
+            color: #514f49;
+            border-radius: 4px;
+            background: #ffffff87;
+            border: 1px solid rgb(0 0 0 / 34%);
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
+            text-align: left;
+            cursor: grab;
+            margin-bottom: 8px;
+            min-height: 50px;
+        }
+
+        .event-left {
+            padding-left: 5px;
+            flex: 9; /* 왼쪽 박스를 9배 크기로 설정 */
+        }
+
+        .event-right {
+            flex: 1; /* 오른쪽 박스를 1배 크기로 설정 */
+            display: flex;
+            position: relative;
+            justify-content: center; /* 버튼 가운데 정렬 */
+            align-items: center;
+        }
+
+
+
+        .event-options-button {
+            color: black;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .event-options {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+            z-index: 10;
+        }
+
+        .event-options button {
+            background: none;
+            border: none;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .event-options button:hover {
+            background: #f0f0f0;
+        }
+
+        /* 메뉴 기본 숨김 */
+        .hidden {
+            display: none;
+        }
+
+
+        .sortable-ghost .tour-image {
+            display: none !important;
+        }
+
+        .sortable-drag .event-order{
+            visibility: hidden !important;
+
+        }
+        .sortable-drag .travel-info{
+            visibility: hidden !important;
+
+        }
+
+
+        .sortable-ghost {
+            opacity: 0.5;
+            background: transparent;
+        }
+        .sortable-drag {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        /* 🚀 이동 시간 레이블 스타일 */
+        .travel-time {
+            text-align: center;
+            font-size: 0.8rem;
+            margin: 3px auto;
+            padding: 5px;
+            width: 100%;
+            background: #E9DCBE; /* Beige 계열로 자연스럽게 배경 적용 */
+            color: #343434; /* 가독성 향상을 위한 Black 계열 적용 */
+            border-radius: 5px;
+            pointer-events: none;
+            user-select: none;
+        }
+
+
+
+    </style>
+</head>
+<body>
+<!-- 상단 헤더 -->
+<div id="header">
+    나들이
+    <button id="save-button">저장하기</button>
+</div>
+
+<div class="container-fluid">
+
+        <!-- 왼쪽 패널 -->
+        <div id="sidebar" class="col-md-3">
+            <div class="schedule-header" id="scheduleHeader">
+                <div class="schedule-header-left">
+                    <div class="schedule-header-name">여행 제목</div>
+                    <div class="schedule-header-date">2025/03/02(화) ~ 2025/03/08(목)</div>
+                </div>
+                <button class="schedule-settings-button">⚙️</button>
+            </div>
+
+            <div class="schedule-container" id="scheduleContainer"></div>
+        </div>
+
+        <!-- 크기 조절 핸들 -->
+        <div id="resize-handle"></div>
+
+        <!-- 오른쪽 지도 -->
+        <div class="col-md-9">
+            <div id="map" style="height: 100%; background: lightblue;">지도 영역</div>
+        </div>
+
+</div>
+
+<script>
+    let itinerary = null;
+    const perDayMap = new Map();
+    const eventMap = new Map();
+
+    document.getElementById("save-button").addEventListener("click", function () {
+
+        const { createdDate, modifiedDate, role, ...filteredItinerary } = itinerary;
+
+        // perDayMap을 리스트 형태로 변환
+        const itineraryPerDays = Array.from(perDayMap.values());
+
+        // eventMap 변환 (placeDTO.id를 pid로, stayMinute 제거)
+        const itineraryEvents = Array.from(eventMap.values()).map(event => ({
+            ...event,
+            pid: event.placeDTO.id, // placeDTO.id를 pid로 변경
+            placeDTO: undefined, // placeDTO 제거
+            stayMinute: undefined // stayMinute 제거
+        }));
+
+        // JSON으로 변환
+        const jsonData = JSON.stringify({ itinerary: filteredItinerary, itineraryPerDays, itineraryEvents }, null, 2);
+
+        // 콘솔 출력
+        console.log(jsonData);
+
+    });
+
+    function generateHashCode(length = 10) {
+        const array = new Uint8Array(length);
+        window.crypto.getRandomValues(array);
+        return btoa(String.fromCharCode(...array)).replace(/[^a-zA-Z0-9]/g, '').substring(0, length);
+    }
+
+    function generateUniqueId(map, length = 10) {
+        let id;
+        do {
+            id = generateHashCode(length);
+        } while (map.has(id)); // 중복된 ID가 존재하면 다시 생성
+        return id;
+    }
+
+    function addEvent(event) {
+        const id = generateUniqueId(eventMap);
+        eventMap.set(id, event);
+        return id; // 생성된 ID 반환
+    }
+
+    function getEventById(id) {
+        return eventMap.get(id) || null; // 존재하지 않으면 null 반환
+    }
+
+
+
+    $(document).ready(function () {
+        // 크기 조절 기능
+        $("#resize-handle").mousedown(function (e) {
+            e.preventDefault();
+
+            $(document).mousemove(function (e) {
+                let newWidth = e.pageX;
+
+                // 최소/최대 너비 제한
+                if (newWidth >= 300 && newWidth <= 2000) {
+                    $("#sidebar").css("width", newWidth + "px");
+                    $("#resize-handle").css("left", newWidth + "px"); // 핸들을 사이드바 끝에 위치
+                }
+            });
+
+            $(document).mouseup(function () {
+                $(document).off("mousemove");
+            });
+        });
+    });
+
+    $(document).ready(function () {
+        const testData={"itinerary":{"id":1,"itineraryName":"Tokyo Exploration","startDate":"2025-06-01T00:00:00","totalDays":3,"transportationType":1,"createdDate":"2025-02-28T14:36:41","modifiedDate":"2025-02-28T14:36:41","role":"ROLE_OWNER"},"itineraryPerDays":[{"id":1,"dayCount":1,"startTime":"08:00:00","endTime":"22:00:00","dayOfWeek":1},{"id":2,"dayCount":2,"startTime":"09:00:00","endTime":"21:30:00","dayOfWeek":2},{"id":3,"dayCount":3,"startTime":"07:30:00","endTime":"23:00:00","dayOfWeek":3}],"itineraryEvents":[{"id":1,"dayCount":1,"placeDTO":{"id":1,"googlePlaceId":"tokyo1","placeName":"Shibuya Crossing","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":120,"movingMinuteFromPrevPlace":0},{"id":2,"dayCount":1,"placeDTO":{"id":2,"googlePlaceId":"tokyo2","placeName":"Tokyo Tower","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":180,"endMinuteSinceStartDay":270,"movingMinuteFromPrevPlace":30},{"id":3,"dayCount":1,"placeDTO":{"id":3,"googlePlaceId":"tokyo3","placeName":"Shinjuku Gyoen","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":330,"endMinuteSinceStartDay":450,"movingMinuteFromPrevPlace":30},{"id":4,"dayCount":1,"placeDTO":{"id":4,"googlePlaceId":"tokyo4","placeName":"Akihabara","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":480,"endMinuteSinceStartDay":600,"movingMinuteFromPrevPlace":30},{"id":5,"dayCount":1,"placeDTO":{"id":5,"googlePlaceId":"tokyo5","placeName":"Asakusa Temple","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":660,"endMinuteSinceStartDay":780,"movingMinuteFromPrevPlace":30},{"id":6,"dayCount":2,"placeDTO":{"id":6,"googlePlaceId":"tokyo6","placeName":"Odaiba","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":120,"movingMinuteFromPrevPlace":0},{"id":7,"dayCount":2,"placeDTO":{"id":7,"googlePlaceId":"tokyo7","placeName":"Ginza Shopping District","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":210,"endMinuteSinceStartDay":300,"movingMinuteFromPrevPlace":30},{"id":8,"dayCount":2,"placeDTO":{"id":8,"googlePlaceId":"tokyo8","placeName":"Harajuku","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":360,"endMinuteSinceStartDay":480,"movingMinuteFromPrevPlace":30},{"id":9,"dayCount":2,"placeDTO":{"id":9,"googlePlaceId":"tokyo9","placeName":"Ueno Park","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":540,"endMinuteSinceStartDay":660,"movingMinuteFromPrevPlace":30},{"id":10,"dayCount":3,"placeDTO":{"id":10,"googlePlaceId":"tokyo10","placeName":"Tsukiji Market","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":120,"movingMinuteFromPrevPlace":0},{"id":11,"dayCount":3,"placeDTO":{"id":11,"googlePlaceId":"tokyo11","placeName":"Tokyo Disneyland","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":180,"endMinuteSinceStartDay":390,"movingMinuteFromPrevPlace":30},{"id":12,"dayCount":3,"placeDTO":{"id":12,"googlePlaceId":"tokyo12","placeName":"Meiji Shrine","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":450,"endMinuteSinceStartDay":570,"movingMinuteFromPrevPlace":30},{"id":13,"dayCount":3,"placeDTO":{"id":13,"googlePlaceId":"tokyo13","placeName":"Rainbow Bridge","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":630,"endMinuteSinceStartDay":750,"movingMinuteFromPrevPlace":30},{"id":14,"dayCount":3,"placeDTO":{"id":14,"googlePlaceId":"tokyo14","placeName":"Roppongi Hills","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":780,"endMinuteSinceStartDay":900,"movingMinuteFromPrevPlace":30}]};
+        extractData(testData);
+
+        renderItinerary(testData);
+
+        function createData(data){
+
+            // itinerary 복사
+            itinerary = { ... data.itinerary };
+
+            // itineraryPerDays 복사
+            perDayMap.clear();
+            data.itineraryPerDays.forEach(dayPerDay => {
+                perDayMap.set(dayPerDay.dayCount, ... dayPerDay);
+            });
+
+            const groupedByDay = {};
+
+
+            // itineraryEvents 생성
+            data.itineraryEvents.forEach(event => {
+                const dayKey = event.dayCount;
+                const baseStartTime = perDayMap.get(dayKey)?.startTime || "00:00:00"; // 해당 날짜의 시작 시간
+                const baseStartMinutes = timeToMinutes(baseStartTime); // HH:MM:SS → 분 단위 변환
+
+                if (!groupedByDay[dayKey]) {
+                    groupedByDay[dayKey] = [];
+                }
+
+
+                let editedEvent = {...event};
+                editedEvent.stayMinute = editedEvent.endMinuteSinceStartDay - editedEvent.startMinuteSinceStartDay;
+
+                let eventId = addEvent(editedEvent);
+
+                groupedByDay[dayKey].push({
+                    id: eventId,
+                    placeName: event.placeDTO.placeName,
+                    startMinute: baseStartMinutes + editedEvent.startMinuteSinceStartDay,
+                    endMinute: baseStartMinutes + editedEvent.endMinuteSinceStartDay,
+                    movingMinute: event.movingMinuteFromPrevPlace
+                });
+            });
+        }
+
+
+        function renderItinerary(data) {
+            $(".schedule-header-name").text(data.itinerary.itineraryName);
+
+            // 날짜 변환 및 표시
+            let startDate = new Date(data.itinerary.startDate);
+            let endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + data.itinerary.totalDays - 1); // 마지막 날짜 계산
+
+            let options = { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' };
+            let startStr = startDate.toLocaleDateString('ko-KR', options);
+            let endStr = endDate.toLocaleDateString('ko-KR', options);
+
+            $(".schedule-header-date").text(`${startStr} ~ ${endStr}`);
+
+            itinerary = data.itinerary;
+
+            // 🚀 perDayMap 초기화 및 dayCount → dayPerDay 객체 매핑
+            perDayMap.clear();
+            data.itineraryPerDays.forEach(dayPerDay => {
+                perDayMap.set(dayPerDay.dayCount, dayPerDay);
+            });
+
+            const groupedByDay = {};
+
+            data.itineraryEvents.forEach(event => {
+                const dayKey = event.dayCount;
+                const baseStartTime = perDayMap.get(dayKey)?.startTime || "00:00:00"; // 해당 날짜의 시작 시간
+                const baseStartMinutes = timeToMinutes(baseStartTime); // HH:MM:SS → 분 단위 변환
+
+                if (!groupedByDay[dayKey]) {
+                    groupedByDay[dayKey] = [];
+                }
+
+                let editedEvent = { ...event };
+                editedEvent.stayMinute = editedEvent.endMinuteSinceStartDay - editedEvent.startMinuteSinceStartDay;
+
+                let eventId = addEvent(editedEvent);
+
+                groupedByDay[dayKey].push({
+                    id: eventId,
+                    placeName: event.placeDTO.placeName,
+                    startMinute: baseStartMinutes + editedEvent.startMinuteSinceStartDay, // 시작 시간을 반영
+                    endMinute: baseStartMinutes + editedEvent.endMinuteSinceStartDay, // 종료 시간을 반영
+                    movingMinute: event.movingMinuteFromPrevPlace
+                });
+            });
+
+            // 각 일차별 이벤트 정렬 (시작 시간 기준)
+            Object.keys(groupedByDay).forEach(dayKey => {
+                groupedByDay[dayKey].sort((a, b) => a.startMinute - b.startMinute);
+            });
+
+            // 🚀 일정 UI 렌더링
+            const scheduleContainer = $('#scheduleContainer');
+            scheduleContainer.empty();
+
+            Object.keys(groupedByDay).forEach(dayKey => {
+                const dayNumber = parseInt(dayKey);
+                const startTime = perDayMap.get(dayNumber)?.startTime || "00:00:00";
+
+                const dayColumn = $(`
+            <div class='day-column'>
+                <div class='day-header'>${dayKey}일차 (${startTime.substring(0,5)})</div>
+                <div class='event-container' id='day-${dayNumber}'></div>
+            </div>
+        `);
+
+                groupedByDay[dayKey].forEach((event, index) => {
+                    const isFirst = index === 0;
+                    const isLast = index === groupedByDay[dayKey].length - 1;
+
+                    const eventElement = $(`
+                                            <div class='event' data-id='${event.id}'>
+                                                <div class="event-wrapper">
+                                                    <div class="travel-info">이동 시간 ${event.movingMinute}분</div>
+                                                    <div class="event-content">
+                                                        <div class="event-order">
+                                                            <div class="event-order-line top ${isFirst ? 'transparent' : ''}"></div>
+                                                            <div class="event-order-circle">${index + 1}</div>
+                                                            <div class="event-order-line bottom ${isLast ? 'transparent' : ''}"></div>
+                                                        </div>
+                                                        <div class="event-main">
+                                                            <div class="event-left">
+                                                                <div class='event-title'>${event.placeName}</div>
+                                                                <div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>
+                                                            </div>
+                                                            <div class="event-right">
+                                                                <button class="event-options-button">⋮</button>
+                                                                <div class="event-options hidden">
+                                                                    <button class="event-duration">머무는 시간</button>
+                                                                    <button class="event-remove">삭제</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `);
+
+                    dayColumn.find('.event-container').append(eventElement);
+                });
+
+                scheduleContainer.append(dayColumn);
+            });
+
+            // 🚀 초기 상태에서 각 요일 첫 번째 .travel-info 숨기기
+            $(".event-container").each(function () {
+                $(this).find(".event .travel-info").first().css("display", "none");
+            });
+
+            initializeSortable(); // 🚀 드래그 & 드롭 기능 활성화
+        }
+
+    // HH:MM:SS 문자열을 분(minute)으로 변환하는 함수
+            function timeToMinutes(timeStr) {
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                return hours * 60 + minutes;
+            }
+
+    // 분(minute) 값을 HH:MM 형태로 변환하는 함수
+            function formatTime(minutes) {
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+                return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+            }
+            $(document).on("click", ".event-options-button", function (event) {
+                event.stopPropagation(); // 클릭 이벤트 전파 방지
+                let menu = $(this).siblings(".event-options");
+
+                // 다른 열린 메뉴 닫기
+                $(".event-options").not(menu).addClass("hidden");
+
+                // 현재 메뉴 토글
+                menu.toggleClass("hidden");
+            });
+
+    // 다른 곳을 클릭하면 메뉴 닫기
+            $(document).on("click", function () {
+                $(".event-options").addClass("hidden");
+            });
+
+    // 메뉴 내부 클릭 시 닫히지 않도록 처리
+            $(document).on("click", ".event-options", function (event) {
+                event.stopPropagation();
+            });
+
+            function initializeSortable() {
+                $(".event-container").each(function() {
+                    new Sortable(this, {
+                        group: "shared",
+                        animation: 200,
+                        ghostClass: "sortable-ghost",
+                        dragClass: "sortable-drag",
+                        handle: ".event-content",
+                        onStart: function(evt) {
+                            // $(".travel-info").hide();
+                            $(".travel-info").css("visibility", "hidden");
+
+                        },
+                        onAdd: function(evt) {
+
+
+                            let newItem = $(evt.item);
+                            console.log(evt);
+                            let eventId = newItem.data("id");
+                            let event = getEventById(eventId);
+
+                            console.log(event);
+                            // newItem.replaceWith(`<div class="event">${placeName}</div>`);
+
+
+                            newItem.replaceWith(`<div class='event' data-id='${eventId}'>
+                                        <div class="event-wrapper">
+                                            <div class="travel-info"></div>
+                                            <div class="event-content">
+                                                <div class="event-order">
+                                                    <div class="event-order-line top"></div>
+                                                    <div class="event-order-circle">1</div>
+                                                    <div class="event-order-line bottom"></div>
+                                                </div>
+                                                <div class="event-main">
+                                                    <div class="event-left">
+                                                        <div class='event-title'>${event.placeDTO.placeName}</div>
+                                                        <div class='event-time'></div>
+                                                    </div>
+                                                    <div class="event-right">
+                                                        <button class="event-options-button">⋮</button>
+                                                        <div class="event-options hidden">
+                                                            <button class="event-duration">머무는 시간</button>
+                                                            <button class="event-remove">삭제</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`);
+
+
+                            // updateTravelTimes();
+
+                            // logAffectedEvents(evt.to, evt.item);
+                            console.log("ON ADD !");
+                        },
+                        onEnd: function (evt) {
+
+                            let fromDayId = evt.from.id;
+                            let oldIndex = evt.oldIndex;
+                            let toDayId = evt.to.id;
+                            let newIndex = evt.newIndex;
+
+                            console.log(`[출발] ${fromDayId}, oldIndex: ${oldIndex}`);
+                            console.log(`[도착] ${toDayId}, newIndex: ${newIndex}`);
+
+                            let updateStartIndexFrom = null;
+                            let updateStartIndexTo = null;
+
+                            if (toDayId === fromDayId) {
+                                console.log(`- 같은 리스트(${toDayId})에서 이동`);
+                                console.log(`-- 영향을 받는 인덱스`);
+
+                                if (oldIndex !== newIndex) {
+                                    let movedForward = oldIndex > newIndex;
+                                    console.log(movedForward ? `--- 요소가 기존보다 앞쪽으로 이동` : `--- 요소가 기존보다 뒤쪽으로 이동`);
+                                    updateStartIndexFrom = calculateDistanceUpdates(toDayId, oldIndex, newIndex, movedForward);
+
+                                } else {
+                                    console.log(`--- 이동하지 않음`);
+                                }
+                            } else {
+                                console.log(`- 다른 리스트 이동: ${fromDayId} → ${toDayId}`);
+
+                                console.log(`-- [출발 리스트] ${fromDayId}에서 제거 후 영향`);
+                                updateStartIndexFrom = calculateRemovalImpact(fromDayId, oldIndex);
+
+                                console.log(`-- [도착 리스트] ${toDayId}에서 추가 후 영향`);
+                                updateStartIndexTo = calculateInsertionImpact(toDayId, newIndex);
+                            }
+
+                            if (updateStartIndexFrom !== null) {
+                                updateEventDisplay(fromDayId, updateStartIndexFrom);
+                            }
+                            if (updateStartIndexTo !== null) {
+                                updateEventDisplay(toDayId, updateStartIndexTo);
+                            }
+
+                            console.log(eventMap);
+                            $(".travel-info").css("visibility", "visible");
+
+                            $(evt.from).find(".event .travel-info").css("display", "block");
+                            $(evt.to).find(".event .travel-info").css("display", "block");
+                            $(evt.from).find(".event .travel-info").first().css("display", "none");
+                            $(evt.to).find(".event .travel-info").first().css("display", "none");
+
+
+                            // 먼저 투명 클래스 제거 (초기화)
+                            $(evt.from).find(".event .event-order-line").removeClass("transparent");
+                            $(evt.to).find(".event .event-order-line").removeClass("transparent");
+
+                            // 첫 번째 .top과 마지막 .bottom에만 투명 처리
+                            $(evt.from).find(".event .event-order-line.top").first().addClass("transparent");
+                            $(evt.from).find(".event .event-order-line.bottom").last().addClass("transparent");
+                            $(evt.to).find(".event .event-order-line.top").first().addClass("transparent");
+                            $(evt.to).find(".event .event-order-line.bottom").last().addClass("transparent");
+
+
+                            // console.log(evt);
+                            // console.log(evt.to);
+                            // console.log(evt.item);
+                            // console.log(evt.from);
+                            console.log("ON END !");
+                        }
+                    });
+                });
+                // updateTravelTimes();
+            }
+        // ✅ 순서 및 이동시간을 업데이트하는 함수
+        function updateEventDisplay(dayId, startIndex) {
+            const container = document.getElementById(dayId);
+            if (!container) return;
+
+            const dayCount = parseInt(dayId.match(/\d+$/)[0]); // day-숫자 → 숫자 추출
+            const items = container.children;
+            let order = startIndex + 1; // 새로운 순서값 설정
+
+            // 초기 시간을 가져옴 (해당 dayCount의 startTime)
+            let baseStartTime = timeToMinutes(perDayMap.get(dayCount)?.startTime || "00:00:00");
+
+            // 이전 이벤트의 종료 시간 가져오기 (이동시간 반영)
+            let prevEndMinute = 0; // startIndex가 0일 경우 기본값 설정
+            if (startIndex > 0) {
+                const prevEventElement = items[startIndex - 1];
+                const prevEventId = prevEventElement.getAttribute("data-id");
+                const prevEvent = getEventById(prevEventId);
+
+                if (prevEvent) {
+                    prevEndMinute = prevEvent.startMinuteSinceStartDay + prevEvent.stayMinute;
+                }
+            }
+
+            // ✅ 이벤트 업데이트 루프
+            for (let i = startIndex; i < items.length; i++) {
+                const eventElement = items[i];
+                const eventId = eventElement.getAttribute("data-id");
+                const event = getEventById(eventId);
+
+                if (!event) continue;
+
+                // ✅ 순서 업데이트 (event-order-circle)
+                const orderCircle = eventElement.querySelector(".event-order-circle");
+                if (orderCircle) {
+                    orderCircle.textContent = order;
+                }
+
+                // ✅ 이동 시간 업데이트 (travel-info)
+                const travelInfo = eventElement.querySelector(".travel-info");
+                if (travelInfo) {
+                    travelInfo.textContent = `이동 시간 ${event.movingMinuteFromPrevPlace ?? 0}분`;
+                }
+
+                // ✅ 이벤트 시간 업데이트 (event-time)
+                const eventTimeElement = eventElement.querySelector(".event-time");
+                if (eventTimeElement) {
+                    let startMinute = prevEndMinute + (event.movingMinuteFromPrevPlace ?? 0); // 이동 시간 반영
+                    let endMinute = startMinute + event.stayMinute; // 머무는 시간 추가
+
+                    // 저장되는 값은 baseStartTime을 제외한 상대 값
+                    event.startMinuteSinceStartDay = startMinute;
+                    event.endMinuteSinceStartDay = endMinute;
+
+                    // UI에 표시할 값은 baseStartTime을 더한 절대 시간
+                    eventTimeElement.textContent = `${formatTime(startMinute + baseStartTime)} ~ ${formatTime(endMinute + baseStartTime)}`;
+
+                    // 다음 이벤트의 시작 시간 업데이트
+                    prevEndMinute = endMinute;
+                }
+
+                // ✅ 최신 이벤트 데이터 업데이트
+                eventMap.set(eventId, event);
+
+                order++; // 다음 순서 증가
+            }
+        }
+
+        function requestDistanceCalculation(placeId1, placeId2) {
+            console.log(`🚗 거리(시간) 계산 요청: ${placeId1} → ${placeId2}`);
+
+            // 랜덤 값 생성 (예제)
+            const distance = Math.floor(Math.random() * 50) + 1; // 1 ~ 50km
+            const minute = 30 ;//Math.floor(Math.random() * 120) + 1; // 1 ~ 120분
+
+            return { distance, minute };
+        }
+
+        // 특정 index의 `data-id`를 가져와서 이벤트 조회 및 거리 계산 함수 호출
+        function calculateDistanceByIndex(dayId, index1, index2) {
+            const container = document.getElementById(dayId);
+            if (!container) return;
+
+            const items = container.children;
+            const itemCount = items.length;
+
+            if (index1 < 0 || index2 < 0) {
+                console.log(`⚠️ 경고: index1=${index1}, index2=${index2} (index 0의 이동 시간을 0으로 설정)`);
+
+                // 첫 번째 요소의 movingMinuteFromPrevPlace를 0으로 설정
+                const firstEventId = items[0]?.getAttribute("data-id");
+                if (firstEventId) {
+                    const firstEvent = getEventById(firstEventId);
+                    if (firstEvent) {
+                        firstEvent.movingMinuteFromPrevPlace = 0;
+                        eventMap.set(firstEventId, firstEvent);
+                        console.log(`✅ 업데이트 완료: ${firstEventId}의 movingMinuteFromPrevPlace → 0분`);
+                    }
+                }
+                return;
+            }
+
+            // 예외 처리: 끝부분 (범위를 초과하는 경우)
+            if (index1 >= itemCount || index2 >= itemCount) {
+                console.warn(`❌ 유효하지 않은 인덱스: index1=${index1}, index2=${index2}`);
+                return;
+            }
+
+            const eventId1 = items[index1]?.getAttribute("data-id");
+            const eventId2 = items[index2]?.getAttribute("data-id");
+
+            if (!eventId1 || !eventId2) {
+                console.warn(`❌ 이벤트 ID 없음: index1=${index1}, index2=${index2}`);
+                return;
+            }
+
+            const event1 = getEventById(eventId1);
+            const event2 = getEventById(eventId2);
+
+            if (event1 && event2) {
+                const { distance, minute } = requestDistanceCalculation(event1.placeDTO.googlePlaceId, event2.placeDTO.googlePlaceId);
+
+                // event2의 movingMinuteFromPrevPlace 업데이트
+                event2.movingMinuteFromPrevPlace = minute;
+
+                // eventMap 업데이트
+                eventMap.set(eventId2, event2);
+
+                console.log(`✅ 업데이트 완료: ${eventId2}의 movingMinuteFromPrevPlace → ${minute}분`);
+            } else {
+                console.warn(`❌ 이벤트 조회 실패: eventId1=${eventId1}, eventId2=${eventId2}`);
+            }
+        }
+
+
+            // ✅ 거리(시간) 계산 요청을 함수로 분리
+        function calculateDistanceUpdates(dayId, oldIndex, newIndex, movedForward) {
+            console.log(`🔄 거리 계산 업데이트: ${dayId}, oldIndex: ${oldIndex} → newIndex: ${newIndex}`);
+
+            const calculatedPairs = new Set();
+
+            function safeCalculateDistance(index1, index2) {
+                const pairKey = `${index1}-${index2}`;
+                if (!calculatedPairs.has(pairKey)) {
+                    calculatedPairs.add(pairKey);
+                    calculateDistanceByIndex(dayId, index1, index2);
+                }
+            }
+
+            if (movedForward) {
+                safeCalculateDistance(newIndex - 1, newIndex); // 새로 삽입된 위치의 앞쪽 영향
+                safeCalculateDistance(newIndex, newIndex + 1); // 새로 삽입된 위치의 뒤쪽 영향
+                safeCalculateDistance(oldIndex, oldIndex + 1); // 원래 위치의 뒤쪽 영향
+
+            } else {
+                safeCalculateDistance(newIndex - 1, newIndex); // 새로 삽입된 위치의 앞쪽 영향
+                safeCalculateDistance(newIndex, newIndex + 1); // 새로 삽입된 위치의 뒤쪽 영향
+                safeCalculateDistance(oldIndex -1 , oldIndex); // 원래 위치의 앞쪽 영향
+            }
+            return movedForward ? newIndex : oldIndex; // updateEventDisplay의 시작 인덱스를 반환
+        }
+
+        // ✅ 출발 리스트에서 제거 후 거리(시간) 계산 함수
+        function calculateRemovalImpact(dayId, oldIndex) {
+            calculateDistanceByIndex(dayId, oldIndex - 1, oldIndex);
+            return oldIndex;
+        }
+
+        // ✅ 도착 리스트에서 추가 후 거리(시간) 계산 함수
+        function calculateInsertionImpact(dayId, newIndex) {
+            calculateDistanceByIndex(dayId, newIndex - 1, newIndex);
+            calculateDistanceByIndex(dayId, newIndex, newIndex + 1);
+            return newIndex;
+        }
+
+
+
+
+        });
+    </script>
+
+
+
+
+
+</body>
+</html>
