@@ -19,18 +19,6 @@ body {
     box-sizing: border-box;
 }
 
-
-/*.container {*/
-/*    display: flex;*/
-/*    max-width: 1200px;*/
-/*    max-height: 2000px;*/
-/*    margin: auto;*/
-/*    background: #F3F3F3;*/
-/*    padding: 20px;*/
-/*    border-radius: 10px;*/
-/*    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
-/*}*/
-
 .container {
     display: flex;
     flex-direction: row; /* 모바일 화면에서 컬럼 정렬 */
@@ -80,25 +68,17 @@ body {
 
     width: calc(100% - 20px); /* 패딩 및 마진을 고려한 너비 설정 */
 }
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.header button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-}
+
 .content {
     margin-top: 10px;
     min-height: 100px;
 }
+
 .divider {
     border: 1px solid #8E8B82;
     margin-bottom: 10px;
 }
+
 .image-container {
     position: relative;
     display: flex;
@@ -106,11 +86,12 @@ body {
     align-items: center;
     width: 100%;
     height: 500px;
-    background-color: #8E8B82;
+    background-color: #F3F3F3;
     border-radius: 10px;
-    cursor: pointer;
+    /*cursor: pointer;*/
     overflow: hidden;
 }
+
 .image-container img {
     width: 100%;
     height: 100%;
@@ -119,36 +100,11 @@ body {
     object-position: center;
     /*object-fit: initial;*/
 }
+
 .image-container .plus {
     font-size: 40px;
     color: #F3F3F3;
     position: absolute;
-}
-.edit-button {
-    font-family: 'GriunNoltoTAENGGU';
-    color: #343434;
-    background: rgba(0, 0, 0, 0.5);
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    border: none;
-    padding: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-.modal.active {
-    display: block;
 }
 
 .button-group {
@@ -192,6 +148,10 @@ body {
 .content-header-button, .image-header-button {
     display: flex;
     gap: 10px;
+}
+
+.image-header-button {
+    margin-bottom: 7px;
 }
 
 .content-header-button button, .image-header-button button {
@@ -248,7 +208,6 @@ body {
 #content::-webkit-scrollbar-thumb:active {
     background: #343434;  /* 더 어두운 회색 */
 }
-
 
 #content-input {
     font-family: 'GriunNoltoTAENGGU';
