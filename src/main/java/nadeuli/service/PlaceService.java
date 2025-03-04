@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,8 @@ public class PlaceService {
 
         String url = "https://maps.googleapis.com/maps/api/place/details/json" +
                 "?place_id=" + googlePlaceId +
-                "&key=" + googleMapsApiKey;
+                "&key=" + googleMapsApiKey +
+                "&language=ko";
 
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -43,19 +45,28 @@ public class PlaceService {
             }
 
             JsonNode rootNode = objectMapper.readTree(response.getBody());
-            String address = rootNode.path("result").path("formatted_address").asText();
+            String extractedPlaceName = rootNode.path("result").path("name").asText();
             double latitude = rootNode.path("result").path("geometry").path("location").path("lat").asDouble();
             double longitude = rootNode.path("result").path("geometry").path("location").path("lng").asDouble();
 
-            saveOrUpdatePlace(googlePlaceId, placeName, address, latitude, longitude);
+            // DB 저장
+            saveOrUpdatePlace(googlePlaceId, extractedPlaceName,
+                    rootNode.path("result").path("formatted_address").asText(),
+                    latitude, longitude);
 
-            redisTemplate.opsForValue().set(cacheKey, response.getBody(), CACHE_TTL);
-            return response.getBody();
+            // Redis에 placeName + 위도/경도 저장
+            redisTemplate.opsForValue().set(cacheKey, extractedPlaceName, CACHE_TTL);
+
+            // 🔹 JSON 형식으로 placeName + 위도/경도 반환
+            return objectMapper.writeValueAsString(Map.of(
+                    "placeName", extractedPlaceName,
+                    "lat", latitude,
+                    "lng", longitude
+            ));
         } catch (Exception e) {
             throw new RuntimeException("Google Places API 호출 중 오류 발생", e);
         }
     }
-
 
     @Transactional
     public Place saveOrUpdatePlace(String googlePlaceId, String placeName, String address, double latitude, double longitude) {
@@ -64,9 +75,8 @@ public class PlaceService {
                     existingPlace.incrementSearchCount();
                     return placeRepository.save(existingPlace);
                 })
-                .orElseGet(() -> placeRepository.save(Place.of(googlePlaceId, placeName, address, latitude, longitude)));
+                .orElseGet(() -> placeRepository.save(new Place(googlePlaceId, placeName, address, latitude, longitude)));
     }
-
 
     public String getAutocompleteResults(String input) {
         String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json" +

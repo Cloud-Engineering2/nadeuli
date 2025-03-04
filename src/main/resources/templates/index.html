@@ -92,18 +92,26 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (!data.result || !data.result.geometry || !data.result.geometry.location) {
+                    console.log("📌 API 응답 데이터:", data);
+
+                    // ✅ 응답 데이터에서 lat, lng 가져오기
+                    if (!data.lat || !data.lng) {
                         console.error("잘못된 장소 데이터:", data);
                         return;
                     }
 
-                    let location = data.result.geometry.location;
+                    let location = { lat: data.lat, lng: data.lng };
+                    console.log("📍 지도 이동:", location);
+
+                    // ✅ 지도 중심 이동
                     map.setCenter(location);
                     map.setZoom(15);
 
+                    // ✅ 기존 마커 삭제
                     markers.forEach(marker => marker.setMap(null));
                     markers = [];
 
+                    // ✅ 새로운 마커 추가
                     let marker = new google.maps.Marker({
                         position: location,
                         map: map

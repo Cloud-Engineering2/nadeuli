@@ -49,6 +49,11 @@ public class Place implements Serializable {
         this.searchCount = 1;
     }
 
+    public Place(String googlePlaceId, String placeName) {
+        this.googlePlaceId = googlePlaceId;
+        this.placeName = placeName;
+    }
+
     public void incrementSearchCount() {
         this.searchCount++;
     }

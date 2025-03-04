@@ -1,7 +1,6 @@
 package nadeuli.controller;
 
 import nadeuli.dto.PlaceRequest;
-import nadeuli.entity.Place;
 import nadeuli.service.PlaceCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +16,10 @@ public class GooglePlaceController {
     private final PlaceCacheService placeCacheService;
 
     @PostMapping("/search")
-    public ResponseEntity<Place> searchPlace(@RequestBody PlaceRequest request) {
+    public ResponseEntity<Void> searchPlace(@RequestBody PlaceRequest request) {
         System.out.println("장소 저장 요청: " + request);
-        Place place = placeCacheService.getPlace(request.getUserId(), request.getPlaceId(), request.getPlaceName(), request.getAddress(), request.getLatitude(), request.getLongitude());
-        System.out.println("장소 저장 완료: " + place);
-        return ResponseEntity.ok(place);
+        placeCacheService.saveToCache(request.getUserId(), request.getPlaceName()); // ✅ place_name만 저장
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/search/history")
