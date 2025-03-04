@@ -1,15 +1,14 @@
 /* JwtTokenFilter.java
- * JWT 토큰을 이용한 필터 구현
- * 해당 파일 설명
+ * JWT 인증 필터 (Spring Security용)
  * 작성자 : 국경민
- * 최초 작성 날짜 : 2025-02-26
+ * 최초 작성 날짜 : 2025-03-04
  *
  * ========================================================
  * 프로그램 수정 / 보완 이력
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- * 국경민    2025-02-26   초기 작성
+ * 국경민      03-04       JWT 필터 생성 초안
  * ========================================================
  */
 
@@ -19,47 +18,44 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import nadeuli.service.JwtTokenService;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-import nadeuli.util.JwtTokenProvider;
-import org.springframework.security.core.userdetails.UserDetails;
+
 import java.io.IOException;
 
+@RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
-    private final JwtTokenProvider jwtTokenProvider;
-    private final UserDetailsService userDetailsService;
 
-    public JwtTokenFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userDetailsService = userDetailsService;
-    }
+    private final JwtTokenService jwtTokenService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+
+        // 1️⃣ 요청에서 JWT 토큰 추출
         String token = resolveToken(request);
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            String userEmail = jwtTokenProvider.getUserEmail(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+        // 2️⃣ 토큰 검증 및 사용자 설정
+        if (token != null && jwtTokenService.validateToken(token)) {
+            String userEmail = jwtTokenService.getUserEmail(token);
 
-            if (userDetails != null) {
-                JwtAuthenticationToken authentication = new JwtAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            // 3️⃣ Spring Security 컨텍스트에 사용자 설정
+            SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(userEmail, null, null));
         }
 
-        filterChain.doFilter(request, response);
+        // 4️⃣ 다음 필터 실행
+        chain.doFilter(request, response);
     }
 
+    /**
+     * ✅ 요청 헤더에서 JWT 토큰을 추출하는 메서드
+     */
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+        return (bearerToken != null && bearerToken.startsWith("Bearer "))
+                ? bearerToken.substring(7)
+                : null;
     }
 }
