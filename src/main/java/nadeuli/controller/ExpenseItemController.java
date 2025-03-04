@@ -47,7 +47,7 @@ public class ExpenseItemController {
         Long itineraryEventId = Long.valueOf(ieid);
 
         // Payer
-        TravelerDTO payer = travelerService.get(itineraryId, payerName);
+        TravelerDTO payer = travelerService.getByName(itineraryId, payerName);
 
         // ExpenseBook
         Long expenseBookId = expenseBookService.get(itineraryId);

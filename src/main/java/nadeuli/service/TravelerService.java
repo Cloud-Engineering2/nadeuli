@@ -59,7 +59,7 @@ public class TravelerService {
 
     // 이름으로 조회
     @Transactional
-    public TravelerDTO get(Long itineraryId, String travelerName) {
+    public TravelerDTO getByName(Long itineraryId, String travelerName) {
         Traveler traveler = travelerRepository.findTravelerByItineraryIdAndTravelerName(itineraryId, travelerName)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Traveler가 존재하지 않습니다"));
         return TravelerDTO.from(traveler);
@@ -67,7 +67,7 @@ public class TravelerService {
 
     // 일정에 있는 Traveler 조회
     @Transactional
-    public List<TravelerDTO> getIds(Long itineraryId, List<String> withWhomNames) {
+    public List<TravelerDTO> getByNames(Long itineraryId, List<String> withWhomNames) {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
 

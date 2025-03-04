@@ -14,7 +14,6 @@
  */
 package nadeuli.repository;
 
-import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryEvent;
 import nadeuli.entity.ItineraryPerDay;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -30,5 +29,7 @@ public interface ItineraryEventRepository extends JpaRepository<ItineraryEvent, 
     @EntityGraph(attributePaths = {"itineraryPerDay", "place"})
     @Query("SELECT e FROM ItineraryEvent e WHERE e.itineraryPerDay IN :perDays")
     List<ItineraryEvent> findByItineraryPerDayIn(@Param("perDays") List<ItineraryPerDay> itineraryPerDays);
+
+    List<ItineraryEvent> findByItineraryPerDay(ItineraryPerDay perDay);
 
 }

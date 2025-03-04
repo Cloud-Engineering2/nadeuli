@@ -14,20 +14,27 @@
  */
 package nadeuli.service;
 
-import lombok.RequiredArgsConstructor;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
-import nadeuli.entity.ExpenseBook;
-import nadeuli.entity.Itinerary;
-import nadeuli.repository.ExpenseBookRepository;
-import nadeuli.repository.ItineraryRepository;
+import nadeuli.dto.Person;
+import nadeuli.entity.*;
+import nadeuli.repository.*;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ExpenseBookService {
     private final ExpenseBookRepository expenseBookRepository;
     private final ItineraryRepository itineraryRepository;
+    private final WithWhomRepository withWhomRepository;
+    private final ItineraryEventRepository itineraryEventRepository;
+    private final ExpenseItemRepository expenseItemRepository;
 
     // 예산 설정
     @Transactional
@@ -49,5 +56,47 @@ public class ExpenseBookService {
         ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다"));
         return expenseBook.getId();
+    }
+
+
+    // 1/n 정산
+    @Transactional
+    public Map<String, Person> adjustmentExpense(Long itineraryEventId) {
+
+        // Itinerary Event 가져오기
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(itineraryEventId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary Event가 존재하지 않습니다"));
+
+        // Expense Item 가져오기
+        List<ExpenseItem> expenseItems = expenseItemRepository.findAllByIeid(itineraryEvent);
+
+        Map<String, Person> persons = new HashMap<>();
+
+        for (ExpenseItem expenseItem : expenseItems) {
+            // List<WithWhomDTO> withWhomDtos = withWhomRepository.findAllByEmid(expenseItem).stream().map(WithWhomDTO::from).collect(Collectors.toList());
+            List<WithWhom> withWhoms = withWhomRepository.findAllByEmid(expenseItem);
+
+            List<String> withWhomNames = withWhoms.stream()
+                    .map(whom -> whom.getTid().getTravelerName()).collect(Collectors.toList());
+
+            Long amount = expenseItem.getExpense();
+            String payerName = expenseItem.getPayer().getTravelerName();
+            Person payer = persons.getOrDefault(payerName, new Person());
+            payer.setTotal(payer.getTotal() + amount);
+            System.out.println(payerName);
+            System.out.println(payer.getTotal());
+            persons.put(payerName, payer);
+
+            Long splitAmount = amount / (withWhoms.size()+1);
+
+            for (String with : withWhomNames) {
+                Person withWhomPerson = persons.getOrDefault(with, new Person());
+                withWhomPerson.send(payerName, splitAmount);
+                persons.put(with, withWhomPerson);
+                payer.receive(with, splitAmount);
+                persons.put(payerName, payer);
+            }
+        }
+        return persons;
     }
 }
