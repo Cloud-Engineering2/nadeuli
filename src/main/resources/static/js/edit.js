@@ -16,7 +16,7 @@ let selectedDates = [];
 let prevDayCount = null;
 
 //디버깅용
-let isDEBUG = true;
+let isDEBUG = false;
 
 // 🔄 데이터 로딩 및 초기화
 //------------------------------------------
@@ -177,8 +177,7 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                         <div class="event-right">
                                             <button class="event-options-button">⋮</button>
                                             <div class="event-options hidden">
-                                            
-                                                ${isSavedPlace ? "" : `<button class="event-duration">머무는 시간</button>`}
+                                                <button class="event-duration">머무는 시간</button>
                                                 <button class="event-remove">삭제</button>
                                             </div>
                                         </div>
