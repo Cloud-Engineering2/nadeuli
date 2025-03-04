@@ -10,6 +10,8 @@
  * ========================================================
  * 박한철    2025.02.25     최초 작성
  * 박한철    2025.02.27     itineraryPerDay -> itineraryPerDays 변수명 수정
+ * 박한철    2025.02.28     ItineraryTotalResponseDTO -> ItineraryTotalReadResponseDTO 변수명 수정
+ * 박한철    2025.02.28     @JsonIgnore사용으로 중첩데이터 제거하여 SimpleDTO 대신 일반 DTO 사용가능
  * ========================================================
  */
 
@@ -18,13 +20,16 @@ package nadeuli.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.dto.ItineraryEventDTO;
+import nadeuli.dto.ItineraryPerDayDTO;
+
 import java.util.List;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItineraryTotalResponseDTO {
+public class ItineraryTotalReadResponseDTO {
     private ItineraryResponseDTO itinerary;
-    private List<ItineraryPerDaySimpleDTO> itineraryPerDays;
-    private List<ItineraryEventSimpleDTO> itineraryEvents;
+    private List<ItineraryPerDayDTO> itineraryPerDays;
+    private List<ItineraryEventDTO> itineraryEvents;
 }

@@ -1,15 +1,14 @@
-/* ItineraryCreateResponseDTO.java
- * 일정표를 생성하고나서의 ResponseDTO
+/* ItineraryTotalUpdateResponseDTO.java
+ * Update 이후 전체 일정표를 리턴하기 위한 Response DTO
  * 작성자 : 박한철
- * 최초 작성 날짜 : 2025.02.27
+ * 최초 작성 날짜 : 2025.02.28
  *
  * ========================================================
  * 프로그램 수정 / 보완 이력
  * ========================================================
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
- * 박한철    2025.02.27     최초 작성
- *
+ * 박한철    2025.02.28     최초 작성
  * ========================================================
  */
 
@@ -19,24 +18,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
+import nadeuli.dto.ItineraryEventDTO;
 import nadeuli.dto.ItineraryPerDayDTO;
-import nadeuli.entity.Itinerary;
-import nadeuli.entity.ItineraryPerDay;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItineraryCreateResponseDTO {
+public class ItineraryTotalUpdateResponseDTO {
     private ItineraryDTO itinerary;
     private List<ItineraryPerDayDTO> itineraryPerDays;
-
-    public static ItineraryCreateResponseDTO from(Itinerary itinerary, List<ItineraryPerDay> itineraryPerDayList) {
-        return new ItineraryCreateResponseDTO(
-                ItineraryDTO.from(itinerary),
-                itineraryPerDayList.stream().map(ItineraryPerDayDTO::from).collect(Collectors.toList())
-        );
-    }
+    private List<ItineraryEventDTO> itineraryEvents;
 }
