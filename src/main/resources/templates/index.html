@@ -8,8 +8,26 @@
         let markers = [];
         let debounceTimer;
 
+        // function requestPostGoogleMap() {
+        //     fetch('/api/place/search', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify({
+        //             userId: '1234',
+        //             googlePlaceId: 'PLACE_ID',
+        //             placeName: '메이드 유의원'
+        //         })
+        //     })
+        //         .then(response => response.json())
+        //         .then(data => console.log('응답 데이터:', data))
+        //         .catch(error => console.error('에러 발생:', error));
+        // }
+
+
         function loadGoogleMapsApi() {
-            fetch('/api/map/apikey')
+            fetch('/api/place/apikey')
                 .then(response => response.text())
                 .then(apiKey => {
                     let script = document.createElement("script");
@@ -31,14 +49,14 @@
         function searchPlaces() {
             let input = document.getElementById("searchInput").value.trim();
 
-            if (input.length < 2) { // 최소 2글자 입력해야 자동완성 실행
+            if (input.length < 2) {
                 document.getElementById("results").innerHTML = "";
                 return;
             }
 
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
-                fetch(`/api/map/autocomplete?input=${encodeURIComponent(input)}`)
+                fetch(`/api/place/autocomplete?input=${encodeURIComponent(input)}`)
                     .then(response => response.json())
                     .then(data => {
                         let results = data.predictions;
@@ -53,7 +71,7 @@
                         results.forEach((place, index) => {
                             let li = document.createElement("li");
                             li.textContent = place.description;
-                            li.onclick = () => selectPlace(place.place_id);
+                            li.onclick = () => selectPlace(place.place_id, place.description);
                             list.appendChild(li);
                         });
                     })
@@ -61,10 +79,24 @@
             }, 300);
         }
 
-        function selectPlace(placeId) {
-            fetch(`/api/map/place-details?placeId=${placeId}`)
+        function selectPlace(placeId, placeName) {
+            fetch(`/api/place/place-details`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    placeId: placeId,
+                    mainText: placeName
+                })
+            })
                 .then(response => response.json())
                 .then(data => {
+                    if (!data.result || !data.result.geometry || !data.result.geometry.location) {
+                        console.error("잘못된 장소 데이터:", data);
+                        return;
+                    }
+
                     let location = data.result.geometry.location;
                     map.setCenter(location);
                     map.setZoom(15);

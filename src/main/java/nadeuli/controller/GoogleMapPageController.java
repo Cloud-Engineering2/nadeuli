@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class GoogleMapPageController {
 
-    @GetMapping("/api/map/search")
+    @GetMapping("/api/place/search")
     public String showMapPage() {
         return "index";
     }

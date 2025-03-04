@@ -15,8 +15,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/index.html","/static/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/static/**").permitAll()
                         .requestMatchers("/api/map/**").permitAll()
+                        .requestMatchers("/api/place/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> httpBasic.disable());
