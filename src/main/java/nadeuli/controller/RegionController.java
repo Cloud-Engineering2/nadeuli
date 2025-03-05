@@ -45,9 +45,10 @@ public class RegionController {
     // 새로운 지역 추가
     @PostMapping
     public ResponseEntity<Region> addRegion(@RequestParam String regionName,
+                                            @RequestParam String alias,
                                             @RequestParam int level,
                                             @RequestParam(required = false) Long parentId) {
-        return ResponseEntity.ok(regionService.addRegion(regionName, level, parentId));
+        return ResponseEntity.ok(regionService.addRegion(regionName, alias, level, parentId));
     }
 
     @GetMapping("/tree")

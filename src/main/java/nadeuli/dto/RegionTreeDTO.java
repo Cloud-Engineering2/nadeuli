@@ -1,5 +1,6 @@
 package nadeuli.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,10 @@ public class RegionTreeDTO {
 
     private Long id;
     private String name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String alias;
     private int level;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<RegionTreeDTO> children; // 하위 지역 리스트
 
     // entity -> dto 변환 (트리 구조로 변환)
@@ -25,6 +29,6 @@ public class RegionTreeDTO {
                 .map(r -> from(r, allRegions)) // 재귀적으로 트리 변환
                 .collect(Collectors.toList());
 
-        return new RegionTreeDTO(region.getId(), region.getName(), region.getLevel(), children);
+        return new RegionTreeDTO(region.getId(), region.getName(),region.getAlias(), region.getLevel(), children);
     }
 }

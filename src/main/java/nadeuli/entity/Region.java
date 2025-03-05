@@ -21,6 +21,8 @@ public class Region {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    @Column(name = "alias", nullable = true, length = 50)
+    private String alias;
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
@@ -30,14 +32,15 @@ public class Region {
     private int level; // 1: 시·도, 2: 시·군·구
 
     // 생성자
-    public Region(String name, int level, Region parent) {
+    public Region(String name, String alias, int level, Region parent) {
         this.name = name;
+        this.alias = alias;
         this.level = level;
         this.parent = parent;
     }
 
     // 정적 팩토리 메서드
-    public static Region of(String name, int level, Region parent) {
-        return new Region(name, level, parent);
+    public static Region of(String name, String alias, int level, Region parent) {
+        return new Region(name, alias, level, parent);
     }
 }

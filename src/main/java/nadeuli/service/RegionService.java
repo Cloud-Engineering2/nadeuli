@@ -39,11 +39,11 @@ public class RegionService {
 
     // 새로운 지역 추가
     @Transactional
-    public Region addRegion(String regionName, int level, Long parentId) {
+    public Region addRegion(String regionName, String alias, int level, Long parentId) {
         Region parent = (parentId != null) ? regionRepository.findById(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 지역 ID")) : null;
 
-        Region newRegion = Region.of(regionName, level, parent);
+        Region newRegion = Region.of(regionName, alias, level, parent);
         return regionRepository.save(newRegion);
     }
 
