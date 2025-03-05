@@ -121,7 +121,7 @@ public class ItineraryService {
                         .map(ItineraryPerDayDTO::from)
                         .toList(), // ✅ ItineraryPerDay -> ItineraryPerDaySimpleDTO 변환
                 itineraryEvents.stream()
-                        .map(ItineraryEventDTO::from)
+                        .map(ItineraryEventSimpleDTO::from)
                         .toList()  // ✅ ItineraryEvent -> ItineraryEventSimpleDTO 변환
         );
     }

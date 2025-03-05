@@ -31,5 +31,5 @@ import java.util.List;
 public class ItineraryTotalReadResponseDTO {
     private ItineraryResponseDTO itinerary;
     private List<ItineraryPerDayDTO> itineraryPerDays;
-    private List<ItineraryEventDTO> itineraryEvents;
+    private List<ItineraryEventSimpleDTO> itineraryEvents;
 }

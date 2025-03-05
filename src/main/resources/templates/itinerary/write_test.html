@@ -49,14 +49,14 @@
         .schedule-container {
             display: flex;
             flex-direction: row; /* ✅ 가로 정렬 */
-            gap: 15px;
+            gap: 5px;
             overflow-x: auto; /* ✅ 가로 스크롤 지원 */
             min-width: 800px; /* ✅ 최소 가로 길이 유지 */
         }
         .day-column {
             width: 250px;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 5px;
+            border-radius: 4px;
             min-width: 250px; /* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
 
         }
@@ -76,16 +76,51 @@
             box-shadow: 0px 0px 5px rgba(0,0,0,0.1);
         }
         .event {
+            display: flex;
             width: 100%;
+        }
+
+
+        .event-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent; /* 배경색 추가 */
+            padding: 5px;
+            text-align: left;
+        }
+
+        .event-box {
+            display: flex;
+            width: 100%;
+            flex: 9;
             background: white;
-            padding: 10px;
+            padding-top: 4px;
+            padding-left: 2px;
+            padding-bottom: 4px;
             border-radius: 8px;
             border: 1px solid #ccc;
             text-align: center;
             cursor: grab;
             margin-bottom: 8px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            min-height: 50px;
         }
+
+
+        .event-box-left {
+            flex: 9; /* 왼쪽 박스를 9배 크기로 설정 */
+
+        }
+
+        .event-box-right {
+            flex: 1; /* 오른쪽 박스를 1배 크기로 설정 */
+            display: flex;
+            justify-content: center; /* 버튼 가운데 정렬 */
+            align-items: center;
+        }
+
 
         .sortable-ghost .tour-image {
             display: none !important;
@@ -94,7 +129,7 @@
 
         .sortable-ghost {
             opacity: 0.5;
-            background: #007bff33;
+            background: transparent;
         }
         .sortable-drag {
             opacity: 0.8;
@@ -113,6 +148,53 @@
             pointer-events: none;
             user-select: none;
         }
+    </style>
+
+    <style>
+        .event-box-right {
+            position: relative;
+        }
+
+        .event-box-button {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .event-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+            z-index: 10;
+        }
+
+        .event-menu button {
+            background: none;
+            border: none;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .event-menu button:hover {
+            background: #f0f0f0;
+        }
+
+        /* 메뉴 기본 숨김 */
+        .hidden {
+            display: none;
+        }
+
+
     </style>
 
     <style>
@@ -152,7 +234,7 @@
         }
         .tour-name {
             font-size: 1rem;
-            align-items: left;
+            /*align-items: left;*/
             font-weight: bold;
             margin-bottom: 4px;
         }
@@ -230,47 +312,9 @@
                 </div>
             </div>
         </div>
-        <div class="tour-item" data-place="data-5">
-            <img src="https://picsum.photos/300/300" class="tour-image">
-            <div class="tour-info">
-                <div class="tour-name">data-5</div>
-                <div class="tour-address">제주 제주시 한림읍 협재리</div>
-                <div class="tour-extra">
-                    <span class="tour-rating">⭐ 4.7</span>
-                </div>
-            </div>
-        </div>
 
-        <div class="tour-item" data-place="data-6">
-            <img src="https://picsum.photos/300/300" class="tour-image">
-            <div class="tour-info">
-                <div class="tour-name">data-6</div>
-                <div class="tour-address">제주 제주시 한림읍 협재리</div>
-                <div class="tour-extra">
-                    <span class="tour-rating">⭐ 4.7</span>
-                </div>
-            </div>
-        </div>
-        <div class="tour-item" data-place="data-7">
-            <img src="https://picsum.photos/300/300" class="tour-image">
-            <div class="tour-info">
-                <div class="tour-name">data-7</div>
-                <div class="tour-address">제주 제주시 한림읍 협재리</div>
-                <div class="tour-extra">
-                    <span class="tour-rating">⭐ 4.7</span>
-                </div>
-            </div>
-        </div>
-        <div class="tour-item" data-place="data-8">
-            <img src="https://picsum.photos/300/300" class="tour-image">
-            <div class="tour-info">
-                <div class="tour-name">data-8</div>
-                <div class="tour-address">제주 제주시 한림읍 협재리</div>
-                <div class="tour-extra">
-                    <span class="tour-rating">⭐ 4.7</span>
-                </div>
-            </div>
-        </div>
+
+
     </div>
 
     <div class="schedule-container" id="scheduleContainer"></div>
@@ -278,26 +322,268 @@
 <script>
     $(document).ready(function() {
         // 📌 API에서 데이터 가져오기
-        $.ajax({
-            url: "/api/itinerary/1",  // ✅ 실제 API 엔드포인트
-            type: "GET",
-            dataType: "json",
-            success: function(response) {
-                renderItinerary(response);  // ✅ 일정 렌더링 함수 호출
+        // $.ajax({
+        //     url: "/api/itinerary/1",  // ✅ 실제 API 엔드포인트
+        //     type: "GET",
+        //     dataType: "json",
+        //     success: function(response) {
+        //         renderItinerary(response);  // ✅ 일정 렌더링 함수 호출
+        //     },
+        //     error: function(xhr, status, error) {
+        //         console.error("🚨 일정 데이터를 가져오는 중 오류 발생:", error);
+        //     }
+        // });
+        const testData = {
+            "itinerary": {
+                "id": 1,
+                "itineraryName": "Tokyo Exploration",
+                "startDate": "2025-06-01T00:00:00",
+                "totalDays": 3,
+                "transportationType": 1,
+                "createdDate": "2025-02-28T14:36:41",
+                "modifiedDate": "2025-02-28T14:36:41",
+                "role": "ROLE_OWNER"
             },
-            error: function(xhr, status, error) {
-                console.error("🚨 일정 데이터를 가져오는 중 오류 발생:", error);
-            }
-        });
+            "itineraryPerDays": [
+                {
+                    "id": 1,
+                    "dayCount": 1,
+                    "startTime": "08:00:00",
+                    "endTime": "22:00:00",
+                    "dayOfWeek": 1
+                },
+                {
+                    "id": 2,
+                    "dayCount": 2,
+                    "startTime": "09:00:00",
+                    "endTime": "21:30:00",
+                    "dayOfWeek": 2
+                },
+                {
+                    "id": 3,
+                    "dayCount": 3,
+                    "startTime": "07:30:00",
+                    "endTime": "23:00:00",
+                    "dayOfWeek": 3
+                }
+            ],
+            "itineraryEvents": [
+                {
+                    "id": 1,
+                    "dayCount": 1,
+                    "placeDTO": {
+                        "id": 1,
+                        "googlePlaceId": "tokyo1",
+                        "placeName": "Shibuya Crossing",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 0,
+                    "endMinuteSinceStartDay": 120,
+                    "movingMinuteFromPrevPlace": 0
+                },
+                {
+                    "id": 2,
+                    "dayCount": 1,
+                    "placeDTO": {
+                        "id": 2,
+                        "googlePlaceId": "tokyo2",
+                        "placeName": "Tokyo Tower",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 180,
+                    "endMinuteSinceStartDay": 270,
+                    "movingMinuteFromPrevPlace": 60
+                },
+                {
+                    "id": 3,
+                    "dayCount": 1,
+                    "placeDTO": {
+                        "id": 3,
+                        "googlePlaceId": "tokyo3",
+                        "placeName": "Shinjuku Gyoen",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 330,
+                    "endMinuteSinceStartDay": 450,
+                    "movingMinuteFromPrevPlace": 60
+                },
+                {
+                    "id": 4,
+                    "dayCount": 1,
+                    "placeDTO": {
+                        "id": 4,
+                        "googlePlaceId": "tokyo4",
+                        "placeName": "Akihabara",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 480,
+                    "endMinuteSinceStartDay": 600,
+                    "movingMinuteFromPrevPlace": 30
+                },
+                {
+                    "id": 5,
+                    "dayCount": 1,
+                    "placeDTO": {
+                        "id": 5,
+                        "googlePlaceId": "tokyo5",
+                        "placeName": "Asakusa Temple",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 660,
+                    "endMinuteSinceStartDay": 780,
+                    "movingMinuteFromPrevPlace": 60
+                },
+                {
+                    "id": 6,
+                    "dayCount": 2,
+                    "placeDTO": {
+                        "id": 6,
+                        "googlePlaceId": "tokyo6",
+                        "placeName": "Odaiba",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 0,
+                    "endMinuteSinceStartDay": 120,
+                    "movingMinuteFromPrevPlace": 0
+                },
+                {
+                    "id": 7,
+                    "dayCount": 2,
+                    "placeDTO": {
+                        "id": 7,
+                        "googlePlaceId": "tokyo7",
+                        "placeName": "Ginza Shopping District",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 210,
+                    "endMinuteSinceStartDay": 300,
+                    "movingMinuteFromPrevPlace": 90
+                },
+                {
+                    "id": 8,
+                    "dayCount": 2,
+                    "placeDTO": {
+                        "id": 8,
+                        "googlePlaceId": "tokyo8",
+                        "placeName": "Harajuku",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 360,
+                    "endMinuteSinceStartDay": 480,
+                    "movingMinuteFromPrevPlace": 60
+                },
+                {
+                    "id": 9,
+                    "dayCount": 2,
+                    "placeDTO": {
+                        "id": 9,
+                        "googlePlaceId": "tokyo9",
+                        "placeName": "Ueno Park",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 540,
+                    "endMinuteSinceStartDay": 660,
+                    "movingMinuteFromPrevPlace": 60
+                },
+                {
+                    "id": 10,
+                    "dayCount": 3,
+                    "placeDTO": {
+                        "id": 10,
+                        "googlePlaceId": "tokyo10",
+                        "placeName": "Tsukiji Market",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 0,
+                    "endMinuteSinceStartDay": 120,
+                    "movingMinuteFromPrevPlace": 0
+                },
+                {
+                    "id": 11,
+                    "dayCount": 3,
+                    "placeDTO": {
+                        "id": 11,
+                        "googlePlaceId": "tokyo11",
+                        "placeName": "Tokyo Disneyland",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 180,
+                    "endMinuteSinceStartDay": 390,
+                    "movingMinuteFromPrevPlace": 60
+                },
+                {
+                    "id": 12,
+                    "dayCount": 3,
+                    "placeDTO": {
+                        "id": 12,
+                        "googlePlaceId": "tokyo12",
+                        "placeName": "Meiji Shrine",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 450,
+                    "endMinuteSinceStartDay": 570,
+                    "movingMinuteFromPrevPlace": 60
+                },
+                {
+                    "id": 13,
+                    "dayCount": 3,
+                    "placeDTO": {
+                        "id": 13,
+                        "googlePlaceId": "tokyo13",
+                        "placeName": "Rainbow Bridge",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 630,
+                    "endMinuteSinceStartDay": 750,
+                    "movingMinuteFromPrevPlace": 60
+                },
+                {
+                    "id": 14,
+                    "dayCount": 3,
+                    "placeDTO": {
+                        "id": 14,
+                        "googlePlaceId": "tokyo14",
+                        "placeName": "Roppongi Hills",
+                        "createdAt": "2025-02-28T14:36:52",
+                        "modifiedAt": "2025-02-28T14:36:52"
+                    },
+                    "startMinuteSinceStartDay": 780,
+                    "endMinuteSinceStartDay": 900,
+                    "movingMinuteFromPrevPlace": 30
+                }
+            ]
+        };
+        renderItinerary(testData);
+
+
+
 
         function renderItinerary(data) {
-            const itineraryStartDate = new Date(data.itinerary.startDate);
+            // 각 dayCount에 해당하는 startTime을 가져오기 위해 매핑
+            const itineraryPerDays = data.itineraryPerDays.reduce((acc, day) => {
+                acc[day.dayCount] = day.startTime; // "HH:MM:SS" 형태
+                return acc;
+            }, {});
+
             const groupedByDay = {};
 
             data.itineraryEvents.forEach(event => {
-                const eventDate = new Date(event.startDate);
-                const diffInDays = Math.floor((eventDate - itineraryStartDate) / (1000 * 60 * 60 * 24)) + 1;
-                const dayKey = `${diffInDays}일차`;
+                const dayKey = `${event.dayCount}일차`;
+                const baseStartTime = itineraryPerDays[event.dayCount] || "00:00:00"; // 해당 날짜의 시작 시간
+                const baseStartMinutes = timeToMinutes(baseStartTime); // HH:MM:SS → 분 단위 변환
 
                 if (!groupedByDay[dayKey]) {
                     groupedByDay[dayKey] = [];
@@ -306,23 +592,51 @@
                 groupedByDay[dayKey].push({
                     id: event.id,
                     placeName: event.placeDTO.placeName,
-                    startDate: event.startDate
+                    startMinute: baseStartMinutes + event.startMinuteSinceStartDay, // 시작 시간을 반영
+                    endMinute: baseStartMinutes + event.endMinuteSinceStartDay, // 종료 시간을 반영
+                    movingMinute: event.movingMinuteFromPrevPlace
                 });
+            });
+
+            // 각 일차별 이벤트 정렬 (시작 시간 기준)
+            Object.keys(groupedByDay).forEach(dayKey => {
+                groupedByDay[dayKey].sort((a, b) => a.startMinute - b.startMinute);
             });
 
             const scheduleContainer = $('#scheduleContainer');
             scheduleContainer.empty();
 
-            Object.keys(groupedByDay).forEach(day => {
-                const dayColumn = $(`
-                    <div class='day-column'>
-                        <div class='day-header'>${day}</div>
-                        <div class='event-container' id='${day.replace("일차", "")}'></div>
-                    </div>
-                `);
+            Object.keys(groupedByDay).forEach(dayKey => {
+                const dayNumber = parseInt(dayKey);
+                const startTime = itineraryPerDays[dayNumber] || "00:00:00";
 
-                groupedByDay[day].forEach(event => {
-                    const eventElement = $(`<div class='event' data-id='${event.id}'>${event.placeName}</div>`);
+                const dayColumn = $(`
+            <div class='day-column'>
+                <div class='day-header'>${dayKey} (${startTime.substring(0,5)})</div>
+                <div class='event-container' id='day-${dayNumber}'></div>
+            </div>
+        `);
+
+                groupedByDay[dayKey].forEach(event => {
+                    const eventElement = $(`
+                        <div class='event' data-id='${event.id}'>
+                            <div class="event-info"></div>
+                            <div class="event-box">
+                                <div class="event-box-left">
+                                    <div class='event-name'>${event.placeName}</div>
+                                </div>
+                                <div class="event-box-right">
+                                    <button class="event-box-button">⋮</button>
+                                    <div class="event-menu hidden">
+                                        <button class="stay-time">머무는 시간</button>
+                                        <button class="delete-event">삭제</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+            `);
+                    // <div className='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>
                     dayColumn.find('.event-container').append(eventElement);
                 });
 
@@ -331,6 +645,39 @@
 
             initializeSortable(); // 🚀 드래그 & 드롭 기능 활성화
         }
+
+// HH:MM:SS 문자열을 분(minute)으로 변환하는 함수
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+// 분(minute) 값을 HH:MM 형태로 변환하는 함수
+        function formatTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        }
+        $(document).on("click", ".event-box-button", function (event) {
+            event.stopPropagation(); // 클릭 이벤트 전파 방지
+            let menu = $(this).siblings(".event-menu");
+
+            // 다른 열린 메뉴 닫기
+            $(".event-menu").not(menu).addClass("hidden");
+
+            // 현재 메뉴 토글
+            menu.toggleClass("hidden");
+        });
+
+// 다른 곳을 클릭하면 메뉴 닫기
+        $(document).on("click", function () {
+            $(".event-menu").addClass("hidden");
+        });
+
+// 메뉴 내부 클릭 시 닫히지 않도록 처리
+        $(document).on("click", ".event-menu", function (event) {
+            event.stopPropagation();
+        });
 
         function initializeSortable() {
             $(".event-container").each(function() {
@@ -345,13 +692,27 @@
                     onAdd: function(evt) {
                         let newItem = $(evt.item);
                         let placeName = newItem.data("place") || newItem.text().trim();
-                        newItem.replaceWith(`<div class="event">${placeName}</div>`);
+                        let eventId = newItem.data("id");
+                        // newItem.replaceWith(`<div class="event">${placeName}</div>`);
+
+
+                        newItem.replaceWith(` <div class='event' data-id='${eventId}'>
+                            <div class="event-info"></div>
+                            <div class="event-box">
+                                <div class='event-name'>${placeName}</div>
+                            </div>
+                        </div>`);
+
+
                         updateTravelTimes();
+
                         logAffectedEvents(evt.to, evt.item);
+                        console.log("ON ADD !");
                     },
-                    onEnd: function(evt) {
+                    onEnd: function (evt) {
                         updateTravelTimes();
                         logAffectedEvents(evt.to, evt.item);
+                        console.log("ON ADD !");
                     }
                 });
             });
