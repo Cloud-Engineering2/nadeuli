@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1/N 정산</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" th:href="@{/css/expense-book.css}">
+
+    <!-- jQuery & Sortable -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+
+    <!-- Moment.js & Date Range Picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+</head>
+
+<body>
+<div id="header">
+    <div id="header-inner">
+        <div id="left-header">헤더</div>
+        <div id="mid-header">부분</div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- 첫 번째 행: 일정 + 지도 -->
+    <div class="row">
+        <!-- 왼쪽 패널 (일정) -->
+        <div id="sidebar" class="col-md-5">
+            <div class="schedule-header" id="scheduleHeader">
+                <div class="schedule-header-left">
+                    <div class="schedule-header-name">버튼 목록</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽 패널 (지도) -->
+        <div class="col-md-7">
+            <div id="map">지도 영역</div>
+        </div>
+    </div>
+
+    <!-- 두 번째 행: 추가 정보 -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div id="extra-info">추가 정보 영역</div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+
+<script th:src="@{/js/expense-book.js}"></script>
+<!--<script src="js/expense-book.js"></script>-->
+<!--<script src="expense-book.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

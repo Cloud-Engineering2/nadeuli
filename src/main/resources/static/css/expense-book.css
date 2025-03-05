@@ -1,0 +1,57 @@
+/* 전체 레이아웃 높이 조정 */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/* 헤더 */
+#header {
+    height: 60px;
+    background-color: blue;
+    color: white;
+}
+
+#header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 0 20px;
+}
+
+/* 메인 컨테이너 */
+.container-fluid {
+    height: calc(100vh - 60px); /* 헤더 높이를 제외한 나머지 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 첫 번째 행 (일정 + 지도) */
+.row:first-child {
+    flex: 1;
+    display: flex;
+}
+
+/* 일정 패널 (왼쪽) */
+#sidebar {
+    height: 100%;
+    background-color: red;
+    overflow: auto;
+}
+
+/* 지도 패널 (오른쪽) */
+#map {
+    height: 100%;
+    background: lightblue;
+}
+
+/* 두 번째 행 (추가 정보) */
+.row:last-child {
+    height: 200px;
+    background: greenyellow;
+}
+
+#extra-info {
+    height: 100%;
+    overflow: auto;
+}
