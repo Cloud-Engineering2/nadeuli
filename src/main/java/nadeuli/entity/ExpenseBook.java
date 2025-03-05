@@ -11,6 +11,7 @@
  * 이홍비    2025.02.25     생성자 + of() 추가
  * 고민정    2025.02.25     생성자 접근수준, Itinerary 다대일->일대일 관계 수정
  * 고민정    2025.02.26     예산 설정 메서드 추가
+ * 고민정    2025.03.04     totalExpenses setter 추가
  *
  * ========================================================
  */
@@ -45,22 +46,26 @@ public class ExpenseBook extends BaseTimeEntity {
 
     @Column(name = "total_budget", columnDefinition = "INT UNSIGNED not null default 0")
     @ColumnDefault("0")
-    private Integer totalBudget;
+    private Long totalBudget;
 
     @Column(name = "total_expenses", columnDefinition = "INT UNSIGNED not null default 0")
     @ColumnDefault("0")
-    private Integer totalExpenses;
+    private Long totalExpenses;
 
 
 //
 
     // static factory method
-    public static ExpenseBook of (Itinerary iid, Integer totalBudget, Integer totalExpenses) {
+    public static ExpenseBook of (Itinerary iid, Long totalBudget, Long totalExpenses) {
         return new ExpenseBook(null, iid, totalBudget, totalExpenses);
     }
 
-    public void updateBudget(Integer budget) {
+    public void updateBudget(Long budget) {
         this.totalBudget = budget;
+    }
+
+    public void updateExpenses(Long expenses) {
+        this.totalExpenses = expenses;
     }
 
 

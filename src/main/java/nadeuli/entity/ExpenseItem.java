@@ -55,7 +55,7 @@ public class ExpenseItem extends BaseTimeEntity {
     private String content;
 
     @Column(name = "expense", columnDefinition = "INT UNSIGNED not null")
-    private Integer expense;
+    private Long expense;
 
 
 //    // 생성자
@@ -70,8 +70,18 @@ public class ExpenseItem extends BaseTimeEntity {
 //    }
 
     // static factory method
-    public static ExpenseItem of (ExpenseBook ebid, ItineraryEvent ieid, Traveler payer, String content, Integer expense) {
+    public static ExpenseItem of (ExpenseBook ebid, ItineraryEvent ieid, Traveler payer, String content, Long expense) {
         return new ExpenseItem(null, ebid, ieid, payer, content, expense);
+    }
+
+    public void updateExpense(Long expense) {
+        this.expense = expense;
+    }
+    public void updateContent(String content) {
+        this.content = content;
+    }
+    public void updatePayer(Traveler payer) {
+        this.payer = payer;
     }
 
 }

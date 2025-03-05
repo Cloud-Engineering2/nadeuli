@@ -35,17 +35,17 @@ public class ExpenseItemDTO {
     private Long itineraryEventId;
     private TravelerDTO travelerDTO;
     private String content;
-    private Integer expense;
+    private Long expense;
 //    private LocalDateTime createdAt;
 //    private LocalDateTime modifiedAt;
 
 
     // static factory method
-    public static ExpenseItemDTO of (Long id, Long expenseBookId, Long itineraryEventId, TravelerDTO travelerDTO, String content, Integer expense) {
+    public static ExpenseItemDTO of (Long id, Long expenseBookId, Long itineraryEventId, TravelerDTO travelerDTO, String content, Long expense) {
         return new ExpenseItemDTO(id, expenseBookId, itineraryEventId, travelerDTO, content, expense);
     }
 
-    public static ExpenseItemDTO of (Long expenseBookId, Long itineraryEventId, TravelerDTO travelerDTO, String content, Integer expense) {
+    public static ExpenseItemDTO of (Long expenseBookId, Long itineraryEventId, TravelerDTO travelerDTO, String content, Long expense) {
         return new ExpenseItemDTO(null, expenseBookId, itineraryEventId, travelerDTO, content, expense);
     }
 
@@ -64,7 +64,7 @@ public class ExpenseItemDTO {
     }
 
     // dto => entity
-    public ExpenseItem toEntity(ExpenseBook expenseBook, ItineraryEvent itineraryEvent,  Traveler traveler) {
+    public ExpenseItem toEntity(ExpenseBook expenseBook, ItineraryEvent itineraryEvent, Traveler traveler) {
         return ExpenseItem.of(expenseBook, itineraryEvent, traveler, content, expense);
     }
 }
