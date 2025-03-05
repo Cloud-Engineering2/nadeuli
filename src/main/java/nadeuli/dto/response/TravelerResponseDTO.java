@@ -1,4 +1,4 @@
-/* TravelerResponse.java
+/* TravelerResponseDTO.java
  * 작성자 : 고민정
  * 최초 작성 날짜 : 2025-02-26
  *
@@ -12,9 +12,10 @@
  * ========================================================
  */
 
-package nadeuli.dto;
+package nadeuli.dto.response;
 
 import lombok.*;
+import nadeuli.dto.TravelerDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,11 +24,11 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
-public class TravelerResponse {
+public class TravelerResponseDTO {
     private List<TravelerInfo> travelers;
     private Integer numberOfTravelers;
 
-    public static TravelerResponse toResponse(List<TravelerDTO> travelerDtos) {
+    public static TravelerResponseDTO toResponse(List<TravelerDTO> travelerDtos) {
         if (travelerDtos == null) {
             return null;
         }
@@ -36,7 +37,7 @@ public class TravelerResponse {
                 .map(traveler -> new TravelerInfo(traveler.getId(), traveler.getTravelerName()))
                 .collect(Collectors.toList());
 
-        return TravelerResponse.builder()
+        return TravelerResponseDTO.builder()
                 .travelers(travelerList)
                 .numberOfTravelers(travelerList.size())
                 .build();

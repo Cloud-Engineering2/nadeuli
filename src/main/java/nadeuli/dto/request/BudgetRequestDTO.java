@@ -1,4 +1,4 @@
-/* BudgetRequest.java
+/* BudgetRequestDTO.java
  * 작성자 : 고민정
  * 최초 작성 날짜 : 2025-02-21
  *
@@ -12,7 +12,7 @@
  * ========================================================
  */
 
-package nadeuli.dto;
+package nadeuli.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -22,9 +22,9 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
-public class BudgetRequest {
+public class BudgetRequestDTO {
     @NotNull(message = "남은 예산 : ")
-    private Integer totalBudget;
+    private Long totalBudget;
 }
 
 
