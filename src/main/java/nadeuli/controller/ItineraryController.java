@@ -50,4 +50,9 @@ public class ItineraryController {
     public String showEditTestPage() {
         return "/itinerary/edit";  // itinerary/edit.html을 반환
     }
+
+    @GetMapping("/region")
+    public String regionTestPage() {
+        return "/region-test";  // itinerary/edit.html을 반환
+    }
 }
