@@ -1,4 +1,4 @@
-/* ExpenseItemAPIController.java
+/* ExpenseItemRestController.java
  * 작성자 : 고민정
  * 최초 작성 날짜 : 2025-02-26
  *
@@ -30,7 +30,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/itineraries")
 @RequiredArgsConstructor
-public class ExpenseItemAPIController {
+public class ExpenseItemRestController {
     private final ExpenseItemService expenseItemService;
     private final TravelerService travelerService;
     private final ExpenseBookService expenseBookService;
