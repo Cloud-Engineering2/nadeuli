@@ -4,31 +4,50 @@
     <meta charset="UTF-8">
     <title>로그인 성공</title>
 
-    <style>#suggestions {
-        position: absolute;
-        border: 1px solid #ccc;
-        max-height: 500px;
-        overflow-y: auto;
-        background: white;
-        list-style: none;
-        padding: 0;
-        width: 400px;
-        display: none;
-    }
-    #suggestions li {
-        width: 300px;
-        padding: 8px;
-        cursor: pointer;
-    }
-    #suggestions li:hover {
-        background: #f0f0f0;
-    }</style>
+    <style>
+        #suggestions {
+            position: absolute;
+            border: 1px solid #ccc;
+            max-height: 500px;
+            overflow-y: auto;
+            background: white;
+            list-style: none;
+            padding: 0;
+            width: 400px;
+            display: none;
+            margin: 0;
+        }
+        #suggestions li {
+            width: 300px;
+            padding: 8px;
+            cursor: pointer;
+        }
+        #suggestions li:hover {
+            background: #f0f0f0;
+        }
+
+        /* 선택된 아이템을 표시할 리스트 스타일 */
+        #selectedList {
+            list-style: none;
+            padding: 0;
+            margin-top: 16px;
+            border: 1px solid #ccc;
+            max-width: 400px;
+        }
+        #selectedList li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
 </head>
 <body>
 
 <input type="text" id="searchBox" placeholder="지역 검색..." autocomplete="off">
 <ul id="suggestions"></ul>
 
+<!-- 선택된 지역을 보여줄 리스트 -->
+<h3>선택된 지역</h3>
+<ul id="selectedList"></ul>
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -89,6 +108,8 @@
 
     const locations = flattenTree(treeData);
 
+    // (1) 선택된 지역을 담을 배열
+    let selectedLocations = [];
 
     $("#searchBox").on("input", function () {
         let keyword = $(this).val().toLowerCase().trim();
@@ -101,11 +122,14 @@
             )
         );
 
-        // 선택된 지역의 ID가 같은 모든 하위 지역도 포함
+        // 선택된 지역의 ID가 같은 모든 하위 지역도 포함하기 위해,
+        // parentId를 체크(원하시는 로직에 따라 조정 가능)
         let selectedIds = new Set(filtered.map(item => item.id));
-        let expandedResults = locations.filter(item => selectedIds.has(item.parentId) || selectedIds.has(item.id));
+        let expandedResults = locations.filter(item =>
+            selectedIds.has(item.parentId) || selectedIds.has(item.id)
+        );
 
-        // 1) displayName 기준 중복 제거 (삽입 순서 유지)
+        // displayName 기준 중복 제거
         let seen = new Set();
         let uniqueResults = [];
         for (let item of expandedResults) {
@@ -115,7 +139,7 @@
             }
         }
 
-        // 2) 검색 결과 표시
+        // 검색 결과 표시
         let $suggestions = $("#suggestions");
         $suggestions.empty();
 
@@ -129,31 +153,56 @@
         }
     });
 
-
-
-
-
-
-
-
-    // 검색 결과 클릭 시 입력 필드에 반영
+    // (2) 추천목록에서 클릭 시, 선택된 지역 목록에 추가
     $("#suggestions").on("click", "li", function () {
-        $("#searchBox").val($(this).text());
+        let selectedId = $(this).data("id");
+        let selectedText = $(this).text();
+
+        // 1) locations 배열에서 해당 id & displayName에 맞는 항목 찾기
+        //    (여러 개가 있을 수 있지만, 일반적으로는 첫 번째 걸로 처리)
+        let foundItem = locations.find(loc => loc.id === selectedId && loc.displayName === selectedText);
+
+        // 혹은 그냥 최소한 id만 같으면 찾도록 할 수도 있음
+        // let foundItem = locations.find(loc => loc.id === selectedId);
+
+        // 없을 수도 있으니 체크
+        if (!foundItem) {
+            // 혹은 별도 처리
+            foundItem = {
+                id: selectedId,
+                displayName: selectedText
+            };
+        }
+
+        // 2) 이미 selectedLocations에 들어간 항목인지 확인(중복 방지)
+        let alreadySelected = selectedLocations.some(loc => loc.id === foundItem.id && loc.displayName === foundItem.displayName);
+        if (!alreadySelected) {
+            selectedLocations.push(foundItem);
+        }
+
+        // 3) 화면에 표시
+        renderSelectedList();
+
+        // 4) 검색창 및 추천 목록 초기화(필요 시)
+        $("#searchBox").val("");
         $("#suggestions").hide();
     });
 
-    // 필드 외부 클릭 시 자동완성 숨김
+    // 선택된 지역 목록을 다시 그리는 함수
+    function renderSelectedList() {
+        let $list = $("#selectedList");
+        $list.empty();
+
+        selectedLocations.forEach(item => {
+            $list.append(`<li data-id="${item.id}">${item.displayName}</li>`);
+        });
+    }
+
+    // 바깥 영역 클릭 시 자동완성 목록 숨김
     $(document).on("click", function (e) {
         if (!$(e.target).closest("#searchBox, #suggestions").length) {
             $("#suggestions").hide();
         }
-    });
-
-    // 5️⃣ 자동완성 기능 - 클릭 시 입력 필드에 채우기
-    $(document).on("click", ".search-item", function () {
-        let selectedRegion = $(this).data("name");
-        $("#searchRegion").val(selectedRegion);
-        $("#searchResults").html(""); // 선택 후 목록 숨기기
     });
 </script>
 
