@@ -16,6 +16,7 @@
  * 이홍비                   사진 변경, 글 수정 시 사용할 함수 결정
  * 이홍비    2025.03.03     사진 파일 다운로드 추가 구현
  *                         불필요한 것 정리
+ * 이홍비    2025.03.06     GetMapping 쪽 함수 이름 정리 + 내부 정리
  * ========================================================
  */
 
@@ -49,10 +50,8 @@ public class JournalController {
 
     // 기행문 조회 (열람)
     @GetMapping("/itineraries/{iid}/events/{ieid}/journal")
-    public String getJournal(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
-        JournalDTO journalDTO = journalService.getJournal(ieid);
-
-        System.out.println("📌 조회한 기행문 : " + journalDTO);
+    public String redirectToJournalPage(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
+        System.out.println("📌 Journal.html 로 이동");
 
         return "journal/journal";
     }
@@ -60,7 +59,7 @@ public class JournalController {
     // 기행문 조회 (열람)
     @ResponseBody
     @GetMapping("/api/itineraries/{iid}/events/{ieid}/journal")
-    public ResponseEntity<JournalDTO> getJournal4(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
+    public ResponseEntity<JournalDTO> getJournalDTO(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
         JournalDTO journalDTO = journalService.getJournal(ieid);
 
         System.out.println("📌 조회한 기행문 : " + journalDTO);
