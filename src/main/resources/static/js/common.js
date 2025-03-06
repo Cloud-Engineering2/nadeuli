@@ -10,6 +10,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.03.02     최초 작성 : common.js
+ * 이홍비    2025.03.04     Header 쪽 함수 작성
  * ========================================================
  */
 
@@ -23,4 +24,18 @@ function closeNadeuliAlert(id) {
     document.getElementById(`${id}`).style.display = 'none';
 }
 
+// function showLoggedInUI(id, name, role) {
+//     const header = document.getElementById(id);
+//
+//
+// }
+//
+// function showLoggedOutUI(id, name, role) {
+//     const header = document.getElementById(id);
+//
+// }
+
+
 window.closeNadeuliAlert = closeNadeuliAlert;
+// window.showLoggedInUI = showLoggedInUI;
+// window.showLoggedOutUi = showLoggedInUI;
