@@ -163,6 +163,9 @@ body {
     background: #f9f9f9;
     min-height: 70px;
     padding: 10px;
+    display: flex;
+    flex-direction: column; /* 내부 요소가 세로로 정렬되도록 설정 */
+
 }
 
 
@@ -668,7 +671,8 @@ body {
 /* 탭 콘텐츠 스타일 */
 .tab-content-container {
     display: flex;
-    flex-direction: column;
+    /*flex-direction: column;*/
+    flex-grow: 1;
 }
 
 .tab-content {
