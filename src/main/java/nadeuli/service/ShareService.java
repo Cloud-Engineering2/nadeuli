@@ -233,6 +233,11 @@ public class ShareService {
         // 2️⃣ itineraryId 복원
         Long itineraryId = hashIdService.decode(hashId);
 
+        Optional<ShareToken> token = shareTokenRepository.findByItineraryId(itineraryId);
+        if (token.isEmpty() || !token.get().getUuid().equals(uuid)) {
+            throw new IllegalArgumentException("유효하지 않은 공유 링크입니다.");
+        }
+
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
 
