@@ -13,99 +13,378 @@
     <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
+    <style>
+        .itinerary-list{
+            display: flex;
+            gap: 15px; /* 카드 간 간격 */
+            justify-content: flex-start; /* 카드들이 균등하게 정렬됨 */
+            flex-wrap: wrap;
+        }
+
+        /* 카드 스타일 */
+        .card-itinerary {
+            flex: 1 1 calc(25% - 15px); /* 4개씩 배치 (간격 고려) */
+            max-width: calc(25% - 15px);
+            min-width: 225px; /* 최소 크기 유지 */
+            box-sizing: border-box;
+            border-radius: 10px;
+        }
+
+
+        /* 화면이 작아질 경우 반응형 조정 */
+        @media (max-width: 1024px) {
+            .card-itinerary {
+                flex: 1 1 calc(33.33% - 15px); /* 3개씩 배치 */
+                max-width: calc(33.33% - 15px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .card-itinerary {
+                flex: 1 1 calc(50% - 15px); /* 2개씩 배치 */
+                max-width: calc(50% - 15px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-itinerary {
+                flex: 1 1 100%; /* 1개씩 배치 */
+                max-width: 100%;
+            }
+        }
+
+
+        .card-thumbnail{
+            position: relative; /* 오버레이 위치 기준 */
+            width: 100%;
+            height: 100%;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* 넘치는 요소 숨김 */
+        }
+        .card-thumbnail img {
+            width: 100%;
+            aspect-ratio: 16 / 9; /* 비율 유지 */
+            object-fit: cover;
+            transition: transform 0.3s ease-in-out;
+        }
+
+
+        /* 항상 표시되는 오버레이 */
+        .card-overlay {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.11); /* 반투명 배경 */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            align-items: flex-start;
+            text-align: center;
+            opacity: 1; /* 항상 표시됨 */
+        }
+        .card-overlay h4 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .card-overlay p {
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+
+        .card-header{
+            width: 100%;
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .badge-days {
+            background-color: rgba(0, 0, 0, 0.11);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 30px;
+            font-size: 0.9em;
+        }
+        .badge-share {
+
+            color: white;
+            padding: 3px 5px;
+            border-radius: 30px;
+            font-size: 0.7em;
+        }
+
+        .badge-share.not-share {
+            display : none;
+        }
+        .badge-share.host {
+            background-color: rgb(0 253 255 / 22%);
+        }
+        .badge-share.guest {
+            background-color: rgba(255, 255, 255, 0.11);
+        }
+
+
+        .location-name {
+            font-size:0.9em;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .card-footer {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between; /* 좌우 정렬 */
+
+            align-items: flex-start; /* 왼쪽 정렬 */
+            padding: 10px;
+            text-align: left; /* 텍스트 왼쪽 정렬 */
+        }
+        .card-footer-left {
+            flex-grow: 1; /* 가능한 최대 크기로 확장 */
+        }
+
+        .card-footer-right {
+            flex-shrink: 0; /* 최소 크기 유지 */
+
+        }
+
+        .card-itinerary:hover .card-footer .name {
+            text-decoration: underline;
+            text-shadow: -1px 0 #ffffff0A, 0 1px #ffffff0A, 1px 0 #ffffff0A, 0 -1px #ffffff0A;
+        }
+
+        .card-itinerary:hover .card-footer .date {
+
+            text-shadow: -1px 0 #ffffff0A, 0 1px #ffffff0A, 1px 0 #ffffff0A, 0 -1px #ffffff0A;
+        }
+
+
+        .card-footer-left .name{
+            font-size:1em;
+            text-shadow: -1px 0 #00000022, 0 1px #00000022, 1px 0 #00000022, 0 -1px #00000022;
+        }
+
+        .card-footer-left .name{
+            font-size:1em;
+            text-shadow: -1px 0 #00000022, 0 1px #00000022, 1px 0 #00000022, 0 -1px #00000022;
+        }
+
+        .card-footer-left .date{
+            font-size:0.8em;
+            text-shadow: -1px 0 #00000022, 0 1px #00000022, 1px 0 #00000022, 0 -1px #00000022;
+        }
+        .card-footer-right button {
+            text-decoration: none;
+            background: transparent;
+            transition: background 3s ease-in-out;
+        }
+
+        .menu-btn{
+            margin: 5px;
+
+        }
+
+        .card-footer-right button:hover {
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+        }
+
+        .dropdown-menu {
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            width: 70px !important;
+            min-width: 70px !important; /* Bootstrap 기본 min-width를 덮어씌움 */
+            max-width: 70px !important; /* 추가적으로 최대 너비도 제한 */
+            transform: none !important;
+            text-align: center;
+            z-index: 1050; /* 드롭다운이 항상 위에 표시되도록 */
+            display: none;
+        }
+
+        /* 삼각형 테두리 (더 깔끔하게 보이도록) */
+        .dropdown-arrow {
+            position: absolute;
+            top: -8px;
+            left: 70%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 10px;
+            background: #ffffff;
+            z-index: 1065; /* 드롭다운이 항상 위에 표시되도록 */
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .container{
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+        }
+
+        .container-header {
+            display:flex;
+            width: 100%;
+            flex-direction: row;
+            margin-bottom: 30px;
+            background-color: #ffffff;
+        }
+        .tab-container{
+            user-select: none;
+            display:flex;
+            height: 50px;
+            width: 100%;
+        }
+        .tab-container .tab{
+            display: flex;
+            flex: 1;
+            height: 100%;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 5px;
+            align-items: center;
+        }
+
+        .tab-container .tab.active {
+            border-bottom : 3px solid #24cc00;
+        }
+
+        .tab-container .tab.active span{
+            color : #1faa01;
+        }
+
+        .section{
+            display:flex;
+            width:100%;
+            flex-direction: column;
+
+        }
+
+        .itinerary-list-header{
+            display:flex;
+            user-select: none;
+            justify-content: space-between;
+        }
+
+        .itinerary-tab-container {
+            user-select: none;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .itinerary-list-header-left .header-name{
+            user-select: none;
+            font-weight: bolder;
+            font-size: 1.2em;
+        }
+
+
+        .itinerary-tab-container .itinerary-tab{
+            padding-right: 20px;
+            height: 100%;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 5px;
+            align-items: center;
+            color:gray;
+        }
+
+
+
+        .itinerary-tab-container .itinerary-tab.active{
+            color:black;
+        }
+
+        .itinerary-tab-container .itinerary-tab:hover{
+            cursor: pointer;
+        }
+
+        .form-select {
+            user-select: none;
+            width: auto;
+            font-size: 0.9em;
+            text-align: center;
+            border:none;
+        }
+
+        .form-select:focus{
+            box-shadow : none;
+        }
+
+        .form-select option {
+
+            outline: none;
+            font-weight: normal;
+            border:none;
+            font-size: 0.9em;
+
+        }
+    </style>
 </head>
 <body>
 
-<div class="container mt-4">
+<div class="container">
     <!-- 정렬 콤보박스 -->
-    <div class="mb-3">
-        <label for="sortSelect" class="form-label">정렬 기준</label>
-        <select id="sortSelect" class="form-select">
-            <option value="createdDate" data-direction="DESC">최신 등록순</option>
-            <option value="startDate" data-direction="ASC">여행 시작일 오름차순</option>
-            <option value="startDate" data-direction="DESC">여행 시작일 내림차순</option>
-        </select>
+    <div class="container-header">
+        <div class="tab-container">
+            <div class="tab active"><span>내 일정</span></span></div>
+            <div class="tab"><span>내 사진</span></div>
+        </div>
     </div>
 
     <!-- 일정 리스트 -->
-    <div id="itineraryList" class="list-group"></div>
+    <div class="section itinerary-list-wrap">
+        <div class="itinerary-list-header">
+            <div class="itinerary-list-header-left">
+                <div class="header-name">내 일정</div>
+            </div>
+            <div class="itinerary-list-header-right">
+                <select id="sortSelect" class="form-select">
+                    <option value="createdDate" data-direction="DESC">플래너 최신순</option>
+                    <option value="createdDate" data-direction="ASC">플래너 오래된순</option>
+                    <option value="startDate" data-direction="ASC">여행 시작일 오름차순</option>
+                    <option value="startDate" data-direction="DESC">여행 시작일 내림차순</option>
+                </select>
+            </div>
+        </div>
+        <div class="itinerary-tab-container">
+            <div class="itinerary-tab active">전체일정</div>
+            <div class="itinerary-tab">공유중인 일정</div>
+            <div class="itinerary-tab">공유받은 일정</div>
+        </div>
+        <div class="itinerary-list total"></div>
+        <div class="itinerary-list sharing"></div>
+        <div class="itinerary-list shared"></div>
+        <!-- 더보기 버튼 -->
+        <button id="loadMoreBtn" class="btn w-30 mt-3">더보기</button>
+    </div>
 
-    <!-- 더보기 버튼 -->
-    <button id="loadMoreBtn" class="btn btn-primary w-100 mt-3">더보기</button>
+
+
+
 </div>
+<div class="dropdown-arrow" style="display: none;"></div>
+<ul id="dynamicDropdown" class="dropdown-menu" style="display: none;">
+    <li><a class="dropdown-item edit" href="#">편집</a></li>
+    <li><a class="dropdown-item delete" href="#">삭제</a></li>
+    <li><a class="dropdown-item share" href="#">공유</a></li>
+</ul>
 <script>
-    let currentPage = 0; // 현재 페이지
-    const userId = 1;  // 실제 로그인한 사용자 ID
-    let sortBy = "createdDate";  // 기본 정렬 필드
-    let direction = "DESC";  // 기본 정렬 방향
 
-    // 일정 목록 불러오기 함수
-    function loadItineraries(reset = false) {
-        $.ajax({
-            url: `/api/itinerary/mylist`,
-            type: "GET",
-            data: {
-                userId: userId,
-                page: currentPage,
-                size: 4, // 한 번에 가져올 개수
-                sortBy: sortBy,
-                direction: direction
-            },
-            success: function (response) {
-                if (reset) {
-                    $("#itineraryList").empty(); // 기존 목록 초기화
-                    currentPage = 0; // 페이지 리셋
-                }
 
-                // 데이터가 없을 경우 "더보기" 버튼 숨김
-                if (response.content.length === 0) {
-                    $("#loadMoreBtn").hide();
-                    return;
-                }
-
-                // 일정 목록 추가
-                response.content.forEach(itinerary => {
-                    $("#itineraryList").append(`
-                    <div class="list-group-item">
-                        <h5>${itinerary.itineraryName}</h5>
-                        <p>시작일: ${new Date(itinerary.startDate).toLocaleDateString()}</p>
-                        <p>종료일: ${new Date(itinerary.endDate).toLocaleDateString()}</p>
-                        <p>내 역할: ${itinerary.role}</p>
-                    </div>
-                `);
-                });
-
-                // 현재 페이지 증가
-                currentPage++;
-
-                // 더보기 버튼 활성화 여부 결정
-                if (response.last) {
-                    $("#loadMoreBtn").hide();
-                } else {
-                    $("#loadMoreBtn").show();
-                }
-            }
-        });
-    }
-
-    // 정렬 변경 시 데이터 다시 로드
-    $("#sortSelect").on("change", function () {
-        sortBy = $(this).val(); // 선택한 정렬 기준
-        direction = $(this).find("option:selected").data("direction"); // 정렬 방향
-        currentPage = 0; // 페이지 리셋
-        loadItineraries(true); // 기존 데이터 초기화 후 다시 로드
-    });
-
-    // "더보기" 버튼 클릭 이벤트
-    $("#loadMoreBtn").on("click", function () {
-        loadItineraries();
-    });
-
-    // 페이지 로드 시 첫 데이터 로드
-    $(document).ready(function () {
-        loadItineraries();
-    });
 </script>
-
+<script src="/js/mylist.js"></script>
+<script src="mylist.js"></script>
 </body>
 </html>

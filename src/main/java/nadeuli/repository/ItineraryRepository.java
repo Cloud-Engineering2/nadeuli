@@ -23,7 +23,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
     @Query("""
-        SELECT i, ic.icRole FROM Itinerary i 
+        SELECT i, ic.icRole FROM Itinerary i
         JOIN ItineraryCollaborator ic ON ic.itinerary = i
         WHERE ic.user.id = :userId
     """)

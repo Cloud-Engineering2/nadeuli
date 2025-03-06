@@ -12,6 +12,7 @@
  * 이홍비    2025.02.25     최초 작성
  * 박한철    2025.02.27     DB 구조 수정 end_date -> totalDays로 카운팅하는식으로 변경
  *                         transportationType 추가
+ * 박한철    2025.03.06     isShared 추가
  * ========================================================
  */
 
@@ -22,7 +23,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.Itinerary;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -34,25 +34,31 @@ public class ItineraryDTO {
     private LocalDateTime startDate;
     private int totalDays;
     private int transportationType;
-
+    private boolean isShared; // ✅ 공유 여부 필드 추가
 
     // static factory method
-    public static ItineraryDTO of(Long id, String itineraryName, LocalDateTime startDate, int totalDays, int transportationType) {
-        return new ItineraryDTO(id, itineraryName, startDate, totalDays, transportationType);
+    public static ItineraryDTO of(Long id, String itineraryName, LocalDateTime startDate, int totalDays, int transportationType, boolean isShared) {
+        return new ItineraryDTO(id, itineraryName, startDate, totalDays, transportationType, isShared);
     }
 
-    public static ItineraryDTO of(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType) {
-        return new ItineraryDTO(null, itineraryName, startDate, totalDays, transportationType);
+    public static ItineraryDTO of(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType, boolean isShared) {
+        return new ItineraryDTO(null, itineraryName, startDate, totalDays, transportationType, isShared);
     }
 
     // entity -> dto
     public static ItineraryDTO from(Itinerary itinerary) {
-        return new ItineraryDTO(itinerary.getId(), itinerary.getItineraryName(), itinerary.getStartDate(), itinerary.getTotalDays(), itinerary.getTransportationType());
+        return new ItineraryDTO(
+                itinerary.getId(),
+                itinerary.getItineraryName(),
+                itinerary.getStartDate(),
+                itinerary.getTotalDays(),
+                itinerary.getTransportationType(),
+                itinerary.isShared() // ✅ 추가
+        );
     }
 
-
-    // dto => entity
+    // dto -> entity
     public Itinerary toEntity() {
-        return Itinerary.of(itineraryName, startDate, totalDays, transportationType);
+        return Itinerary.of(itineraryName, startDate, totalDays, transportationType, isShared);
     }
 }

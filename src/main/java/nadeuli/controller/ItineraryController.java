@@ -46,9 +46,9 @@ public class ItineraryController {
         return "/itinerary/write_test";  // itinerary/write_test.html을 반환
     }
 
-    @GetMapping("/edit")
-    public String showEditTestPage() {
-        return "/itinerary/edit";  // itinerary/edit.html을 반환
+    @GetMapping("/edit/{itineraryId}")
+    public String showEditPage(@PathVariable Long itineraryId) {
+        return "/itinerary/edit";  // 정적 HTML 페이지 반환
     }
 
     @GetMapping("/region")
