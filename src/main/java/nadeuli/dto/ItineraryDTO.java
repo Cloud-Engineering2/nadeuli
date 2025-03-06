@@ -34,31 +34,25 @@ public class ItineraryDTO {
     private LocalDateTime startDate;
     private int totalDays;
     private int transportationType;
-    private boolean isShared; // ✅ 공유 여부 필드 추가
+
 
     // static factory method
-    public static ItineraryDTO of(Long id, String itineraryName, LocalDateTime startDate, int totalDays, int transportationType, boolean isShared) {
-        return new ItineraryDTO(id, itineraryName, startDate, totalDays, transportationType, isShared);
+    public static ItineraryDTO of(Long id, String itineraryName, LocalDateTime startDate, int totalDays, int transportationType) {
+        return new ItineraryDTO(id, itineraryName, startDate, totalDays, transportationType);
     }
 
-    public static ItineraryDTO of(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType, boolean isShared) {
-        return new ItineraryDTO(null, itineraryName, startDate, totalDays, transportationType, isShared);
+    public static ItineraryDTO of(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType) {
+        return new ItineraryDTO(null, itineraryName, startDate, totalDays, transportationType);
     }
 
     // entity -> dto
     public static ItineraryDTO from(Itinerary itinerary) {
-        return new ItineraryDTO(
-                itinerary.getId(),
-                itinerary.getItineraryName(),
-                itinerary.getStartDate(),
-                itinerary.getTotalDays(),
-                itinerary.getTransportationType(),
-                itinerary.isShared() // ✅ 추가
-        );
+        return new ItineraryDTO(itinerary.getId(), itinerary.getItineraryName(), itinerary.getStartDate(), itinerary.getTotalDays(), itinerary.getTransportationType());
     }
 
-    // dto -> entity
+
+    // dto => entity
     public Itinerary toEntity() {
-        return Itinerary.of(itineraryName, startDate, totalDays, transportationType, isShared);
+        return Itinerary.of(itineraryName, startDate, totalDays, transportationType);
     }
 }

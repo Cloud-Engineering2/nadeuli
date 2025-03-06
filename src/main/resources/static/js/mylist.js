@@ -17,7 +17,8 @@ let debugData = {
             "createdDate": "2025-03-04T03:09:29",
             "modifiedDate": "2025-03-04T03:09:29",
             "role": "ROLE_OWNER",
-            "isShared": false
+            "isShared": false,
+            "hasGuest": false
         },
         {
             "id": 20,
@@ -28,7 +29,8 @@ let debugData = {
             "createdDate": "2025-03-04T03:07:29",
             "modifiedDate": "2025-03-04T03:07:29",
             "role": "ROLE_OWNER",
-            "isShared": false
+            "isShared": true,
+            "hasGuest": false
         },
         {
             "id": 19,
@@ -39,7 +41,8 @@ let debugData = {
             "createdDate": "2025-03-01T21:02:59",
             "modifiedDate": "2025-03-01T21:02:59",
             "role": "ROLE_GUEST",
-            "isShared": true
+            "isShared": true,
+            "hasGuest": true
         },
         {
             "id": 18,
@@ -50,7 +53,8 @@ let debugData = {
             "createdDate": "2025-02-28T15:14:54",
             "modifiedDate": "2025-02-28T15:14:54",
             "role": "ROLE_OWNER",
-            "isShared": true
+            "isShared": true,
+            "hasGuest": false
         }
     ],
     "pageable": {
@@ -228,21 +232,71 @@ function renderItineraries(divType = ".itinerary-list", renderList, isEmpty, isL
     renderList.forEach(hashId => {
         let itinerary = getItineraryById(hashId);
         if (divType === ".itinerary-list.total") {
-            $(divType).append(createItineraryElement(itinerary));
-        } else if (itinerary.isShared){
-            if (divType === ".itinerary-list.sharing" && itinerary.role === "ROLE_OWNER"){
-                $(divType).append(createItineraryElement(itinerary));
-            } else if (divType === ".itinerary-list.shared" && itinerary.role === "ROLE_GUEST"){
-                $(divType).append(createItineraryElement(itinerary));
-            }
+            $(divType).append(createItineraryElement(itinerary, true));
+        } else if (divType === ".itinerary-list.sharing"){
+            $(divType).append(createItineraryElement(itinerary, (itinerary.isShared || itinerary.hasGuest) && (itinerary.role === "ROLE_OWNER")));
+        } else if (divType === ".itinerary-list.shared"){
+            $(divType).append(createItineraryElement(itinerary, (itinerary.isShared || itinerary.hasGuest) && (itinerary.role === "ROLE_GUEST")));
         }
+
     });
 
 }
 
 
+
+function refreshItineraryElement(hashId, role, isShared, hasGuest, exitGuest = false) {
+    // 모든 itinerary-list에서 해당 itinerary 찾기
+    let $itineraryElements = $(`.card-itinerary[data-id="${hashId}"]`);
+
+    $itineraryElements.each(function () {
+        let $itinerary = $(this);
+        let $badge = $itinerary.find(".badge-share");
+
+        // 📌 전체 일정 목록 (`total`)
+        if ($itinerary.closest(".itinerary-list").hasClass("total")) {
+            if (exitGuest) {
+                $itinerary.addClass("hide"); // 나간 경우 숨김
+            } else {
+                $itinerary.removeClass("hide");
+            }
+
+            // 호스트 뱃지 업데이트
+            if (isShared || hasGuest) {
+                $badge.removeClass("not-share host guest").addClass(role === "Owner" ? "host" : "guest");
+            } else {
+                $badge.removeClass("host guest").addClass("not-share");
+            }
+        }
+        if(!exitGuest){
+            // 📌 공유 중인 일정 목록 (`sharing`)
+            if ($itinerary.closest(".itinerary-list").hasClass("sharing")) {
+               console.log(isShared, hasGuest, role);
+
+                if ((isShared || hasGuest) && (role === "Owner")) {
+                    $itinerary.removeClass("hide");
+                } else {
+                    $itinerary.addClass("hide");
+                }
+
+                // 호스트 뱃지 업데이트
+                if (isShared || hasGuest) {
+                    $badge.removeClass("not-share host guest").addClass(role === "Owner" ? "host" : "guest");
+                }
+            }
+        }
+        // 📌 공유받은 일정 목록 (`shared`)
+        if ($itinerary.closest(".itinerary-list").hasClass("shared")) {
+            if (exitGuest) {
+                $itinerary.addClass("hide"); // 게스트에서 나가면 숨김
+            }
+        }
+    });
+}
+
+
 // card element 리턴
-function createItineraryElement(itinerary) {
+function createItineraryElement(itinerary, isDisplay) {
     console.log("itinerary Object:", itinerary);
 
     // 현재 날짜
@@ -273,7 +327,7 @@ function createItineraryElement(itinerary) {
     const locationName = itinerary.locations && itinerary.locations.length > 0 ? itinerary.locations[0] : "미정";
 
     return $(`
-    <div class="card-itinerary" data-id="${itinerary.hashId}">
+    <div class="card-itinerary ${isDisplay ? "" : "hide"}" data-id="${itinerary.hashId}">
       <div class="card-thumbnail">
         <img src="https://fastly.picsum.photos/id/477/1000/1000.jpg?hmac=y2Qqhq8lLe7PrjRPIxa3UvcKHX_Q4TV-eaTBqhcBCUE"
              alt="${itinerary.itineraryName} 이미지"
@@ -286,7 +340,7 @@ function createItineraryElement(itinerary) {
               <span class="location-name">${locationName}</span>
             </div>
             <div class="card-header-right">
-              <span class="badge-share ${itinerary.isShared ? (itinerary.role === 'ROLE_OWNER' ? 'host' : 'guest') : 'not-share'}">
+              <span class="badge-share ${itinerary.isShared ||  itinerary.hasGuest ? (itinerary.role === 'ROLE_OWNER' ? 'host' : 'guest') : 'not-share'}">
                 ${itinerary.role === 'ROLE_OWNER' ? '호스트' : '게스트'}
               </span>
             </div>
@@ -363,7 +417,7 @@ $(document).on("click", ".menu-btn", function (event) {
     if(itinerary.role === "ROLE_OWNER"){
         itemEdit.show();
     } else {
-        if(itinerary.isShared){
+        if(itinerary.isShared || itinerary.hasGuest){
             itemShared.show();
         } else {
             itemShared.hide();
@@ -476,7 +530,7 @@ $(document).ready(function () {
 
             if (itinerary.role === "ROLE_OWNER") {
                 let message = "정말 삭제하시겠습니까?";
-                if (itinerary.isShared) {
+                if (itinerary.isShared || itinerary.hasGuest) {
                     message += "\n※ 이 일정은 공유된 상태입니다. 삭제하면 공유된 사용자도 접근할 수 없습니다.";
                 }
                 if (confirm(message)) {
@@ -488,20 +542,208 @@ $(document).ready(function () {
             if (itinerary.role === "ROLE_GUEST") {
                 let message = "정말 이 공유받은 일정을 제거하시겠습니까?\n※ 제거하면 공유받은 일정 목록에서 접근할수 없습니다.";
                 if (confirm(message)) {
-                    console.log("삭제 요청 보냄 (GUEST):", itinerary.id);
-                    // 공유 해제 로직 실행
+                    removeGuestMine(itinerary.id);
+                    $("#dynamicDropdown").hide();
+                    $(".dropdown-arrow").hide();
                 }
             }
         }
     });
 
 
-    // 공유 버튼 클릭 이벤트
+// 공유 버튼 클릭 이벤트
     $(document).on("click", ".dropdown-item.share", function (event) {
         event.preventDefault();
         if (currentMenuOwner) {
             let itinerary = getItineraryById(currentMenuOwner);
-            // 공유 다이얼로그 열기 또는 공유 로직 추가
+
+            // fetch 완료 후 모달 표시 및 refresh 실행
+            fetchItineraryStatus(itinerary.id, true);
+        }
+    });
+
+
+});
+
+
+// Share 파트
+// =================================================
+let itineraryStatus = null;
+
+function fetchItineraryStatus(iid, showModal = false, callback = null) {
+    $.ajax({
+        url: `/api/share/status?itineraryId=${iid}`,
+        type: "GET",
+        success: function (response) {
+            // API 응답 반영
+            itineraryStatus = {
+                id: iid,
+                hasGuest: response.hasGuest,
+                isShared: response.shared,
+                role: response.userRole === "ROLE_OWNER" ? "Owner" : "Guest",
+                collaborators: response.collaborators.map(collab => ({
+                    name: collab.userName,
+                    role: collab.icRole === "ROLE_OWNER" ? "Owner" : "Guest",
+                    userId: collab.userId
+                }))
+            };
+
+            updateModalUI();
+
+            if (showModal) {
+                $("#shareModal").modal("show");
+            }
+
+            // 완료 후 `callback` 실행
+            if (typeof callback === "function") {
+                callback(itineraryStatus);
+            }
+        },
+        error: function (xhr) {
+            alert("일정 정보를 불러오는 데 실패했습니다.");
+        }
+    });
+}
+
+
+function updateModalUI() {
+
+    $("#ownerList").empty();
+    $("#guestList").empty();
+
+    let isOwner = itineraryStatus.role === "Owner";
+
+    itineraryStatus.collaborators.forEach(collab => {
+        let listItem = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${collab.name}`;
+
+        // Owner일 때만 삭제 버튼 추가
+        if (isOwner && collab.role === "Guest") {
+            listItem += `<button class="btn btn-sm btn-danger remove-guest" data-user-id="${collab.userId}">
+                        <i class="bi bi-x"></i>
+                     </button>`;
+        }
+
+        listItem += `</li>`;
+
+        if (collab.role === "Owner") {
+            $("#ownerList").append(listItem);
+        } else {
+            $("#guestList").append(listItem);
+        }
+    });
+
+
+    if (itineraryStatus.isShared) {
+        $("#shareStatus").text("ON").removeClass("bg-secondary").addClass("bg-success");
+        $("#shareLinkContainer").removeClass("d-none");
+
+        $.ajax({
+            url: `/api/share/token?itineraryId=${itineraryStatus.id}`,
+            type: "GET",
+            success: function (token) {
+                $("#shareLink").val(`${window.location.origin}/join/${token}`);
+            },
+            error: function () {
+                $("#shareLink").val("공유 링크를 불러올 수 없습니다.");
+            }
+        });
+
+
+        $("#disableShareBtn").toggleClass("d-none", !isOwner);
+        $("#generateLinkBtn").addClass("d-none");
+
+    } else {
+        $("#shareStatus").text("OFF").removeClass("bg-success").addClass("bg-secondary");
+        $("#shareLinkContainer").addClass("d-none");
+        $("#disableShareBtn").addClass("d-none");
+
+        if (isOwner) {
+            $("#generateLinkBtn").removeClass("d-none").prop("disabled", false);
+        } else {
+            $("#generateLinkBtn").addClass("d-none");
+        }
+    }
+
+    // GUEST 삭제 버튼 이벤트 바인딩
+    $(".remove-guest").click(function () {
+        let targetUserId = $(this).data("user-id");
+        removeGuest(targetUserId);
+    });
+
+}
+function removeGuestMine(iid) {
+    $.ajax({
+        url: `/api/share/remove-mine?itineraryId=${iid}`,
+        type: "DELETE",
+        success: function () {
+            alert("GUEST가 삭제되었습니다.");
+
+                refreshItineraryElement(currentMenuOwner, false, false, false, true);
+        },
+        error: function () {
+            alert("GUEST 삭제에 실패했습니다.");
+        }
+    });
+}
+
+
+function removeGuest(targetUserId) {
+    $.ajax({
+        url: `/api/share/remove?itineraryId=${itineraryStatus.id}&targetUserId=${targetUserId}`,
+        type: "DELETE",
+        success: function () {
+            alert("GUEST가 삭제되었습니다.");
+            fetchItineraryStatus(itineraryStatus.id, true, function (status) {
+                refreshItineraryElement(currentMenuOwner, status.role, status.isShared, status.hasGuest, false);
+            });
+
+        },
+        error: function () {
+            alert("GUEST 삭제에 실패했습니다.");
+        }
+    });
+}
+// 공유 링크 생성 (OWNER만 가능)
+$("#generateLinkBtn").click(function () {
+    $.ajax({
+        url: `/api/share/create?itineraryId=${itineraryStatus.id}`,
+        type: "POST",
+        success: function (token) {
+            itineraryStatus.isShared = true;
+            updateModalUI();
+            refreshItineraryElement(currentMenuOwner, itineraryStatus.role, itineraryStatus.isShared,
+                itineraryStatus.hasGuest, false);
+
+        },
+        error: function (xhr) {
+            alert("공유 링크 생성에 실패했습니다.");
         }
     });
 });
+
+// 공유 링크 삭제 (OWNER만 가능)
+$("#disableShareBtn").click(function () {
+    $.ajax({
+        url: `/api/share/delete?itineraryId=${itineraryStatus.id}`,
+        type: "DELETE",
+        success: function () {
+            itineraryStatus.isShared = false;
+            updateModalUI();
+            refreshItineraryElement(currentMenuOwner, itineraryStatus.role, itineraryStatus.isShared,
+                itineraryStatus.hasGuest, false);
+        },
+        error: function (xhr) {
+            alert("공유 링크 삭제에 실패했습니다.");
+        }
+    });
+});
+
+// 링크 복사 기능
+$("#copyLinkBtn").click(function () {
+    let copyText = $("#shareLink");
+    copyText.select();
+    document.execCommand("copy");
+    alert("링크가 복사되었습니다.");
+});
+

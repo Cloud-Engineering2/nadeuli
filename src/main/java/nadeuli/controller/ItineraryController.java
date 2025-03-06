@@ -55,4 +55,5 @@ public class ItineraryController {
     public String regionTestPage() {
         return "/region-test";  // itinerary/edit.html을 반환
     }
+
 }

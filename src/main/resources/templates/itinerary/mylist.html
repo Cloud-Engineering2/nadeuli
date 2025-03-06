@@ -30,6 +30,10 @@
             border-radius: 10px;
         }
 
+        .card-itinerary.hide {
+            display:none;
+        }
+
 
         /* 화면이 작아질 경우 반응형 조정 */
         @media (max-width: 1024px) {
@@ -330,6 +334,10 @@
             font-size: 0.9em;
 
         }
+
+        .modal {
+            z-index: 1100;
+        }
     </style>
 </head>
 <body>
@@ -380,11 +388,59 @@
     <li><a class="dropdown-item delete" href="#">삭제</a></li>
     <li><a class="dropdown-item share" href="#">공유</a></li>
 </ul>
+
+
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="shareModalLabel">공유하기</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">현재 공유 상태:</label>
+                    <span id="shareStatus" class="badge bg-secondary px-3 py-2">OFF</span>
+                </div>
+
+                <!-- 공유 링크 영역 (가로 정렬) -->
+                <div id="shareLinkContainer" class="mb-3 d-none">
+                    <label class="form-label fw-semibold">공유 링크:</label>
+                    <div class="input-group">
+                        <input type="text" id="shareLink" class="form-control rounded-start" readonly>
+                        <button class="btn btn-outline-primary rounded-end" id="copyLinkBtn">
+                            <i class="bi bi-clipboard"></i> 복사
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Owner 버튼 -->
+                <button class="btn btn-primary w-100 mb-2 py-2 fw-semibold" id="generateLinkBtn">
+                    <i class="bi bi-link-45deg"></i> 공유 링크 생성
+                </button>
+                <button class="btn btn-danger w-100 d-none py-2 fw-semibold" id="disableShareBtn">
+                    <i class="bi bi-x-circle"></i> 공유 끄기
+                </button>
+
+                <!-- Collaborator 목록 -->
+                <h6 class="mt-3 fw-bold">Collaborators</h6>
+                <ul class="list-group border-0">
+                    <li class="list-group-item bg-light fw-semibold">Owner</li>
+                    <ul id="ownerList" class="list-group mb-2"></ul>
+                    <li class="list-group-item bg-light fw-semibold">Guest</li>
+                    <ul id="guestList" class="list-group"></ul>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <script>
 
 
 </script>
 <script src="/js/mylist.js"></script>
-<script src="mylist.js"></script>
 </body>
 </html>

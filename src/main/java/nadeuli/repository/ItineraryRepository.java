@@ -22,12 +22,24 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
-    @Query("""
-        SELECT i, ic.icRole FROM Itinerary i
-        JOIN ItineraryCollaborator ic ON ic.itinerary = i
-        WHERE ic.user.id = :userId
-    """)
-    Page<Object[]> findByUserIdWithRole(@Param("userId") Long userId, Pageable pageable);
+//    @Query("""
+//        SELECT i, ic.icRole FROM Itinerary i
+//        JOIN ItineraryCollaborator ic ON ic.itinerary = i
+//        WHERE ic.user.id = :userId
+//    """)
+//    Page<Object[]> findByUserIdWithRole(@Param("userId") Long userId, Pageable pageable);
 
+    @Query("""
+    SELECT i, ic.icRole, 
+           CASE WHEN st.id IS NOT NULL THEN true ELSE false END AS isShared,
+           CASE WHEN EXISTS (
+               SELECT 1 FROM ItineraryCollaborator g WHERE g.itinerary = i AND g.icRole = 'ROLE_GUEST'
+           ) THEN true ELSE false END AS hasGuest
+    FROM Itinerary i
+    JOIN ItineraryCollaborator ic ON ic.itinerary = i
+    LEFT JOIN ShareToken st ON st.itineraryId = i.id
+    WHERE ic.user.id = :userId
+""")
+    Page<Object[]> findByUserIdWithRole(@Param("userId") Long userId, Pageable pageable);
 
 }

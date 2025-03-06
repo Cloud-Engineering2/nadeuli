@@ -53,31 +53,6 @@ public class Itinerary extends BaseTimeEntity{
     @Column(name = "transportation_type", nullable = false)
     private int transportationType;
 
-    @Column(name = "is_shared", nullable = false)
-    private boolean isShared = false;  // 기본값 false (공유 비활성화)
-
-
-    // 생성자
-    public Itinerary(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType, boolean isShared) {
-        this.itineraryName = itineraryName;
-        this.startDate = startDate;
-        this.totalDays = totalDays;
-        this.transportationType = transportationType;
-        this.isShared = isShared;
-    }
-
-    // static factory method
-    public static Itinerary of(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType, boolean isShared) {
-        return new Itinerary(itineraryName, startDate, totalDays, transportationType, isShared);
-    }
-
-    public void updateFromDto(ItineraryDTO dto) {
-        this.itineraryName = dto.getItineraryName();
-        this.startDate = dto.getStartDate();
-        this.totalDays = dto.getTotalDays();
-        this.transportationType = dto.getTransportationType();
-    }
-
     public boolean hasChanges(ItineraryDTO dto) {
         if (!Objects.equals(this.itineraryName, dto.getItineraryName())) {
             return true;
@@ -91,8 +66,28 @@ public class Itinerary extends BaseTimeEntity{
         if (this.transportationType != dto.getTransportationType()) {
             return true;
         }
-
         return false; // 모든 필드가 동일하면 변경 없음
+    }
+
+
+    // 생성자
+    public Itinerary(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType) {
+        this.itineraryName = itineraryName;
+        this.startDate = startDate;
+        this.totalDays = totalDays;
+        this.transportationType = transportationType;
+    }
+
+    // static factory method
+    public static Itinerary of(String itineraryName, LocalDateTime startDate, int totalDays, int transportationType) {
+        return new Itinerary(itineraryName, startDate, totalDays, transportationType);
+    }
+
+    public void updateFromDto(ItineraryDTO dto) {
+        this.itineraryName = dto.getItineraryName();
+        this.startDate = dto.getStartDate();
+        this.totalDays = dto.getTotalDays();
+        this.transportationType = dto.getTransportationType();
     }
 
 }
