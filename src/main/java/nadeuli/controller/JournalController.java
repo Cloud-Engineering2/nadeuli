@@ -51,6 +51,8 @@ public class JournalController {
     // 기행문 조회 (열람)
     @GetMapping("/itineraries/{iid}/events/{ieid}/journal")
     public String redirectToJournalPage(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
+        journalService.getJournal(ieid); // exception 발생 시 error.html 로 바로 이동하기 위해서 작성
+
         System.out.println("📌 Journal.html 로 이동");
 
         return "journal/journal";
