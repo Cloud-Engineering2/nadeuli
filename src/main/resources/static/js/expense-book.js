@@ -1248,15 +1248,6 @@ function getTotalExpenseByItineraryEvent() {
 }
 
 // 🏗️ 경비 작성
-// document.addEventListener("DOMContentLoaded", function () {
-//     document.getElementById("expenseAddition").addEventListener("click", function () {
-//         writeCashbook();
-//         loadExpensePage();
-//         loadExpenseData();
-//     });
-//
-// });
-
 // 페이지 로드
 function loadExpensePage() {
     fetch("expense-right.html")
@@ -1268,32 +1259,6 @@ function loadExpensePage() {
         .catch(error => console.error("Error loading abc.html:", error));
 }
 
-// function loadExpenseData() {
-//     const expenseAddtionDiv = document.getElementById("expenseAddition");
-//     if(!expenseAddtionDiv) {
-//         console.error('Total Expense div not found for event id');
-//     }
-//
-//     const iid = parseInt(expenseAddtionDiv.getAttribute('data-iid'), 10);
-//     const ieid = parseInt(expenseAddtionDiv.getAttribute('data-ieid'), 10);
-//     // 2️⃣ 서버에서 데이터를 가져오기
-//     fetch(`/${iid}/events/${ieid}/expense`) // API 엔드포인트
-//         .then(response => response.json())
-//         .then(data => {
-//             const expenseList = document.getElementById("expense-list");
-//
-//             if (!expenseList) {
-//                 console.error("Expense list element not found!");
-//                 return;
-//             }
-//
-//             // 3️⃣ travelerName 데이터를 바인딩하여 리스트 추가
-//             expenseList.innerHTML = data.map(expense =>
-//                 `<li>${expense.travelerDTO.travelerName} - ${expense.content} (${expense.expense}원)</li>`
-//             ).join("");
-//         })
-//         .catch(error => console.error("Error fetching expense data:", error));
-// }
 
 
 function writeCashbook() {
@@ -1317,48 +1282,95 @@ function writeCashbook() {
         });
 }
 
-
+// (왼쪽 화면에서) + 경비 내역 추가 클릭 시, (오른쪽 화면에) 입력 항목 로드
 $(document).on("click", ".expense-addition", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
 
     console.log(`Clicked expenseAddition: iid=${iid}, ieid=${ieid}`);
 
-    // 1️⃣ abc.html을 오른쪽 `#map` 영역에 로드
-    fetch("/templates/expense-book/expense-right.html")
+    // 1️⃣ expense-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
+    fetch(`/itineraries/${iid}/events/${ieid}/expense-right`) // // fetch("/expense-book/expense-right.html")
         .then(response => response.text())
         .then(html => {
-            $("#map").html(html); // abc.html 내용을 오른쪽에 삽입
-            loadExpenseData(iid, ieid); // 서버에서 데이터 가져오기
+            $("#detailContainer").html(html);
+
+            getExpenseBookForWritingByItineraryEvent(iid, ieid);
         })
-        .catch(error => console.error("Error loading abc.html:", error));
+        .catch(error => console.error("Error loading expense-right.html:", error));
 });
 
-function loadExpenseData(iid, ieid) {
-    // 2️⃣ API에서 데이터를 가져옴 (해당 itinerary + event에 대한 경비 내역)
-    fetch(`/${iid}/events/${ieid}/expense`)
-        .then(response => response.json())
-        .then(data => {
-            const expenseList = $("#expense-list");
 
-            if (!expenseList.length) {
-                console.error("Expense list element not found!");
-                return;
+// ItineraryEvent 별로 ExpenseItem들 조회
+async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
+    try {
+        // expenseItem 데이터 가져오기
+        const expenseItems = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, "GET");
+
+        const expenseList = $("#expense-list");
+        if (!expenseList.length) {
+            console.error("Expense list element not found!");
+            return;
+        }
+
+        // 우선 expenseItem만 리스트에 표시
+        expenseList.html(
+            expenseItems.map(expenseItem =>
+                `<li id="expense-${expenseItem.id}">
+                    ${expenseItem.content} ${expenseItem.expense}원 - ${expenseItem.travelerDTO.travelerName} <small class="with-whom" data-emid="${expenseItem.id}">💡 함께한 사람: 로딩 중...</small>
+                </li>`
+
+            ).join("")
+        );
+
+        // 각 expenseItem에 대한 withWhom 데이터를 개별적으로 가져와 업데이트
+        expenseItems.forEach(async (expenseItem) => {
+            try {
+                console.log(`Fetching withWhom for expense ${expenseItem.id}`, expenseItem);
+                const withWhomResponse = await fetch(`/api/itineraries/${iid}/expense/${expenseItem.id}/withWhom`);
+                const withWhomData = await withWhomResponse.json();
+                console.log(`withWhomData for expense ${expenseItem.id}:`, withWhomData);
+
+                // 특정 expense 항목의 withWhom 데이터를 업데이트
+                $(`#expense-${expenseItem.id} .with-whom`).html(
+                    `💡 함께한 사람: ${withWhomData.map(withWhom => withWhom.travelerDTO.travelerName).join(", ")}`
+                );
+            } catch (whomError) {
+                console.error(`Error loading withWhom data for expense ${expenseItem.id}:`, whomError);
+
             }
+        });
 
-            // 3️⃣ travelerName 데이터를 바인딩하여 리스트 추가
-            expenseList.html(
-                data.map(expense =>
-                    `<li>${expense.travelerDTO.travelerName} - ${expense.content} (${expense.expense}원)</li>`
-                ).join("")
-            );
-        })
-        .catch(error => console.error("Error fetching expense data:", error));
+    } catch (error) {
+        console.error("Error loading expense data:", error);
+    }
 }
 
 
+
+
+// api 호출하여 json data 반환
+function callApiAt(url, method) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: url,        // `${iid}/api`
+            method: method,  //"GET",
+            dataType: "json",
+            success: function (response) {
+                resolve(response);
+            },
+            error: function (xhr, status, error) {
+                reject("Error fetching itinerary: " + error);
+            }
+        });
+    });
+}
+
+
+
+
 // function displayCurrentTotalExpense(data) {
-//     const mapElement = document.getElementById('map');
+//     const mapElement = document.getElementById('detailContainer');
 //     mapElement.innerHTML = `
 //         <h3>총 여행 경비</h3>
 //         <p>${data.currentExpense} 원</p>

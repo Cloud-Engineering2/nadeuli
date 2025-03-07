@@ -724,3 +724,7 @@ body {
 #expenseAddition {
     padding: 10px;
 }
+
+.expense-container {
+    backgroud-color: #e9dcbe;
+}

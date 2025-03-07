@@ -7,8 +7,8 @@
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- * 고민정    2025.02.27   지출 내역 CRUD 추가
- *
+ * 고민정    2025.03.04  basic 페이지
+ * 고민정    2025.03.07  오른쪽 화면 경비 내역 페이지 로드
  * ========================================================
  */
 package nadeuli.controller;
@@ -28,10 +28,19 @@ public class ExpenseItemController {
     // Itinerary Item 별 정산 조회 (페이지)
     @GetMapping("/{iid}/events/{ieid}/expense")
     public String getBasic(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
-//        JournalDTO journalDTO = journalService.getJournal(ieid);
 
-        System.out.println("📌 페이지 가져오기");
+        System.out.println("📌 itinerary-event-basic 페이지 가져오기");
 
         return "itinerary-event-basic";
     }
+
+    @GetMapping("/{iid}/events/{ieid}/expense-right")
+    public String getRight(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
+
+        System.out.println("📌 expense-book/expense-right 페이지 가져오기");
+
+        return "expense-book/expense-right";
+    }
+
+
 }
