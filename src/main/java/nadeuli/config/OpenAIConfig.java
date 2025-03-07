@@ -1,6 +1,3 @@
-package nadeuli.config;
-
-
 /* OpenAIConfig.java
  * OPEN API 연동
  * 해당 파일 설명
@@ -16,6 +13,9 @@ package nadeuli.config;
  *
  * ========================================================
  */
+
+package nadeuli.config;
+
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
