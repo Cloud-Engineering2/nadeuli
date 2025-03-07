@@ -214,9 +214,9 @@ document.getElementById('imageUpload').addEventListener('change', event => {
     }
 
     // 파일 크기 제한 (20MB)
-    const maxSize = 20 * 1024 * 1024; // 20MB
+    const maxSize = 30 * 1024 * 1024; // 20MB
     if (file.size > maxSize) {
-        alert('이미지 크기가 20MB를 초과합니다.');
+        alert('이미지 크기가 30MB를 초과합니다.');
         document.getElementById('imageUpload').value = ''; // 선택된 파일 초기화
         return;
     }
