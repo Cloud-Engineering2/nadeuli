@@ -1,3 +1,19 @@
+/* ShareService.java
+ * ShareService
+ * 공유 정보 서비스
+ * 작성자 : 박한철
+ * 최초 작성 날짜 : 2025-03-06
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자       날짜       수정 / 보완 내용
+ * ========================================================
+ * 박한철     2025.03.07    최초작성
+ *
+ * ========================================================
+ */
+
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
@@ -12,14 +28,9 @@ import nadeuli.repository.ItineraryCollaboratorRepository;
 import nadeuli.repository.ItineraryRepository;
 import nadeuli.repository.ShareTokenRepository;
 import nadeuli.repository.UserRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

@@ -1,10 +1,24 @@
+/* ShareController.java
+ * ShareController
+ * 공유 관련 페이지 컨트롤러
+ * 작성자 : 박한철
+ * 최초 작성 날짜 : 2025-03-06
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자       날짜       수정 / 보완 내용
+ * ========================================================
+ * 박한철     2025.03.07    최초작성
+ *
+ * ========================================================
+ */
+
 package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
-import nadeuli.entity.Itinerary;
 import nadeuli.repository.ItineraryRepository;
-import nadeuli.service.ItineraryService;
 import nadeuli.service.ShareService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
