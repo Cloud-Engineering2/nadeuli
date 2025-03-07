@@ -46,6 +46,7 @@ public class ItineraryService {
     private final ItineraryPerDayRepository itineraryPerDayRepository;
     private final ItineraryEventRepository itineraryEventRepository;
     private final PlaceRepository placeRepository;
+
     // ===========================
     //  CREATE: 일정 생성
     // ===========================
@@ -80,7 +81,6 @@ public class ItineraryService {
     // ===========================
     //  READ: 내 일정 리스트 조회
     // ===========================
-
     public Page<ItineraryResponseDTO> getMyItineraries(Long userId, Pageable pageable) {
         // 1. 사용자(userId)가 참여한 일정(Itinerary) 조회
         Page<Object[]> results = itineraryRepository.findByUserIdWithRole(userId, pageable);
@@ -89,10 +89,25 @@ public class ItineraryService {
         return results.map(row -> {
             Itinerary itinerary = (Itinerary) row[0];  // Itinerary 객체
             String role = (String) row[1];  // Collaborator 역할 정보
+            boolean isShared = (boolean) row[2];  // isShared 값
+            boolean hasGuest = (boolean) row[3];  // hasGuest 값
 
-            return ItineraryResponseDTO.from(itinerary, role);
+            return ItineraryResponseDTO.from(itinerary, role, isShared, hasGuest);
         });
     }
+
+//    public Page<ItineraryResponseDTO> getMyItineraries(Long userId, Pageable pageable) {
+//        // 1. 사용자(userId)가 참여한 일정(Itinerary) 조회
+//        Page<Object[]> results = itineraryRepository.findByUserIdWithRole(userId, pageable);
+//
+//        // 2. 결과 변환
+//        return results.map(row -> {
+//            Itinerary itinerary = (Itinerary) row[0];  // Itinerary 객체
+//            String role = (String) row[1];  // Collaborator 역할 정보
+//
+//            return ItineraryResponseDTO.from(itinerary, role);
+//        });
+//    }
 
 // ===========================
 //  READ: 특정 일정 조회 - Events 포함
@@ -105,7 +120,7 @@ public class ItineraryService {
 
         // 2. 해당 일정에 속한 현재 사용자의 Collaborator 정보 조회
         ItineraryCollaborator collaborator = itineraryCollaboratorRepository
-                .findByItinerary_IdAndUser_Id(itineraryId, userId)
+                .findByUserIdAndItineraryId(userId, itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("이 일정에 대한 권한이 없습니다."));
 
         // 3. 해당 일정의 perDay 목록 조회
@@ -269,9 +284,6 @@ public class ItineraryService {
 
         return itineraryEventRepository.findByItineraryPerDayIn(existingDays);
     }
-
-
-
 
 
 }

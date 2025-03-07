@@ -12,6 +12,7 @@
  * 이홍비    2025.02.25     최초 작성
  * 박한철    2025.02.27     DB 구조 수정 end_date -> totalDays로 카운팅하는식으로 변경
  *                         transportationType 추가
+ * 박한철    2025.03.06     isShared 추가
  * ========================================================
  */
 
@@ -22,7 +23,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.Itinerary;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
