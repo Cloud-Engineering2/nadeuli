@@ -158,6 +158,13 @@
             <version>3.1.2.RELEASE</version>
         </dependency>
 
+        <!-- Hash id -->
+        <dependency>
+            <groupId>org.hashids</groupId>
+            <artifactId>hashids</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
         <!-- JWT (JSON Web Token) -->
         <!--        <dependency>-->
         <!--            <groupId>com.auth0</groupId>-->
