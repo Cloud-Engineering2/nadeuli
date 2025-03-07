@@ -18,7 +18,7 @@ public class GooglePlaceController {
     @PostMapping("/search")
     public ResponseEntity<Void> searchPlace(@RequestBody PlaceRequest request) {
         System.out.println("장소 저장 요청: " + request);
-        placeCacheService.saveToCache(request.getUserId(), request.getPlaceName()); // ✅ place_name만 저장
+        placeCacheService.saveToCache(request.getUserId(), request.getPlaceName());
         return ResponseEntity.ok().build();
     }
 

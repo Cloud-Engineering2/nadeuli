@@ -26,7 +26,7 @@ public class PlaceCacheService {
         System.out.println("캐시 저장: " + cacheKey);
 
         ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
-        zSetOperations.add(cacheKey, placeName, System.currentTimeMillis()); // ✅ place_name만 저장
+        zSetOperations.add(cacheKey, placeName, System.currentTimeMillis());
 
         Long cacheSize = zSetOperations.size(cacheKey);
         if (cacheSize != null && cacheSize > MAX_CACHE_SIZE) {

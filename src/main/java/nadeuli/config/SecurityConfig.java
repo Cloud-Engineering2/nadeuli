@@ -18,6 +18,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/index.html", "/static/**").permitAll()
                         .requestMatchers("/api/map/**").permitAll()
                         .requestMatchers("/api/place/**").permitAll()
+                        .requestMatchers("/api/regions/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> httpBasic.disable());
