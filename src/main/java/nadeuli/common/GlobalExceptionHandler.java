@@ -11,6 +11,7 @@
  * ========================================================
  * 이홍비    2025.02.25     최초 작성 : GlobalExceptionHandler
  * 이홍비    2025.03.03     AmazonS3Exception 와 UnsupportedEncodingException 추가
+ * 이홍비    2025.03.06     error 발생 => 전역 오류 창으로 이동
  * ========================================================
  */
 
@@ -18,11 +19,11 @@ package nadeuli.common;
 
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.io.UnsupportedEncodingException;
 import java.util.NoSuchElementException;
@@ -32,40 +33,103 @@ public class GlobalExceptionHandler {
 
     // 찾을 수 없을 때
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNoSuchElementExceptions (NoSuchElementException e) {
+    public ModelAndView handleNoSuchElementException(NoSuchElementException e, HttpServletResponse response) {
         e.printStackTrace(); // 출력
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 자료를 찾을 수 없습니다. : " + e.getMessage());
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+
+        ModelAndView modelAndView = new ModelAndView("error"); // error.html 로 이동
+        modelAndView.addObject("message", e.getMessage()); // 오류 메시지 추가
+        modelAndView.addObject("statusCode", response.getStatus()); // 상태 코드 추가
+
+        return modelAndView;
+
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 자료를 찾을 수 없습니다. : " + e.getMessage());
+
     }
 
     // 일반적인 모든 예외 처리
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleAllExceptions(Exception e) {
+    public ModelAndView handleAllExceptions(Exception e, HttpServletResponse response) {
         e.printStackTrace(); // 출력
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("예기치 못한 오류가 발생했습니다 : " + e.getMessage());
+
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+        ModelAndView modelAndView = new ModelAndView("error"); // error.html 로 이동
+        modelAndView.addObject("message", e.getMessage()); // 오류 메시지 추가
+        modelAndView.addObject("statusCode", response.getStatus());  // 상태 코드 추가
+
+        return modelAndView;
+
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("예기치 못한 오류가 발생했습니다 : " + e.getMessage());
     }
 
     // 예상치 못한 상황일 때
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<String> handleIllegalStateException(IllegalStateException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); // 잘못된 요청 - 400 코드 반환
+    public ModelAndView handleIllegalStateException(IllegalStateException e, HttpServletResponse response) {
+        e.printStackTrace(); // 출력
+
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+        ModelAndView modelAndView = new ModelAndView("error"); // error.html 로 이동
+        modelAndView.addObject("message", e.getMessage()); // 오류 메시지 추가
+        modelAndView.addObject("statusCode", response.getStatus());  // 상태 코드 추가
+
+        return modelAndView;
+
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); // 잘못된 요청 - 400 코드 반환
     }
 
     // 로그인 시 아이디 or 비밀번호 틀렸을 때
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage()); // 인증 실패 - 401 코드 반환
+    public ModelAndView handleBadCredentialsException(BadCredentialsException e, HttpServletResponse response) {
+        e.printStackTrace(); // 출력
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        ModelAndView modelAndView = new ModelAndView("error"); // error.html 로 이동
+        modelAndView.addObject("message", e.getMessage()); // 오류 메시지 추가
+        modelAndView.addObject("statusCode", response.getStatus());  // 상태 코드 추가
+
+        return modelAndView;
+
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage()); // 인증 실패 - 401 코드 반환
     }
 
     // AmazonS3 관련 예외 처리
     @ExceptionHandler(AmazonS3Exception.class)
-    public ResponseEntity<String> handleAmazonS3Exception(AmazonS3Exception e) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("S3 오류 발생: " + e.getMessage());
+    public ModelAndView handleAmazonS3Exception(AmazonS3Exception e, HttpServletResponse response) {
+        e.printStackTrace(); // 출력
+
+        response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+
+        ModelAndView modelAndView = new ModelAndView("error"); // error.html 로 이동
+        modelAndView.addObject("message", e.getMessage()); // 오류 메시지 추가
+        modelAndView.addObject("statusCode", response.getStatus());  // 상태 코드 추가
+
+        return modelAndView;
+
+//        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("S3 오류 발생: " + e.getMessage());
     }
+
 
     // 인코딩 관련 예외 처리
     @ExceptionHandler(UnsupportedEncodingException.class)
-    public ResponseEntity<String> handleIOException(UnsupportedEncodingException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    public ModelAndView handleIOException(UnsupportedEncodingException e, HttpServletResponse response) {
+        e.printStackTrace(); // 출력
+
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+        ModelAndView modelAndView = new ModelAndView("error"); // error.html 로 이동
+        modelAndView.addObject("message", e.getMessage()); // 오류 메시지 추가
+        modelAndView.addObject("statusCode", response.getStatus());  // 상태 코드 추가
+
+        return modelAndView;
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
+
+    // api request 여부 확인
+//    private boolean isApiRequest(HttpServletRequest request) {
+//        return request.getRequestURI().startsWith("/api/");
+//    }
 }

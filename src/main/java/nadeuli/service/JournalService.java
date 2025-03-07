@@ -17,6 +17,7 @@
  * 이홍비    2025.03.03     Persistence Context - DB : 동기화 관련 처리 (flush())
  *                         => 삭제 쪽 함수에도 flush() 처리
  *                         불필요한 것 삭제
+ * 이홍비    2025.03.06     ItineraryEvent - ieid 로 조회
  * ========================================================
  */
 
@@ -27,6 +28,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.common.PhotoType;
 import nadeuli.dto.JournalDTO;
+import nadeuli.entity.ItineraryEvent;
 import nadeuli.entity.Journal;
 import nadeuli.repository.ItineraryEventRepository;
 import nadeuli.repository.JournalRepository;
@@ -47,10 +49,15 @@ public class JournalService {
     public JournalDTO getJournal(Long ieid) throws NoSuchElementException {
         System.out.println("🔥 기행문 조회 로직 실행됨!");
 
-        Journal journal = journalRepository.findById(ieid)
+        // ieid 에 해당하는 ItineraryEvent 조회
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다."));
+
+        // ieid (ItineraryEvent) 의 값을 가진 Journal 조회
+        Journal journal = journalRepository.findByIeid(itineraryEvent)
                 .orElseGet(() -> {
-                    // 존재하지 않을 경우 새로운 기행문 생성 및 저장
-                    Journal newJournal = Journal.of(itineraryEventRepository.findById(ieid).orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다.")), null, null);
+                    // 존재하지 않으면 새로운 기행문 생성 및 저장
+                    Journal newJournal = Journal.of(itineraryEvent, null, null);
                     journalRepository.save(newJournal);
 
                     return newJournal;
@@ -63,7 +70,12 @@ public class JournalService {
     public JournalDTO uploadPhoto(Long ieid, MultipartFile file) {
         System.out.println("🔥 기행문 - 사진 올리기 로직 실행됨!");
 
-        Journal journal = journalRepository.findById(ieid)
+        // ieid 에 해당하는 ItineraryEvent 조회
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다."));
+
+        // ieid (ItineraryEvent) 의 값을 가진 Journal 조회
+        Journal journal = journalRepository.findByIeid(itineraryEvent)
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // s3 에 새로운 사진 파일 올리고
@@ -80,7 +92,12 @@ public class JournalService {
     public JournalDTO modifiedPhotoVer1(Long ieid, MultipartFile file) throws NoSuchElementException {
         System.out.println("🔥 기행문 - 사진 변경 로직 실행됨!");
 
-        Journal journal = journalRepository.findById(ieid)
+        // ieid 에 해당하는 ItineraryEvent 조회
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다."));
+
+        // ieid (ItineraryEvent) 의 값을 가진 Journal 조회
+        Journal journal = journalRepository.findByIeid(itineraryEvent)
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // 기존 사진 삭제
@@ -100,7 +117,12 @@ public class JournalService {
     public JournalDTO modifiedPhotoVer2(Long ieid, MultipartFile file) throws NoSuchElementException {
         System.out.println("🔥 기행문 - 사진 변경 로직 실행됨!");
 
-        Journal journal = journalRepository.findById(ieid)
+        // ieid 에 해당하는 ItineraryEvent 조회
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다."));
+
+        // ieid (ItineraryEvent) 의 값을 가진 Journal 조회
+        Journal journal = journalRepository.findByIeid(itineraryEvent)
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // 기존 사진 삭제
@@ -116,7 +138,12 @@ public class JournalService {
     public JournalDTO deletePhoto(Long ieid) throws NoSuchElementException {
         System.out.println("🔥 기행문 - 사진 삭제 로직 실행됨!");
 
-        Journal journal = journalRepository.findById(ieid)
+        // ieid 에 해당하는 ItineraryEvent 조회
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다."));
+
+        // ieid (ItineraryEvent) 의 값을 가진 Journal 조회
+        Journal journal = journalRepository.findByIeid(itineraryEvent)
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // 사진 삭제 후 url 값 null 로 저장
@@ -131,7 +158,12 @@ public class JournalService {
     public JournalDTO writeContent(Long ieid, String content) throws NoSuchElementException {
         System.out.println("🔥 기행문 - 본문 수정 로직 실행됨!");
 
-        Journal journal = journalRepository.findById(ieid)
+        // ieid 에 해당하는 ItineraryEvent 조회
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다."));
+
+        // ieid (ItineraryEvent) 의 값을 가진 Journal 조회
+        Journal journal = journalRepository.findByIeid(itineraryEvent)
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // 본문 내용 저장
@@ -147,7 +179,12 @@ public class JournalService {
     public JournalDTO modifiedContentVer1(Long ieid, String content) throws NoSuchElementException {
         System.out.println("🔥 기행문 - 본문 수정 로직 실행됨!");
 
-        Journal journal = journalRepository.findById(ieid)
+        // ieid 에 해당하는 ItineraryEvent 조회
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다."));
+
+        // ieid (ItineraryEvent) 의 값을 가진 Journal 조회
+        Journal journal = journalRepository.findByIeid(itineraryEvent)
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // 본문 내용 변경 후 저장
@@ -169,7 +206,12 @@ public class JournalService {
     public JournalDTO deleteContent(Long ieid) throws NoSuchElementException {
         System.out.println("🔥 기행문 - 본문 삭제 로직 실행됨!");
 
-        Journal journal = journalRepository.findById(ieid)
+        // ieid 에 해당하는 ItineraryEvent 조회
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(ieid)
+                .orElseThrow(() -> new NoSuchElementException("해당 방문지를 찾을 수 없습니다."));
+
+        // ieid (ItineraryEvent) 의 값을 가진 Journal 조회
+        Journal journal = journalRepository.findByIeid(itineraryEvent)
                 .orElseThrow(() -> new NoSuchElementException("해당 방문지의 기행문을 찾을 수 없습니다."));
 
         // null 값으로 변경 후 저장
