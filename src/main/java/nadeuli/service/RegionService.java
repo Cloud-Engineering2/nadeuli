@@ -16,11 +16,14 @@
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
+import nadeuli.common.PhotoType;
 import nadeuli.dto.RegionTreeDTO;
 import nadeuli.entity.Region;
 import nadeuli.repository.RegionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +33,8 @@ import java.util.stream.Collectors;
 public class RegionService {
 
     private final RegionRepository regionRepository;
+    private final S3Service s3Service;
+
 
     // 모든 지역 조회
     public List<Region> getAllRegions() {
@@ -73,4 +78,32 @@ public class RegionService {
                 .map(region -> RegionTreeDTO.from(region, allRegions))
                 .collect(Collectors.toList());
     }
+
+
+
+
+    @Transactional
+    public String uploadRegionImage(Long regionId, MultipartFile file) {
+        // 1. 기존 region 데이터 조회
+        Region region = regionRepository.findById(regionId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역 ID입니다."));
+
+        // 2. 기존 이미지 삭제 (기존 URL이 있으면 삭제)
+        if (region.getImageUrl() != null && !region.getImageUrl().isEmpty()) {
+            s3Service.deleteFile(region.getImageUrl());
+        }
+
+        // 3. 새 이미지 S3 업로드
+        String newImageUrl = s3Service.uploadFile(file, PhotoType.REGION);
+
+        System.out.println(newImageUrl);
+
+        // 4. DB 업데이트
+        region.setImageUrl(newImageUrl);
+        regionRepository.save(region);
+
+        return newImageUrl;
+    }
+
+
 }

@@ -56,7 +56,7 @@ public class Region {
     @Column(name = "radius")
     private Double radius;
 
-    @Column(name = "image_url", length = 100)
+    @Column(name = "image_url", length = 300)
     private String imageUrl;
 
     /**
@@ -95,4 +95,9 @@ public class Region {
                             Double latitude, Double longitude, Double radius, String imageUrl) {
         return new Region(name, alias, level, parent, latitude, longitude, radius, imageUrl);
     }
+
+    public void setImageUrl(String newImageUrl) {
+        this.imageUrl = newImageUrl;
+    }
+
 }

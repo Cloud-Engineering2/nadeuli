@@ -65,7 +65,8 @@ function updateTableContents() {
             row.children[1].innerText = region.latitude || '-';
             row.children[2].innerText = region.longitude || '-';
             row.children[3].innerText = region.radius || '-';
-            row.children[4].innerText = region.imageUrl ? "Embed" : '-';
+            row.children[4].html = region.imageUrl ? `<a href="${region.imageUrl}" target="_blank">📷 이미지 보기</a>` : '-';
+
         }
     });
 
@@ -105,7 +106,7 @@ function createTableRows(parentId = null, level = 1, indent = 0) {
                     <td>${region.latitude || '-'}</td>
                     <td>${region.longitude || '-'}</td>
                     <td>${region.radius || '-'}</td>
-                    <td>${region.imageUrl ? "Embed" : '-'}</td>
+                    <td>${region.imageUrl ? `<a href="${region.imageUrl}" target="_blank">📷 이미지 보기</a>` : '-'}</td>
                 `;
 
             tbody.appendChild(row);
@@ -158,9 +159,19 @@ document.body.addEventListener('click', event => {
             document.getElementById('regionLongitude').value = region.longitude || '';
             document.getElementById('regionRadius').value = region.radius || '';
             document.getElementById('regionImage').value = region.imageUrl || '';
+
+            // 이미지 프리뷰 업데이트
+            const imagePreview = document.getElementById('imagePreview');
+            console.log(imagePreview);
+            if (region.imageUrl) {
+                imagePreview.src = region.imageUrl;
+            } else {
+                imagePreview.src = '';
+            }
         }
     }
 });
+
 
 document.body.addEventListener('click', event => {
     if (event.target.id === 'saveRegionButton') {
@@ -172,7 +183,7 @@ document.body.addEventListener('click', event => {
             region.latitude = document.getElementById('regionLatitude').value;
             region.longitude = document.getElementById('regionLongitude').value;
             region.radius = document.getElementById('regionRadius').value;
-            region.imageUrl = document.getElementById('regionImage').value;
+
 
             // 테이블 업데이트
             const row = document.querySelector(`tr[data-id="${regionId}"]`);
@@ -181,50 +192,124 @@ document.body.addEventListener('click', event => {
                 row.children[1].innerText = region.latitude || '-';
                 row.children[2].innerText = region.longitude || '-';
                 row.children[3].innerText = region.radius || '-';
-                row.children[4].innerText = region.imageUrl ? "Embed" : '-';
+
             }
 
             alert('수정되었습니다!');
         }
     }
 });
-
 // 파일이 선택되었을 때 미리보기 표시 및 자동 업로드 실행
 document.getElementById('imageUpload').addEventListener('change', event => {
     const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            document.getElementById('imagePreview').src = e.target.result;
-            document.getElementById('imagePreview').classList.remove('d-none');
 
-            // 파일이 정상적으로 선택되었으면 바로 업로드 함수 실행
-            uploadImage(e.target.result);
-        };
-        reader.readAsDataURL(file);
-    } else {
-        alert('이미지 파일만 선택할 수 있습니다.');
+    if (!file) return;
+
+    // 지원하는 이미지 파일인지 확인
+    const validImageTypes = ['image/bmp', 'image/gif', 'image/jpeg', 'image/png', 'image/webp'];
+    if (!validImageTypes.includes(file.type)) {
+        alert('지원하지 않는 이미지 형식입니다.');
         document.getElementById('imageUpload').value = ''; // 선택된 파일 초기화
+        return;
     }
+
+    // 파일 크기 제한 (20MB)
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (file.size > maxSize) {
+        alert('이미지 크기가 20MB를 초과합니다.');
+        document.getElementById('imageUpload').value = ''; // 선택된 파일 초기화
+        return;
+    }
+
+    // 저작권 입력을 위한 다이얼로그 창 표시
+    let watermarkText = prompt(" Copyright @ { 쓸 내용 } ", "쓸내용");
+
+    // 사용자가 입력하지 않고 취소 버튼을 누른 경우
+    if (watermarkText === null) {
+        alert("이미지 업로드가 취소되었습니다.");
+        return;
+    }
+
+    watermarkText = "Copyright @" + watermarkText;
+    // 미리보기 및 워터마크 추가 후 업로드 실행
+    addWatermark(file, watermarkText, uploadImage);
 });
 
-// 이미지 업로드 처리 함수
-function uploadImage(imageSrc) {
+// 🔹 이미지에 워터마크를 추가하는 함수
+function addWatermark(file, watermarkText, callback) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function(event) {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            // 원본 이미지 그리기
+            ctx.drawImage(img, 0, 0);
+
+            // 📌 워터마크 폰트 크기 자동 조절 (이미지 너비의 5% 크기)
+            const fontSize = Math.max(canvas.width * 0.01, 5); // 최소 10px 이상 유지
+            ctx.font = `${fontSize}px Arial`;
+            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            ctx.textAlign = "right";
+
+            // 📌 워터마크 위치 (우측 하단, 이미지 크기에 맞춰 적절한 여백 설정)
+            const margin = fontSize * 1.5; // 폰트 크기의 1.5배 만큼 여백
+            const x = canvas.width - margin;
+            const y = canvas.height - margin;
+
+            ctx.fillText(watermarkText, x, y);
+
+            // 미리보기 표시
+            document.getElementById('imagePreview').src = canvas.toDataURL();
+            document.getElementById('imagePreview').classList.remove('d-none');
+
+            // Blob으로 변환 후 업로드 실행
+            canvas.toBlob(blob => {
+                const watermarkedFile = new File([blob], file.name, { type: file.type });
+                callback(watermarkedFile);
+            }, file.type);
+        };
+    };
+}
+
+// 🔹 이미지 업로드 함수
+function uploadImage(file) {
     const regionId = Number(document.getElementById('regionId').value);
 
-    if (regionMap.has(regionId)) {
-        const region = regionMap.get(regionId);
-        region.imageUrl = imageSrc;
-
-        // 테이블 업데이트
-        const row = document.querySelector(`tr[data-id="${regionId}"]`);
-        if (row) {
-            row.children[4].innerText = "Embed";
-        }
-
-        alert('이미지가 업로드되었습니다!');
-    } else {
-        alert('지역을 선택하세요');
+    if (!regionMap.has(regionId)) {
+        alert('지역을 선택하세요.');
+        return;
     }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("regionId", regionId);
+
+    $.ajax({
+        url: `/api/admin/region/upload/photo`,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            const imageUrl = response.imageUrl || response;
+            const row = $(`tr[data-id="${regionId}"]`);
+            if (row.length) {
+                row.find('td').eq(4).html(`<a href="${imageUrl}" target="_blank">📷 이미지 보기</a>`);
+            }
+            alert('이미지가 업로드되었습니다!');
+        },
+        error: function(xhr) {
+            console.error(xhr);
+            alert(xhr.responseJSON?.message || '이미지 업로드에 실패했습니다.');
+        }
+    });
 }
+
 
