@@ -26,6 +26,7 @@ import nadeuli.dto.response.ItineraryResponseDTO;
 import nadeuli.dto.response.ItineraryTotalReadResponseDTO;
 import nadeuli.dto.response.ItineraryTotalUpdateResponseDTO;
 import nadeuli.service.ItineraryService;
+import nadeuli.service.ShareService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,7 @@ import org.springframework.web.bind.annotation.*;
 public class ItineraryRestController {
 
     private final ItineraryService itineraryService;
+    private final ShareService shareService;
 
     // ===========================
     //  UPDATE(+CREATE/DELETE): 전체 일정 생성(+수정/삭제) - !!수정필요 : 세션이 현재 없어서 다음과 같이 id 하드코딩
@@ -91,6 +93,9 @@ public class ItineraryRestController {
         ItineraryTotalReadResponseDTO response = itineraryService.getItineraryTotal(itineraryId, 1L);
         return ResponseEntity.ok(response);
     }
+
+
+
 
 
 }

@@ -18,20 +18,26 @@ let prevDayCount = null;
 //디버깅용
 let isDEBUG = true;
 
+// path에서 가져온 iid
+let itineraryId = null;
+
 // 🔄 데이터 로딩 및 초기화
 //------------------------------------------
 
 $(document).ready(function () {
+    let pathSegments = window.location.pathname.split('/');
+    let itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
+
     if(isDEBUG === true) {
-    const data = {"itinerary":{"id":1,"itineraryName":"Tokyo Exploration","startDate":"2025-06-01T00:00:00","totalDays":3,"transportationType":1,"createdDate":"2025-02-28T14:36:41","modifiedDate":"2025-02-28T14:36:41","role":"ROLE_OWNER"},"itineraryPerDays":[{"dayCount":0,"startTime":"00:00:00","endTime":"00:00:00","dayOfWeek":0},{"id":1,"dayCount":1,"startTime":"08:00:00","endTime":"22:00:00","dayOfWeek":1},{"id":2,"dayCount":2,"startTime":"09:00:00","endTime":"21:30:00","dayOfWeek":2},{"id":3,"dayCount":3,"startTime":"07:30:00","endTime":"23:00:00","dayOfWeek":3}],"itineraryEvents":[{"id":1,"dayCount":1,"placeDTO":{"id":1,"googlePlaceId":"tokyo1","placeName":"Shibuya Crossing","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":420,"endMinuteSinceStartDay":540,"movingMinuteFromPrevPlace":30},{"id":2,"dayCount":1,"placeDTO":{"id":2,"googlePlaceId":"tokyo2","placeName":"Tokyo Tower","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":90,"movingMinuteFromPrevPlace":0},{"id":3,"dayCount":1,"placeDTO":{"id":3,"googlePlaceId":"tokyo3","placeName":"Shinjuku Gyoen","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":270,"endMinuteSinceStartDay":390,"movingMinuteFromPrevPlace":30},{"id":4,"dayCount":1,"placeDTO":{"id":4,"googlePlaceId":"tokyo4","placeName":"Akihabara","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":120,"endMinuteSinceStartDay":240,"movingMinuteFromPrevPlace":30},{"id":5,"dayCount":1,"placeDTO":{"id":5,"googlePlaceId":"tokyo5","placeName":"Asakusa Temple","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":570,"endMinuteSinceStartDay":690,"movingMinuteFromPrevPlace":30},{"id":6,"dayCount":2,"placeDTO":{"id":6,"googlePlaceId":"tokyo6","placeName":"Odaiba","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":420,"endMinuteSinceStartDay":540,"movingMinuteFromPrevPlace":30},{"id":7,"dayCount":2,"placeDTO":{"id":7,"googlePlaceId":"tokyo7","placeName":"Ginza Shopping District","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":90,"movingMinuteFromPrevPlace":0},{"id":8,"dayCount":2,"placeDTO":{"id":8,"googlePlaceId":"tokyo8","placeName":"Harajuku","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":270,"endMinuteSinceStartDay":390,"movingMinuteFromPrevPlace":30},{"id":9,"dayCount":2,"placeDTO":{"id":9,"googlePlaceId":"tokyo9","placeName":"Ueno Park","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":120,"endMinuteSinceStartDay":240,"movingMinuteFromPrevPlace":30},{"id":10,"dayCount":3,"placeDTO":{"id":10,"googlePlaceId":"tokyo10","placeName":"Tsukiji Market","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":120,"movingMinuteFromPrevPlace":0},{"id":11,"dayCount":3,"placeDTO":{"id":11,"googlePlaceId":"tokyo11","placeName":"Tokyo Disneyland","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":150,"endMinuteSinceStartDay":360,"movingMinuteFromPrevPlace":30},{"id":12,"dayCount":3,"placeDTO":{"id":12,"googlePlaceId":"tokyo12","placeName":"Meiji Shrine","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":690,"endMinuteSinceStartDay":810,"movingMinuteFromPrevPlace":30},{"id":13,"dayCount":3,"placeDTO":{"id":13,"googlePlaceId":"tokyo13","placeName":"Rainbow Bridge","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":390,"endMinuteSinceStartDay":510,"movingMinuteFromPrevPlace":30},{"id":14,"dayCount":3,"placeDTO":{"id":14,"googlePlaceId":"tokyo14","placeName":"Roppongi Hills","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":540,"endMinuteSinceStartDay":660,"movingMinuteFromPrevPlace":30}]};
-    //const data = {"itinerary":{"id":21,"itineraryName":"서울 여행","startDate":"2025-03-14T00:00:00","totalDays":4,"transportationType":1,"createdDate":"2025-03-04T03:09:29","modifiedDate":"2025-03-04T03:09:29","role":"ROLE_OWNER"},"itineraryPerDays":[{"id":91,"dayCount":0,"startTime":"00:00:00","endTime":"00:00:00","dayOfWeek":0},{"id":92,"dayCount":1,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":5},{"id":93,"dayCount":2,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":6},{"id":94,"dayCount":3,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":7},{"id":95,"dayCount":4,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":1}],"itineraryEvents":[]};
-    createData(data);
-    renderItinerary();
-    initDateRangePickerModal();
-    initSidebarResize();
+        const data = {"itinerary":{"id":1,"itineraryName":"Tokyo Exploration","startDate":"2025-06-01T00:00:00","totalDays":3,"transportationType":1,"createdDate":"2025-02-28T14:36:41","modifiedDate":"2025-02-28T14:36:41","role":"ROLE_OWNER"},"itineraryPerDays":[{"dayCount":0,"startTime":"00:00:00","endTime":"00:00:00","dayOfWeek":0},{"id":1,"dayCount":1,"startTime":"08:00:00","endTime":"22:00:00","dayOfWeek":1},{"id":2,"dayCount":2,"startTime":"09:00:00","endTime":"21:30:00","dayOfWeek":2},{"id":3,"dayCount":3,"startTime":"07:30:00","endTime":"23:00:00","dayOfWeek":3}],"itineraryEvents":[{"id":1,"dayCount":1,"placeDTO":{"id":1,"googlePlaceId":"tokyo1","placeName":"Shibuya Crossing","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":420,"endMinuteSinceStartDay":540,"movingMinuteFromPrevPlace":30},{"id":2,"dayCount":1,"placeDTO":{"id":2,"googlePlaceId":"tokyo2","placeName":"Tokyo Tower","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":90,"movingMinuteFromPrevPlace":0},{"id":3,"dayCount":1,"placeDTO":{"id":3,"googlePlaceId":"tokyo3","placeName":"Shinjuku Gyoen","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":270,"endMinuteSinceStartDay":390,"movingMinuteFromPrevPlace":30},{"id":4,"dayCount":1,"placeDTO":{"id":4,"googlePlaceId":"tokyo4","placeName":"Akihabara","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":120,"endMinuteSinceStartDay":240,"movingMinuteFromPrevPlace":30},{"id":5,"dayCount":1,"placeDTO":{"id":5,"googlePlaceId":"tokyo5","placeName":"Asakusa Temple","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":570,"endMinuteSinceStartDay":690,"movingMinuteFromPrevPlace":30},{"id":6,"dayCount":2,"placeDTO":{"id":6,"googlePlaceId":"tokyo6","placeName":"Odaiba","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":420,"endMinuteSinceStartDay":540,"movingMinuteFromPrevPlace":30},{"id":7,"dayCount":2,"placeDTO":{"id":7,"googlePlaceId":"tokyo7","placeName":"Ginza Shopping District","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":90,"movingMinuteFromPrevPlace":0},{"id":8,"dayCount":2,"placeDTO":{"id":8,"googlePlaceId":"tokyo8","placeName":"Harajuku","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":270,"endMinuteSinceStartDay":390,"movingMinuteFromPrevPlace":30},{"id":9,"dayCount":2,"placeDTO":{"id":9,"googlePlaceId":"tokyo9","placeName":"Ueno Park","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":120,"endMinuteSinceStartDay":240,"movingMinuteFromPrevPlace":30},{"id":10,"dayCount":3,"placeDTO":{"id":10,"googlePlaceId":"tokyo10","placeName":"Tsukiji Market","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":0,"endMinuteSinceStartDay":120,"movingMinuteFromPrevPlace":0},{"id":11,"dayCount":3,"placeDTO":{"id":11,"googlePlaceId":"tokyo11","placeName":"Tokyo Disneyland","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":150,"endMinuteSinceStartDay":360,"movingMinuteFromPrevPlace":30},{"id":12,"dayCount":3,"placeDTO":{"id":12,"googlePlaceId":"tokyo12","placeName":"Meiji Shrine","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":690,"endMinuteSinceStartDay":810,"movingMinuteFromPrevPlace":30},{"id":13,"dayCount":3,"placeDTO":{"id":13,"googlePlaceId":"tokyo13","placeName":"Rainbow Bridge","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":390,"endMinuteSinceStartDay":510,"movingMinuteFromPrevPlace":30},{"id":14,"dayCount":3,"placeDTO":{"id":14,"googlePlaceId":"tokyo14","placeName":"Roppongi Hills","createdAt":"2025-02-28T14:36:52","modifiedAt":"2025-02-28T14:36:52"},"startMinuteSinceStartDay":540,"endMinuteSinceStartDay":660,"movingMinuteFromPrevPlace":30}]};
+        //const data = {"itinerary":{"id":21,"itineraryName":"서울 여행","startDate":"2025-03-14T00:00:00","totalDays":4,"transportationType":1,"createdDate":"2025-03-04T03:09:29","modifiedDate":"2025-03-04T03:09:29","role":"ROLE_OWNER"},"itineraryPerDays":[{"id":91,"dayCount":0,"startTime":"00:00:00","endTime":"00:00:00","dayOfWeek":0},{"id":92,"dayCount":1,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":5},{"id":93,"dayCount":2,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":6},{"id":94,"dayCount":3,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":7},{"id":95,"dayCount":4,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":1}],"itineraryEvents":[]};
+        createData(data);
+        renderItinerary();
+        initDateRangePickerModal();
+        initSidebarResize();
     } else {
         $.ajax({
-            url: "/api/itinerary/1",
+            url: `/api/itinerary/${itineraryId}`,
             method: "GET",
             dataType: "json",
             success: function (data) {
@@ -145,9 +151,9 @@ function renderItinerary() {
 
 // 이벤트 요소 생성 함수 (장소 보관함 & 일반 이벤트 공통 사용)
 function createEventElement(event, index = null, totalEvents = null, isSavedPlace = false) {
-                    console.log("Event Object:", event);
+    console.log("Event Object:", event);
 
-                    return $(`
+    return $(`
                         <div class='event' data-id='${event.hashId}'>
                             <div class="event-wrapper">
                                 <div class="travel-info">${isSavedPlace ? "" : `이동 시간 ${event.movingMinute}분`}</div>
@@ -177,8 +183,7 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                         <div class="event-right">
                                             <button class="event-options-button">⋮</button>
                                             <div class="event-options hidden">
-                                            
-                                                ${isSavedPlace ? "" : `<button class="event-duration">머무는 시간</button>`}
+                                                <button class="event-duration">머무는 시간</button>
                                                 <button class="event-remove">삭제</button>
                                             </div>
                                         </div>
@@ -187,7 +192,7 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                             </div>
                         </div>
                     `);
-                }
+}
 
 
 
@@ -429,27 +434,27 @@ function createSortableInstance(element) {
 
 
 //사이드바 크기 조절 기능
-    //사이드바 크기 조절 기능 초기화
-    function initSidebarResize() {
-                        $("#resize-handle").mousedown(function (e) {
-                            e.preventDefault();
-                            $(document).mousemove(resizeSidebar);
-                            $(document).mouseup(stopSidebarResize);
-                        });
-                    }
-    //마우스 이동에 따라 사이드바 너비 조절
-    function resizeSidebar(e) {
-        let newWidth = e.pageX;
-        if (newWidth >= 300 && newWidth <= 2000) {
-            $("#sidebar").css("width", newWidth + "px");
-            $("#resize-handle").css("left", newWidth + "px");
-        }
+//사이드바 크기 조절 기능 초기화
+function initSidebarResize() {
+    $("#resize-handle").mousedown(function (e) {
+        e.preventDefault();
+        $(document).mousemove(resizeSidebar);
+        $(document).mouseup(stopSidebarResize);
+    });
+}
+//마우스 이동에 따라 사이드바 너비 조절
+function resizeSidebar(e) {
+    let newWidth = e.pageX;
+    if (newWidth >= 300 && newWidth <= 2000) {
+        $("#sidebar").css("width", newWidth + "px");
+        $("#resize-handle").css("left", newWidth + "px");
     }
-    //마우스 버튼을 놓으면 크기 조절 종료
-    function stopSidebarResize() {
-        $(document).off("mousemove", resizeSidebar);
-        $(document).off("mouseup", stopSidebarResize);
-    }
+}
+//마우스 버튼을 놓으면 크기 조절 종료
+function stopSidebarResize() {
+    $(document).off("mousemove", resizeSidebar);
+    $(document).off("mouseup", stopSidebarResize);
+}
 
 
 

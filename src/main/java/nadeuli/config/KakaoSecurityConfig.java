@@ -13,6 +13,7 @@
  * 박한철    2025.02.25     비로그인상에서 테스트하기 위한 권한 추가
  * 이홍비    2025.02.25     journal test - permitAll() 처리
  * 이홍비    2025.02.25     정적 자원 - fonts - permitAll() 처리
+ * 이홍비    2025.03.06     정적 자원 (pic-icon) & error - permitAll() 처리
  * ========================================================
  */
 
@@ -38,11 +39,13 @@ public class KakaoSecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/api/**", "/itinerary/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "favicon.ico").permitAll()
+                        .requestMatchers("/","/api/**", "/itinerary/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "favicon.ico", "/pic-icon/**").permitAll()
                         .requestMatchers("/api/itineraries/**", "/itineraries/**").permitAll() // journal test 용 추후 삭제
                         .requestMatchers("api/admin/unlink/**").permitAll()
                         .requestMatchers("/travel/**").permitAll()
+                        .requestMatchers("/join/**").permitAll()
                         .requestMatchers("/kakao-direction").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

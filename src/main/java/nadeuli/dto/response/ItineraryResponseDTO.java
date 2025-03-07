@@ -14,6 +14,7 @@
  */
 package nadeuli.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +25,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItineraryResponseDTO {
-    private Long id;
+public class ItineraryResponseDTO {private Long id;
     private String itineraryName;
     private LocalDateTime startDate;
     private int totalDays;  // 기존 endDate 제거 -> totalDays 추가
@@ -33,9 +33,14 @@ public class ItineraryResponseDTO {
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
     private String role;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isShared;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean hasGuest;
+
 
     // entity -> response dto 변환 (READ: 내 일정 리스트 조회)
-    public static ItineraryResponseDTO from(Itinerary itinerary, String role) {
+    public static ItineraryResponseDTO from(Itinerary itinerary, String role, boolean isShared, boolean hasGuest) {
         return new ItineraryResponseDTO(
                 itinerary.getId(),
                 itinerary.getItineraryName(),
@@ -44,7 +49,9 @@ public class ItineraryResponseDTO {
                 itinerary.getTransportationType(), // transportationType 사용
                 itinerary.getCreatedDate(),
                 itinerary.getModifiedDate(),
-                role
+                role,
+                isShared,
+                hasGuest
         );
     }
 
@@ -59,7 +66,9 @@ public class ItineraryResponseDTO {
                 itinerary.getTransportationType(), // transportationType 사용
                 itinerary.getCreatedDate(),
                 itinerary.getModifiedDate(),
-                collaborator.getIcRole()
+                collaborator.getIcRole(),
+                null,
+                null
         );
     }
 }
