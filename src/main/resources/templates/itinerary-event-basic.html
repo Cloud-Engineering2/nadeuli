@@ -72,7 +72,7 @@
 <div class="container-fluid">
 
     <!-- 왼쪽 패널 -->
-    <div id="sidebar" class="col-md-3">
+    <div class="col-md-3" id="sidebar">
         <div class="schedule-header" id="scheduleHeader">
             <div class="schedule-header-left">
                 <div class="schedule-header-name">여행 제목</div>
@@ -93,14 +93,15 @@
         <!-- Itinerary Event -->
         <div class="schedule-container" id="scheduleContainer"></div>
 
+
     </div>
 
     <!-- 크기 조절 핸들 -->
     <div id="resize-handle"></div>
 
-    <!-- 오른쪽 지도 -->
-    <div class="col-md-9">
-        <div id="map" style="height: 100%; background: lightblue;">지도 영역</div>
+    <!-- 오른쪽 화면 -->
+    <div class="col-md-9" id="sidebarRight" >
+        <div class="map" id="map" style="height: 100%; background: lightblue;">지도 영역</div>
     </div>
 
 </div>

@@ -61,7 +61,6 @@ function createData(data) {
             groupedByDay[dayPerDay.dayCount] = [];
         }
     });
-
     // 이벤트 데이터 변환 및 추가
     data.itineraryEvents.forEach(event => {
         const dayKey = event.dayCount;
@@ -74,6 +73,7 @@ function createData(data) {
         let eventHashId = addEvent(editedEvent); // 이벤트 추가 후 ID 생성
 
         groupedByDay[dayKey].push({
+            id: event.id, // ** event 별 총 지출 조회 시 필요 (data-ieid)
             hashId: eventHashId,
             placeDTO: event.placeDTO,
             startMinute: baseStartMinutes + editedEvent.startMinuteSinceStartDay,
@@ -88,6 +88,8 @@ function createData(data) {
     });
 }
 
+
+
 // 🏗️ ui 요소 관리
 //------------------------------------------
 
@@ -96,6 +98,7 @@ function createData(data) {
 function renderItinerary() {
     // 🏷일정 제목 설정
     $(".schedule-header-name").text(itinerary.itineraryName);
+
 
     // 일정 기간 표시 (시작 날짜 ~ 종료 날짜)
     let startDate = new Date(itinerary.startDate);
@@ -145,7 +148,9 @@ function renderItinerary() {
             if (dayKey === '0') {
                 eventElement.find('.event-time').detach();
             }
+
             dayColumn.find('.event-container').append(eventElement);
+
         });
 
         scheduleContainer.append(dayColumn);
@@ -180,7 +185,6 @@ function renderItinerary() {
 // 이벤트 요소 생성 함수 (장소 보관함 & 일반 이벤트 공통 사용)
 function createEventElement(event, index = null, totalEvents = null, isSavedPlace = false) {
     console.log("Event Object:", event);
-
     return $(`
                         <div class='event' data-id='${event.hashId}'>
                             <div class="event-wrapper">
@@ -207,6 +211,10 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                                 </div>
                                             </div>
                                             ${isSavedPlace ? "" : `<div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>`}
+                                            <!-- 총 지출 --> 
+                                            <div class="total-expense" id="totalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>0 원</div>
+                                            <!-- 경비 내역 추가 -->
+                                            <div class="expense-addition" id="expenseAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
                                         </div>
                                         <div class="event-right">
                                             <button class="event-options-button">⋮</button>
@@ -1210,9 +1218,149 @@ $(document).on("click", ".event-duration-cancel", function (event) {
     // 📌 event-time 다시 표시
     eventTime.css("visibility", "visible");
 
-
     // 📌 입력창 숨기기
     inputContainer.addClass("hidden");
 });
 
 
+// 🏗️ Itinerary Event 별 총 지출액 가져오기 (left)
+// ------------------------------------------
+
+function getTotalExpenseByItineraryEvent() {
+    const totalExpenseDiv = document.getElementById('totalExpense');
+    if (!totalExpenseDiv) {
+        console.error('Total Expense div not found for event id');
+        return;
+    }
+
+    const iid = parseInt(totalExpenseDiv.getAttribute('data-iid'), 10);
+    const ieid = parseInt(totalExpenseDiv.getAttribute('data-ieid'), 10);
+    // 서버에서 데이터를 가져오는 fetch 요청
+    fetch(`/api/itineraries/${iid}/events/${ieid}/adjustment`) // 서버에서 총 비용을 반환하는 API 엔드포인트
+        .then(response => response.json()) // JSON 응답으로 처리
+        .then(data => {
+            totalExpenseDiv.textContent = `- ${data.currentExpense} 원`;
+            // displayCurrentTotalExpense(data);
+        })
+        .catch(error => {
+            console.error('Error fetching total expense:', error);
+        });
+}
+
+// 🏗️ 경비 작성
+// document.addEventListener("DOMContentLoaded", function () {
+//     document.getElementById("expenseAddition").addEventListener("click", function () {
+//         writeCashbook();
+//         loadExpensePage();
+//         loadExpenseData();
+//     });
+//
+// });
+
+// 페이지 로드
+function loadExpensePage() {
+    fetch("expense-right.html")
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById("map").innerHTML = html;
+            // loadExpenseData(); // API 데이터 불러오기
+        })
+        .catch(error => console.error("Error loading abc.html:", error));
+}
+
+// function loadExpenseData() {
+//     const expenseAddtionDiv = document.getElementById("expenseAddition");
+//     if(!expenseAddtionDiv) {
+//         console.error('Total Expense div not found for event id');
+//     }
+//
+//     const iid = parseInt(expenseAddtionDiv.getAttribute('data-iid'), 10);
+//     const ieid = parseInt(expenseAddtionDiv.getAttribute('data-ieid'), 10);
+//     // 2️⃣ 서버에서 데이터를 가져오기
+//     fetch(`/${iid}/events/${ieid}/expense`) // API 엔드포인트
+//         .then(response => response.json())
+//         .then(data => {
+//             const expenseList = document.getElementById("expense-list");
+//
+//             if (!expenseList) {
+//                 console.error("Expense list element not found!");
+//                 return;
+//             }
+//
+//             // 3️⃣ travelerName 데이터를 바인딩하여 리스트 추가
+//             expenseList.innerHTML = data.map(expense =>
+//                 `<li>${expense.travelerDTO.travelerName} - ${expense.content} (${expense.expense}원)</li>`
+//             ).join("");
+//         })
+//         .catch(error => console.error("Error fetching expense data:", error));
+// }
+
+
+function writeCashbook() {
+    const expenseAddtionDiv = document.getElementById("expenseAddition");
+    if(!expenseAddtionDiv) {
+        console.error('Total Expense div not found for event id');
+    }
+
+    const iid = parseInt(expenseAddtionDiv.getAttribute('data-iid'), 10);
+    const ieid = parseInt(expenseAddtionDiv.getAttribute('data-ieid'), 10);
+
+    // 서버에서 데이터를 가져오는 fetch 요청
+    fetch(`/${iid}/events/${ieid}/expense`) // 서버에서 총 비용을 반환하는 API 엔드포인트
+        .then(response => response.json()) // JSON 응답으로 처리
+        .then(data => {
+            totalExpenseDiv.textContent = `${data}`;
+            // displayCurrentTotalExpense(data);
+        })
+        .catch(error => {
+            console.error('Error fetching total expense:', error);
+        });
+}
+
+
+$(document).on("click", ".expense-addition", function () {
+    const iid = $(this).data("iid");   // itinerary ID 가져오기
+    const ieid = $(this).data("ieid"); // event ID 가져오기
+
+    console.log(`Clicked expenseAddition: iid=${iid}, ieid=${ieid}`);
+
+    // 1️⃣ abc.html을 오른쪽 `#map` 영역에 로드
+    fetch("/templates/expense-book/expense-right.html")
+        .then(response => response.text())
+        .then(html => {
+            $("#map").html(html); // abc.html 내용을 오른쪽에 삽입
+            loadExpenseData(iid, ieid); // 서버에서 데이터 가져오기
+        })
+        .catch(error => console.error("Error loading abc.html:", error));
+});
+
+function loadExpenseData(iid, ieid) {
+    // 2️⃣ API에서 데이터를 가져옴 (해당 itinerary + event에 대한 경비 내역)
+    fetch(`/${iid}/events/${ieid}/expense`)
+        .then(response => response.json())
+        .then(data => {
+            const expenseList = $("#expense-list");
+
+            if (!expenseList.length) {
+                console.error("Expense list element not found!");
+                return;
+            }
+
+            // 3️⃣ travelerName 데이터를 바인딩하여 리스트 추가
+            expenseList.html(
+                data.map(expense =>
+                    `<li>${expense.travelerDTO.travelerName} - ${expense.content} (${expense.expense}원)</li>`
+                ).join("")
+            );
+        })
+        .catch(error => console.error("Error fetching expense data:", error));
+}
+
+
+// function displayCurrentTotalExpense(data) {
+//     const mapElement = document.getElementById('map');
+//     mapElement.innerHTML = `
+//         <h3>총 여행 경비</h3>
+//         <p>${data.currentExpense} 원</p>
+//     `;
+// }

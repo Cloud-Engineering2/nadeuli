@@ -24,8 +24,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItineraryResponseDTO {
-    private Long id;
+public class ItineraryResponseDTO {private Long id;
     private String itineraryName;
     private LocalDateTime startDate;
     private int totalDays;  // 기존 endDate 제거 -> totalDays 추가
@@ -33,6 +32,7 @@ public class ItineraryResponseDTO {
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
     private String role;
+
 
     // entity -> response dto 변환 (READ: 내 일정 리스트 조회)
     public static ItineraryResponseDTO from(Itinerary itinerary, String role) {

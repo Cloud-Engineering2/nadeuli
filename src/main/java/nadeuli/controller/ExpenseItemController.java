@@ -32,6 +32,6 @@ public class ExpenseItemController {
 
         System.out.println("📌 페이지 가져오기");
 
-        return "expense-book/itineraryEvent-adjustment";
+        return "itinerary-event-basic";
     }
 }
