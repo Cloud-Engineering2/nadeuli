@@ -25,8 +25,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItineraryResponseDTO {
-    private Long id;
+public class ItineraryResponseDTO {private Long id;
     private String itineraryName;
     private LocalDateTime startDate;
     private int totalDays;  // 기존 endDate 제거 -> totalDays 추가
@@ -38,6 +37,7 @@ public class ItineraryResponseDTO {
     private Boolean isShared;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean hasGuest;
+
 
     // entity -> response dto 변환 (READ: 내 일정 리스트 조회)
     public static ItineraryResponseDTO from(Itinerary itinerary, String role, boolean isShared, boolean hasGuest) {

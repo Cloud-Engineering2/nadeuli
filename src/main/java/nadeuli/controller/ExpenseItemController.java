@@ -7,95 +7,39 @@
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- * 고민정    2025.02.27   지출 내역 CRUD 추가
- *
+ * 고민정    2025.03.04  basic 페이지
+ * 고민정    2025.03.07  오른쪽 화면 경비 내역 페이지 로드
  * ========================================================
  */
 package nadeuli.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import nadeuli.dto.ExpenseItemDTO;
-import nadeuli.dto.TravelerDTO;
-import nadeuli.dto.request.ExpenseItemRequestDTO;
-import nadeuli.dto.request.ExpenseItemUpdateRequestDTO;
-import nadeuli.service.ExpenseBookService;
-import nadeuli.service.ExpenseItemService;
-import nadeuli.service.TravelerService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
-
-@RestController
-@RequestMapping(value = "/api/itineraries")
+@Controller
+@RequestMapping("/itineraries")
 @RequiredArgsConstructor
 public class ExpenseItemController {
-    private final ExpenseItemService expenseItemService;
-    private final TravelerService travelerService;
-    private final ExpenseBookService expenseBookService;
-
-    // 지출 내역 추가
-    @PostMapping("/{iid}/events/{ieid}/expense")
-    public ResponseEntity<Void> createExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @RequestBody @Valid ExpenseItemRequestDTO expenseItemRequestDTO) {
-        String content = expenseItemRequestDTO.getContent();
-        String payerName = expenseItemRequestDTO.getPayer();
-        Long expense = Long.valueOf(expenseItemRequestDTO.getExpense());
-
-        // PathVariable
-        Long itineraryId = Long.valueOf(iid);
-        Long itineraryEventId = Long.valueOf(ieid);
-
-        // Payer
-        TravelerDTO payer = travelerService.getByName(itineraryId, payerName);
-
-        // ExpenseBook
-        Long expenseBookId = expenseBookService.get(itineraryId);
-
-        if (content == null) {
-            ExpenseItemDTO expenseItemDto = ExpenseItemDTO.of(expenseBookId, itineraryEventId, payer, "", expense);
-            expenseItemService.addExpense(expenseItemDto);
-            return ResponseEntity.ok().build();
-        }
-
-        ExpenseItemDTO expenseItemDto = ExpenseItemDTO.of(expenseBookId, itineraryEventId, payer, content, expense);
-
-        // 추가
-        expenseItemService.addExpense(expenseItemDto);
-        return ResponseEntity.ok().build();
-    }
 
 
-    // 지출 내역 조회 (ItineraryEvent 내 모든 지출 내역)
+    // Itinerary Item 별 정산 조회 (페이지)
     @GetMapping("/{iid}/events/{ieid}/expense")
-    public ResponseEntity<List<ExpenseItemDTO>> getExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid) {
-        // PathVariable
-        Long itineraryEventId = Long.valueOf(ieid);
+    public String getBasic(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
 
-        List<ExpenseItemDTO> expenseItemDtos = expenseItemService.getAll(itineraryEventId);
+        System.out.println("📌 itinerary-event-basic 페이지 가져오기");
 
-        return ResponseEntity.ok(expenseItemDtos);
+        return "itinerary-event-basic";
     }
 
-    // 지출 내역 수정
-    @PutMapping("/{iid}/events/{ieid}/expense/{eiid}")
-    public ResponseEntity<ExpenseItemDTO> updateExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("eiid") Integer eiid, @RequestBody @Valid ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
-        // PathVariable
-        Long itineraryId = Long.valueOf(iid);
-        Long expenseItemId = Long.valueOf(eiid);
+    @GetMapping("/{iid}/events/{ieid}/expense-right")
+    public String getRight(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid) {
 
-        ExpenseItemDTO expenseItemDTO = expenseItemService.updateExpenseItem(itineraryId, expenseItemId, expenseItemUpdateRequestDTO);
+        System.out.println("📌 expense-book/expense-right 페이지 가져오기");
 
-        return ResponseEntity.ok(expenseItemDTO);
-    }
-
-
-    // 지출 내역 삭제
-    @DeleteMapping("/{iid}/events/{ieid}/expense/{eiid}")
-    public ResponseEntity<Void> deleteExpense(@PathVariable Integer eiid) {
-        Long expenseItemId = Long.valueOf(eiid);
-        expenseItemService.deleteExpenseItem(expenseItemId);
-        return ResponseEntity.ok().build();
+        return "expense-book/expense-right";
     }
 
 
