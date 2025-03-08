@@ -1,0 +1,128 @@
+/* 전체 레이아웃 */
+.container-fluid {
+    display: flex;
+    height: calc(100vh - 50px); /* 헤더 높이 제외 */
+    padding: 0;
+    margin-top: 50px;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* 좌측 패널 */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    background-color: #222; /* 검은색 배경 */
+    transition: width 0.3s ease-in-out;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 패널 접힘 상태 */
+.sidebar.closed {
+    width: 70px;
+}
+
+.toggle-btn-wrapper{
+
+}
+
+.toggle-icon {
+    padding-right: 15px;
+    font-size: 24px;
+    line-height: 24px;
+
+}
+
+/* 패널 내 토글 버튼 */
+.toggle-button {
+    display:flex;
+    background-color: transparent;
+    flex-direction: row-reverse;
+    border: none;
+    height:50px;
+    width: 100%;
+    color: white;
+
+    padding: 10px;
+    text-align: right;
+    transition: background 0.3s ease-in-out;
+}
+
+.toggle-button:hover {
+    background-color: #444;
+}
+
+/* 리스트 스타일 */
+.list-group {
+    margin-top: 10px;
+    flex-grow: 1;
+}
+
+.list-group-item {
+    height: 60px;
+    background-color: #222;
+    border: none;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    transition: padding-left 0.3s ease-in-out;
+}
+
+.list-group-item a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.list-group-item i {
+    font-size: 20px;
+    width: 30px;
+    text-align: center;
+}
+.list-group-item .icon {
+    padding-left: 10px;
+    padding-right:30px;
+    width: 20px;
+}
+
+/* 패널 접힘 시 텍스트 숨김 + 애니메이션 */
+.sidebar.closed .list-group-item a span {
+    opacity: 0;
+    font-size: 0;
+    transition: opacity 0.3s ease-in-out, font-size 0.3s ease-in-out;
+}
+
+/* 패널 펼침 시 텍스트 천천히 나타나기 */
+.sidebar:not(.closed) .list-group-item a span{
+    opacity: 1;
+    font-size: 18px;
+    transition: opacity 0.3s ease-in-out, font-size 0.3s ease-in-out;
+}
+
+.sidebar.closed .list-group-item {
+    padding-left: 15px;
+}
+
+.list-group-item:hover {
+    background-color: #444;
+}
+
+/* 우측 콘텐츠 영역 */
+.content-area {
+    flex-grow: 1;
+    padding: 20px;
+    transition: margin-left 0.3s ease-in-out;
+    width: calc(100% - 250px);
+}
+
+/* 패널이 접힐 때 콘텐츠 확장 */
+.sidebar.closed + .content-area {
+    width: calc(100% - 70px);
+}
