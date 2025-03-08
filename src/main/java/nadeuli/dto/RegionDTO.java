@@ -30,39 +30,39 @@ public class RegionDTO {
     private String name;
     private String alias;
     private Long parentId;   // 부모 지역 ID (없으면 NULL)
-    private String parentName; // 부모 지역명 (없으면 NULL)
     private int level;       // 1: 시·도, 2: 시·군·구
-
-    // 새로 추가한 필드
     private Double latitude;
     private Double longitude;
     private Double radius;
+    private String imageUrl;
+    private String description;
 
     // 모든 필드 포함하는 정적 팩토리 메서드
     public static RegionDTO of(Long id,
                                String name,
                                String alias,
                                Long parentId,
-                               String parentName,
                                int level,
                                Double latitude,
                                Double longitude,
-                               Double radius) {
-        return new RegionDTO(id, name, alias, parentId, parentName, level,
-                latitude, longitude, radius);
+                               Double radius,
+                               String imageUrl,
+                               String description) {
+        return new RegionDTO(id, name, alias, parentId, level,
+                latitude, longitude, radius, imageUrl, description);
     }
 
     // ID 없이 만드는 경우
     public static RegionDTO of(String name,
                                String alias,
                                Long parentId,
-                               String parentName,
                                int level,
                                Double latitude,
                                Double longitude,
-                               Double radius) {
-        return new RegionDTO(null, name, alias, parentId, parentName, level,
-                latitude, longitude, radius);
+                               Double radius,
+                               String imageUrl,String description) {
+        return new RegionDTO(null, name, alias, parentId, level,
+                latitude, longitude, radius,imageUrl, description);
     }
 
     // entity -> dto 변환
@@ -74,11 +74,12 @@ public class RegionDTO {
                 region.getName(),
                 region.getAlias(),
                 region.getParent() != null ? region.getParent().getId() : null,
-                region.getParent() != null ? region.getParent().getName() : null,
                 region.getLevel(),
                 region.getLatitude(),
                 region.getLongitude(),
-                region.getRadius()
+                region.getRadius(),
+                region.getImageUrl(),
+                region.getDescription()
         );
     }
 
@@ -86,13 +87,15 @@ public class RegionDTO {
     public Region toEntity(Region parent) {
         // 새로운 정적 팩토리 메서드 사용
         return Region.of(
-                name,
-                alias,
-                level,
+                this.name,
+                this.alias,
+                this.level,
                 parent,
-                latitude,
-                longitude,
-                radius
+                this.latitude,
+                this.longitude,
+                this.radius,
+                this.imageUrl,
+                this.description
         );
     }
 }

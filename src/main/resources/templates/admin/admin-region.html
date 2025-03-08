@@ -1,0 +1,66 @@
+<div class="region-page">
+    <div class="table-wrapper">
+        <table class="region-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Radius</th>
+                <th>Image isEmbed</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+
+        </table>
+    </div>
+    <div class="d-flex flex-column">
+        <div class="config-header mb-5">
+            <button class="refresh-btn btn btn-warning"> 새로고침</button>
+        </div>
+        <div class="d-flex">
+            <!-- 지역 정보 수정 -->
+            <div class="w-50 pe-3">
+                <h5>지역 정보 수정</h5>
+                <form id="regionForm">
+                    <input type="hidden" id="regionId">
+                    <div class="mb-2">
+                        <label class="form-label">이름:</label>
+                        <input type="text" id="regionName" class="form-control" disabled>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">위도:</label>
+                        <input type="text" id="regionLatitude" class="form-control">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">경도:</label>
+                        <input type="text" id="regionLongitude" class="form-control">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">반경:</label>
+                        <input type="text" id="regionRadius" class="form-control">
+                    </div>
+                </form>
+                <button type="button" id="saveRegionButton" class="btn btn-primary">지역 정보 수정</button>
+            </div>
+
+            <!-- 이미지 수정 -->
+            <div class="w-50 ps-3 border-start">
+                <h5>이미지 수정</h5>
+                <div class="mt-2">
+                    <img id="imagePreview" src="" class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">이미지 URL:</label>
+                    <input type="text" id="regionImage" class="form-control" disabled>
+                </div>
+
+                <div class="mt-2">
+                    <label for="imageUpload" class="btn btn-secondary w-100">이미지 업로드</label>
+                    <input type="file" id="imageUpload" class="d-none" accept="image/*">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
