@@ -59,6 +59,9 @@ public class Region {
     @Column(name = "image_url", length = 300)
     private String imageUrl;
 
+    @Column(name = "description", length = 300)
+    private String description;
+
     /**
      * 기존에 사용하던 생성자(위도, 경도, radius가 필요 없는 경우).
      * 필요시 남겨두거나, 오버로드된 생성자를 사용하는 식으로 구성할 수 있습니다.
@@ -74,7 +77,7 @@ public class Region {
      * 새로 추가한 생성자: 위도, 경도, radius까지 포함
      */
     public Region(String name, String alias, int level, Region parent,
-                  Double latitude, Double longitude, Double radius, String imageUrl) {
+                  Double latitude, Double longitude, Double radius, String imageUrl, String description) {
         this.name = name;
         this.alias = alias;
         this.level = level;
@@ -83,6 +86,7 @@ public class Region {
         this.longitude = longitude;
         this.radius = radius;
         this.imageUrl = imageUrl;
+        this.description = description;
     }
 
     // 정적 팩토리 메서드 (위도/경도/반경 미포함)
@@ -92,12 +96,16 @@ public class Region {
 
     // 정적 팩토리 메서드 (위도/경도/반경 포함)
     public static Region of(String name, String alias, int level, Region parent,
-                            Double latitude, Double longitude, Double radius, String imageUrl) {
-        return new Region(name, alias, level, parent, latitude, longitude, radius, imageUrl);
+                            Double latitude, Double longitude, Double radius, String imageUrl, String description) {
+        return new Region(name, alias, level, parent, latitude, longitude, radius, imageUrl, description);
     }
 
     public void setImageUrl(String newImageUrl) {
         this.imageUrl = newImageUrl;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 }

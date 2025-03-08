@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <title>로그인 성공</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-
-
+    <!-- Toast Alarm -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <style>
         html, body {
             height: 100%;
@@ -158,13 +160,18 @@
         .remove-item:hover {
             color: darkred;
         }
+
+
+        #toast-container>div {
+            width: 350px !important;
+        }
     </style>
 </head>
 <body>
     <div class="section-region-select">
         <div class="search-box-wrap">
             <span class="search-box-left"><i class="bi bi-search"></i></span>
-            <input type="text" id="search-box" placeholder="지역 검색..." autocomplete="off"/>
+            <input type="text" id="search-box" placeholder="어디로 여행가세요?" autocomplete="off"/>
             <span class="search-box-right"><i class="bi bi-x"></i></span>
         </div>
         <div class="suggestions-wrap">
@@ -177,10 +184,32 @@
 
 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
 
 <script>
+
+
+    toastr.options = {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-center",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "1500",
+        "extendedTimeOut": "1500",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+
+
+
     const treeData = [{"id":1,"name":"서울특별시","alias":"서울시","level":1,"children":[{"id":17,"name":"종로구","level":2},{"id":18,"name":"중구","level":2},{"id":19,"name":"용산구","level":2},{"id":20,"name":"성동구","level":2},{"id":21,"name":"광진구","level":2},{"id":22,"name":"동대문구","level":2},{"id":23,"name":"중랑구","level":2},{"id":24,"name":"성북구","level":2},{"id":25,"name":"강북구","level":2},{"id":26,"name":"도봉구","level":2},{"id":27,"name":"노원구","level":2},{"id":28,"name":"은평구","level":2},{"id":29,"name":"서대문구","level":2},{"id":30,"name":"마포구","level":2},{"id":31,"name":"양천구","level":2},{"id":32,"name":"강서구","level":2},{"id":33,"name":"구로구","level":2},{"id":34,"name":"금천구","level":2},{"id":35,"name":"영등포구","level":2},{"id":36,"name":"동작구","level":2},{"id":37,"name":"관악구","level":2},{"id":38,"name":"서초구","level":2},{"id":39,"name":"강남구","level":2},{"id":40,"name":"송파구","level":2},{"id":41,"name":"강동구","level":2}]},{"id":2,"name":"부산광역시","alias":"부산시","level":1,"children":[{"id":42,"name":"중구","level":2},{"id":43,"name":"서구","level":2},{"id":44,"name":"동구","level":2},{"id":45,"name":"영도구","level":2},{"id":46,"name":"부산진구","level":2},{"id":47,"name":"동래구","level":2},{"id":48,"name":"남구","level":2},{"id":49,"name":"북구","level":2},{"id":50,"name":"해운대구","level":2},{"id":51,"name":"사하구","level":2},{"id":52,"name":"금정구","level":2},{"id":53,"name":"강서구","level":2},{"id":54,"name":"연제구","level":2},{"id":55,"name":"수영구","level":2},{"id":56,"name":"사상구","level":2},{"id":57,"name":"기장군","level":2}]},{"id":3,"name":"대구광역시","alias":"대구시","level":1,"children":[{"id":58,"name":"중구","level":2},{"id":59,"name":"동구","level":2},{"id":60,"name":"서구","level":2},{"id":61,"name":"남구","level":2},{"id":62,"name":"북구","level":2},{"id":63,"name":"수성구","level":2},{"id":64,"name":"달서구","level":2},{"id":65,"name":"달성군","level":2},{"id":66,"name":"군위군","level":2}]},{"id":4,"name":"인천광역시","alias":"인천시","level":1,"children":[{"id":67,"name":"중구","level":2},{"id":68,"name":"동구","level":2},{"id":69,"name":"미추홀구","level":2},{"id":70,"name":"연수구","level":2},{"id":71,"name":"남동구","level":2},{"id":72,"name":"부평구","level":2},{"id":73,"name":"계양구","level":2},{"id":74,"name":"서구","level":2},{"id":75,"name":"강화군","level":2},{"id":76,"name":"옹진군","level":2}]},{"id":5,"name":"광주광역시","level":1,"children":[{"id":77,"name":"동구","level":2},{"id":78,"name":"서구","level":2},{"id":79,"name":"남구","level":2},{"id":80,"name":"북구","level":2},{"id":81,"name":"광산구","level":2}]},{"id":6,"name":"대전광역시","level":1,"children":[{"id":82,"name":"동구","level":2},{"id":83,"name":"중구","level":2},{"id":84,"name":"서구","level":2},{"id":85,"name":"유성구","level":2},{"id":86,"name":"대덕구","level":2}]},{"id":7,"name":"울산광역시","level":1,"children":[{"id":87,"name":"중구","level":2},{"id":88,"name":"남구","level":2},{"id":89,"name":"동구","level":2},{"id":90,"name":"북구","level":2},{"id":91,"name":"울주군","level":2}]},{"id":8,"name":"세종특별자치시","alias":"세종시","level":1},{"id":9,"name":"경기도","level":1,"children":[{"id":92,"name":"수원시","level":2,"children":[{"id":268,"name":"장안구","level":3},{"id":269,"name":"권선구","level":3},{"id":270,"name":"팔달구","level":3},{"id":271,"name":"영통구","level":3}]},{"id":96,"name":"성남시","level":2,"children":[{"id":272,"name":"수정구","level":3},{"id":273,"name":"중원구","level":3},{"id":274,"name":"분당구","level":3}]},{"id":99,"name":"의정부시","level":2},{"id":100,"name":"안양시","level":2,"children":[{"id":275,"name":"만안구","level":3},{"id":276,"name":"동안구","level":3}]},{"id":102,"name":"광명시","level":2},{"id":103,"name":"평택시","level":2},{"id":104,"name":"안산시","level":2,"children":[{"id":277,"name":"상록구","level":3},{"id":287,"name":"단원구","level":3}]},{"id":105,"name":"과천시","level":2},{"id":106,"name":"구리시","level":2},{"id":107,"name":"남양주시","level":2},{"id":108,"name":"오산시","level":2},{"id":109,"name":"시흥시","level":2},{"id":110,"name":"군포시","level":2},{"id":111,"name":"의왕시","level":2},{"id":112,"name":"하남시","level":2},{"id":113,"name":"용인시","level":2,"children":[{"id":278,"name":"처인구","level":3},{"id":279,"name":"기흥구","level":3},{"id":280,"name":"수지구","level":3}]},{"id":116,"name":"이천시","level":2},{"id":117,"name":"안성시","level":2},{"id":118,"name":"광주시","level":2},{"id":119,"name":"여주시","level":2},{"id":120,"name":"가평군","level":2},{"id":121,"name":"양평군","level":2},{"id":122,"name":"부천시","level":2,"children":[{"id":281,"name":"원미구","level":3},{"id":282,"name":"소사구","level":3},{"id":283,"name":"오정구","level":3}]},{"id":125,"name":"동두천시","level":2},{"id":126,"name":"고양시","level":2,"children":[{"id":284,"name":"덕양구","level":3},{"id":285,"name":"일산동구","level":3},{"id":286,"name":"일산서구","level":3}]},{"id":129,"name":"양주시","level":2},{"id":130,"name":"포천시","level":2},{"id":132,"name":"화성시","level":2},{"id":133,"name":"연천군","level":2},{"id":134,"name":"김포시","level":2},{"id":135,"name":"파주시","level":2}]},{"id":10,"name":"충청북도","alias":"충청도","level":1,"children":[{"id":136,"name":"청주시","level":2,"children":[{"id":288,"name":"상당구","level":3},{"id":289,"name":"서원구","level":3},{"id":290,"name":"흥덕구","level":3},{"id":291,"name":"청원구","level":3}]},{"id":140,"name":"충주시","level":2},{"id":141,"name":"제천시","level":2},{"id":142,"name":"보은군","level":2},{"id":143,"name":"옥천군","level":2},{"id":144,"name":"영동군","level":2},{"id":145,"name":"증평군","level":2},{"id":146,"name":"진천군","level":2},{"id":147,"name":"괴산군","level":2},{"id":148,"name":"음성군","level":2},{"id":149,"name":"단양군","level":2}]},{"id":11,"name":"충청남도","alias":"충청도","level":1,"children":[{"id":150,"name":"천안시","level":2,"children":[{"id":292,"name":"동남구","level":3},{"id":293,"name":"서북구","level":3}]},{"id":152,"name":"공주시","level":2},{"id":153,"name":"보령시","level":2},{"id":154,"name":"아산시","level":2},{"id":155,"name":"서산시","level":2},{"id":156,"name":"논산시","level":2},{"id":157,"name":"계룡시","level":2},{"id":158,"name":"당진시","level":2},{"id":159,"name":"금산군","level":2},{"id":160,"name":"부여군","level":2},{"id":161,"name":"서천군","level":2},{"id":162,"name":"청양군","level":2},{"id":163,"name":"홍성군","level":2},{"id":164,"name":"예산군","level":2},{"id":165,"name":"태안군","level":2}]},{"id":12,"name":"전라남도","alias":"전라도","level":1,"children":[{"id":166,"name":"목포시","level":2},{"id":167,"name":"여수시","level":2},{"id":168,"name":"순천시","level":2},{"id":169,"name":"나주시","level":2},{"id":170,"name":"광양시","level":2},{"id":171,"name":"담양군","level":2},{"id":172,"name":"곡성군","level":2},{"id":173,"name":"구례군","level":2},{"id":174,"name":"고흥군","level":2},{"id":175,"name":"보성군","level":2},{"id":176,"name":"화순군","level":2},{"id":177,"name":"장흥군","level":2},{"id":178,"name":"강진군","level":2},{"id":179,"name":"해남군","level":2},{"id":180,"name":"영암군","level":2},{"id":181,"name":"무안군","level":2},{"id":182,"name":"함평군","level":2},{"id":183,"name":"영광군","level":2},{"id":184,"name":"장성군","level":2},{"id":185,"name":"완도군","level":2},{"id":186,"name":"진도군","level":2},{"id":187,"name":"신안군","level":2},{"id":188,"name":"포항시","level":2,"children":[{"id":294,"name":"남구","level":3},{"id":295,"name":"북구","level":3}]},{"id":190,"name":"경주시","level":2},{"id":191,"name":"김천시","level":2},{"id":192,"name":"안동시","level":2},{"id":193,"name":"구미시","level":2},{"id":194,"name":"영주시","level":2},{"id":195,"name":"영천시","level":2},{"id":196,"name":"상주시","level":2},{"id":197,"name":"문경시","level":2},{"id":198,"name":"경산시","level":2},{"id":199,"name":"의성군","level":2},{"id":200,"name":"청송군","level":2},{"id":201,"name":"영양군","level":2},{"id":202,"name":"영덕군","level":2},{"id":203,"name":"청도군","level":2},{"id":204,"name":"고령군","level":2},{"id":205,"name":"성주군","level":2},{"id":206,"name":"칠곡군","level":2},{"id":207,"name":"예천군","level":2},{"id":208,"name":"봉화군","level":2},{"id":209,"name":"울진군","level":2},{"id":210,"name":"울릉군","level":2}]},{"id":13,"name":"경상남도","alias":"경상도","level":1,"children":[{"id":211,"name":"창원시","level":2,"children":[{"id":296,"name":"의창구","level":3},{"id":297,"name":"성산구","level":3},{"id":298,"name":"마산합포구","level":3},{"id":299,"name":"마산회원구","level":3},{"id":300,"name":"진해구","level":3}]},{"id":216,"name":"진주시","level":2},{"id":217,"name":"통영시","level":2},{"id":218,"name":"사천시","level":2},{"id":219,"name":"김해시","level":2},{"id":220,"name":"밀양시","level":2},{"id":221,"name":"거제시","level":2},{"id":222,"name":"양산시","level":2},{"id":223,"name":"의령군","level":2},{"id":224,"name":"함안군","level":2},{"id":225,"name":"창녕군","level":2},{"id":226,"name":"고성군","level":2},{"id":227,"name":"남해군","level":2},{"id":228,"name":"하동군","level":2},{"id":229,"name":"산청군","level":2},{"id":230,"name":"함양군","level":2},{"id":231,"name":"거창군","level":2},{"id":232,"name":"합천군","level":2}]},{"id":14,"name":"제주도","level":1,"children":[{"id":233,"name":"제주시","level":2},{"id":234,"name":"서귀포시","level":2}]},{"id":15,"name":"강원특별자치도","alias":"강원도","level":1,"children":[{"id":235,"name":"춘천시","level":2},{"id":236,"name":"원주시","level":2},{"id":237,"name":"강릉시","level":2},{"id":238,"name":"동해시","level":2},{"id":239,"name":"태백시","level":2},{"id":240,"name":"속초시","level":2},{"id":241,"name":"삼척시","level":2},{"id":242,"name":"홍천군","level":2},{"id":243,"name":"횡성군","level":2},{"id":244,"name":"영월군","level":2},{"id":245,"name":"평창군","level":2},{"id":246,"name":"정선군","level":2},{"id":247,"name":"양양군","level":2},{"id":248,"name":"화천군","level":2},{"id":249,"name":"고성군","level":2},{"id":250,"name":"양구군","level":2},{"id":251,"name":"철원군","level":2},{"id":252,"name":"인제군","level":2}]},{"id":16,"name":"전북특별자치도 ","level":1,"children":[{"id":253,"name":"전주시","level":2,"children":[{"id":301,"name":"완산구","level":3},{"id":302,"name":"덕진구","level":3}]},{"id":255,"name":"군산시","level":2},{"id":256,"name":"익산시","level":2},{"id":257,"name":"정읍시","level":2},{"id":258,"name":"남원시","level":2},{"id":259,"name":"김제시","level":2},{"id":260,"name":"완주군","level":2},{"id":261,"name":"진안군","level":2},{"id":262,"name":"무주군","level":2},{"id":263,"name":"장수군","level":2},{"id":264,"name":"임실군","level":2},{"id":265,"name":"순창군","level":2},{"id":266,"name":"고창군","level":2},{"id":267,"name":"부안군","level":2}]}];
 
     let regionMap = new Map();
@@ -201,7 +230,6 @@
 
     // regionMap 확인
     console.log(regionMap);
-
 
 
     let locations = flattenTree(treeData);
@@ -323,37 +351,85 @@
         }
     });
 
-    // (2) 추천목록에서 클릭 시, 선택된 지역 목록에 추가
+    // 특정 ID를 가진 노드를 treeData에서 찾는 함수 (DFS)
+    function findNodeById(tree, id) {
+        let stack = [...tree];
+        while (stack.length > 0) {
+            let node = stack.pop();
+            if (node.id === id) return node;
+            if (node.children) stack.push(...node.children);
+        }
+        return null;
+    }
+
+    // 특정 노드의 모든 하위 자식(손자 포함) ID를 가져오는 함수 (BFS)
+    function getAllDescendantIds(node) {
+        let descendantIds = new Set();
+        let queue = node.children ? [...node.children] : [];
+
+        while (queue.length > 0) {
+            let current = queue.shift();
+            descendantIds.add(current.id);
+            if (current.children) {
+                queue.push(...current.children);
+            }
+        }
+        return descendantIds;
+    }
+    // 특정 노드가 부모 노드인지 확인하는 함수
+    function hasParentSelected(nodeId) {
+        let parentNode = locations.find(loc => loc.id === nodeId);
+        while (parentNode && parentNode.parentId) {
+            if (selectedLocations.some(loc => loc.id === parentNode.parentId)) {
+                return true; // 부모가 이미 선택됨
+            }
+            parentNode = locations.find(loc => loc.id === parentNode.parentId);
+        }
+        return false;
+    }
+
+    // 추천목록에서 클릭 시, 선택된 지역 목록에 추가 (수정된 코드)
     $("#suggestions").on("click", "li", function () {
         let selectedId = $(this).data("id");
         let selectedText = $(this).text();
 
-        // 1) locations 배열에서 해당 id & displayName에 맞는 항목 찾기
-        //    (여러 개가 있을 수 있지만, 일반적으로는 첫 번째 걸로 처리)
+        // locations 배열에서 해당 id & displayName에 맞는 항목 찾기
         let foundItem = locations.find(loc => loc.id === selectedId && loc.displayName === selectedText);
+        if (!foundItem) return;
 
-        // 혹은 그냥 최소한 id만 같으면 찾도록 할 수도 있음
-        // let foundItem = locations.find(loc => loc.id === selectedId);
+        // 부모가 이미 선택된 경우 경고 메시지 표시 후 중단
+        if (hasParentSelected(foundItem.id)) {
+            toastr.warning("이미 상위 지역이 선택되었습니다. <br>먼저 상위 지역을 삭제해주세요.");
 
-        // 없을 수도 있으니 체크
-        if (!foundItem) {
-            // 혹은 별도 처리
-            foundItem = {
-                id: selectedId,
-                displayName: selectedText
-            };
+            return;
         }
 
-        // 2) 이미 selectedLocations에 들어간 항목인지 확인(중복 방지)
+        // treeData에서 해당 노드 찾기
+        let regionNode = findNodeById(treeData, foundItem.id);
+        let childIds = new Set();
+
+        // 해당 노드가 존재하고 children이 있으면 하위 자식 ID 가져오기
+        if (regionNode && regionNode.children) {
+            childIds = getAllDescendantIds(regionNode);
+        }
+
+        // selectedLocations에서 해당 자식 ID가 포함된 항목 제거
+        selectedLocations = selectedLocations.filter(loc => !childIds.has(loc.id));
+
+        // 현재 선택된 항목이 중복인지 확인하고 추가
         let alreadySelected = selectedLocations.some(loc => loc.id === foundItem.id && loc.displayName === foundItem.displayName);
         if (!alreadySelected) {
+            if(selectedLocations.length > 2){
+                toastr.warning("최대 3개의 지역까지 선택 가능합니다.");
+                return;
+            }
             selectedLocations.push(foundItem);
         }
 
-        // 3) 화면에 표시
+        // 화면에 표시
         renderSelectedList();
 
-        // 4) 검색창 및 추천 목록 초기화(필요 시)
+        // 검색창 및 추천 목록 초기화
         $("#search-box").val("");
         $("#suggestions").hide();
     });
@@ -381,6 +457,8 @@
         }
     });
 </script>
+
+
 
 </body>
 </html>

@@ -35,6 +35,7 @@ public class RegionDTO {
     private Double longitude;
     private Double radius;
     private String imageUrl;
+    private String description;
 
     // 모든 필드 포함하는 정적 팩토리 메서드
     public static RegionDTO of(Long id,
@@ -45,9 +46,10 @@ public class RegionDTO {
                                Double latitude,
                                Double longitude,
                                Double radius,
-                               String imageUrl) {
+                               String imageUrl,
+                               String description) {
         return new RegionDTO(id, name, alias, parentId, level,
-                latitude, longitude, radius, imageUrl);
+                latitude, longitude, radius, imageUrl, description);
     }
 
     // ID 없이 만드는 경우
@@ -58,9 +60,9 @@ public class RegionDTO {
                                Double latitude,
                                Double longitude,
                                Double radius,
-                               String imageUrl) {
+                               String imageUrl,String description) {
         return new RegionDTO(null, name, alias, parentId, level,
-                latitude, longitude, radius,imageUrl);
+                latitude, longitude, radius,imageUrl, description);
     }
 
     // entity -> dto 변환
@@ -76,7 +78,8 @@ public class RegionDTO {
                 region.getLatitude(),
                 region.getLongitude(),
                 region.getRadius(),
-                region.getImageUrl()
+                region.getImageUrl(),
+                region.getDescription()
         );
     }
 
@@ -91,7 +94,8 @@ public class RegionDTO {
                 this.latitude,
                 this.longitude,
                 this.radius,
-                this.imageUrl
+                this.imageUrl,
+                this.description
         );
     }
 }
