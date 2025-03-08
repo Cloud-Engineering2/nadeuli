@@ -20,8 +20,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.Place;
 
-import java.time.LocalDateTime;
-
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,18 +27,18 @@ public class PlaceDTO {
     private Long id;
     private String googlePlaceId;
     private String placeName;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
-
-
+    private String address;
+    private double latitude;
+    private double longitude;
+    private int searchCount;
 
     // static factory method
-    public static PlaceDTO of (Long id, String googlePlaceId, String placeName, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new PlaceDTO(id, googlePlaceId, placeName, createdAt, modifiedAt);
+    public static PlaceDTO of(Long id, String googlePlaceId, String placeName, String address, double latitude, double longitude, int searchCount) {
+        return new PlaceDTO(id, googlePlaceId, placeName, address, latitude, longitude, searchCount);
     }
 
-    public static PlaceDTO of (String googlePlaceId, String placeName, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        return new PlaceDTO(null, googlePlaceId, placeName, createdAt, modifiedAt);
+    public static PlaceDTO of(String googlePlaceId, String placeName, String address, double latitude, double longitude) {
+        return new PlaceDTO(null, googlePlaceId, placeName, address, latitude, longitude, 1);
     }
 
     // entity -> dto
@@ -49,13 +47,15 @@ public class PlaceDTO {
                 place.getId(),
                 place.getGooglePlaceId(),
                 place.getPlaceName(),
-                place.getCreatedDate(),
-                place.getModifiedDate()
+                place.getAddress(),
+                place.getLatitude(),
+                place.getLongitude(),
+                place.getSearchCount()
         );
     }
 
-    // dto => entity
+    // dto -> entity
     public Place toEntity() {
-        return Place.of(googlePlaceId, placeName);
+        return new Place(googlePlaceId, placeName, address, latitude, longitude);
     }
 }
