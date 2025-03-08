@@ -81,17 +81,5 @@ public class Region {
         );
     }
 
-    // dto -> entity 변환
-    public nadeuli.entity.Region toEntity(nadeuli.entity.Region parent) {
-        // 새로운 정적 팩토리 메서드 사용
-        return nadeuli.entity.Region.of(
-                name,
-                alias,
-                level,
-                parent,
-                latitude,
-                longitude,
-                radius
-        );
-    }
+
 }
