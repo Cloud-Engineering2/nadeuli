@@ -1,5 +1,5 @@
-/* PlaceRepository.java
- * Place 레파지토리
+/* UserRepository.java
+ * User 레파지토리
  * 작성자 : 박한철
  * 최초 작성 날짜 : 2025-02-25
  *
@@ -14,11 +14,8 @@
  */
 package nadeuli.repository;
 
-import nadeuli.entity.Place;
+import nadeuli.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
-
-public interface PlaceRepository extends JpaRepository<Place, Long> {
-    Optional<Place> findByGooglePlaceId(String googlePlaceId);
+public interface UserRepository extends JpaRepository<User, Long> {
 }
