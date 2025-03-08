@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1/N 정산</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" th:href="@{/css/expense-book.css}">
+
+    <!-- jQuery & Sortable -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+
+    <!-- Moment.js & Date Range Picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+</head>
+<body>
+
+<div class="expense-background" id="expenseBackground">
+    <div class="expense-adjustment-tab" id="expenseAdjustmentTab">
+        <h4>경비 / 정산</h4>
+    </div>
+
+    <div class="line-for-border-radius" id="LineForBorderRadius">
+        <div class="basic-info">
+            <div class="col-md-6 basic-info-col-md-6">남은 예산 : 100,000원</div>
+            <div class="col-md-6 basic-info-col-md-6">3명의 친구와 함께 하고 있습니다</div>
+        </div>
+
+        <div class="expense-item-container" id="expenseItemContainer">
+
+            <div class="expense-item-title" id="expenseItemTitle">
+                <span>CONTENT</span><span>EXPENDITURE</span><span>PAYER</span><span>withWHOM</span>
+            </div>
+            <hr>
+            <div class="expense-items-list" id="expenseItemsList">
+                <div class="expense-item-box" id="expenseItemBox1">
+                    <div class="expense-item-content">Shibuya Starbucks Coffee</div>
+                    <div class="expense-item-expenditure">15000원</div>
+                    <div class="expense-item-payer">GAYEON</div>
+                    <div class="expense-item-with-whom">NAYEON</div>
+                </div>
+
+                <div class="expense-item-box" id="expenseItemBox2">
+                    <div class="expense-item-content">Tokyo Tower Observatory Ticket</div>
+                    <div class="expense-item-expenditure">30000원</div>
+                    <div class="expense-item-payer">NAYEON</div>
+                    <div class="expense-item-with-whom">GAYEON</div>
+                </div>
+
+                <div class="expense-item-box" id="expenseItemBox3">
+                    <div class="expense-item-content">Shinjuku Gyoen Park Entrance Fee</div>
+                    <div class="expense-item-expenditure">20000원</div>
+                    <div class="expense-item-payer">GAYEON</div>
+                    <div class="expense-item-with-whom">NAYEON</div>
+                </div>
+            </div>
+
+
+            <ul id="expense-list">
+                <!-- 데이터가 여기에 추가될 예정 -->
+            </ul>
+
+            <div class="expense-item-addition-plus-button" id="expenseItemAdditionPlusButton">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- JavaScript -->
+<script th:src="@{/js/expense-book.js}"></script>
+<!-- 서버용 <script src="js/expense-book.js"></script>-->
+<!-- 라이브용 <script src="expense-book.js"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+

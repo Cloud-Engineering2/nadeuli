@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인라인 날짜 범위 선택기</title>
+
+    <!-- jQuery & Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Moment.js & Date Range Picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+
+    <!-- noUiSlider -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+
+    <style>
+        .modal-dialog { max-width: 750px; }
+        .time-container { display: flex; align-items: center; gap: 10px; }
+        .date-label { width: 120px; font-weight: bold; text-align: right; }
+        .slider { flex-grow: 1; }
+        .time-input { width: 80px; text-align: center; }
+    </style>
+
+
+    <style>
+        /* 기본 HTML 스타일 설정 */
+        html {
+            font-family: 'Noto Sans KR', sans-serif; /* 폰트 설정 */
+            font-size: 16px; /* 기본 글꼴 크기를 px 단위로 고정 */
+        }
+
+        .modal-dialog {
+            max-width: 750px; /* 모달이 달력을 포함할 만큼 충분히 넓게 설정 */
+        }
+
+        /* 날짜 선택기 컨테이너 스타일 */
+        #date-range-container {
+            background: #ffffff; /* 배경색 설정 */
+            display: inline-block; /* 인라인 블록 요소로 설정 */
+        }
+
+        /* 날짜 선택기 래퍼 스타일 */
+        .date-picker-wrapper {
+            display: flex; /* 내부 요소를 가로로 배치 */
+            flex-wrap: nowrap; /* 줄바꿈 방지 */
+            justify-content: center; /* 요소를 중앙 정렬 */
+            align-items: flex-start; /* 상단 정렬 */
+            padding: 16px; /* 내부 여백 설정 */
+            background: #ffffff; /* 배경색 설정 */
+            border: none; /* 테두리 제거 */
+            max-width: 100%;
+        }
+
+        /* 월 이름 스타일 */
+        .date-picker-wrapper .month-name {
+            padding-top: 32px; /* 2rem → 32px */
+            font-size: 22px; /* 1.4rem → 22px */
+            font-weight: 500;
+            color: #000000;
+        }
+
+        /* 월 래퍼 스타일 */
+        .date-picker-wrapper .month-wrapper {
+            border: none;
+            min-width: 650px;
+        }
+
+        /* 월 캡션 스타일 */
+        .date-picker-wrapper .month-wrapper .caption {
+            height: 80px; /* 5rem → 80px */
+        }
+
+        /* 요일명 스타일 */
+        .date-picker-wrapper .month-wrapper table .week-name {
+            font-size: 16px; /* 1rem → 16px */
+            font-weight: 100;
+            color: #000000;
+        }
+
+        /* 날짜 셀 스타일 */
+        .date-picker-wrapper .month-wrapper table td {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        /* 개별 날짜 스타일 */
+        .date-picker-wrapper .month-wrapper table .day {
+            margin: 2px; /* 0.1rem → 2px */
+            width: 40px; /* 2.5rem → 40px */
+            height: 40px; /* 2rem → 32px */
+            padding-top: 5px; /* 0.3rem → 5px */
+            padding-bottom: 5px; /* 0.3rem → 5px */
+            text-align: center;
+            cursor: pointer;
+            font-size: 16px; /* 1rem → 16px */
+            line-height: 32px; /* 2rem → 32px */
+        }
+
+        .date-picker-wrapper .month-wrapper table .day.real-today {
+            background-color: #ffd600;
+            border-radius: 5px;
+        }
+
+        /* 다른 달의 날짜 스타일 */
+        .date-picker-wrapper .day.other-month {
+            color: #d1d5db;
+        }
+
+        /* 유효한 날짜에 마우스를 올렸을 때의 스타일 */
+        .date-picker-wrapper .day.valid:hover {
+            background: #f3f4f6;
+            color: #000000;
+        }
+
+        /* 선택된 날짜 스타일 */
+        .date-picker-wrapper .day.selected {
+            background: #9c9c9c !important;
+            color: #ffffff !important;
+            font-weight: bold;
+        }
+
+        /* 날짜에 마우스를 올렸을 때 스타일 */
+        .date-picker-wrapper .day.hovering {
+            background: #ededed !important;
+            border-radius: 6px; /* 15% → 6px */
+        }
+
+        /* 선택된 날짜 범위 스타일 */
+        .date-picker-wrapper .day.toMonth.valid.checked {
+            background: #e6e6e6 !important;
+            border-radius: 6px; /* 15% → 6px */
+        }
+
+        /* 범위 선택 시 첫 번째 날짜 스타일 */
+        .date-picker-wrapper .day.toMonth.valid.checked.first-date-selected {
+            border-top-left-radius: 6px; /* 15% → 6px */
+            border-bottom-left-radius: 6px; /* 15% → 6px */
+            background: #000000 !important;
+            color: #ffffff !important;
+        }
+
+        /* 범위 선택 시 마지막 날짜 스타일 */
+        .date-picker-wrapper .day.toMonth.valid.checked.last-date-selected {
+            border-top-right-radius: 6px; /* 15% → 6px */
+            border-bottom-right-radius: 6px; /* 15% → 6px */
+            background: #000000 !important;
+            color: #ffffff !important;
+        }
+
+        /* 캡션(월 표기 부분) 스타일 */
+        .date-picker-wrapper table .caption {
+            font-size: 16px; /* 1rem → 16px */
+        }
+
+        /* 다음 달 이동 버튼 스타일 */
+        .date-picker-wrapper table .caption .next:hover {
+            color: #000000 !important;
+            background: transparent !important;
+        }
+
+        /* 이전 달 이동 버튼 스타일 */
+        .date-picker-wrapper table .caption .prev:hover {
+            color: #000000 !important;
+            background: transparent !important;
+        }
+    </style>
+
+</head>
+<body>
+
+<!-- 여행 기간 선택 모달 -->
+<div class="modal fade" id="travelModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4">
+            <div class="modal-header border-0">
+                <h2 class="modal-title text-center w-100 fw-light">여행 기간을 설정해주세요</h2>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fw-light">여행 일자는 최대 7일까지 설정 가능합니다.</p>
+                <div id="date-range-container" class="mb-3"></div>
+                <p><span id="selected-date">　</span></p>
+            </div>
+            <div class="modal-footer border-0 d-flex justify-content-center">
+                <button id="confirm-dates-btn" class="btn btn-primary">다음</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 시작/종료 시간 설정 모달 -->
+<div class="modal fade" id="timeModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4">
+            <div class="modal-header border-0">
+                <h2 class="modal-title text-center w-100 fw-light">여행 시간 상세 설정</h2>
+            </div>
+            <div class="modal-body">
+                <!-- 전체 적용 영역 -->
+                <div class="time-container mb-3">
+                    <span class="date-label">전체 적용:</span>
+                    <input type="time" id="start-global" class="form-control time-input" value="09:00">
+                    <input type="time" id="end-global" class="form-control time-input" value="23:00">
+                    <button id="apply-global-time" class="btn btn-secondary">전체 적용</button>
+                </div>
+                <hr>
+                <div id="time-selection-container"></div>
+            </div>
+            <div class="modal-footer border-0 d-flex justify-content-between">
+                <button id="back-to-date-btn" class="btn btn-secondary">뒤로 가기</button>
+                <button id="confirm-time-btn" class="btn btn-primary"><div id="loading-spinner" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);"><img src="/path/to/spinner.gif" alt="로딩 중..."></div> 완료</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ CSS 추가 -->
+<style>
+    .slider-container {
+        flex-grow: 1;
+        padding: 0 10px;
+    }
+    .time-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .time-input {
+        width: 150px;
+    }
+</style>
+
+
+<script>
+
+    // 전역변수 선언 (호이스팅)
+    let travelModal;
+    let timeModal;
+    let selectedDates = [];
+
+    function createTimeSelectionUI(selectedDates, dayCounts) {
+        console.log("📌 [시간 UI 생성] 선택된 날짜들:", selectedDates);
+
+        // 1부터 dayCounts까지의 리스트 생성
+        let dayList = Array.from({ length: dayCounts }, (_, i) => i + 1);
+
+
+        let timeSelectionHTML = "";
+        dayList.forEach(index => {
+            timeSelectionHTML += `
+                <div class="time-container mb-3">
+                    <span class="date-label">${index}:</span>
+                    <input type="time" class="form-control time-input" id="start-${index}" value="09:00">
+                    <input type="time" class="form-control time-input" id="end-${index}" value="23:00">
+                </div>
+            `;
+        });
+
+        $('#time-selection-container').html(timeSelectionHTML);
+
+    }
+
+
+    $(document).ready(function () {
+        console.log("📅 캘린더 스크립트 로드됨");
+
+        travelModal = new bootstrap.Modal(document.getElementById("travelModal"));
+        const timeModalElement = document.getElementById("timeModal"); // ✅ HTML 요소 가져오기
+        travelModal.show();
+
+
+        //===============================
+        //  📅 캘린더 스크립트
+        //================================
+        $('#date-range-container').dateRangePicker({
+            parentEl: "modal-body",
+            inline: true,
+            container: '#date-range-container',
+            alwaysOpen: true,
+            stickyMonths: true,
+            language: 'ko',
+            format: 'YYYY-MM-DD',
+            separator: ' ~ ',
+            startOfWeek: 'sunday',
+            showShortcuts: false,
+            customTopBar: ' ',
+            hoveringTooltip: false,
+            autoClose: true
+        }).bind('datepicker-change', function (event, obj) {
+            let tempSelectedDates = [];
+            let start = moment(obj.date1);
+            let end = moment(obj.date2);
+
+            while (start <= end) {
+                tempSelectedDates.push(start.format('YYYY-MM-DD'));
+                start.add(1, 'days');
+            }
+
+            selectedDates = tempSelectedDates;
+            console.log("✅ 선택된 날짜:", selectedDates);
+
+            $('#selected-date')
+                .text(obj.value)
+                .css({ opacity: 0 })
+                .animate({ opacity: 1 }, 500);
+        });
+
+        $('#confirm-dates-btn').click(function () {
+            console.log("📌 [버튼 클릭] '다음' 버튼 클릭됨");
+
+            if (selectedDates.length === 0) {
+                alert("날짜를 선택하세요.");
+                return;
+            }
+
+            console.log("✅ 선택된 날짜:", selectedDates);
+            createTimeSelectionUI(selectedDates, selectedDates.length);
+
+            travelModal.hide();
+
+            // ✅ Bootstrap 모달 인스턴스 생성 (여기서 한 번만 생성)
+            if (!timeModal) {
+                timeModal = new bootstrap.Modal(timeModalElement);
+            }
+            timeModal.show();
+        });
+    });
+
+    //===============================
+    //  📅 시간설정 스크립트
+    //================================
+    $(document).ready(function () {
+        console.log("⏰ 시간 설정 스크립트 로드됨");
+
+        $('#apply-global-time').click(function () {
+            let globalStart = $('#start-global').val();
+            let globalEnd = $('#end-global').val();
+            console.log("📌 [전체 적용] 시작시간:", globalStart, "종료시간:", globalEnd);
+            // 1부터 dayCounts까지의 리스트 생성
+            let dayList = Array.from({ length: selectedDates.length }, (_, i) => i + 1);
+            dayList.forEach(index => {
+                $(`#start-${index}`).val(globalStart);
+                $(`#end-${index}`).val(globalEnd);
+            });
+        });
+
+        $('#confirm-time-btn').click(function () {
+            console.log("📌 [완료 버튼 클릭]");
+            const itineraryJSON = generateItineraryJSON();
+
+            if (!itineraryJSON) {
+                alert("여행 일정을 설정해주세요.");
+                return;
+            }
+
+            // 중복 클릭 방지 (버튼 비활성화)
+            $('#confirm-time-btn').prop('disabled', true).text("저장 중...");
+
+            // Ajax 요청
+            $.ajax({
+                url: "/api/itinerary/create",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(itineraryJSON),
+                beforeSend: function () {
+                    // 로딩 애니메이션 표시 (추가 가능)
+                    $('#loading-spinner').show();
+                },
+                success: function (response) {
+                    console.log("✅ 일정 저장 성공:", response);
+                    alert("일정이 성공적으로 저장되었습니다!");
+                    timeModal.hide();
+                },
+                error: function (xhr, status, error) {
+                    console.error("❌ 일정 저장 실패:", error);
+                    alert("일정 저장에 실패했습니다. 다시 시도해주세요.");
+                },
+                complete: function () {
+                    // 요청 완료 후 버튼 활성화 및 로딩 애니메이션 숨기기
+                    $('#confirm-time-btn').prop('disabled', false).text("완료");
+                    $('#loading-spinner').hide();
+                }
+            });
+        });
+
+        $('#back-to-date-btn').click(function () {
+            console.log("📌 [뒤로가기 버튼 클릭]");
+            timeModal.hide();
+            travelModal.show()
+        });
+    });
+
+
+    function generateItineraryJSON() {
+        // 1. 선택된 날짜가 없는 경우 처리
+        if (!selectedDates || selectedDates.length === 0) {
+            alert("여행 날짜를 선택해주세요.");  // 경고 메시지 표시
+            return null;
+        }
+
+        // 2. itineraryDTO 객체 생성
+        const startDateStr = moment(selectedDates[0]).format("YYYY-MM-DD") + "T00:00:00";
+        const itinerary = {
+            itineraryName: "서울 여행",           // 여행 이름 (기본값 또는 사용자 입력값)
+            startDate: startDateStr,              // 첫 번째 여행 날짜 (시각 00:00:00 고정)
+            totalDays: selectedDates.length,      // 전체 여행 일수
+            transportationType: 1                 // 교통 수단 유형 (예: 1, 기본값)
+        };
+
+        // 3. ItineraryPerDays 배열 생성
+        const ItineraryPerDays = [
+            { dayCount: 0, startTime: "00:00:00", endTime: "00:00:00", dayOfWeek: 0 }, // 빈장소를 저장하기위한 배열
+            ...selectedDates.map((date, index) => ({
+                dayCount: index + 1,
+                startTime: $(`#start-${index+1}`).val() + ":00",
+                endTime: $(`#end-${index+1}`).val() + ":00",
+                dayOfWeek: moment(date).isoWeekday()
+            }))
+        ];
+
+
+        // 4. 최종 JSON 데이터 구성
+        const itineraryJSON = {
+            itinerary: itinerary,
+            itineraryPerDays: ItineraryPerDays
+        };
+
+        // JSON 결과를 콘솔에 출력 (가독성을 위해 들여쓰기 포함)
+        console.log(JSON.stringify(itineraryJSON, null, 2));
+
+        // JSON 데이터를 반환하여 다른 곳에서 활용 가능하도록 함
+        return itineraryJSON;
+    }
+</script>
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

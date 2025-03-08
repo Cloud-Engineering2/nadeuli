@@ -92,6 +92,12 @@
             <version>2.2.6.RELEASE</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-cloudfront</artifactId>
+            <version>1.12.528</version>
+        </dependency>
+
         <!-- Spring Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -152,6 +158,13 @@
             <version>3.1.2.RELEASE</version>
         </dependency>
 
+        <!-- Hash id -->
+        <dependency>
+            <groupId>org.hashids</groupId>
+            <artifactId>hashids</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
         <!-- JWT (JSON Web Token) -->
         <!--        <dependency>-->
         <!--            <groupId>com.auth0</groupId>-->
@@ -181,7 +194,17 @@
             <version>3.4.2</version>
         </dependency>
 
-
+        <!-- RTO : jakarta.validation.* 어노테이션 -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>8.0.1.Final</version> <!-- 최신 버전 확인 가능 -->
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version> <!-- 최신 버전 확인 가능 -->
+        </dependency>
 
 
     </dependencies>
