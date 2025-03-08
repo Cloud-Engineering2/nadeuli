@@ -1,53 +1,59 @@
-/* Place.java
- * Place 엔티티
- * 작성자 : 박한철
- * 최초 작성 날짜 : 2025-02-25
- *
- * ========================================================
- * 프로그램 수정 / 보완 이력
- * ========================================================
- * 작업자        날짜        수정 / 보완 내용
- * ========================================================
- * 이홍비    2025.02.25     생성자 + of() 추가
- *
- * ========================================================
- */
-
 package nadeuli.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.io.Serializable;
 
 @Getter
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "place")
-public class Place extends BaseTimeEntity{
+public class Place implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pid", nullable = false)
     private Long id;
 
-    @Column(name = "google_place_id", nullable = false)
+    @Column(name = "google_place_id", nullable = false, unique = true)
     private String googlePlaceId;
 
     @Column(name = "place_name", nullable = false, length = 100)
     private String placeName;
 
-    // 생성자
-    public Place(String googlePlaceId, String placeName) {
+    @Column(name = "search_count", nullable = false)
+    @ColumnDefault("0")
+    private int searchCount = 0;
 
-        // 초기화
+    @Column(name = "address", length = 255)
+    private String address;
+
+    @Column(name = "latitude", nullable = false)
+    private double latitude;
+
+    @Column(name = "longitude", nullable = false)
+    private double longitude;
+
+    public Place(String googlePlaceId, String placeName, String address, double latitude, double longitude) {
         this.googlePlaceId = googlePlaceId;
         this.placeName = placeName;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.searchCount = 1;
     }
 
-    // static factory method
-    public static Place of(String googlePlaceId, String placeName) {
-        return new Place(googlePlaceId, placeName);
+    public void incrementSearchCount() {
+        this.searchCount++;
     }
 
+    public static Place of(String googlePlaceId, String placeName, String address, double latitude, double longitude) {
+        return new Place(googlePlaceId, placeName, address, latitude, longitude);
+    }
 }
