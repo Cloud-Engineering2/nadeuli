@@ -402,8 +402,97 @@
 
     document.addEventListener("DOMContentLoaded", initMap);
 
-// ➡️ 나들이 장소 검색 관련
+    let cursorScore = null;
+    let cursorId = null;
+    let isLastPage = false;
+
+    let placeMap = new Map(); // <placeId, placeData>
+
+    const nadeuliScrollArea = document.getElementById("nadeuli-search-results");
+
+    nadeuliScrollArea.addEventListener("scroll", () => {
+        if (nadeuliScrollArea.scrollTop + nadeuliScrollArea.clientHeight >= nadeuliScrollArea.scrollHeight - 100) {
+            fetchRecommendedPlaces(10); // 원하는 pageSize
+        }
+    });
+
+
+
+    // ➡️ 나들이 장소 검색 관련
 //===============================================================================
+    function fetchRecommendedPlaces(pageSize = 10) {
+        if (isLastPage) return; // 더 이상 가져올 데이터 없음
+
+        const requestData = {
+            userLng: 126.49,
+            userLat: 33.44,
+            radius: 100000,
+            pageSize: pageSize,
+            cursorScore: cursorScore,
+            cursorId: cursorId
+        };
+
+        $.ajax({
+            url: "/api/places/recommend",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(requestData),
+            success: function (response) {
+                const places = response.places || [];
+
+                // 중복 제거 및 Map에 추가
+                places.forEach(place => {
+                    if (!placeMap.has(place.id)) {
+                        placeMap.set(place.id, place);
+                    }
+                });
+
+                // 커서 갱신
+                cursorScore = response.nextCursorScore;
+                cursorId = response.nextCursorId;
+
+                // 마지막 페이지 여부 판단
+                if (places.length < pageSize) {
+                    isLastPage = true;
+                }
+
+                // 출력 함수 호출
+                renderRecommendedPlaces([...placeMap.values()]);
+            },
+            error: function (err) {
+                console.error("추천 장소 호출 실패:", err);
+            }
+        });
+    }
+
+    function renderRecommendedPlaces(placeList) {
+        const container = document.getElementById("nadeuli-search-results");
+        container.innerHTML = ""; // 초기화 (추가로 붙이려면 append 방식으로 바꾸세요)
+
+        placeList.forEach(place => {
+            const listItem = document.createElement("div");
+            listItem.className = "list-item";
+
+            listItem.innerHTML = `
+            <img src="${place.imageUrl || '기본이미지.png'}" alt="장소 이미지" />
+            <div class="info">
+                <div class="title">${place.placeName}</div>
+                <div class="info-line">
+                    <div class="place-type">${place.placeType}</div>
+                    <div class="address">${place.address}</div>
+                </div>
+                <div class="info-line">
+                    <div class="like"><i class="bi bi-heart"></i> ${place.googleRatingCount || 0}</div>
+                    <div class="star"><i class="bi bi-star-fill"></i> ${place.googleRating || 0}</div>
+                </div>
+            </div>
+            <div class="add-button-wrap">
+                <button class="add-button">+</button>
+            </div>
+        `;
+            container.appendChild(listItem);
+        });
+    }
 
 
     function handleNadeuliKeyPress(event) {

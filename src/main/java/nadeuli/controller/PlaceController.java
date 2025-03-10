@@ -1,6 +1,9 @@
 package nadeuli.controller;
 
 import nadeuli.dto.PlaceRequest;
+import nadeuli.dto.request.PlaceListResponseDto;
+import nadeuli.dto.request.PlaceRecommendRequestDto;
+import nadeuli.dto.response.PlaceResponseDto;
 import nadeuli.service.PlaceCacheService;
 import lombok.RequiredArgsConstructor;
 import nadeuli.service.PlaceService;
@@ -45,5 +48,21 @@ public class PlaceController {
                     return ResponseEntity.badRequest().body(errorResponse);
                 });
     }
+
+    /**
+     * POST 방식 장소 추천 (커서 기반 페이징)
+     */
+    @PostMapping("/recommend")
+    public PlaceListResponseDto getRecommendedPlaces(@RequestBody PlaceRecommendRequestDto request) {
+        return placeService.getRecommendedPlacesWithCursor(
+                request.getUserLng(),
+                request.getUserLat(),
+                request.getRadius(),
+                request.getCursorScore(),
+                request.getCursorId(),
+                request.getPageSize()
+        );
+    }
+
 
 }
