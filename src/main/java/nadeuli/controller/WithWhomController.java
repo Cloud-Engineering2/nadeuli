@@ -16,6 +16,7 @@ package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.WithWhomDTO;
+import nadeuli.dto.request.WithWhomRequestDTO;
 import nadeuli.service.WithWhomService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,9 +32,11 @@ public class WithWhomController {
 
     // WithWhom 추가
     @PostMapping("/{iid}/expense/{emid}/withWhom")
-    public ResponseEntity<Void> createWithWhom(@PathVariable("iid") Integer iid, @PathVariable("emid") Integer emid, @RequestParam List<String> names) {
+    public ResponseEntity<Void> createWithWhom(@PathVariable("iid") Integer iid, @PathVariable("emid") Integer emid,
+                                               @RequestBody WithWhomRequestDTO nameList) {
         Long itineraryId = Long.valueOf(iid);
         Long expenseItemId = Long.valueOf(emid);
+        List<String> names = nameList.getWithWhomNames();
 
         // Traveler 조회 : List<TravelerDTO> travelers = travelerService.getIds(itineraryId, names);
 
