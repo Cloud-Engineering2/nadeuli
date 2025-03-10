@@ -1244,43 +1244,9 @@ $(document).on("click", ".event-duration-cancel", function (event) {
     inputContainer.addClass("hidden");
 });
 
-
+// ***********************************************************************************************************************************
 
 // 🏗️ 경비 작성
-// expense-right.html 페이지 로드
-function loadExpensePage() {
-    fetch("expense-right.html")
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById("map").innerHTML = html;
-        })
-        .catch(error => console.error("Error loading abc.html:", error));
-}
-
-
-
-
-
-function writeCashbook() {
-    const expenseAddtionDiv = document.getElementById("expenseAddition");
-    if(!expenseAddtionDiv) {
-        console.error('Total Expense div not found for event id');
-    }
-
-    const iid = parseInt(expenseAddtionDiv.getAttribute('data-iid'), 10);
-    const ieid = parseInt(expenseAddtionDiv.getAttribute('data-ieid'), 10);
-
-    // 서버에서 데이터를 가져오는 fetch 요청
-    fetch(`/${iid}/events/${ieid}/expense`) // 서버에서 총 비용을 반환하는 API 엔드포인트
-        .then(response => response.json()) // JSON 응답으로 처리
-        .then(data => {
-            totalExpenseDiv.textContent = `${data}`;
-            // displayCurrentTotalExpense(data);
-        })
-        .catch(error => {
-            console.error('Error fetching total expense:', error);
-        });
-}
 
 // (왼쪽 화면에서) + 경비 내역 추가 클릭 시, (오른쪽 화면에) 입력 항목 로드
 $(document).on("click", ".expense-addition", function () {
@@ -1300,30 +1266,11 @@ $(document).on("click", ".expense-addition", function () {
         .catch(error => console.error("Error loading expense-right.html:", error));
 });
 
-// html : expense item 추가 폼
-function getExpenseItemForm(itineraryId, itineraryEventId) {
-    return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
-            <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" value="항목">
-            <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required value="지출액">
-            <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required value="지출자">
-            <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom">
-<!--            <div class="expense-item-creation-button-group" id="expenseItemCreationButtonGroup">-->
-<!--                <button type="submit" class="expense-item-creation-button" id="expenseItemCreationButton" >추가</button>-->
-<!--                <button type="button" class="expense-item-creation-button-close" id="expenseItemCreationButtonClose">닫기</button>-->
-<!--            </div>-->
-        </form>
-        <!-- Expense Item 추가 + 버튼 -->
-        <div class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
-            <i class="fa-solid fa-plus plus-icon"></i>
-        </div>`;
-}
-
-
 // ItineraryEvent 별로 ExpenseItem들 조회
 async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
     try {
         // expenseItem 데이터 가져오기
-        const expenseItems = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, "GET");
+        const expenseItems = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, "GET", null);
 
         const expenseItemList = $("#expenseItemList");
         if (!expenseItemList.length) {
@@ -1367,24 +1314,47 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
 }
 
 
+// html : expense item 추가 폼
+function getExpenseItemForm(itineraryId, itineraryEventId) {
+    return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
+                <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" value="항목">
+                <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required value="지출액">
+                <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required value="지출자">
+                <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom">
+<!--            <div class="expense-item-creation-button-group" id="expenseItemCreationButtonGroup">-->
+<!--                <button type="submit" class="expense-item-creation-button" id="expenseItemCreationButton" >추가</button>-->
+<!--                <button type="button" class="expense-item-creation-button-close" id="expenseItemCreationButtonClose">닫기</button>-->
+<!--            </div>-->
+            </form>
+            <!-- Expense Item 추가 + 버튼 -->
+            <div class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
+                <i class="fa-solid fa-plus plus-icon"></i>
+            </div>`;
+}
 
 
 // api 호출하여 json data 반환
-function callApiAt(url, method) {
-    return new Promise((resolve, reject) => {
-        $.ajax({
-            url: url,        // `${iid}/api`
-            method: method,  //"GET",
-            dataType: "json",
-            success: function (response) {
-                resolve(response);
-            },
-            error: function (xhr, status, error) {
-                reject("Error fetching itinerary: " + error);
-            }
+async function callApiAt(url, method, requestData) {
+    try {
+        const response = await fetch(url, {
+            method: method, // HTTP 메서드 (예: "POST", "GET")
+            headers: { "Content-Type": "application/json" },
+            body: method !== "GET" ? JSON.stringify(requestData) : null, // GET 메서드일 경우 body 없이 호출
         });
-    });
+
+        if (!response.ok) {
+            throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("에러 발생:", error);
+        throw error;
+    }
 }
+
+
 
 // 🏗️ Itinerary Event 별 현재 총 지출액 가져오기 (left)
 async function getTotalExpenseByItineraryEvent(itineraryId, eventId) {
@@ -1422,10 +1392,11 @@ $(document).on("click", ".itinerary-event-total-expense", function () {
 
 });
 
+// Itinerary Event 별 정산 정보 조회
 async function getAdjustmentByItineraryEvent(iid, ieid) {
     try {
         // adjustment 데이터 가져오기
-        const adjustmentData = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/adjustment`, "GET");
+        const adjustmentData = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/adjustment`, "GET", null);
         console.log(adjustmentData);
         console.log("제대로 오고 있는 중 ")
 
@@ -1478,58 +1449,66 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
 }
 
 
-
-
-
 // + 버튼 클릭 시, expense item 추가
 $(document).on("click", ".expense-item-addition-button", function() {
-    const div = document.getElementById("expenseAddition");
+    const iid = $(this).data("iid");   // itinerary ID
+    const ieid = $(this).data("ieid"); // event ID
 
-    const iid = parseInt(div.getAttribute('data-iid'), 10);
-    const ieid = parseInt(div.getAttribute('data-ieid'), 10);
+    // 추가 버튼 -> 폼 제출
+    $("#expenseItemCreationForm").submit(function (event) {
+        event.preventDefault(); // 기본 폼 제출 방지
 
-    console.log(iid);
-    console.log(ieid);
-    console.log("완료");
+        // Request Data
+        const content = $("#expenseItemCreationContent").val() || null;
+        const expenditure = $("#expenseItemCreationExpenditure").val();
+        const payer = $("#expenseItemCreationPayer").val();
+        const withWhom = $("#expenseItemCreationWithWhom").val() || null;
+
+        // 유효성 검사
+        if (!expenditure || !payer) {
+            alert("금액과 지출자는 반드시 입력해야 합니다.");
+            return;
+        }
+
+        // 1. 지출 내역 추가 (AJAX 요청)
+        const expenseItemData = { // RequestBody -> ExpenseItemRequestDTO
+            content: content,
+            payer: payer,
+            expense: parseInt(expenditure),
+        };
+
+        const withWhomData = {
+
+        };
+
+        // addExpenseItem(iid, ieid);
+    });
 });
 
-// $(document).on("click", ".expense-item-addition-button", function () {
 //
-//     let itineraryId = '1';
-//     let itineraryEventId = '1';
-//
-//     // expense-item-addition-button -> 모달창 띄우기
-//     $(".expense-item-addition-button").click(function () {
-//         $("#expenseItemCreationModal").css("display", "block");
-//     });
-//     // x 버튼 -> 모달창 닫기
-//     $("#expense-item-creation-modal-close").click(function () {
-//         $("#expenseItemCreationModal").css("display", "none");
-//     });
-//
-//     // 추가 버튼 -> 폼 제출
-//     $("#expenseItemCreationForm").submit(function (event) {
-//         event.preventDefault(); // 기본 폼 제출 방지
+    // 추가 버튼 -> 폼 제출
+    // $("#expenseItemCreationForm").submit(function (event) {
+    //     event.preventDefault(); // 기본 폼 제출 방지
 //
 //         // input 데이터
 //         const content = $("#expenseItemCreationContent").val() || null;
 //         const expenditure = $("#expenseItemCreationExpenditure").val();
 //         const payer = $("#expenseItemCreationPayer").val();
 //         const withWhom = $("#expenseItemCreationWithWhom").val() || null;
-//
+// //
 //         // 유효성 검사
 //         if (!expenditure || !payer) {
 //             alert("금액과 지출자는 반드시 입력해야 합니다.");
 //             return;
 //         }
 //
-//         // 1. 지출 내역 추가 (AJAX 요청)
-//
-//         const expenseItemData = { // RequestBody -> ExpenseItemRequestDTO
-//             content: content,
-//             payer: payer,
-//             expense: parseInt(expenditure),
-//         };
+        // 1. 지출 내역 추가 (AJAX 요청)
+
+        const expenseItemData = { // RequestBody -> ExpenseItemRequestDTO
+            content: content,
+            payer: payer,
+            expense: parseInt(expenditure),
+        };
 //
 //         $.ajax({
 //             url: `/api/itineraries/${itineraryId}/events/${itineraryEventId}/expense`,
@@ -1581,26 +1560,6 @@ $(document).on("click", ".expense-item-addition-button", function() {
 //     });
 // });
 
-async function callPostApiAt(url, data) {
-
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("성공:", data);
-    } catch (error) {
-        console.error("에러 발생:", error);
-    }
-
-}
 async function addExpenseItem(iid, ieid) {
     // input 데이터
     const content = $("#expenseItemCreationContent").val() || null;
@@ -1636,6 +1595,3 @@ async function addExpenseItem(iid, ieid) {
     }
 }
 
-async function addWithWhom() {
-
-}
