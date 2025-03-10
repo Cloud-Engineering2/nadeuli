@@ -23,6 +23,7 @@ import nadeuli.service.ExpenseBookService;
 import nadeuli.service.ExpenseItemService;
 import nadeuli.service.TravelerService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,10 +38,19 @@ public class ExpenseItemRestController {
 
     // 지출 내역 추가
     @PostMapping("/{iid}/events/{ieid}/expense")
-    public ResponseEntity<Void> createExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @RequestBody @Valid ExpenseItemRequestDTO expenseItemRequestDTO) {
+    public ResponseEntity<Void> createExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @RequestBody @Valid ExpenseItemRequestDTO expenseItemRequestDTO, BindingResult bindingResult) {
+        // 유효성 검사
+        if (bindingResult.hasErrors()) {
+            System.out.println("*****************************************여기서 일어나는 문제*****************************************");
+            return ResponseEntity.badRequest().build();
+        }
+        System.out.println("*****************************************여기서 일어나는 문제22*****************************************");
+
         String content = expenseItemRequestDTO.getContent();
         String payerName = expenseItemRequestDTO.getPayer();
         Long expense = Long.valueOf(expenseItemRequestDTO.getExpense());
+        System.out.println(expense);
+        System.out.println("*****************************************여기서 일어나는 문제33*****************************************");
 
         // PathVariable
         Long itineraryId = Long.valueOf(iid);
@@ -48,9 +58,11 @@ public class ExpenseItemRestController {
 
         // Payer
         TravelerDTO payer = travelerService.getByName(itineraryId, payerName);
+        System.out.println("*****************************************여기서 일어나는 문제44*****************************************");
 
         // ExpenseBook
         Long expenseBookId = expenseBookService.get(itineraryId);
+        System.out.println("*****************************************여기서 일어나는 문제55*****************************************");
 
         if (content == null) {
             ExpenseItemDTO expenseItemDto = ExpenseItemDTO.of(expenseBookId, itineraryEventId, payer, "", expense);
@@ -59,9 +71,11 @@ public class ExpenseItemRestController {
         }
 
         ExpenseItemDTO expenseItemDto = ExpenseItemDTO.of(expenseBookId, itineraryEventId, payer, content, expense);
+        System.out.println("*****************************************여기서 일어나는 문제66*****************************************");
 
         // 추가
         expenseItemService.addExpense(expenseItemDto);
+        System.out.println("*****************************************여기서 일어나는 문제77*****************************************");
         return ResponseEntity.ok().build();
     }
 

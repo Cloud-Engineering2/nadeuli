@@ -1,0 +1,25 @@
+
+<div th:fragment="panel" id="sidebar" class="sidebar">
+    <div class="toggle-btn-wrapper">
+        <button id="toggle-btn" class="toggle-button"><span class="toggle-icon">☰</span></button>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+            <a href="#" class="admin-menu" data-page="region">
+                <div class="icon"><i class="fas fa-map-marker-alt"></i></div><span>지역 관리</span>
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="#" class="admin-menu" data-page="users">
+                <div class="icon"><i class="fas fa-user"></i></div><span>사용자 관리</span>
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="#" class="admin-menu" data-page="settings">
+                <div class="icon"><i class="fas fa-cog"></i></div><span>설정</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+

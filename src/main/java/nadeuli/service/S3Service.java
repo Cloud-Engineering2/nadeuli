@@ -2,7 +2,7 @@
  * nadeuli Service - 여행
  * AWS S3 관련 Service
  * 작성자 : 이홍비
- * 최종 수정 날짜 : 2025.02.25
+ * 최초 작성 일자 : 2025.02.25
  *
  * ========================================================
  * 프로그램 수정 / 보완 이력
@@ -17,6 +17,7 @@
  * 이홍비    2025.03.03     파일 다운로드 관련 처리 추가
  *                         불필요한 것 처리
  * 이홍비    2025.03.05     지역 사진 저장 경로 추가
+ * 이홍비    2025.03.10     google places 받은 사진 저장 경로 추가
  * ========================================================
  */
 
@@ -37,11 +38,18 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.BufferedInputStream;
+import java.net.URL;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Transactional
@@ -60,6 +68,7 @@ public class S3Service {
     private final String JOURNAL_DIR_NAME = "journal";
     private final String PROFILE_DIR_NAME = "profile";
     private final String REGION_DIR_NAME = "region";
+    private final String PLACE_DIR_NAME = "place";
     private final String ETC_DIR_NAME = "etc";
 
     // 사진 올리기
@@ -78,9 +87,12 @@ public class S3Service {
                 s3Key = JOURNAL_DIR_NAME + "/" + fileName;
             }
             else if (kind == PhotoType.REGION) {
-                // 지역 사진
+                // 지역 사진 - 공공누리 + 이홍비 제공
                 s3Key = REGION_DIR_NAME + "/" + fileName;
-
+            }
+            else if (kind == PhotoType.PLACE) {
+                // 장소 사진 - google places 제공
+                s3Key = PLACE_DIR_NAME + "/" + fileName;
             }
             else {
                 // 그 외
@@ -99,6 +111,59 @@ public class S3Service {
         } catch (IOException e) {
             throw new RuntimeException("파일 업로드 실패", e);
         }
+    }
+
+
+
+    // MIME 타입 -> 확장자 매핑
+    private static final Map<String, String> MIME_TYPE_TO_EXTENSION = Map.of(
+            "image/jpeg", ".jpg",
+            "image/png", ".png",
+            "image/webp", ".webp",
+            "image/gif", ".gif"
+    );
+
+
+    /**
+     * 🔥 URL을 통한 이미지 업로드 (UUID 추가 및 확장자 자동 감지)
+     */
+    public CompletableFuture<String> uploadImageFromUrl(String imageUrl, String placeId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // 1️⃣ URL에서 이미지 다운로드
+                URL url = new URL(imageUrl);
+                URLConnection connection = url.openConnection();
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+                // 2️⃣ Content-Type 자동 감지
+                String contentType = connection.getContentType();
+                if (contentType == null || !MIME_TYPE_TO_EXTENSION.containsKey(contentType)) {
+                    throw new RuntimeException("유효한 이미지가 아닙니다: " + imageUrl);
+                }
+
+                // 3️⃣ 확장자 결정
+                String fileExtension = MIME_TYPE_TO_EXTENSION.get(contentType);
+                String fileName = UUID.randomUUID() + "_" + placeId + fileExtension;
+
+                // 4️⃣ InputStream을 BufferedInputStream으로 감싸서 메모리 절약
+                try (InputStream inputStream = new BufferedInputStream(connection.getInputStream())) {
+                    String s3Key = JOURNAL_DIR_NAME + "/" + fileName;
+
+                    // 5️⃣ 메타데이터 설정 (파일 크기 설정 포함)
+                    ObjectMetadata metadata = new ObjectMetadata();
+                    metadata.setContentType(contentType);
+                    metadata.setContentLength(connection.getContentLengthLong());  // 크기 설정
+
+                    // 6️⃣ S3에 업로드 (멀티파트 업로드 고려)
+                    amazonS3.putObject(new PutObjectRequest(bucketName, s3Key, inputStream, metadata));
+
+                    // 7️⃣ CloudFront URL 반환
+                    return cloudFrontUrl + "/" + s3Key;
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("URL을 통한 파일 업로드 실패", e);
+            }
+        });
     }
 
     // 파일 삭제

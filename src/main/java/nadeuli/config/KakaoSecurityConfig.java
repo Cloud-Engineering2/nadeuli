@@ -43,6 +43,7 @@ public class KakaoSecurityConfig {
                         .requestMatchers("/api/itineraries/**", "/itineraries/**").permitAll() // journal test 용 추후 삭제
                         .requestMatchers("api/admin/unlink/**").permitAll()
                         .requestMatchers("/travel/**").permitAll()
+                        .requestMatchers("/admin/**").permitAll()
                         .requestMatchers("/join/**").permitAll()
                         .requestMatchers("/kakao-direction").permitAll()
                         .requestMatchers("/error").permitAll()
