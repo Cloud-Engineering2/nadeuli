@@ -374,7 +374,7 @@
                     <div class="tab-pane active" id="nadeuli-search-tab">
                         <div class="search-area">
                             <div class="search-container">
-                                <span class="search-icon" onclick="searchNadeuliPlaces()"><i class="bi bi-search"></i></span>
+                                <span class="search-icon" onclick="textSearchNadeuliPlaces()"><i class="bi bi-search"></i></span>
                                 <input type="text" id="nadeuli-place-search" class="search-input" placeholder="나들이 장소 검색" autocomplete="off" onkeydown="handleNadeuliKeyPress(event)" />
                                 <span class="search-clear" onclick="clearNadeuliSearch()"><i class="bi bi-x"></i></span>
                             </div>
@@ -440,6 +440,8 @@
     let cursorScore = null;
     let cursorId = null;
     let isLastPage = false;
+    let isSearchTriggered = false;
+    let activeSearchQuery = "";
 
     let placeMap = new Map(); // <placeId, placeData>
 
@@ -490,8 +492,12 @@
         fetchRecommendedPlaces(10);
     }
 
+    // 검색 함수
     function fetchRecommendedPlaces(pageSize = 10) {
         if (isLastPage) return; // 더 이상 가져올 데이터 없음
+
+        const searchEnabled = isSearchTriggered && activeSearchQuery.length > 0;
+        const searchQuery = activeSearchQuery; // ✅ 고정된 검색어만 서버로 보냄
 
         const requestData = {
             userLng: 126.49,
@@ -500,7 +506,9 @@
             pageSize: pageSize,
             cursorScore: cursorScore,
             cursorId: cursorId,
-            placeTypes: selectedPlaceTypes
+            placeTypes: selectedPlaceTypes,
+            searchEnabled: searchEnabled,
+            searchQuery: searchQuery
         };
 
         $.ajax({
@@ -536,6 +544,7 @@
         });
     }
 
+    //필터 타입 맵핑
     function getKoreanLabel(filterType) {
         const filterMap = {
             LANDMARK: "명소",
@@ -551,7 +560,7 @@
     }
 
 
-
+    // 검색후 렌더링 함수
     function renderRecommendedPlaces(placeList) {
         const container = document.getElementById("nadeuli-search-results");
         container.innerHTML = ""; // 초기화 (추가로 붙이려면 append 방식으로 바꾸세요)
@@ -581,34 +590,30 @@
         });
     }
 
+    // 검색어를 갱신하고 resetRecommendationAndFetch 호출
+    function textSearchNadeuliPlaces(){
+        const inputVal = document.getElementById("nadeuli-place-search").value.trim();
+        if (!inputVal) return;
 
+        isSearchTriggered = true;
+        activeSearchQuery = inputVal;
+        resetRecommendationAndFetch();
+    }
+
+    // enter키 감지시 textSearchNadeuliPlaces 호출
     function handleNadeuliKeyPress(event) {
         if (event.key === "Enter") {
             event.preventDefault();
-            searchNadeuliPlaces();
+            textSearchNadeuliPlaces();
         }
     }
-    function searchNadeuliPlaces() {
-        let query = document.getElementById("nadeuli-place-search").value;
-        if (!query) return;
 
-        $.ajax({
-            url: "/api/place/search",
-            type: "GET",
-            data: { query: query },
-            success: function (data) {
-                let results = data.places || [];
-                // displaySearchResults(results, "nadeuli");
-            },
-            error: function (error) {
-                console.error("나들이 검색 오류:", error);
-            }
-        });
-    }
+    //Search 초기화
     function clearNadeuliSearch() {
         document.getElementById("nadeuli-place-search").value = "";
-        document.getElementById("nadeuli-search-results").innerHTML = "";
-        document.getElementById("nadeuli-search-results-header").innerText = "검색 결과 총 0건";
+        isSearchTriggered = false;
+        activeSearchQuery = "";
+        resetRecommendationAndFetch();
     }
 
 
