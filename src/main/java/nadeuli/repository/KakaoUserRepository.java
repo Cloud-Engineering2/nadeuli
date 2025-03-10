@@ -11,7 +11,7 @@ package nadeuli.repository;
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
+ * 김대환       2.25      Entity 변경에 따른 코드 수정
  *
  * ========================================================
  */
@@ -24,11 +24,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Repository
-public interface KakaoUserRepository extends JpaRepository<KakaoUser, String> {
-    Optional<KakaoUser> findByEmail(String email);
+public interface KakaoUserRepository extends JpaRepository<KakaoUser, Long> {
+    Optional<KakaoUser> findByUid(Long uid);
 
     @Transactional
-    void deleteByEmail(String email);
+    void deleteByUid(Long uid);
 //
 //    @Modifying
 //    @Transactional

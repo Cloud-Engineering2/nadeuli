@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Maps 장소 검색</title>
+    <script>
+        let map;
+        let markers = [];
+        let debounceTimer;
+
+        // function requestPostGoogleMap() {
+        //     fetch('/api/place/search', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify({
+        //             userId: '1234',
+        //             googlePlaceId: 'PLACE_ID',
+        //             placeName: '메이드 유의원'
+        //         })
+        //     })
+        //         .then(response => response.json())
+        //         .then(data => console.log('응답 데이터:', data))
+        //         .catch(error => console.error('에러 발생:', error));
+        // }
+
+
+        function loadGoogleMapsApi() {
+            fetch('/api/place/apikey')
+                .then(response => response.text())
+                .then(apiKey => {
+                    let script = document.createElement("script");
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+                    script.async = true;
+                    script.defer = true;
+                    document.head.appendChild(script);
+                })
+                .catch(error => console.error("API Key 가져오기 실패:", error));
+        }
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 37.5665, lng: 126.9780 },
+                zoom: 13
+            });
+        }
+
+        function searchPlaces() {
+            let input = document.getElementById("searchInput").value.trim();
+
+            if (input.length < 2) {
+                document.getElementById("results").innerHTML = "";
+                return;
+            }
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetch(`/api/place/autocomplete?input=${encodeURIComponent(input)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let results = data.predictions;
+                        let list = document.getElementById("results");
+                        list.innerHTML = "";
+
+                        if (results.length === 0) {
+                            list.innerHTML = "<li>검색 결과가 없습니다.</li>";
+                            return;
+                        }
+
+                        results.forEach((place, index) => {
+                            let li = document.createElement("li");
+                            li.textContent = place.description;
+                            li.onclick = () => selectPlace(place.place_id, place.description);
+                            list.appendChild(li);
+                        });
+                    })
+                    .catch(error => console.error("Error:", error));
+            }, 300);
+        }
+
+        function selectPlace(placeId, placeName) {
+            fetch(`/api/place/place-details`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    placeId: placeId,
+                    mainText: placeName
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("📌 API 응답 데이터:", data);
+
+                    // ✅ 응답 데이터에서 lat, lng 가져오기
+                    if (!data.lat || !data.lng) {
+                        console.error("잘못된 장소 데이터:", data);
+                        return;
+                    }
+
+                    let location = { lat: data.lat, lng: data.lng };
+                    console.log("📍 지도 이동:", location);
+
+                    // ✅ 지도 중심 이동
+                    map.setCenter(location);
+                    map.setZoom(15);
+
+                    // ✅ 기존 마커 삭제
+                    markers.forEach(marker => marker.setMap(null));
+                    markers = [];
+
+                    // ✅ 새로운 마커 추가
+                    let marker = new google.maps.Marker({
+                        position: location,
+                        map: map
+                    });
+                    markers.push(marker);
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        document.getElementById("searchInput").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                let resultsList = document.getElementById("results").getElementsByTagName("li");
+
+                if (resultsList.length > 0) {
+                    resultsList[0].click();
+                }
+            }
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            width: 100%;
+            height: 500px;
+            margin-top: 10px;
+        }
+        #searchContainer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        #searchInput {
+            width: 300px;
+            padding: 8px;
+            font-size: 16px;
+        }
+        #results {
+            list-style: none;
+            padding: 0;
+            max-width: 320px;
+            background: white;
+            border: 1px solid #ccc;
+            position: absolute;
+            z-index: 10;
+        }
+        #results li {
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        #results li:hover {
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body onload="loadGoogleMapsApi()">
+<div id="searchContainer">
+    <input id="searchInput" type="text" placeholder="장소 검색" oninput="searchPlaces()">
+    <button onclick="searchPlaces()">검색</button>
+</div>
+<ul id="results"></ul>
+<div id="map"></div>
+</body>
+</html>

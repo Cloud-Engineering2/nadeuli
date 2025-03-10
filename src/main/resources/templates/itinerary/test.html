@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Itinerary Activity</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="itinerary-activity">
+    <div class="itinerary-activity-holder">
+        <!-- 이미지 -->
+        <div class="itinerary-activity-image-holder">
+            <img class="itinerary-activity-image" src="https://media-cdn.sygictraveldata.com/media/300x300/612664395a40232133447d33247d38313935303838313731" alt="Activity Image">
+        </div>
+
+        <!-- 콘텐츠 -->
+        <div class="itinerary-activity-content">
+            <div class="itinerary-activity-name">Hotel Regent Marine The Blue</div>
+            <div class="itinerary-activity-info">
+                <a class="link" href="#">객실 예약하기</a>
+            </div>
+        </div>
+
+        <!-- 아이콘 버튼 -->
+        <span class="itinerary-toggle" onclick="togglePopup()">
+                <svg viewBox="0 0 100 100">
+                    <use xlink:href="#svg-settings"></use>
+                </svg>
+            </span>
+
+        <span class="itinerary-activity-drag">
+                <svg viewBox="0 0 100 100">
+                    <use xlink:href="#svg-drag"></use>
+                </svg>
+            </span>
+
+        <!-- 팝업 메뉴 -->
+        <div class="popup-itinerary-data" id="popup-menu">
+            <ul>
+                <li><a href="#"><svg viewBox="0 0 100 100"><use xlink:href="#svg-eye"></use></svg> 보기</a></li>
+                <li><a href="#"><svg viewBox="0 0 100 100"><use xlink:href="#svg-calendar"></use></svg> 일정 변경</a></li>
+                <li><a href="#"><svg viewBox="0 0 100 100"><use xlink:href="#svg-duplicate"></use></svg> 복사</a></li>
+                <li><a href="#"><svg viewBox="0 0 100 100"><use xlink:href="#svg-clock"></use></svg> 시간 변경</a></li>
+                <li><a href="#"><svg viewBox="0 0 100 100"><use xlink:href="#svg-add-note-detail"></use></svg> 메모 추가</a></li>
+                <li><a href="#"><svg viewBox="0 0 100 100"><use xlink:href="#svg-delete"></use></svg> 삭제</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 유저 데이터 (시간) -->
+    <div class="itinerary-user-data">
+        <div class="itinerary-time">오전 10:00 - 오전 12:00</div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
