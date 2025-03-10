@@ -9,9 +9,9 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 국경민      03-04       DTO 생성 초안
+ * 국경민      03-05       toEntity() 메서드 수정 (User.of() 메서드와 일치)
  * ========================================================
  */
-
 package nadeuli.dto;
 
 import lombok.AllArgsConstructor;
@@ -20,33 +20,23 @@ import lombok.NoArgsConstructor;
 import nadeuli.entity.User;
 import nadeuli.entity.constant.UserRole;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDTO {
 
-    private Long id;               // 사용자 고유 ID
-    private String userEmail;       // 이메일 (OAuth에서 제공)
-    private String accessToken;     // ✅ JWT 액세스 토큰 (수정됨)
-    private String userName;        // 사용자 이름
-    private String profileImage;    // OAuth 프로필 이미지 URL
-    private String provider;        // OAuth 제공자 (Google, Kakao 등)
-    private UserRole userRole;      // 사용자 역할 (예: ROLE_MEMBER)
-    private String refreshToken;    // JWT 리프레시 토큰
-
-    /**
-     * ✅ static factory method - UserDTO 객체 생성 (OAuth 로그인 시 사용)
-     */
-    public static UserDTO of(String userEmail, String userName, String profileImage, String provider, String refreshToken) {
-        return new UserDTO(null, userEmail, "", userName, profileImage, provider, UserRole.MEMBER, refreshToken);
-    }
-
-    /**
-     * ✅ static factory method - UserDTO 객체 생성 (DB에서 조회 시 사용)
-     */
-    public static UserDTO of(Long id, String userEmail, String accessToken, String userName, String profileImage, String provider, UserRole userRole, String refreshToken) {
-        return new UserDTO(id, userEmail, accessToken, userName, profileImage, provider, userRole, refreshToken);
-    }
+    private Long id;
+    private String userEmail;
+    private String userName;
+    private String profileImage;
+    private String provider;
+    private UserRole userRole;
+    private String refreshToken;
+    private String lastLoginAt;
+    private String createdAt;
 
     /**
      * ✅ Entity → DTO 변환 메서드
@@ -55,12 +45,13 @@ public class UserDTO {
         return new UserDTO(
                 user.getId(),
                 user.getUserEmail(),
-                user.getAccessToken(),  // ✅ 기존 userToken → accessToken으로 변경
                 user.getUserName(),
                 user.getProfileImage(),
                 user.getProvider(),
                 user.getUserRole(),
-                user.getRefreshToken()
+                user.getRefreshToken(),
+                formatDateTime(user.getLastLoginAt()),  // ✅ 날짜 변환 추가
+                formatDateTime(user.getCreatedAt())    // ✅ 날짜 변환 추가
         );
     }
 
@@ -69,13 +60,30 @@ public class UserDTO {
      */
     public User toEntity() {
         return User.of(
-                userEmail,
-                userName,
-                profileImage,
-                provider != null ? provider : "unknown",  // ✅ provider가 null이면 "unknown" 설정
-                refreshToken
+                this.id,
+                this.userEmail,
+                this.provider,
+                this.userName,
+                this.profileImage,
+                this.userRole,
+                this.refreshToken,
+                parseDateTime(this.lastLoginAt),  // ✅ 문자열 → LocalDateTime 변환 추가
+                parseDateTime(this.createdAt),   // ✅ 문자열 → LocalDateTime 변환 추가
+                parseDateTime(this.createdAt)    // ✅ User 엔티티에서 사용하도록 변경됨
         );
     }
+
+    /**
+     * ✅ LocalDateTime → String 변환
+     */
+    private static String formatDateTime(LocalDateTime dateTime) {
+        return (dateTime != null) ? dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
+    }
+
+    /**
+     * ✅ String → LocalDateTime 변환
+     */
+    private static LocalDateTime parseDateTime(String dateTimeStr) {
+        return (dateTimeStr != null && !dateTimeStr.isEmpty()) ? LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
+    }
 }
-
-

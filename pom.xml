@@ -50,7 +50,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.33</version> <!-- 최신 버전 -->
+            <version>8.0.33</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -88,8 +88,10 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
+            <version>1.18.34</version> <!-- 최신 버전으로 업데이트 -->
+            <scope>provided</scope> <!-- 또는 <scope>compile</scope> -->
         </dependency>
+
 
         <!-- ✅ Spring Security 테스트 -->
         <dependency>
@@ -111,8 +113,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
+        <groupId>org.springframework.session</groupId>
+        <artifactId>spring-session-data-redis</artifactId> <!-- Redis 세션 관리 -->
+        </dependency>
+        <dependency>
             <groupId>org.springframework.session</groupId>
-            <artifactId>spring-session-data-redis</artifactId>
+            <artifactId>spring-session-core</artifactId>
         </dependency>
 
         <!-- ✅ AWS 관련 -->
@@ -167,13 +173,23 @@
             <version>6.2.2</version>
         </dependency>
 
-        <!-- OpenAI 라이브러리-->
+        <!-- Mail -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+            <version>2.1.2</version> <!-- 최신 버전 확인 가능 -->
+        </dependency>
+
+        <!-- OpenAI 라이브러리 -->
         <dependency>
             <groupId>com.theokanning.openai-gpt3-java</groupId>
             <artifactId>service</artifactId>
             <version>0.12.0</version>
         </dependency>
-
 
     </dependencies>
 
@@ -184,6 +200,34 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>3.3.5</version>  <!-- Spring Boot 3.x 버전에 맞게 설정 -->
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>testCompile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

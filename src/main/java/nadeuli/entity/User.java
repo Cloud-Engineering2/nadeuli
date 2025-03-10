@@ -9,28 +9,34 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 국경민      03-04       Entity 생성 초안
+ * 국경민      03-05       Serializable 추가 (Redis 저장 문제 해결)
+ * 국경민      03-05       User.of() 메서드 수정 (id 추가)
+ * 국경민      03-05       updateProfile() 메서드 추가 (기존 사용자 정보 업데이트)
  * ========================================================
  */
-
 package nadeuli.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import nadeuli.entity.constant.UserRole;
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 객체 생성 제한
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // static factory method 사용 유도
 @Table(name = "users")
-public class User {
+public class User implements Serializable {  // Redis 저장을 위해 Serializable 추가
+
+    @Serial
+    private static final long serialVersionUID = 1L;  // 직렬화 버전 ID 추가
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "uid")
-    private Long id; // 사용자 고유 ID
+    private Long id; // 사용자 고유 ID (Primary Key)
 
     @Column(name = "user_email", nullable = false, unique = true)
     private String userEmail; // 이메일 (OAuth에서 제공)
@@ -41,53 +47,59 @@ public class User {
     @Column(name = "user_name", nullable = false, length = 255)
     private String userName; // 사용자 이름
 
-    @Column(name = "profile_image", columnDefinition = "TEXT", nullable = true)
+    @Column(name = "profile_image", columnDefinition = "TEXT")
     private String profileImage; // OAuth 프로필 이미지 URL
-
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false, length = 20)
     private UserRole userRole; // 사용자 역할 (예: ROLE_MEMBER)
 
-    @Column(name = "access_token", columnDefinition = "TEXT")
-    private String accessToken; // ✅ 기존의 userToken 필드를 accessToken으로 변경
+    @Column(name = "refresh_token", columnDefinition = "TEXT")
+    private String refreshToken; // OAuth Refresh Token 저장
 
-    @Column(name = "refresh_token", columnDefinition = "TEXT DEFAULT ''", nullable = true)
-    private String refreshToken; // JWT 리프레시 토큰
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt; // 마지막 로그인 시간
+
+    @Column(name = "refresh_token_expiry_at")
+    private LocalDateTime refreshTokenExpiryAt; // Refresh Token 만료일 저장
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt; // MySQL `CURRENT_TIMESTAMP` 사용 (JPA에서 값 설정 안 함)
 
     /**
-     * ✅ OAuth 로그인 시 사용하는 생성자 (userToken, refreshToken 없음)
+     * ✅ OAuth 로그인 시 기존 사용자 정보 업데이트
      */
-    public User(String userEmail, String userName, String profileImage, String provider) {
-        this.userEmail = userEmail;
+    public void updateProfile(String userName, String profileImage, String provider, String refreshToken, LocalDateTime lastLoginAt, LocalDateTime refreshTokenExpiryAt) {
         this.userName = userName;
         this.profileImage = profileImage;
         this.provider = provider;
-        this.accessToken = "";
-        this.userRole = UserRole.MEMBER;
-        this.refreshToken = "";
+        this.lastLoginAt = lastLoginAt;
+        if (refreshToken != null && !refreshToken.isEmpty()) {
+            this.refreshToken = refreshToken;
+            this.refreshTokenExpiryAt = refreshTokenExpiryAt;
+        }
     }
 
     /**
-     * ✅ OAuth 로그인 후 JWT 저장을 위한 생성자 (userToken, refreshToken 포함)
+     * ✅ static factory method - User 객체 생성 (새로운 회원 가입 시 사용)
      */
-    public User(Long id, String userEmail, String userName, String profileImage, String provider, String refreshToken) {
-        this.id = id;
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.profileImage = profileImage;
-        this.provider = provider;
-        this.accessToken = "";
-        this.userRole = UserRole.MEMBER;
-        this.refreshToken = refreshToken;
+    public static User createNewUser(String userEmail, String userName, String profileImage, String provider, String refreshToken, LocalDateTime lastLoginAt, LocalDateTime refreshTokenExpiryAt) {
+        return new User(null, userEmail, provider, userName, profileImage, UserRole.MEMBER, refreshToken, lastLoginAt, refreshTokenExpiryAt, LocalDateTime.now());
     }
 
     /**
-     * ✅ static factory method - User 객체 생성 (OAuth 로그인 후 저장)
+     * ✅ static factory method - 기존 회원 정보 불러오기
      */
-    public static User of(String userEmail, String userName, String profileImage, String provider, String refreshToken) {
-        return new User(null, userEmail, userName, profileImage, provider, refreshToken);
+    public static User of(Long id, String userEmail, String provider, String userName, String profileImage, UserRole userRole, String refreshToken, LocalDateTime lastLoginAt, LocalDateTime refreshTokenExpiryAt, LocalDateTime createdAt) {
+        return new User(id, userEmail, provider, userName, profileImage, userRole, refreshToken, lastLoginAt, refreshTokenExpiryAt, createdAt);
+    }
+
+    /**
+     * ✅ 생성 시 createdAt 자동 설정 (DB `CURRENT_TIMESTAMP` 동기화)
+     */
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 }
-
 

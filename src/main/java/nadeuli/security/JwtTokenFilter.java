@@ -19,30 +19,57 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import nadeuli.service.JwtTokenService;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenService jwtTokenService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain chain)
             throws ServletException, IOException {
 
         // 1️⃣ 요청에서 JWT 토큰 추출
         String token = resolveToken(request);
 
-        // 2️⃣ 토큰 검증 및 사용자 설정
-        if (token != null && jwtTokenService.validateToken(token)) {
-            String userEmail = jwtTokenService.getUserEmail(token);
+        if (token != null) {
+            if (jwtTokenService.validateToken(token)) {
+                String userEmail = jwtTokenService.getUserEmail(token);
 
-            // 3️⃣ Spring Security 컨텍스트에 사용자 설정
-            SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(userEmail, null, null));
+                if (userEmail != null && !userEmail.isEmpty()) { // ✅ Null 및 빈 값 체크 추가
+                    // 2️⃣ UserDetails 객체 생성
+                    UserDetails userDetails = User.withUsername(userEmail)
+                            .password("") // 비밀번호는 JWT에서 관리하지 않음
+                            .authorities(Collections.emptyList()) // 권한 없음
+                            .build();
+
+                    // 3️⃣ SecurityContextHolder에 인증 정보 설정
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    log.info("✅ [JwtTokenFilter] 인증 완료 - Email: {}", userEmail);
+                } else {
+                    log.warn("🚨 [JwtTokenFilter] JWT에서 이메일 추출 실패 - 유효한 이메일 없음");
+                }
+            } else {
+                log.warn("🚨 [JwtTokenFilter] 유효하지 않은 토큰!");
+            }
         }
 
         // 4️⃣ 다음 필터 실행
