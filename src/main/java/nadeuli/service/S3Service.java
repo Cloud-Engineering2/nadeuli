@@ -17,6 +17,7 @@
  * 이홍비    2025.03.03     파일 다운로드 관련 처리 추가
  *                         불필요한 것 처리
  * 이홍비    2025.03.05     지역 사진 저장 경로 추가
+ * 이홍비    2025.03.10     google places 받은 사진 저장 경로 추가
  * ========================================================
  */
 
@@ -67,6 +68,7 @@ public class S3Service {
     private final String JOURNAL_DIR_NAME = "journal";
     private final String PROFILE_DIR_NAME = "profile";
     private final String REGION_DIR_NAME = "region";
+    private final String PLACE_DIR_NAME = "place";
     private final String ETC_DIR_NAME = "etc";
     private final String PLACE_DIR_NAME = "places";
     // 사진 올리기
@@ -85,9 +87,12 @@ public class S3Service {
                 s3Key = JOURNAL_DIR_NAME + "/" + fileName;
             }
             else if (kind == PhotoType.REGION) {
-                // 지역 사진
+                // 지역 사진 - 공공누리 + 이홍비 제공
                 s3Key = REGION_DIR_NAME + "/" + fileName;
-
+            }
+            else if (kind == PhotoType.PLACE) {
+                // 장소 사진 - google places 제공
+                s3Key = PLACE_DIR_NAME + "/" + fileName;
             }
             else {
                 // 그 외
