@@ -19,6 +19,7 @@ import nadeuli.dto.PlaceDTO;
 import nadeuli.dto.request.PlaceListResponseDto;
 import nadeuli.dto.response.PlaceResponseDto;
 import nadeuli.entity.constant.PlaceCategory;
+import nadeuli.repository.PlaceNativeQueryExecutor;
 import org.springframework.http.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +45,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PlaceService {
     private final PlaceRepository placeRepository;
+    private final PlaceNativeQueryExecutor placeNativeQueryExecutor;
+
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, String> redisTemplate;
     private final RestTemplate restTemplate;
@@ -56,12 +59,61 @@ public class PlaceService {
     private static final Duration CACHE_TTL = Duration.ofDays(5);
 
 
+//    public PlaceListResponseDto getRecommendedPlacesWithCursor(
+//            double userLng, double userLat, double radius,
+//            Double cursorScore, Long cursorId, int pageSize
+//    ) {
+//        List<Object[]> result = placeRepository.findPlacesWithCursorPaging(
+//                userLng, userLat, radius, cursorScore, cursorId, pageSize
+//        );
+//
+//        List<PlaceResponseDto> places = result.stream()
+//                .map(row -> PlaceResponseDto.builder()
+//                        .id(((Number) row[0]).longValue())
+//                        .googlePlaceId((String) row[1])
+//                        .placeName((String) row[2])
+//                        .searchCount(((Number) row[3]).intValue())
+//                        .address((String) row[4])
+//                        .latitude(((Number) row[5]).doubleValue())
+//                        .longitude(((Number) row[6]).doubleValue())
+//                        .description((String) row[7])
+//                        .googleRating((row[8] != null) ? ((Number) row[8]).doubleValue() : null)
+//                        .googleRatingCount((row[9] != null) ? ((Number) row[9]).intValue() : null)
+//                        .googleURL((String) row[10])
+//                        .imageUrl((String) row[11])
+//                        .placeType(PlaceCategory.PlaceType.valueOf((String) row[12]))
+//                        .regularOpeningHours((String) row[13])
+//                        .distance(((Number) row[14]).doubleValue())
+//                        .finalScore(((Number) row[15]).doubleValue())
+//                        .build())
+//                .toList();
+//
+//        // 다음 커서 정보 추출
+//        Double nextCursorScore = null;
+//        Long nextCursorId = null;
+//        if (!places.isEmpty()) {
+//            PlaceResponseDto last = places.get(places.size() - 1);
+//            nextCursorScore = last.getFinalScore();
+//            nextCursorId = last.getId();
+//        }
+//
+//        return PlaceListResponseDto.builder()
+//                .places(places)
+//                .nextCursorScore(nextCursorScore)
+//                .nextCursorId(nextCursorId)
+//                .build();
+//    }
+
     public PlaceListResponseDto getRecommendedPlacesWithCursor(
             double userLng, double userLat, double radius,
-            Double cursorScore, Long cursorId, int pageSize
+            Double cursorScore, Long cursorId, int pageSize,
+            List<String> placeTypes,
+            boolean searchEnabled,
+            String searchQuery
     ) {
-        List<Object[]> result = placeRepository.findPlacesWithCursorPaging(
-                userLng, userLat, radius, cursorScore, cursorId, pageSize
+        List<Object[]> result = placeNativeQueryExecutor.findPlacesWithDynamicQuery(
+                userLng, userLat, radius, cursorScore, cursorId, pageSize,
+                placeTypes, searchEnabled, searchQuery
         );
 
         List<PlaceResponseDto> places = result.stream()
@@ -85,7 +137,6 @@ public class PlaceService {
                         .build())
                 .toList();
 
-        // 다음 커서 정보 추출
         Double nextCursorScore = null;
         Long nextCursorId = null;
         if (!places.isEmpty()) {
@@ -100,7 +151,6 @@ public class PlaceService {
                 .nextCursorId(nextCursorId)
                 .build();
     }
-
 
 
     @Transactional

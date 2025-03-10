@@ -47,7 +47,8 @@
         .container {
             margin: 0;
             width: 500px;
-            height: 100vh;
+            height: 100%;
+            min-height: 0;
             display: flex;
             flex-direction: column;
         }
@@ -56,6 +57,7 @@
             flex-grow: 1;
             display: flex;
             height: 100%;
+            min-height: 0;
         }
 
         .search-area {
@@ -67,6 +69,8 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            flex-grow: 1;
+            min-height: 0;
         }
 
         .search-container {
@@ -82,6 +86,7 @@
             padding: 0 15px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             position: relative;
+            margin-bottom: 12px;
         }
         .search-icon, .search-clear {
             display: flex;
@@ -123,6 +128,7 @@
 
         .search-results-wrap {
             flex-grow: 1;
+            min-height: 0;
             overflow-y: auto;
         }
 
@@ -205,6 +211,7 @@
 
         .tab-pane {
             height: 100%;
+            min-height: 0;
             display: none; /* 기본적으로 숨김 */
         }
 
@@ -213,15 +220,32 @@
         }
 
         .filter-buttons {
-            user-select: none;
             display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;         /* Firefox */
+            -ms-overflow-style: none;      /* IE/Edge */
+            padding: 0 10px;
             gap: 4px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
+            user-select: none;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+            min-height: 25px;
+        }
+        .filter-buttons.dragging {
+            cursor: grabbing;
         }
 
+
+        .filter-buttons::-webkit-scrollbar {
+            display: none;                 /* Chrome/Safari */
+        }
+
+
         .filter-button {
+            white-space: nowrap; /* 줄바꿈 방지 */
+            flex-shrink: 0; /* 공간이 부족해도 줄어들지 않도록 */
             padding: 1px 11px;
             font-size: 0.9em;
             border: 1px solid #007bff;
@@ -229,7 +253,7 @@
             color: #007bff;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .filter-button.active {
@@ -252,6 +276,8 @@
         .list-item img {
             width: 73px;
             height: 73px;
+            min-width: 73px;
+            min-height: 73px;
             border-radius: 5px;
             object-fit: cover;
             margin-right: 20px;
@@ -260,12 +286,19 @@
 
         .list-item .info {
             flex-grow: 1;
+            min-width: 0;
         }
 
         .list-item .title {
             font-weight: bold;
             font-size: 0.9em;
         }
+
+        .list-item .place-type {
+            white-space: nowrap; /* 줄바꿈 방지 */
+            flex-shrink: 0; /* 공간이 부족해도 줄어들지 않도록 */
+        }
+
 
         .info-line {
             display: flex;
@@ -298,7 +331,8 @@
         }
         .add-button-wrap {
 
-            width: 30px;
+            width: 40px;
+            flex-shrink: 0;
             height: 72px;
 
         }
@@ -345,19 +379,20 @@
                                 <span class="search-clear" onclick="clearNadeuliSearch()"><i class="bi bi-x"></i></span>
                             </div>
                             <div class="filter-buttons">
-                                <button class="filter-button" data-filter="attraction">명소</button>
-                                <button class="filter-button" data-filter="restaurant">식당</button>
-                                <button class="filter-button" data-filter="accommodation">숙소</button>
-                                <button class="filter-button" data-filter="cafe">카페</button>
-                                <button class="filter-button" data-filter="transport">교통</button>
-                                <button class="filter-button" data-filter="amenity">편의시설</button>
+                                <button class="filter-button" data-filter="LANDMARK">명소</button>
+                                <button class="filter-button" data-filter="RESTAURANT">식당</button>
+                                <button class="filter-button" data-filter="LODGING">숙소</button>
+                                <button class="filter-button" data-filter="CAFE">카페</button>
+                                <button class="filter-button" data-filter="TRANSPORTATION">교통</button>
+                                <button class="filter-button" data-filter="ATTRACTION">어트랙션</button>
+                                <button class="filter-button" data-filter="CONVENIENCE">편의시설</button>
                             </div>
                             <div class="search-results-wrap" id="nadeuli-search-results">
                                 <div class="list-item" data-id="place-1">
                                     <img src="https://d2tfgua35fdi4.cloudfront.net/journal/dc04d238-69db-467f-a09c-88bc5c8a41d0_ChIJvcDN4cNbDDURpAdMx-0uviI.jpg" alt="장소 이미지" />
                                     <div class="info">
                                         <div class="title">성산 일출봉</div>
-                                        <div class="info-line"><div class="place-type">명소</div> <div class="address" title="대한민국 서귀포시 성산 일출봉">대한민국 서귀포시 성산 일출봉</div></div>
+                                        <div class="info-line"><div class="place-type">명소</div> <div class="address" title="대한민국 서귀포시 대한민국 서귀포시 대한민국 서귀포시 대한민국 서귀포시 성산 일출봉">대한민국 서귀포시 대한민국 서귀포시 대한민국 서귀포시 대한민국 서귀포시 성산 일출봉</div></div>
                                         <div class="info-line"> <div class="like"><i class="bi bi-heart"></i> 120</div><div class="star"><i class="bi bi-star-fill"></i> 4.5</div></div>
                                     </div>
                                     <div class="add-button-wrap">
@@ -418,8 +453,43 @@
 
 
 
+
+
     // ➡️ 나들이 장소 검색 관련
 //===============================================================================
+
+    // ✅ 현재 선택된 placeTypes 저장 배열
+    let selectedPlaceTypes = [];
+
+    // ✅ 필터 버튼 클릭 이벤트 바인딩
+    document.querySelectorAll(".filter-button").forEach(button => {
+        button.addEventListener("click", () => {
+            button.classList.toggle("active"); // 색상 강조
+
+            // 선택된 필터 타입만 다시 수집
+            selectedPlaceTypes = Array.from(document.querySelectorAll(".filter-button.active"))
+                .map(btn => btn.getAttribute("data-filter"));
+
+            // 👉 필터 변경되면 기존 목록 초기화하고 다시 추천 요청
+            resetRecommendationAndFetch();
+        });
+    });
+
+    // ✅ 기존 추천 결과 초기화 + 새 검색 수행
+    function resetRecommendationAndFetch() {
+        // 커서 및 Map 초기화
+        cursorScore = null;
+        cursorId = null;
+        isLastPage = false;
+        placeMap.clear();
+
+        // 목록 초기화
+        document.getElementById("nadeuli-search-results").innerHTML = "";
+
+        // 검색 재요청
+        fetchRecommendedPlaces(10);
+    }
+
     function fetchRecommendedPlaces(pageSize = 10) {
         if (isLastPage) return; // 더 이상 가져올 데이터 없음
 
@@ -429,11 +499,12 @@
             radius: 100000,
             pageSize: pageSize,
             cursorScore: cursorScore,
-            cursorId: cursorId
+            cursorId: cursorId,
+            placeTypes: selectedPlaceTypes
         };
 
         $.ajax({
-            url: "/api/places/recommend",
+            url: "/api/place/recommend",
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify(requestData),
@@ -465,6 +536,22 @@
         });
     }
 
+    function getKoreanLabel(filterType) {
+        const filterMap = {
+            LANDMARK: "명소",
+            RESTAURANT: "식당",
+            LODGING: "숙소",
+            CAFE: "카페",
+            TRANSPORTATION: "교통",
+            ATTRACTION: "어트랙션",
+            CONVENIENCE: "편의시설"
+        };
+
+        return filterMap[filterType] || "알 수 없음";
+    }
+
+
+
     function renderRecommendedPlaces(placeList) {
         const container = document.getElementById("nadeuli-search-results");
         container.innerHTML = ""; // 초기화 (추가로 붙이려면 append 방식으로 바꾸세요)
@@ -474,11 +561,11 @@
             listItem.className = "list-item";
 
             listItem.innerHTML = `
-            <img src="${place.imageUrl || '기본이미지.png'}" alt="장소 이미지" />
+            <img src="${place.imageUrl || ''}" alt="장소 이미지" />
             <div class="info">
                 <div class="title">${place.placeName}</div>
                 <div class="info-line">
-                    <div class="place-type">${place.placeType}</div>
+                    <div class="place-type">${getKoreanLabel(place.placeType)}</div>
                     <div class="address">${place.address}</div>
                 </div>
                 <div class="info-line">
@@ -506,7 +593,7 @@
         if (!query) return;
 
         $.ajax({
-            url: "/api/places/search",
+            url: "/api/place/search",
             type: "GET",
             data: { query: query },
             success: function (data) {
@@ -738,6 +825,49 @@
     }
 
 
+    //필터 관련 스크롤
+    const filterButtonsContainer = document.querySelector('.filter-buttons');
+
+    let isFilterDragging = false;
+    let filterDragStartX;
+    let filterScrollStartX;
+
+    filterButtonsContainer.addEventListener('mousedown', (e) => {
+        isFilterDragging = true;
+        filterButtonsContainer.classList.add('dragging');
+        filterDragStartX = e.pageX - filterButtonsContainer.offsetLeft;
+        filterScrollStartX = filterButtonsContainer.scrollLeft;
+    });
+
+    filterButtonsContainer.addEventListener('mouseleave', () => {
+        isFilterDragging = false;
+        filterButtonsContainer.classList.remove('dragging');
+    });
+
+    filterButtonsContainer.addEventListener('mouseup', () => {
+        isFilterDragging = false;
+        filterButtonsContainer.classList.remove('dragging');
+    });
+
+    filterButtonsContainer.addEventListener('mousemove', (e) => {
+        if (!isFilterDragging) return;
+        e.preventDefault();
+        const currentX = e.pageX - filterButtonsContainer.offsetLeft;
+        const moveX = (currentX - filterDragStartX);
+        filterButtonsContainer.scrollLeft = filterScrollStartX - moveX;
+    });
+
+    // 모바일 터치
+    filterButtonsContainer.addEventListener('touchstart', (e) => {
+        filterDragStartX = e.touches[0].pageX;
+        filterScrollStartX = filterButtonsContainer.scrollLeft;
+    });
+
+    filterButtonsContainer.addEventListener('touchmove', (e) => {
+        const currentX = e.touches[0].pageX;
+        const moveX = (currentX - filterDragStartX);
+        filterButtonsContainer.scrollLeft = filterScrollStartX - moveX;
+    });
 
 </script>
 </body>

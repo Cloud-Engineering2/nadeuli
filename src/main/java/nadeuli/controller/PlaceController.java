@@ -60,7 +60,10 @@ public class PlaceController {
                 request.getRadius(),
                 request.getCursorScore(),
                 request.getCursorId(),
-                request.getPageSize()
+                request.getPageSize(),
+                request.getPlaceTypes(),
+                request.isSearchEnabled(),
+                request.getSearchQuery()
         );
     }
 

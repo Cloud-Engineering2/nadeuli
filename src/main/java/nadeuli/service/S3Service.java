@@ -143,7 +143,7 @@ public class S3Service {
 
                 // 4️⃣ InputStream을 BufferedInputStream으로 감싸서 메모리 절약
                 try (InputStream inputStream = new BufferedInputStream(connection.getInputStream())) {
-                    String s3Key = JOURNAL_DIR_NAME + "/" + fileName;
+                    String s3Key = PLACE_DIR_NAME + "/" + fileName;
 
                     // 5️⃣ 메타데이터 설정 (파일 크기 설정 포함)
                     ObjectMetadata metadata = new ObjectMetadata();
