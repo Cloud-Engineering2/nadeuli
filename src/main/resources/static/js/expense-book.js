@@ -1295,23 +1295,27 @@ $(document).on("click", ".expense-addition", function () {
         .then(html => {
             $("#detailContainer").html(html);
             getExpenseBookForWritingByItineraryEvent(iid, ieid);
-            document.getElementById("expenseItemCreation").innerHTML = getExpenseItemForm();
+            document.getElementById("expenseItemCreation").innerHTML = getExpenseItemForm(iid, ieid);
         })
         .catch(error => console.error("Error loading expense-right.html:", error));
 });
 
-// html : expense item 추가 폼 
-function getExpenseItemForm() {
+// html : expense item 추가 폼
+function getExpenseItemForm(itineraryId, itineraryEventId) {
     return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
             <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" value="항목">
             <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required value="지출액">
             <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required value="지출자">
             <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom">
-            <div class="expense-item-creation-button-group" id="expenseItemCreationButtonGroup">
-                <button type="submit" class="expense-item-creation-button" id="expenseItemCreationButton">추가</button>
-                <button type="button" class="expense-item-creation-button-close" id="expenseItemCreationButtonClose">닫기</button>
-            </div>
-        </form>`;
+<!--            <div class="expense-item-creation-button-group" id="expenseItemCreationButtonGroup">-->
+<!--                <button type="submit" class="expense-item-creation-button" id="expenseItemCreationButton" >추가</button>-->
+<!--                <button type="button" class="expense-item-creation-button-close" id="expenseItemCreationButtonClose">닫기</button>-->
+<!--            </div>-->
+        </form>
+        <!-- Expense Item 추가 + 버튼 -->
+        <div class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
+            <i class="fa-solid fa-plus plus-icon"></i>
+        </div>`;
 }
 
 
