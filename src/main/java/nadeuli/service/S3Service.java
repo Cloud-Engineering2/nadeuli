@@ -70,7 +70,7 @@ public class S3Service {
     private final String REGION_DIR_NAME = "region";
     private final String PLACE_DIR_NAME = "place";
     private final String ETC_DIR_NAME = "etc";
-    private final String PLACE_DIR_NAME = "places";
+
     // 사진 올리기
     public String uploadFile(MultipartFile file, PhotoType kind) {
         System.out.println("🔥 S3 & Cloud Front - 사진 올리기 실행!");
