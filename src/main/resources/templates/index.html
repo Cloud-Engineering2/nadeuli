@@ -82,19 +82,13 @@
         function selectPlace(placeId, placeName) {
             fetch(`/api/place/place-details`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    placeId: placeId,
-                    mainText: placeName
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ placeId: placeId, mainText: placeName })
             })
                 .then(response => response.json())
                 .then(data => {
                     console.log("📌 API 응답 데이터:", data);
 
-                    // ✅ 응답 데이터에서 lat, lng 가져오기
                     if (!data.lat || !data.lng) {
                         console.error("잘못된 장소 데이터:", data);
                         return;
@@ -103,23 +97,39 @@
                     let location = { lat: data.lat, lng: data.lng };
                     console.log("📍 지도 이동:", location);
 
-                    // ✅ 지도 중심 이동
+                    // ✅ 지도 중심 이동 및 마커 추가
                     map.setCenter(location);
                     map.setZoom(15);
-
-                    // ✅ 기존 마커 삭제
                     markers.forEach(marker => marker.setMap(null));
                     markers = [];
-
-                    // ✅ 새로운 마커 추가
-                    let marker = new google.maps.Marker({
-                        position: location,
-                        map: map
-                    });
+                    let marker = new google.maps.Marker({ position: location, map: map });
                     markers.push(marker);
+
+                    // ✅ 장소 상세 정보 UI 업데이트
+                    updatePlaceDetails(data);
                 })
                 .catch(error => console.error("Error:", error));
         }
+
+        function updatePlaceDetails(data) {
+            document.getElementById("placeName").innerText = data.place_name;
+            document.getElementById("placeAddress").innerText = data.formatted_address;
+            document.getElementById("placeRating").innerText = data.rating;
+            document.getElementById("placeReviewCount").innerText = data.review_count;
+            document.getElementById("placeHours").innerText = data.opening_hours ? data.opening_hours.join(", ") : "정보 없음";
+            document.getElementById("placeDescription").innerText = data.description || "설명 없음";
+
+            if (data.photos && data.photos.length > 0) {
+                document.getElementById("placeImage").src = data.photos[0];
+            } else {
+                document.getElementById("placeImage").src = "https://via.placeholder.com/400x300?text=No+Image";
+            }
+
+            document.getElementById("placeDetails").style.display = "block";
+        }
+
+
+
 
         document.getElementById("searchInput").addEventListener("keyup", function(event) {
             if (event.key === "Enter") {
@@ -175,7 +185,21 @@
     <input id="searchInput" type="text" placeholder="장소 검색" oninput="searchPlaces()">
     <button onclick="searchPlaces()">검색</button>
 </div>
+<!-- 검색 결과 리스트 -->
 <ul id="results"></ul>
+
+<!-- 지도 표시 -->
 <div id="map"></div>
+
+<!-- ✅ 장소 상세 정보 영역 -->
+<div id="placeDetails" style="display: none;">
+    <h2 id="placeName"></h2>
+    <img id="placeImage" src="" alt="장소 이미지" style="width: 100%; max-height: 300px;">
+    <p><strong>주소:</strong> <span id="placeAddress"></span></p>
+    <p><strong>평점:</strong> <span id="placeRating"></span> ⭐️ (<span id="placeReviewCount"></span> 리뷰)</p>
+    <p><strong>영업시간:</strong> <span id="placeHours"></span></p>
+    <p><strong>설명:</strong> <span id="placeDescription"></span></p>
+</div>
+
 </body>
 </html>

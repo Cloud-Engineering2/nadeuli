@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -29,14 +32,31 @@ public class PlaceService {
     private static final String CACHE_PREFIX = "place_details:";
     private static final Duration CACHE_TTL = Duration.ofDays(5);
 
+    public String getAutocompleteResults(String input) {
+        String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json" +
+                "?input=" + input +
+                "&rankby=prominence" +
+                "&key=" + googleMapsApiKey +
+                "&components=country:KR" +
+                "&language=ko";
+
+        try {
+            return restTemplate.getForObject(url, String.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Google Places Autocomplete API 호출 중 오류 발생", e);
+        }
+    }
+
     @Transactional
-    public String fetchPlaceDetails(String googlePlaceId, String placeName) {
+    public Map<String, Object> fetchPlaceDetails(String googlePlaceId, String placeName) {
         String cacheKey = CACHE_PREFIX + googlePlaceId;
 
+        // Google Places API 요청 URL
         String url = "https://maps.googleapis.com/maps/api/place/details/json" +
                 "?place_id=" + googlePlaceId +
                 "&key=" + googleMapsApiKey +
-                "&language=ko";
+                "&language=ko" +
+                "&fields=name,geometry,formatted_address,rating,user_ratings_total,opening_hours,photos,editorial_summary";
 
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -45,28 +65,55 @@ public class PlaceService {
             }
 
             JsonNode rootNode = objectMapper.readTree(response.getBody());
-            String extractedPlaceName = rootNode.path("result").path("name").asText();
-            double latitude = rootNode.path("result").path("geometry").path("location").path("lat").asDouble();
-            double longitude = rootNode.path("result").path("geometry").path("location").path("lng").asDouble();
+            JsonNode resultNode = rootNode.path("result");
+
+            // JSON 데이터 추출
+            String extractedPlaceName = resultNode.path("name").asText();
+            String address = resultNode.path("formatted_address").asText();
+            double latitude = resultNode.path("geometry").path("location").path("lat").asDouble();
+            double longitude = resultNode.path("geometry").path("location").path("lng").asDouble();
+            double rating = resultNode.path("rating").asDouble();
+            int reviewCount = resultNode.path("user_ratings_total").asInt();
+            String openingHours = resultNode.path("opening_hours").path("weekday_text").toString();
+            String description = resultNode.path("editorial_summary").path("overview").asText();
+
+            // 사진 URL 추출
+            List<String> photos = new ArrayList<>();
+            JsonNode photosNode = resultNode.path("photos");
+            if (photosNode.isArray()) {
+                for (JsonNode photo : photosNode) {
+                    String photoReference = photo.path("photo_reference").asText();
+                    String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400" +
+                            "&photo_reference=" + photoReference +
+                            "&key=" + googleMapsApiKey;
+                    photos.add(photoUrl);
+                }
+            }
 
             // DB 저장
-            saveOrUpdatePlace(googlePlaceId, extractedPlaceName,
-                    rootNode.path("result").path("formatted_address").asText(),
-                    latitude, longitude);
+            saveOrUpdatePlace(googlePlaceId, extractedPlaceName, address, latitude, longitude);
 
-            // Redis에 placeName + 위도/경도 저장
+            // Redis 캐싱 (장소 이름만 저장)
             redisTemplate.opsForValue().set(cacheKey, extractedPlaceName, CACHE_TTL);
 
-            // 🔹 JSON 형식으로 placeName + 위도/경도 반환
-            return objectMapper.writeValueAsString(Map.of(
-                    "placeName", extractedPlaceName,
-                    "lat", latitude,
-                    "lng", longitude
-            ));
+            // 응답 데이터 구성
+            Map<String, Object> placeDetails = new HashMap<>();
+            placeDetails.put("place_name", extractedPlaceName);
+            placeDetails.put("lat", latitude);
+            placeDetails.put("lng", longitude);
+            placeDetails.put("formatted_address", address);
+            placeDetails.put("rating", rating);
+            placeDetails.put("review_count", reviewCount);
+            placeDetails.put("opening_hours", openingHours);
+            placeDetails.put("photos", photos);
+            placeDetails.put("description", description);
+
+            return placeDetails;
         } catch (Exception e) {
             throw new RuntimeException("Google Places API 호출 중 오류 발생", e);
         }
     }
+
 
     @Transactional
     public Place saveOrUpdatePlace(String googlePlaceId, String placeName, String address, double latitude, double longitude) {
@@ -76,18 +123,5 @@ public class PlaceService {
                     return placeRepository.save(existingPlace);
                 })
                 .orElseGet(() -> placeRepository.save(new Place(googlePlaceId, placeName, address, latitude, longitude)));
-    }
-
-    public String getAutocompleteResults(String input) {
-        String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json" +
-                "?input=" + input +
-                "&key=" + googleMapsApiKey +
-                "&components=country:KR&language=ko";
-
-        try {
-            return restTemplate.getForObject(url, String.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Google Places Autocomplete API 호출 중 오류 발생", e);
-        }
     }
 }
