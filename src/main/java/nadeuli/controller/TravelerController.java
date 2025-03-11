@@ -40,7 +40,8 @@ public class TravelerController {
         Long itineraryId = Long.valueOf(iid);
 
         String travelerName = travelerRequestDTO.getTravelerName();
-        TravelerDTO travelerDto = TravelerDTO.of(itineraryId, travelerName);
+        Long budget = travelerRequestDTO.getTotalBudget();
+        TravelerDTO travelerDto = TravelerDTO.of(itineraryId, travelerName, budget);
         travelerService.addTraveler(travelerDto);
         return ResponseEntity.ok().build();
     }

@@ -28,7 +28,7 @@ public class ExpenseItemRequestDTO {
     private String payer;
 
     @NotNull
-    private Integer expense;
+    private Long expense;
 
 
 }
