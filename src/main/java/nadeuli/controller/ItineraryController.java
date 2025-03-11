@@ -18,7 +18,9 @@ package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.service.ItineraryService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -27,7 +29,8 @@ import org.springframework.web.bind.annotation.*;
 public class ItineraryController {
 
     private final ItineraryService itineraryService;
-
+    @Value("${google.api.key}")
+    private String googleMapsApiKey;
     // ===========================
     //  일정 생성 페이지
     // ===========================
@@ -47,7 +50,10 @@ public class ItineraryController {
     }
 
     @GetMapping("/edit/{itineraryId}")
-    public String showEditPage(@PathVariable Long itineraryId) {
+    public String showEditPage(@PathVariable Long itineraryId, Model model) {
+        model.addAttribute("googleApiKey", googleMapsApiKey);
+
+
         return "/itinerary/edit";  // 정적 HTML 페이지 반환
     }
 
