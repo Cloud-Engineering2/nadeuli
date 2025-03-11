@@ -12,6 +12,7 @@
  * 박한철    2025.02.26     DB 구조 변경으로 인한 getItineraryTotal 수정 ,  일정 생성 파트 주석처리
  * 박한철    2025.02.26     일정 생성 파트 수정 완료
  * 박한철    2025.02.28     일정 전체 (itinerary, PerDay, Event) Update 기능 개발 완료
+ * 박한철    2025.03.11     엔티티에 movingDistanceFromPrevPlace 추가로 인한 변경사항
  * ========================================================
  */
 package nadeuli.service;
@@ -266,7 +267,8 @@ public class ItineraryService {
                         place,
                         dto.getStartMinuteSinceStartDay(),
                         dto.getEndMinuteSinceStartDay(),
-                        dto.getMovingMinuteFromPrevPlace()
+                        dto.getMovingMinuteFromPrevPlace(),
+                        dto.getMovingDistanceFromPrevPlace()
                 ));
             }
         }

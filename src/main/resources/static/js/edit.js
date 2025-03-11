@@ -1147,19 +1147,26 @@ $(document).on("click", ".event-remove", function () {
     eventElement.remove();
     eventMap.delete(eventId);
 
+    eventPairs.length = 0;
     // 거리(시간) 재계산
     if (dayId !== "day-0") {
         const updateStartIndex = calculateRemovalImpact(dayId, index);
-        updateEventDisplay(dayId, updateStartIndex);
+        (async () => {
+            await requestDistanceCalculationEventPairs();
 
-        // ✅ 삭제 후 첫 번째 `.travel-info` 숨기기
-        $(eventContainer).find(".event .travel-info").css("display", "block");
-        $(eventContainer).find(".event .travel-info").first().css("display", "none");
+            updateEventDisplay(dayId, updateStartIndex);
 
-        // ✅ 연결선 업데이트
-        $(eventContainer).find(".event .event-order-line").removeClass("transparent");
-        $(eventContainer).find(".event .event-order-line.top").first().addClass("transparent");
-        $(eventContainer).find(".event .event-order-line.bottom").last().addClass("transparent");
+            // ✅ 삭제 후 첫 번째 `.travel-info` 숨기기
+            $(eventContainer).find(".event .travel-info").css("display", "block");
+            $(eventContainer).find(".event .travel-info").first().css("display", "none");
+
+            // ✅ 연결선 업데이트
+            $(eventContainer).find(".event .event-order-line").removeClass("transparent");
+            $(eventContainer).find(".event .event-order-line.top").first().addClass("transparent");
+            $(eventContainer).find(".event .event-order-line.bottom").last().addClass("transparent");
+        })();
+
+
     }
 });
 
