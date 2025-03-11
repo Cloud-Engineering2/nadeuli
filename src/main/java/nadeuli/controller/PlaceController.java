@@ -3,7 +3,9 @@ package nadeuli.controller;
 import nadeuli.dto.PlaceRequest;
 import nadeuli.dto.request.PlaceListResponseDto;
 import nadeuli.dto.request.PlaceRecommendRequestDto;
+import nadeuli.dto.request.RouteRequestDto;
 import nadeuli.dto.response.PlaceResponseDto;
+import nadeuli.dto.response.RouteResponseDto;
 import nadeuli.service.PlaceCacheService;
 import lombok.RequiredArgsConstructor;
 import nadeuli.service.PlaceService;
@@ -47,6 +49,20 @@ public class PlaceController {
                     errorResponse.put("message", "장소 추가 중 오류 발생: " + e.getMessage());
                     return ResponseEntity.badRequest().body(errorResponse);
                 });
+    }
+
+
+    @PostMapping("/routes")
+    public ResponseEntity<List<RouteResponseDto>> getRoutes(@RequestBody List<RouteRequestDto> requests) {
+        List<CompletableFuture<RouteResponseDto>> futures = requests.stream()
+                .map(placeService::computeRouteAsync)
+                .toList();
+
+        List<RouteResponseDto> result = futures.stream()
+                .map(CompletableFuture::join)
+                .toList();
+
+        return ResponseEntity.ok(result);
     }
 
     /**

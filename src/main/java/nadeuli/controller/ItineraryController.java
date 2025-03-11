@@ -11,6 +11,7 @@
  * 박한철    2025.02.25     일정생성페이지(테스트용) 추가
  * 박한철    2025.02.26     일정리스트페이지(테스트용) 추가
  * 박한철    2025.02.26     캘린더선택페이지(테스트용) 추가 -> 삭제
+ * 박한철    2025.03.11     테스트 페이지 정리
  * ========================================================
  */
 
@@ -42,11 +43,6 @@ public class ItineraryController {
     @GetMapping("/mylist")
     public String showMyItineraryPage() {
         return "/itinerary/mylist";  // itinerary/mylist.html을 반환
-    }
-
-    @GetMapping("/write")
-    public String showWriteTestPage() {
-        return "/itinerary/write_test";  // itinerary/write_test.html을 반환
     }
 
     @GetMapping("/edit/{itineraryId}")

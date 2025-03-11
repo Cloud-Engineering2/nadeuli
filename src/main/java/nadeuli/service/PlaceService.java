@@ -17,7 +17,9 @@ package nadeuli.service;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nadeuli.dto.PlaceDTO;
 import nadeuli.dto.request.PlaceListResponseDto;
+import nadeuli.dto.request.RouteRequestDto;
 import nadeuli.dto.response.PlaceResponseDto;
+import nadeuli.dto.response.RouteResponseDto;
 import nadeuli.entity.constant.PlaceCategory;
 import nadeuli.repository.PlaceNativeQueryExecutor;
 import org.springframework.http.*;
@@ -28,18 +30,15 @@ import nadeuli.entity.Place;
 import nadeuli.repository.PlaceRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,87 +54,18 @@ public class PlaceService {
     @Value("${google.api.key}")
     private String googleMapsApiKey;
 
+    @Value("${kakao.api.key}")
+    private String kakaoRestApiKey;
+
     private static final String CACHE_PREFIX = "place_details:";
     private static final Duration CACHE_TTL = Duration.ofDays(5);
 
 
-//    public PlaceListResponseDto getRecommendedPlacesWithCursor(
-//            double userLng, double userLat, double radius,
-//            Double cursorScore, Long cursorId, int pageSize
-//    ) {
-//        List<Object[]> result = placeRepository.findPlacesWithCursorPaging(
-//                userLng, userLat, radius, cursorScore, cursorId, pageSize
-//        );
-//
-//        List<PlaceResponseDto> places = result.stream()
-//                .map(row -> PlaceResponseDto.builder()
-//                        .id(((Number) row[0]).longValue())
-//                        .googlePlaceId((String) row[1])
-//                        .placeName((String) row[2])
-//                        .searchCount(((Number) row[3]).intValue())
-//                        .address((String) row[4])
-//                        .latitude(((Number) row[5]).doubleValue())
-//                        .longitude(((Number) row[6]).doubleValue())
-//                        .description((String) row[7])
-//                        .googleRating((row[8] != null) ? ((Number) row[8]).doubleValue() : null)
-//                        .googleRatingCount((row[9] != null) ? ((Number) row[9]).intValue() : null)
-//                        .googleURL((String) row[10])
-//                        .imageUrl((String) row[11])
-//                        .placeType(PlaceCategory.PlaceType.valueOf((String) row[12]))
-//                        .regularOpeningHours((String) row[13])
-//                        .distance(((Number) row[14]).doubleValue())
-//                        .finalScore(((Number) row[15]).doubleValue())
-//                        .build())
-//                .toList();
-//
-//        // 다음 커서 정보 추출
-//        Double nextCursorScore = null;
-//        Long nextCursorId = null;
-//        if (!places.isEmpty()) {
-//            PlaceResponseDto last = places.get(places.size() - 1);
-//            nextCursorScore = last.getFinalScore();
-//            nextCursorId = last.getId();
-//        }
-//
-//        return PlaceListResponseDto.builder()
-//                .places(places)
-//                .nextCursorScore(nextCursorScore)
-//                .nextCursorId(nextCursorId)
-//                .build();
-//    }
+    // 나들이 장소 커서 페이징 호출함수
+    public PlaceListResponseDto getRecommendedPlacesWithCursor(double userLng, double userLat, double radius, Double cursorScore, Long cursorId, int pageSize, List<String> placeTypes, boolean searchEnabled, String searchQuery) {
+        List<Object[]> result = placeNativeQueryExecutor.findPlacesWithDynamicQuery(userLng, userLat, radius, cursorScore, cursorId, pageSize, placeTypes, searchEnabled, searchQuery);
 
-    public PlaceListResponseDto getRecommendedPlacesWithCursor(
-            double userLng, double userLat, double radius,
-            Double cursorScore, Long cursorId, int pageSize,
-            List<String> placeTypes,
-            boolean searchEnabled,
-            String searchQuery
-    ) {
-        List<Object[]> result = placeNativeQueryExecutor.findPlacesWithDynamicQuery(
-                userLng, userLat, radius, cursorScore, cursorId, pageSize,
-                placeTypes, searchEnabled, searchQuery
-        );
-
-        List<PlaceResponseDto> places = result.stream()
-                .map(row -> PlaceResponseDto.builder()
-                        .id(((Number) row[0]).longValue())
-                        .googlePlaceId((String) row[1])
-                        .placeName((String) row[2])
-                        .searchCount(((Number) row[3]).intValue())
-                        .address((String) row[4])
-                        .latitude(((Number) row[5]).doubleValue())
-                        .longitude(((Number) row[6]).doubleValue())
-                        .description((String) row[7])
-                        .googleRating((row[8] != null) ? ((Number) row[8]).doubleValue() : null)
-                        .googleRatingCount((row[9] != null) ? ((Number) row[9]).intValue() : null)
-                        .googleURL((String) row[10])
-                        .imageUrl((String) row[11])
-                        .placeType(PlaceCategory.PlaceType.valueOf((String) row[12]))
-                        .regularOpeningHours((String) row[13])
-                        .distance(((Number) row[14]).doubleValue())
-                        .finalScore(((Number) row[15]).doubleValue())
-                        .build())
-                .toList();
+        List<PlaceResponseDto> places = result.stream().map(row -> PlaceResponseDto.builder().id(((Number) row[0]).longValue()).googlePlaceId((String) row[1]).placeName((String) row[2]).searchCount(((Number) row[3]).intValue()).address((String) row[4]).latitude(((Number) row[5]).doubleValue()).longitude(((Number) row[6]).doubleValue()).description((String) row[7]).googleRating((row[8] != null) ? ((Number) row[8]).doubleValue() : null).googleRatingCount((row[9] != null) ? ((Number) row[9]).intValue() : null).googleURL((String) row[10]).imageUrl((String) row[11]).placeType(PlaceCategory.PlaceType.valueOf((String) row[12])).regularOpeningHours((String) row[13]).distance(((Number) row[14]).doubleValue()).finalScore(((Number) row[15]).doubleValue()).build()).toList();
 
         Double nextCursorScore = null;
         Long nextCursorId = null;
@@ -145,14 +75,11 @@ public class PlaceService {
             nextCursorId = last.getId();
         }
 
-        return PlaceListResponseDto.builder()
-                .places(places)
-                .nextCursorScore(nextCursorScore)
-                .nextCursorId(nextCursorId)
-                .build();
+        return PlaceListResponseDto.builder().places(places).nextCursorScore(nextCursorScore).nextCursorId(nextCursorId).build();
     }
 
 
+    // 나들이서버에 새로운 장소를 추가하는 함수
     @Transactional
     public CompletableFuture<ResponseEntity<Map<String, Object>>> addNewPlace(String placeId) {
         return CompletableFuture.supplyAsync(() -> {
@@ -213,33 +140,25 @@ public class PlaceService {
                 String imageUrl = getGooglePlacePhotoUrl(photoReference);
 
                 // 6️⃣ 비동기적으로 S3 업로드 후 장소 저장
-                return s3Service.uploadImageFromUrl(imageUrl, placeId)
-                        .exceptionally(e -> {
-                            System.err.println("업로드 실패: " + e.getMessage());
-                            return null;  // 실패 시 null 반환
-                        })
-                        .thenCompose(s3Url -> CompletableFuture.supplyAsync(() -> {
-                            // 7️⃣ Place 저장
-                            Place newPlace = new Place(
-                                    placeId, placeName, address, latitude, longitude,
-                                    description, rating, ratingCount, googleUrl, s3Url, placeType, resultRegularOpeningHoursJson
-                            );
+                return s3Service.uploadImageFromUrl(imageUrl, placeId).exceptionally(e -> {
+                    System.err.println("업로드 실패: " + e.getMessage());
+                    return null;  // 실패 시 null 반환
+                }).thenCompose(s3Url -> CompletableFuture.supplyAsync(() -> {
+                    // 7️⃣ Place 저장
+                    Place newPlace = new Place(placeId, placeName, address, latitude, longitude, description, rating, ratingCount, googleUrl, s3Url, placeType, resultRegularOpeningHoursJson);
 
-                            newPlace = placeRepository.save(newPlace);
+                    newPlace = placeRepository.save(newPlace);
 
-                            Map<String, Object> response = new HashMap<>();
-                            response.put("status", 201);
-                            response.put("message", "새로운 장소가 추가되었습니다.");
-                            response.put("place", PlaceDTO.from(newPlace));
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("status", 201);
+                    response.put("message", "새로운 장소가 추가되었습니다.");
+                    response.put("place", PlaceDTO.from(newPlace));
 
-                            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-                        }));
+                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                }));
             } else {
                 // 7️⃣ 이미지가 없을 경우 바로 장소 저장
-                Place newPlace = new Place(
-                        placeId, placeName, address, latitude, longitude,
-                        description, rating, ratingCount, googleUrl, null, placeType, resultRegularOpeningHoursJson
-                );
+                Place newPlace = new Place(placeId, placeName, address, latitude, longitude, description, rating, ratingCount, googleUrl, null, placeType, resultRegularOpeningHoursJson);
 
                 newPlace = placeRepository.save(newPlace);
 
@@ -254,34 +173,17 @@ public class PlaceService {
     }
 
 
+    public String getAutocompleteResults(String input) {
+        String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json" + "?input=" + input + "&key=" + googleMapsApiKey + "&components=country:KR&language=ko";
 
+        try {
+            return restTemplate.getForObject(url, String.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Google Places Autocomplete API 호출 중 오류 발생", e);
+        }
+    }
 
-// 장소 저장
-//    @Transactional
-//    public Place saveOrUpdatePlace(String googlePlaceId, String placeName, String address, double latitude, double longitude) {
-//        return placeRepository.findByGooglePlaceId(googlePlaceId)
-//                .map(existingPlace -> {
-//                    existingPlace.incrementSearchCount();
-//                    return placeRepository.save(existingPlace);
-//                })
-//                .orElseGet(() -> placeRepository.save(new Place(googlePlaceId, placeName, address, latitude, longitude)));
-//    }
-
-
-// AutoComplete 기능  -> 미사용하기로 결정
-//    public String getAutocompleteResults(String input) {
-//        String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json" +
-//                "?input=" + input +
-//                "&key=" + googleMapsApiKey +
-//                "&components=country:KR&language=ko";
-//
-//        try {
-//            return restTemplate.getForObject(url, String.class);
-//        } catch (Exception e) {
-//            throw new RuntimeException("Google Places Autocomplete API 호출 중 오류 발생", e);
-//        }
-//    }
-
+    //구글 장소 Detail API 프록시
     public String getPlaceDetails(String placeId) {
         String url = "https://places.googleapis.com/v1/places/" + placeId + "?languageCode=ko";
 
@@ -304,10 +206,53 @@ public class PlaceService {
         return response.getBody();
     }
 
+    //카카오 장소간 거리(시간) 측정 API 프록시
+    @Async
+    public CompletableFuture<RouteResponseDto> computeRouteAsync(RouteRequestDto dto) {
+        String url = "https://apis-navi.kakaomobility.com/v1/directions";
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url).queryParam("origin", dto.getOriginLongitude() + "," + dto.getOriginLatitude()).queryParam("destination", dto.getDestinationLongitude() + "," + dto.getDestinationLatitude()).queryParam("summary", true).queryParam("priority", "RECOMMEND").queryParam("car_fuel", "GASOLINE").queryParam("car_hipass", true).queryParam("alternatives", false).queryParam("road_details", false);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "KakaoAK " + kakaoRestApiKey);
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toUriString(), HttpMethod.GET, entity, String.class);
+
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                throw new RuntimeException("Kakao Directions API 응답 오류: " + response.getStatusCode());
+            }
+
+            System.out.println("[DEBUG] Kakao Directions API 응답: " + response.getBody());
+
+            JsonNode json = objectMapper.readTree(response.getBody());
+            JsonNode route = json.path("routes").get(0);
+
+            int resultCode = route.path("result_code").asInt(-1);
+            if (resultCode != 0) {
+                System.out.println("❌ Kakao 길찾기 실패 result_code=" + resultCode);
+                return CompletableFuture.completedFuture(new RouteResponseDto(0, 0)); // 거리 0m, 시간 "0"
+            }
+
+            // 성공 시 거리/시간 추출
+            double distance = route.path("summary").path("distance").asDouble(0); // meters
+            int distanceMeters = (int) Math.round(distance);
+
+            double durationSeconds = route.path("summary").path("duration").asDouble(0); // seconds
+            int durationMinutes = (int) Math.ceil(durationSeconds / 60.0);
+
+            return CompletableFuture.completedFuture(new RouteResponseDto(distanceMeters, durationMinutes));
+
+        } catch (Exception e) {
+            System.err.println("Kakao 응답 파싱 오류: " + e.getMessage());
+            return CompletableFuture.completedFuture(new RouteResponseDto(-1, 0));
+        }
+    }
 
 
-
-    //googleMapsApiKey
+    //구글 TextSearch 위도경도반경 제한 포함  API 프록시
     public String searchPlaces(String query, double lat, double lng, double radius) {
         String url = "https://places.googleapis.com/v1/places:searchText";
 
@@ -348,7 +293,7 @@ public class PlaceService {
 
     // Google Place 이미지 API URL 생성
     private String getGooglePlacePhotoUrl(String photoReference) {
-        return "https://places.googleapis.com/v1/" +photoReference + "/media?maxHeightPx=1200&maxWidthPx=1200&key=" + googleMapsApiKey;
+        return "https://places.googleapis.com/v1/" + photoReference + "/media?maxHeightPx=1200&maxWidthPx=1200&key=" + googleMapsApiKey;
     }
 
     // Google Place API 응답 JSON 파싱
@@ -363,9 +308,7 @@ public class PlaceService {
 
     // JSON에서 types 리스트 파싱
     private List<String> parseTypes(JsonNode typesNode) {
-        return typesNode.isArray() ?
-                typesNode.findValuesAsText("text") :
-                List.of();
+        return typesNode.isArray() ? typesNode.findValuesAsText("text") : List.of();
     }
 
 }

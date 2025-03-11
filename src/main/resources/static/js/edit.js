@@ -3,6 +3,8 @@ let itinerary = null;
 const perDayMap = new Map();
 const eventMap = new Map();
 const groupedByDay = {}; // 렌더링용 - perDay 별로 정렬된 event 리스트
+let eventPairs = [];
+
 
 // 모달 전역변수
 let currentModalStep = 1;
@@ -28,235 +30,22 @@ $(document).ready(function () {
     let pathSegments = window.location.pathname.split('/');
     let itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
 
-    if (isDEBUG === true) {
-        const data = {
-            "itinerary": {
-                "id": 1,
-                "itineraryName": "Tokyo Exploration",
-                "startDate": "2025-06-01T00:00:00",
-                "totalDays": 3,
-                "transportationType": 1,
-                "createdDate": "2025-02-28T14:36:41",
-                "modifiedDate": "2025-02-28T14:36:41",
-                "role": "ROLE_OWNER"
-            },
-            "itineraryPerDays": [{
-                "dayCount": 0,
-                "startTime": "00:00:00",
-                "endTime": "00:00:00",
-                "dayOfWeek": 0
-            }, {"id": 1, "dayCount": 1, "startTime": "08:00:00", "endTime": "22:00:00", "dayOfWeek": 1}, {
-                "id": 2,
-                "dayCount": 2,
-                "startTime": "09:00:00",
-                "endTime": "21:30:00",
-                "dayOfWeek": 2
-            }, {"id": 3, "dayCount": 3, "startTime": "07:30:00", "endTime": "23:00:00", "dayOfWeek": 3}],
-            "itineraryEvents": [{
-                "id": 1,
-                "dayCount": 1,
-                "placeDTO": {
-                    "id": 1,
-                    "googlePlaceId": "tokyo1",
-                    "placeName": "Shibuya Crossing",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 420,
-                "endMinuteSinceStartDay": 540,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 2,
-                "dayCount": 1,
-                "placeDTO": {
-                    "id": 2,
-                    "googlePlaceId": "tokyo2",
-                    "placeName": "Tokyo Tower",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 0,
-                "endMinuteSinceStartDay": 90,
-                "movingMinuteFromPrevPlace": 0
-            }, {
-                "id": 3,
-                "dayCount": 1,
-                "placeDTO": {
-                    "id": 3,
-                    "googlePlaceId": "tokyo3",
-                    "placeName": "Shinjuku Gyoen",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 270,
-                "endMinuteSinceStartDay": 390,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 4,
-                "dayCount": 1,
-                "placeDTO": {
-                    "id": 4,
-                    "googlePlaceId": "tokyo4",
-                    "placeName": "Akihabara",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 120,
-                "endMinuteSinceStartDay": 240,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 5,
-                "dayCount": 1,
-                "placeDTO": {
-                    "id": 5,
-                    "googlePlaceId": "tokyo5",
-                    "placeName": "Asakusa Temple",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 570,
-                "endMinuteSinceStartDay": 690,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 6,
-                "dayCount": 2,
-                "placeDTO": {
-                    "id": 6,
-                    "googlePlaceId": "tokyo6",
-                    "placeName": "Odaiba",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 420,
-                "endMinuteSinceStartDay": 540,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 7,
-                "dayCount": 2,
-                "placeDTO": {
-                    "id": 7,
-                    "googlePlaceId": "tokyo7",
-                    "placeName": "Ginza Shopping District",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 0,
-                "endMinuteSinceStartDay": 90,
-                "movingMinuteFromPrevPlace": 0
-            }, {
-                "id": 8,
-                "dayCount": 2,
-                "placeDTO": {
-                    "id": 8,
-                    "googlePlaceId": "tokyo8",
-                    "placeName": "Harajuku",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 270,
-                "endMinuteSinceStartDay": 390,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 9,
-                "dayCount": 2,
-                "placeDTO": {
-                    "id": 9,
-                    "googlePlaceId": "tokyo9",
-                    "placeName": "Ueno Park",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 120,
-                "endMinuteSinceStartDay": 240,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 10,
-                "dayCount": 3,
-                "placeDTO": {
-                    "id": 10,
-                    "googlePlaceId": "tokyo10",
-                    "placeName": "Tsukiji Market",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 0,
-                "endMinuteSinceStartDay": 120,
-                "movingMinuteFromPrevPlace": 0
-            }, {
-                "id": 11,
-                "dayCount": 3,
-                "placeDTO": {
-                    "id": 11,
-                    "googlePlaceId": "tokyo11",
-                    "placeName": "Tokyo Disneyland",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 150,
-                "endMinuteSinceStartDay": 360,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 12,
-                "dayCount": 3,
-                "placeDTO": {
-                    "id": 12,
-                    "googlePlaceId": "tokyo12",
-                    "placeName": "Meiji Shrine",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 690,
-                "endMinuteSinceStartDay": 810,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 13,
-                "dayCount": 3,
-                "placeDTO": {
-                    "id": 13,
-                    "googlePlaceId": "tokyo13",
-                    "placeName": "Rainbow Bridge",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 390,
-                "endMinuteSinceStartDay": 510,
-                "movingMinuteFromPrevPlace": 30
-            }, {
-                "id": 14,
-                "dayCount": 3,
-                "placeDTO": {
-                    "id": 14,
-                    "googlePlaceId": "tokyo14",
-                    "placeName": "Roppongi Hills",
-                    "createdAt": "2025-02-28T14:36:52",
-                    "modifiedAt": "2025-02-28T14:36:52"
-                },
-                "startMinuteSinceStartDay": 540,
-                "endMinuteSinceStartDay": 660,
-                "movingMinuteFromPrevPlace": 30
-            }]
-        };
-        //const data = {"itinerary":{"id":21,"itineraryName":"서울 여행","startDate":"2025-03-14T00:00:00","totalDays":4,"transportationType":1,"createdDate":"2025-03-04T03:09:29","modifiedDate":"2025-03-04T03:09:29","role":"ROLE_OWNER"},"itineraryPerDays":[{"id":91,"dayCount":0,"startTime":"00:00:00","endTime":"00:00:00","dayOfWeek":0},{"id":92,"dayCount":1,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":5},{"id":93,"dayCount":2,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":6},{"id":94,"dayCount":3,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":7},{"id":95,"dayCount":4,"startTime":"09:00:00","endTime":"23:00:00","dayOfWeek":1}],"itineraryEvents":[]};
-        createData(data);
-        renderItinerary();
-        initDateRangePickerModal();
-        initSidebarResize();
-    } else {
-        $.ajax({
-            url: `/api/itinerary/${itineraryId}`,
-            method: "GET",
-            dataType: "json",
-            success: function (data) {
-                createData(data);
-                renderItinerary();
-                initDateRangePickerModal();
-                initSidebarResize();
-            },
-            error: function (xhr, status, error) {
-                console.error("Error fetching itinerary:", error);
-            }
-        });
-    }
+
+    $.ajax({
+        url: `/api/itinerary/${itineraryId}`,
+        method: "GET",
+        dataType: "json",
+        success: function (data) {
+            createData(data);
+            renderItinerary();
+            initDateRangePickerModal();
+            initSidebarResize();
+        },
+        error: function (xhr, status, error) {
+            console.error("Error fetching itinerary:", error);
+        }
+    });
+
 
 });
 
@@ -571,6 +360,9 @@ function createSortableInstance(element) {
             let updateStartIndexFrom = null;
             let updateStartIndexTo = null;
 
+            eventPairs.length = 0;
+
+
             if (toDayId === fromDayId) {
                 console.log(`- 같은 리스트(${toDayId})에서 이동`);
                 console.log(`-- 영향을 받는 인덱스`);
@@ -607,12 +399,17 @@ function createSortableInstance(element) {
 
             }
 
-            if (updateStartIndexFrom !== null) {
-                updateEventDisplay(fromDayId, updateStartIndexFrom);
-            }
-            if (updateStartIndexTo !== null) {
-                updateEventDisplay(toDayId, updateStartIndexTo);
-            }
+            (async () => {
+                await requestDistanceCalculationEventPairs();
+
+                if (updateStartIndexFrom !== null) {
+                    updateEventDisplay(fromDayId, updateStartIndexFrom);
+                }
+                if (updateStartIndexTo !== null) {
+                    updateEventDisplay(toDayId, updateStartIndexTo);
+                }
+            })();
+
 
             console.log(eventMap);
             $(".travel-info").css("visibility", "visible");
@@ -767,7 +564,9 @@ function calculateDistanceUpdates(dayId, oldIndex, newIndex, movedForward) {
         const pairKey = `${index1}-${index2}`;
         if (!calculatedPairs.has(pairKey)) {
             calculatedPairs.add(pairKey);
-            calculateDistanceByIndex(dayId, index1, index2);
+
+            eventPairs.push(findEventPairByDayIdAndIndex(dayId, index1, index2));
+            console.log(index1,index2,"인덱스추가")
         }
     }
 
@@ -787,19 +586,18 @@ function calculateDistanceUpdates(dayId, oldIndex, newIndex, movedForward) {
 
 // 삭제 시 거리 재계산
 function calculateRemovalImpact(dayId, oldIndex) {
-    calculateDistanceByIndex(dayId, oldIndex - 1, oldIndex);
+    eventPairs.push(findEventPairByDayIdAndIndex(dayId, oldIndex - 1, oldIndex));
     return oldIndex;
 }
 
 // 추가 시 거리 재계산
 function calculateInsertionImpact(dayId, newIndex) {
-    calculateDistanceByIndex(dayId, newIndex - 1, newIndex);
-    calculateDistanceByIndex(dayId, newIndex, newIndex + 1);
+    eventPairs.push(findEventPairByDayIdAndIndex(dayId, newIndex - 1, newIndex));
+    eventPairs.push(findEventPairByDayIdAndIndex(dayId, newIndex, newIndex + 1));
     return newIndex;
 }
 
-// dayId 칼럼의 index1, index2의 거리 계산
-function calculateDistanceByIndex(dayId, index1, index2) {
+function findEventPairByDayIdAndIndex(dayId, index1, index2) {
     const container = document.getElementById(dayId);
     if (!container) return;
 
@@ -814,12 +612,10 @@ function calculateDistanceByIndex(dayId, index1, index2) {
         if (firstEventId) {
             const firstEvent = getEventById(firstEventId);
             if (firstEvent) {
-                firstEvent.movingMinuteFromPrevPlace = 0;
-                eventMap.set(firstEventId, firstEvent);
-                console.log(`✅ 업데이트 완료: ${firstEventId}의 movingMinuteFromPrevPlace → 0분`);
+                return [null, firstEvent];
             }
         }
-        return;
+
     }
 
     // 예외 처리: 끝부분 (범위를 초과하는 경우)
@@ -840,26 +636,85 @@ function calculateDistanceByIndex(dayId, index1, index2) {
     const event2 = getEventById(eventId2);
 
     if (event1 && event2) {
-        const {
-            distance,
-            minute
-        } = requestDistanceCalculation(event1.placeDTO.googlePlaceId, event2.placeDTO.googlePlaceId);
-
-        // event2의 movingMinuteFromPrevPlace 업데이트
-        event2.movingMinuteFromPrevPlace = minute;
-
-        // eventMap 업데이트
-        eventMap.set(eventId2, event2);
-
-        console.log(`✅ 업데이트 완료: ${eventId2}의 movingMinuteFromPrevPlace → ${minute}분`);
-    } else {
+        return [event1,event2];
+    }
+    else {
         console.warn(`❌ 이벤트 조회 실패: eventId1=${eventId1}, eventId2=${eventId2}`);
     }
 }
 
-// 거리 계산 요청 (임시 랜덤 값 반환)
-function requestDistanceCalculation(placeId1, placeId2) {
-    console.log(`🚗 거리(시간) 계산 요청: ${placeId1} → ${placeId2}`);
+
+// 거리 계산 요청 (element 이동시)
+async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
+    const requestData = [];
+    const validToEvents = [];
+
+    if(eventPairs.length === 0 )
+        return;
+
+    console.log("eventPairs",eventPairs);
+
+    // 유효한 쌍 추출 및 기본값 처리
+    eventPairs.forEach(([from, to]) => {
+        if (from && to && from.placeDTO && to.placeDTO) {
+            // 같은 장소라면 거리/시간 0 설정
+            if (from.placeDTO.id === to.placeDTO.id) {
+                to.movingDistanceFromPrevPlace = 0;
+                to.movingMinuteFromPrevPlace = 0;
+                return;
+            }
+
+            // 이동 거리 계산 대상이면 기본값 설정하고 push
+            to.movingDistanceFromPrevPlace = 0;
+            to.movingMinuteFromPrevPlace = 0;
+
+            requestData.push({
+                originLatitude: from.placeDTO.latitude,
+                originLongitude: from.placeDTO.longitude,
+                destinationLatitude: to.placeDTO.latitude,
+                destinationLongitude: to.placeDTO.longitude,
+            });
+            validToEvents.push(to);
+        }
+    });
+
+    if (requestData.length === 0) {
+        console.log("📭 거리 계산 요청할 쌍이 없습니다.");
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/place/routes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) throw new Error('API 요청 실패');
+
+        const responseData = await response.json();
+
+        responseData.forEach((route, index) => {
+            const toEvent = validToEvents[index];
+
+            toEvent.movingDistanceFromPrevPlace = route.distanceMeters || 0;
+            toEvent.movingMinuteFromPrevPlace = route.duration;
+            console.log(route);
+            console.log(`✅ ${toEvent.placeDTO.placeName} 이동정보 적용 완료`);
+        });
+
+    } catch (error) {
+        console.error("거리 계산 중 오류:", error);
+    }
+}
+
+
+
+
+// 거리 계산 요청 (트레블 모드 변경시)
+function requestDistanceCalculation(event1, event2, travelMode) {
+    console.log(`🚗 거리(시간) 계산 요청: ${event1.placeDTO.placeName} → ${event2.placeDTO.placeName}`);
+    console.log(event1.placeDTO.googlePlaceId);
 
     // 랜덤 값 생성 (예제)
     const distance = Math.floor(Math.random() * 50) + 1; // 1 ~ 50km
@@ -1979,7 +1834,8 @@ function placeToSavedPlace(placeId) {
         stayMinute: 0,
         startMinuteSinceStartDay: 0,
         endMinuteSinceStartDay: 0,
-        movingMinuteFromPrevPlace: 0
+        movingMinuteFromPrevPlace: 0,
+        movingDistanceFromPrevPlace: 0
     };
 
     addEvent(event);

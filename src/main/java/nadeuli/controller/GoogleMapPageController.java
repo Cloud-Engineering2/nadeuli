@@ -11,8 +11,4 @@ public class GoogleMapPageController {
 //        return "index";
 //    }
 
-    @GetMapping("/itinerary/testing")
-    public String testMapPage() {
-        return "/itinerary/place-tab-test";
-    }
 }

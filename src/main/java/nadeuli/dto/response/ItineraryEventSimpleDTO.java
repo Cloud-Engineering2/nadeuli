@@ -1,4 +1,4 @@
-/* ItineraryEvent.java
+/* ItineraryEventSimple.java
  * nadeuli Service - 여행
  * ItineraryEvent 관련 DTO
  * 작성자 : 이홍비
@@ -15,6 +15,7 @@
  *                         moving_minute_from_prev_place 추가
  * 박한철    2025.02.28     @JsonIgnore로 직렬화 시 중첩된 데이터 출력되지 않게 적용
  * 이홍비    2025.03.10     @ToString 추가
+ * 박한철    2025.03.11     movingDistanceFromPrevPlace 추가
  * ========================================================
  */
 
@@ -28,7 +29,6 @@ import lombok.ToString;
 import nadeuli.dto.ItineraryPerDayDTO;
 import nadeuli.dto.PlaceDTO;
 import nadeuli.entity.ItineraryEvent;
-
 @Getter
 @ToString
 @AllArgsConstructor
@@ -40,15 +40,30 @@ public class ItineraryEventSimpleDTO {
     private int startMinuteSinceStartDay;
     private int endMinuteSinceStartDay;
     private int movingMinuteFromPrevPlace;
-
+    private int movingDistanceFromPrevPlace;
 
     // static factory method
-    public static ItineraryEventSimpleDTO of(Long id, ItineraryPerDayDTO itineraryPerDayDTO, PlaceDTO placeDTO, int startMinuteSinceStartDay, int endMinuteSinceStartDay, int movingMinuteFromPrevPlace) {
-        return new ItineraryEventSimpleDTO(id, itineraryPerDayDTO.getDayCount(), placeDTO, startMinuteSinceStartDay, endMinuteSinceStartDay, movingMinuteFromPrevPlace);
+    public static ItineraryEventSimpleDTO of(
+            Long id,
+            ItineraryPerDayDTO itineraryPerDayDTO,
+            PlaceDTO placeDTO,
+            int startMinuteSinceStartDay,
+            int endMinuteSinceStartDay,
+            int movingMinuteFromPrevPlace,
+            int movingDistanceFromPrevPlace
+    ) {
+        return new ItineraryEventSimpleDTO(id, itineraryPerDayDTO.getDayCount(), placeDTO, startMinuteSinceStartDay, endMinuteSinceStartDay, movingMinuteFromPrevPlace, movingDistanceFromPrevPlace);
     }
 
-    public static ItineraryEventSimpleDTO of(ItineraryPerDayDTO itineraryPerDayDTO, PlaceDTO placeDTO, int startMinuteSinceStartDay, int endMinuteSinceStartDay, int movingMinuteFromPrevPlace) {
-        return new ItineraryEventSimpleDTO(null, itineraryPerDayDTO.getDayCount(), placeDTO, startMinuteSinceStartDay, endMinuteSinceStartDay, movingMinuteFromPrevPlace);
+    public static ItineraryEventSimpleDTO of(
+            ItineraryPerDayDTO itineraryPerDayDTO,
+            PlaceDTO placeDTO,
+            int startMinuteSinceStartDay,
+            int endMinuteSinceStartDay,
+            int movingMinuteFromPrevPlace,
+            int movingDistanceFromPrevPlace
+    ) {
+        return new ItineraryEventSimpleDTO(null, itineraryPerDayDTO.getDayCount(), placeDTO, startMinuteSinceStartDay, endMinuteSinceStartDay, movingMinuteFromPrevPlace, movingDistanceFromPrevPlace);
     }
 
     // entity -> dto
@@ -59,8 +74,9 @@ public class ItineraryEventSimpleDTO {
                 PlaceDTO.from(itineraryEvent.getPlace()),
                 itineraryEvent.getStartMinuteSinceStartDay(),
                 itineraryEvent.getEndMinuteSinceStartDay(),
-                itineraryEvent.getMovingMinuteFromPrevPlace()
+                itineraryEvent.getMovingMinuteFromPrevPlace(),
+                itineraryEvent.getMovingDistanceFromPrevPlace()
         );
     }
-
 }
+
