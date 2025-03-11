@@ -13,7 +13,8 @@
  * 박한철    2025.02.25     엔티티의 변수명이 변경되어 getItinerary(),getPlace()로 getter 명 수정
  * 박한철    2025.02.27     DB 구조 수정 ItineraryDTO -> ItineraryPerDayDTO ,  *_date -> *_minute_since_start_day 수정
  *                         moving_minute_from_prev_place 추가
- * 박한철    2025.02.28     @JsonIgnore로 직렬화시 중첩된 데이터 출력되지 않게 적용
+ * 박한철    2025.02.28     @JsonIgnore로 직렬화 시 중첩된 데이터 출력되지 않게 적용
+ * 이홍비    2025.03.10     @ToString 추가
  * ========================================================
  */
 
@@ -23,11 +24,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import nadeuli.dto.ItineraryPerDayDTO;
 import nadeuli.dto.PlaceDTO;
 import nadeuli.entity.ItineraryEvent;
 
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItineraryEventSimpleDTO {

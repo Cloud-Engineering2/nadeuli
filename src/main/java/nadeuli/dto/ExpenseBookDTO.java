@@ -11,7 +11,7 @@
  * ========================================================
  * 이홍비    2025.02.25     최초 작성
  * 고민정    2025;02.25     필드 수정
- *
+ * 이홍비    2025.03.10     @ToString 추가
  * ========================================================
  */
 
@@ -20,9 +20,11 @@ package nadeuli.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import nadeuli.entity.ExpenseBook;
 
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExpenseBookDTO {
