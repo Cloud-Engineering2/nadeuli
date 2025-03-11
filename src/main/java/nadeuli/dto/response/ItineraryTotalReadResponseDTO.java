@@ -12,6 +12,7 @@
  * 박한철    2025.02.27     itineraryPerDay -> itineraryPerDays 변수명 수정
  * 박한철    2025.02.28     ItineraryTotalResponseDTO -> ItineraryTotalReadResponseDTO 변수명 수정
  * 박한철    2025.02.28     @JsonIgnore사용으로 중첩데이터 제거하여 SimpleDTO 대신 일반 DTO 사용가능
+ * 이홍비    2025.03.10     @ToString 추가
  * ========================================================
  */
 
@@ -20,12 +21,14 @@ package nadeuli.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import nadeuli.dto.ItineraryEventDTO;
 import nadeuli.dto.ItineraryPerDayDTO;
 
 import java.util.List;
 
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItineraryTotalReadResponseDTO {

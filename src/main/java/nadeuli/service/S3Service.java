@@ -18,6 +18,7 @@
  *                         불필요한 것 처리
  * 이홍비    2025.03.05     지역 사진 저장 경로 추가
  * 박한철    2025.03.10     S3 이미지 URL로 업로드 기능 추가
+ * 이홍비    2025.03.10     google places 받은 사진 저장 경로 추가
  * ========================================================
  */
 
@@ -68,8 +69,9 @@ public class S3Service {
     private final String JOURNAL_DIR_NAME = "journal";
     private final String PROFILE_DIR_NAME = "profile";
     private final String REGION_DIR_NAME = "region";
+    private final String PLACE_DIR_NAME = "place";
     private final String ETC_DIR_NAME = "etc";
-    private final String PLACE_DIR_NAME = "places";
+
     // 사진 올리기
     public String uploadFile(MultipartFile file, PhotoType kind) {
         System.out.println("🔥 S3 & Cloud Front - 사진 올리기 실행!");
@@ -86,9 +88,12 @@ public class S3Service {
                 s3Key = JOURNAL_DIR_NAME + "/" + fileName;
             }
             else if (kind == PhotoType.REGION) {
-                // 지역 사진
+                // 지역 사진 - 공공누리 + 이홍비 제공
                 s3Key = REGION_DIR_NAME + "/" + fileName;
-
+            }
+            else if (kind == PhotoType.PLACE) {
+                // 장소 사진 - google places 제공
+                s3Key = PLACE_DIR_NAME + "/" + fileName;
             }
             else {
                 // 그 외
@@ -143,7 +148,7 @@ public class S3Service {
 
                 // 4️⃣ InputStream을 BufferedInputStream으로 감싸서 메모리 절약
                 try (InputStream inputStream = new BufferedInputStream(connection.getInputStream())) {
-                    String s3Key = PLACE_DIR_NAME + "/" + fileName;
+                    String s3Key = JOURNAL_DIR_NAME + "/" + fileName;
 
                     // 5️⃣ 메타데이터 설정 (파일 크기 설정 포함)
                     ObjectMetadata metadata = new ObjectMetadata();
