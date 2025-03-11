@@ -47,7 +47,11 @@ public class WithWhomService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
 
         // Traveler 조회
-        List<Traveler> travelers = travelerRepository.findByIidAndTravelerNameIn(itinerary, withWhomNames);
+        List<Traveler> travelers = travelerRepository.findByItineraryIdAndTravelerNames(itineraryId, withWhomNames);
+        System.out.println("travelerRepository: ");
+        System.out.println(withWhomNames);
+        System.out.println(travelers);
+        System.out.println("Traveler 조회 결과: " + travelers.size());
 
         // ExpenseItem 조회
         ExpenseItem expenseItem = expenseItemRepository.findById(expenseItemId)
