@@ -39,14 +39,14 @@ public class ExpenseBookController {
     private final ExpenseBookRepository expenseBookRepository;
 
 
-    // ItineraryEvent 별 정산
+    // ItineraryEvent 별 정산 : 총 지출, 1/n 정산
     @GetMapping("/{iid}/events/{ieid}/adjustment")
     public ResponseEntity<FinanceResponseDTO> getAdjustment(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid) {
         // PathVariable
         Long itineraryId = Long.valueOf(iid);
         Long itineraryEventId = Long.valueOf(ieid);
 
-        FinanceResponseDTO response = expenseBookService.calculateMoney(itineraryEventId);
+        FinanceResponseDTO response = expenseBookService.calculateMoney(itineraryId, itineraryEventId);
 
         return ResponseEntity.ok(response);
     }

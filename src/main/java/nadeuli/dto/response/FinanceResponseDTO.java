@@ -26,13 +26,13 @@ public class FinanceResponseDTO {
     Map<String, Person> adjustment;
 //    private Long totalBudget;
     private Long totalExpense;
-//    private Long currentExpense;
+    private Map<String, Long> eachExpenses;
 //    private Long totalBalance;
 
-    public FinanceResponseDTO(Map<String, Person> adjustment, Long totalExpenses) {
+    public FinanceResponseDTO(Map<String, Person> adjustment, Long totalExpenses, Map<String, Long> eachExpenses) {
         this.adjustment = adjustment;
 //        this.totalBudget = totalBudget;
-//        this.currentExpense = currentExpense;
+        this.eachExpenses = eachExpenses;
         this.totalExpense = totalExpenses;
 //        this.totalBalance = totalBalance;
     }

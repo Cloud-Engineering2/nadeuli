@@ -160,7 +160,12 @@ public class ExpenseBookService {
 
 
     // 1/n 정산
-    public FinanceResponseDTO calculateMoney(Long itineraryEventId) {
+    public FinanceResponseDTO calculateMoney(Long itineraryId, Long itineraryEventId) {
+        // Itinerary 조회
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
+        // 모든 Traveler 조회
+        List<Traveler> travelerList = travelerRepository.findAllByIid(itinerary);
         // Itinerary Event 조회
         ItineraryEvent itineraryEvent = itineraryEventRepository.findById(itineraryEventId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ItineraryEvent가 존재하지 않습니다"));
@@ -169,10 +174,12 @@ public class ExpenseBookService {
 
         // 1/n 정산 결과 변수
         Map<String, Person> persons = new HashMap<>();
-
         // 현재 itinerary event의 총 지출
         Long currentItineraryEventTotalExpense = 0L;
+        // 개별 총 지출 계산 변수
+        Map<String, Long> eachExpenses = new HashMap<>();
 
+        // 계산
         for (ExpenseItem expenseItem : expenseItemList) {
             // WithWhom 이름 리스트
             List<WithWhom> withWhoms = withWhomRepository.findAllByEmid(expenseItem);
@@ -181,24 +188,38 @@ public class ExpenseBookService {
 
             // 비용
             Long cost = expenseItem.getExpense();
-            Long adjustmentCost = Math.round((double) cost / (withWhoms.size()+1)); // 지불해야 할 돈은 '올림' (반올림x)
+            Long adjustmentPayerCost = cost / (withWhoms.size() + 1);
+            Long adjustmentRoundCost = Math.round((double) cost / (withWhoms.size()+1)); // 지불해야 할 돈은 '올림' (반올림x)
 
             // payer
             String payerName = expenseItem.getPayer().getTravelerName();
             Person payer = persons.getOrDefault(payerName, new Person());
+            Long payerExpense = eachExpenses.getOrDefault(payerName, 0L);
+            eachExpenses.put(payerName, payerExpense + adjustmentPayerCost);
 
             for (String with : withWhomNames) {
                 Person withWhomPerson = persons.getOrDefault(with, new Person());
-                payer.receive(with, adjustmentCost);
+                Long withWhomoExpense = eachExpenses.getOrDefault(with, 0L);
+                eachExpenses.put(with, withWhomoExpense + adjustmentRoundCost);
+                payer.receive(with, adjustmentRoundCost);
                 persons.put(payerName, payer);
-                withWhomPerson.send(payerName, adjustmentCost);
+                withWhomPerson.send(payerName, adjustmentRoundCost);
                 persons.put(with, withWhomPerson);
             }
 
             currentItineraryEventTotalExpense += expenseItem.getExpense();
         }
 
-        return new FinanceResponseDTO(persons, currentItineraryEventTotalExpense);
+
+        return new FinanceResponseDTO(persons, currentItineraryEventTotalExpense, eachExpenses);
+    }
+
+    // traveler : total expense 계산
+    public void calculateTotalExpense(Long itineraryId, Long ItineraryEventId) {
+        // Itinerary 조회
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
+        List<Traveler> travelerList = travelerRepository.findAllByIid(itinerary);
     }
 
     // ExpenseBookDTO 반환
