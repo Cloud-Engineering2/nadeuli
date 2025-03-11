@@ -44,19 +44,21 @@
             overflow: hidden; /* 스크롤 제거 */
         }
 
-        .container {
+        .place-container {
             margin: 0;
             width: 500px;
-            height: 100%;
-            min-height: 0;
             display: flex;
             flex-direction: column;
+            height: 100%;
+            flex-grow: 1;
+            min-height: 0;
+
         }
 
         .tab-content-wrap {
-            flex-grow: 1;
             display: flex;
             height: 100%;
+            flex-grow: 1;
             min-height: 0;
         }
 
@@ -211,8 +213,9 @@
 
         .tab-pane {
             height: 100%;
-            min-height: 0;
             display: none; /* 기본적으로 숨김 */
+            flex-grow: 1;
+            min-height: 0;
         }
 
         .tab-pane.active {
@@ -352,16 +355,10 @@
             justify-content: center;
         }
 
-
-
-        #nadeuli-search-results{
-            /*background-color: #00ff59;*/
-        }
-
     </style>
 </head>
-    <body onload="loadGoogleMapsApi()">
-        <div class="container">
+    <body>
+        <div class="place-container">
             <!-- ✅ 커스텀 탭 버튼 -->
             <div class="custom-tabs">
                 <button class="tab-button active" id="nadeuli-tab-btn" onclick="showTab('nadeuli-search-tab')">추천 장소 검색</button>
@@ -428,12 +425,20 @@
 
 <script>
 
+// =================================================================
+// 장소추가 관련 코드
+// =================================================================
+
     let map;
+    let sideMap;
     let markers = [];
     const placeTypeTranslations={"car_dealer":"자동차 딜러","car_rental":"렌터카","car_repair":"자동차 정비소","car_wash":"세차장","electric_vehicle_charging_station":"전기차 충전소","gas_station":"주유소","parking":"주차장","rest_stop":"휴게소","corporate_office":"기업 사무실","farm":"농장","ranch":"목장","art_gallery":"미술관","art_studio":"예술 작업실","auditorium":"강당","cultural_landmark":"문화 랜드마크","historical_place":"유적지","monument":"기념비","museum":"박물관","performing_arts_theater":"공연 예술 극장","sculpture":"조각상","library":"도서관","preschool":"유치원","primary_school":"초등학교","school":"학교","secondary_school":"중·고등학교","university":"대학교","adventure_sports_center":"익스트림 스포츠 센터","amphitheatre":"원형 극장","amusement_center":"오락 센터","amusement_park":"놀이공원","aquarium":"수족관","banquet_hall":"연회장","barbecue_area":"바베큐 구역","botanical_garden":"식물원","bowling_alley":"볼링장","casino":"카지노","childrens_camp":"어린이 캠프","comedy_club":"코미디 클럽","community_center":"커뮤니티 센터","concert_hall":"콘서트 홀","convention_center":"컨벤션 센터","cultural_center":"문화 센터","cycling_park":"자전거 공원","dance_hall":"댄스홀","dog_park":"애견 공원","event_venue":"이벤트 장소","ferris_wheel":"대관람차","garden":"정원","hiking_area":"등산로","historical_landmark":"역사적 랜드마크","internet_cafe":"인터넷 카페","karaoke":"노래방","marina":"마리나 (항구)","movie_rental":"비디오 대여점","movie_theater":"영화관","national_park":"국립공원","night_club":"나이트클럽","observation_deck":"전망대","off_roading_area":"오프로드 지역","opera_house":"오페라 하우스","park":"공원","philharmonic_hall":"필하모닉 홀","picnic_ground":"소풍 장소","planetarium":"천문관","plaza":"광장","roller_coaster":"롤러코스터","skateboard_park":"스케이트 공원","state_park":"주립공원","tourist_attraction":"관광명소","video_arcade":"비디오 아케이드","visitor_center":"방문자 센터","water_park":"워터파크","wedding_venue":"웨딩홀","wildlife_park":"야생동물 공원","wildlife_refuge":"야생동물 보호구역","zoo":"동물원","public_bath":"대중목욕탕","public_bathroom":"공중화장실","stable":"마구간","accounting":"회계 사무소","atm":"ATM","bank":"은행","acai_shop":"아사이 볼 전문점","afghani_restaurant":"아프가니스탄 음식점","african_restaurant":"아프리카 음식점","american_restaurant":"아메리칸 레스토랑","asian_restaurant":"아시안 레스토랑","bagel_shop":"베이글 가게","bakery":"베이커리","bar":"바","bar_and_grill":"바 & 그릴","barbecue_restaurant":"바베큐 레스토랑","brazilian_restaurant":"브라질 음식점","breakfast_restaurant":"조식 전문점","brunch_restaurant":"브런치 레스토랑","buffet_restaurant":"뷔페 레스토랑","cafe":"카페","cafeteria":"구내식당","candy_store":"캔디샵","cat_cafe":"고양이 카페","chinese_restaurant":"중식당","chocolate_factory":"초콜릿 공장","chocolate_shop":"초콜릿 가게","coffee_shop":"커피숍","confectionery":"과자점","deli":"델리","dessert_restaurant":"디저트 레스토랑","dessert_shop":"디저트 가게","diner":"다이너","dog_cafe":"강아지 카페","donut_shop":"도넛 가게","fast_food_restaurant":"패스트푸드점","fine_dining_restaurant":"파인다이닝 레스토랑","food_court":"푸드코트","french_restaurant":"프랑스 음식점","greek_restaurant":"그리스 음식점","hamburger_restaurant":"햄버거 가게","ice_cream_shop":"아이스크림 가게","indian_restaurant":"인도 음식점","indonesian_restaurant":"인도네시아 음식점","italian_restaurant":"이탈리아 음식점","japanese_restaurant":"일식당","juice_shop":"주스 전문점","korean_restaurant":"한식당","lebanese_restaurant":"레바논 음식점","meal_delivery":"배달 전문점","meal_takeaway":"테이크아웃 전문점","mediterranean_restaurant":"지중해 음식점","mexican_restaurant":"멕시코 음식점","middle_eastern_restaurant":"중동 음식점","pizza_restaurant":"피자 가게","pub":"펍","ramen_restaurant":"라멘 전문점","restaurant":"레스토랑","sandwich_shop":"샌드위치 가게","seafood_restaurant":"해산물 레스토랑","spanish_restaurant":"스페인 음식점","steak_house":"스테이크 하우스","sushi_restaurant":"스시 레스토랑","tea_house":"찻집","thai_restaurant":"태국 음식점","turkish_restaurant":"터키 음식점","vegan_restaurant":"비건 레스토랑","vegetarian_restaurant":"채식 레스토랑","vietnamese_restaurant":"베트남 음식점","wine_bar":"와인 바","administrative_area_level_1":"광역 행정구역","administrative_area_level_2":"지방 행정구역","country":"국가","locality":"지역","postal_code":"우편번호","school_district":"학군","city_hall":"시청","courthouse":"법원","embassy":"대사관","fire_station":"소방서","government_office":"정부 기관","local_government_office":"지방 정부 기관","neighborhood_police_station":"지구대 (일본만 해당)","police":"경찰서","post_office":"우체국","chiropractor":"카이로프랙틱","dental_clinic":"치과 클리닉","dentist":"치과 의사","doctor":"의사","drugstore":"약국","hospital":"병원","massage":"마사지샵","medical_lab":"의료 실험실","pharmacy":"약국","physiotherapist":"물리 치료사","sauna":"사우나","skin_care_clinic":"피부 관리 클리닉","spa":"스파","tanning_studio":"태닝 스튜디오","wellness_center":"웰니스 센터","yoga_studio":"요가 스튜디오","apartment_building":"아파트 건물","apartment_complex":"아파트 단지","condominium_complex":"콘도미니엄 단지","housing_complex":"주택 단지","bed_and_breakfast":"B&B 숙소","budget_japanese_inn":"일본 저가 숙소","campground":"캠핑장","camping_cabin":"캠핑용 오두막","cottage":"코티지","extended_stay_hotel":"장기 체류 호텔","farmstay":"팜스테이","guest_house":"게스트하우스","hostel":"호스텔","hotel":"호텔","inn":"여관","japanese_inn":"료칸","lodging":"숙박시설","mobile_home_park":"이동식 주택 단지","motel":"모텔","private_guest_room":"개인 게스트룸","resort_hotel":"리조트 호텔","rv_park":"RV 주차장","beach":"해변","church":"교회","hindu_temple":"힌두교 사원","mosque":"모스크","synagogue":"유대교 회당","astrologer":"점성술사","barber_shop":"이발소","beautician":"미용 전문가","beauty_salon":"미용실","body_art_service":"바디아트 서비스","catering_service":"출장 요리 서비스","cemetery":"공동묘지","child_care_agency":"보육 기관","consultant":"컨설팅 서비스","courier_service":"택배 서비스","electrician":"전기 기사","florist":"꽃집","food_delivery":"음식 배달 서비스","foot_care":"발 관리 서비스","funeral_home":"장례식장","hair_care":"헤어 관리","hair_salon":"미용실","insurance_agency":"보험 대리점","laundry":"세탁소","lawyer":"변호사","locksmith":"열쇠 수리점","makeup_artist":"메이크업 아티스트","moving_company":"이사 업체","nail_salon":"네일숍","painter":"도장업체","plumber":"배관공","psychic":"심령술사","real_estate_agency":"부동산 중개업","roofing_contractor":"지붕 공사업체","storage":"창고","summer_camp_organizer":"여름 캠프 기획사","tailor":"재단사","telecommunications_service_provider":"통신 서비스 제공업체","tour_agency":"여행사","tourist_information_center":"관광 안내소","travel_agency":"여행사","veterinary_care":"동물 병원","asian_grocery_store":"아시아 식료품점","auto_parts_store":"자동차 부품 상점","bicycle_store":"자전거 가게","book_store":"서점","butcher_shop":"정육점","cell_phone_store":"휴대폰 매장","clothing_store":"의류 매장","convenience_store":"편의점","department_store":"백화점","discount_store":"할인 매장","electronics_store":"전자제품 매장","food_store":"식료품점","furniture_store":"가구 매장","gift_shop":"기념품 가게","grocery_store":"슈퍼마켓","hardware_store":"철물점","home_goods_store":"생활용품 매장","home_improvement_store":"DIY/인테리어 매장","jewelry_store":"보석 가게","liquor_store":"주류 판매점","market":"시장","pet_store":"애완동물 가게","shoe_store":"신발 가게","shopping_mall":"쇼핑몰","sporting_goods_store":"스포츠 용품점","store":"상점","supermarket":"대형 마트","warehouse_store":"창고형 매장","wholesaler":"도매점","arena":"경기장","athletic_field":"운동장","fishing_charter":"낚시 여행","fishing_pond":"낚시터","fitness_center":"헬스장","golf_course":"골프장","gym":"체육관","ice_skating_rink":"아이스링크","playground":"놀이터","ski_resort":"스키 리조트","sports_activity_location":"스포츠 활동 장소","sports_club":"스포츠 클럽","sports_coaching":"스포츠 코칭 센터","sports_complex":"스포츠 복합 시설","stadium":"스타디움","swimming_pool":"수영장","airport":"공항","airstrip":"소형 비행장","bus_station":"버스 터미널","bus_stop":"버스 정류장","ferry_terminal":"페리 터미널","heliport":"헬리포트","international_airport":"국제공항","light_rail_station":"경전철 역","park_and_ride":"환승 주차장","subway_station":"지하철역","taxi_stand":"택시 승강장","train_station":"기차역","transit_depot":"교통 환승센터","transit_station":"대중교통 환승역","truck_stop":"트럭 정류장","administrative_area_level_3":"행정구역 (레벨 3)","administrative_area_level_4":"행정구역 (레벨 4)","administrative_area_level_5":"행정구역 (레벨 5)","administrative_area_level_6":"행정구역 (레벨 6)","administrative_area_level_7":"행정구역 (레벨 7)","archipelago":"군도","colloquial_area":"비공식 지역명","continent":"대륙","establishment":"시설","finance":"금융","floor":"층","food":"음식","general_contractor":"종합 건설업체","geocode":"지리적 코드","health":"건강","intersection":"교차로","landmark":"랜드마크","natural_feature":"자연 지형","neighborhood":"주변 지역","place_of_worship":"예배 장소","plus_code":"플러스 코드","point_of_interest":"관심 지점","political":"정치적 구역","post_box":"우편함","postal_code_prefix":"우편번호 접두사","postal_code_suffix":"우편번호 접미사","postal_town":"우편도시","premise":"건물","room":"방","route":"경로","street_address":"도로명 주소","street_number":"도로명 주소 번호","sublocality":"하위 지역","sublocality_level_1":"하위 지역 (레벨 1)","sublocality_level_2":"하위 지역 (레벨 2)","sublocality_level_3":"하위 지역 (레벨 3)","sublocality_level_4":"하위 지역 (레벨 4)","sublocality_level_5":"하위 지역 (레벨 5)","subpremise":"건물 내 구역","town_square":"타운 스퀘어"};
     const excludedPlaceTypes=["administrative_area_level_1","administrative_area_level_2","administrative_area_level_3","administrative_area_level_4","administrative_area_level_5","administrative_area_level_6","administrative_area_level_7","colloquial_area","continent","country","locality","neighborhood","political","postal_code","postal_code_prefix","postal_code_suffix","postal_town","school_district","sublocality","sublocality_level_1","sublocality_level_2","sublocality_level_3","sublocality_level_4","sublocality_level_5","plus_code","establishment","floor","premise","subpremise","room","street_address","street_number","intersection","route","corporate_office","general_contractor","real_estate_agency","insurance_agency","lawyer","accounting","finance","storage","telecommunications_service_provider","moving_company","electrician","plumber","roofing_contractor","courier_service","warehouse_store","wholesaler","auto_parts_store","butcher_shop","beauty_salon","nail_salon","hair_salon","barber_shop","tanning_studio","makeup_artist","foot_care","psychic","astrologer","apartment_building","apartment_complex","condominium_complex","housing_complex","mobile_home_park","church","hindu_temple","mosque","synagogue","place_of_worship","chiropractor","physiotherapist","skin_care_clinic","medical_lab","wellness_center","child_care_agency","summer_camp_organizer","consultant","painter","tailor","point_of_interest"]
 
 
+    document.addEventListener("DOMContentLoaded", function () {
+        loadGoogleMapsApi();
+    });
 
     document.addEventListener("DOMContentLoaded", initMap);
 
@@ -813,6 +818,10 @@
             center: { lat: 37.5665, lng: 126.9780 },
             zoom: 13,
         });
+        sideMap = new google.maps.Map(document.getElementById("side-map"), {
+            center: { lat: 37.5665, lng: 126.9780 },
+            zoom: 13,
+        });
     }
 
     // 구글 Place api키 GITHUB 및 검색엔진에서 숨기기 위한 함수
@@ -843,17 +852,14 @@
         filterDragStartX = e.pageX - filterButtonsContainer.offsetLeft;
         filterScrollStartX = filterButtonsContainer.scrollLeft;
     });
-
     filterButtonsContainer.addEventListener('mouseleave', () => {
         isFilterDragging = false;
         filterButtonsContainer.classList.remove('dragging');
     });
-
     filterButtonsContainer.addEventListener('mouseup', () => {
         isFilterDragging = false;
         filterButtonsContainer.classList.remove('dragging');
     });
-
     filterButtonsContainer.addEventListener('mousemove', (e) => {
         if (!isFilterDragging) return;
         e.preventDefault();
@@ -861,13 +867,10 @@
         const moveX = (currentX - filterDragStartX);
         filterButtonsContainer.scrollLeft = filterScrollStartX - moveX;
     });
-
-    // 모바일 터치
     filterButtonsContainer.addEventListener('touchstart', (e) => {
         filterDragStartX = e.touches[0].pageX;
         filterScrollStartX = filterButtonsContainer.scrollLeft;
     });
-
     filterButtonsContainer.addEventListener('touchmove', (e) => {
         const currentX = e.touches[0].pageX;
         const moveX = (currentX - filterDragStartX);

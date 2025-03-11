@@ -12,658 +12,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin-common.css">
+    <link rel="stylesheet" href="/css/edit.css">
     <style>
-        html {
-            font-family: 'Noto Sans KR', sans-serif; /* 폰트 설정 */
-            font-size: 16px; /* 기본 글꼴 크기를 px 단위로 고정 */
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #F3F3F3; /* 기존 배경색을 부드러운 White 계열로 변경 */
-        }
-        body {
-            overflow-x: hidden;
-        }
-        .container-fluid {
-            display: flex;
-            height: calc(100vh - 60px); /* 헤더 높이 제외 */
-            padding : 0px;
-            margin-top: 60px;
-        }
-        /* 왼쪽 패널 */
-        #sidebar {
-            background: #e7e7e7; /* 기존 배경을 Beige 계열로 변경 */
-            color: #343434; /* 텍스트를 Black 계열로 변경하여 가독성 향상 */
-            padding: 20px;
-            min-width: 300px;
-            max-width: 2000px;
-            width: 1000px; /* 기본 너비 */
-            overflow: auto;
-        }
-        /* 크기 조절 핸들 */
-        #resize-handle {
-            width: 10px;
-            cursor: ew-resize;
-
-            background: #8E8B82; /* 그레이톤 적용하여 자연스러운 느낌 추가 */
-            height: 100%;
-            position: absolute;  /* 상대 위치에서 벗어나 자유롭게 이동 */
-            left: 1000px;  /* 초기값: 사이드바 기본 크기 */
-            top: 0;
-            z-index: 10;
-        }
-        /* 오른쪽 컨텐츠 */
-        #content {
-            flex-grow: 1;
-            background: #F3F3F3; /* 전체적인 배경과 조화를 이루도록 White 적용 */
-        }
-        /* 헤더 스타일 */
-        #header {
-            display: flex;
-            background: #343434; /* 기존의 블루 계열을 차분한 Black 계열로 변경 */
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 60px;
-            z-index: 1000;
-        }
-
-        #header-inner{
-            max-width: 1400px;
-            display: flex;
-        }
-
-        /* 🚀 일정 계획표 가로 배치 */
-        .schedule-container {
-            user-select: none;
-            display: flex;
-            flex-direction: row; /* ✅ 가로 정렬 */
-            margin-right: 50px;
-            gap: 5px;
-            /*overflow-x: auto; !* ✅ 가로 스크롤 지원 *!*/
-            /*min-width: 800px; !* ✅ 최소 가로 길이 유지 *!*/
-        }
-
-        .savedPlace {
-            width: 200px !important;
-            min-width: 200px  !important;/* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
-        }
-
-        .savedPlace .event-order{
-            display: none !important;
-        }
-        .savedPlace .travel-info{
-            display: none !important;
-        }
-        .day-column {
-            /* border: 1px #896b2782 solid; */
-            border-radius: 2px;
-            width: 280px;
-            min-width: 280px; /* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
-        }
-        .day-header {
-            background-color: #343434;
-            font-weight: bold;
-            /*text-align: center;*/
-            /*margin-bottom: 10px;*/
-            color: #dbd8d1;
-            /* Grey 적용하여 강조 */
-            padding: 8px;
-            border-bottom: 1px #e3e3e3 solid;
-        }
-
-        .schedule-header {
-            user-select: none;
-            display: flex;
-            justify-content: space-between; /* 좌우 정렬 */
-            align-items: center; /* 세로 중앙 정렬 */
-            padding: 10px;
-            background: linear-gradient(88deg, #d5d3cf, #ffffff00); /* White와 Beige 그라디언트 적용 */
-            border-radius: 10px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            position: sticky;
-            margin-bottom: 10px;
-            top: 0;
-            left: 0;
-            z-index: 10;
-        }
-
-
-        .schedule-header-name {
-            margin-left: 10px;
-            font-size: 1.5rem; /* 크고 강조된 텍스트 */
-            font-weight: bold;
-            color: #343434;
-            text-transform: uppercase; /* 대문자로 변환 */
-            letter-spacing: 1px; /* 글자 간격 */
-        }
-
-        .schedule-header-date {
-            margin-left: 10px;
-            font-size: 1rem;
-            color: #6c757d; /* 회색톤으로 보조 정보 느낌 */
-            font-weight: 500;
-        }
-
-
-        .schedule-header-right {
-            margin-left: auto; /* 버튼을 오른쪽 끝으로 이동 */
-        }
-
-        .event-options-button.schedule {
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        .event-options-button.schedule:hover {
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .event-container {
-            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-            background: #f9f9f9;
-            min-height: 70px;
-            padding: 10px;
-        }
-
-
-
-        .event {
-            display: flex;
-            width: 100%;
-        }
-
-        .event-wrapper {
-            display: flex;
-            width: 100%;
-            flex-direction: column;
-            align-items: flex-start; /* 좌측 정렬 */
-        }
-
-        .travel-info {
-            padding: 5px;
-            border-radius: 3px;
-            background-color: #dddddd;
-            width: 100%;
-        }
-
-
-
-        .event-content {
-            display: flex;
-            width: 100%;
-            align-items: center;
-            justify-content: center;
-            background-color: transparent; /* 배경색 추가 */
-
-            text-align: left;
-        }
-
-        .event-order {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 40px; /* 부모 컨테이너 크기 */
-            height: 70px; /* 선과 원을 포함한 높이 */
-        }
-
-
-
-        .event-order-line {
-            width: 1px;
-
-            background-color: #8E8B82; /* Grey 적용하여 자연스러움 추가 */
-
-            z-index: 0; /* 선을 원의 뒤로 배치 */
-        }
-
-
-
-        .event-order-line.top {
-            height: 30%;
-        }
-
-
-        .event-order-line.bottom {
-            height: 90%;
-        }
-
-        .event .event-order-line.transparent {
-            background-color: transparent !important;
-        }
-
-
-        .event-order-circle {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            border: 1px solid gray;
-            background-color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 12px;
-            position: absolute;
-            top: 30%;
-            transform: translateY(-50%);
-            z-index: 1; /* 원이 선 위로 오도록 설정 */
-        }
-        .event-main {
-            display: flex;
-            width: 100%;
-            padding-top: 4px;
-            padding-left: 4px;
-            padding-bottom: 4px;
-            color: #514f49;
-            border-radius: 4px;
-            background: #ffffff87;
-            border: 1px solid rgb(0 0 0 / 34%);
-            box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
-            text-align: left;
-            cursor: grab;
-            min-height: 50px;
-            margin-bottom: 5px;
-        }
-
-        .event-left {
-            padding-left: 5px;
-            flex: 9; /* 왼쪽 박스를 9배 크기로 설정 */
-        }
-
-        .event-right {
-            flex: 1; /* 오른쪽 박스를 1배 크기로 설정 */
-            display: flex;
-            position: relative;
-            justify-content: center; /* 버튼 가운데 정렬 */
-            align-items: center;
-        }
-
-
-        /* 📌 입력창 스타일 */
-        .event-duration-input-container {
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #cfcfcf;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            width: 180px;
-            position: absolute;
-            z-index: 10;
-            transition: all 0.2s ease-in-out;
-        }
-
-        /* 📌 숫자 입력 필드 스타일 */
-        .event-duration-input-box {
-            display: flex;
-            align-items: center;
-            gap: 1px;
-        }
-
-        .event-duration-input-box input {
-            width: 40px;
-            padding: 0px;
-            font-size: 14px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            outline: none;
-        }
-
-        /* 📌 버튼 스타일 */
-        .event-duration-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .event-duration-save,
-        .event-duration-cancel {
-            padding: 5px 10px;
-            font-size: 13px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s ease-in-out;
-        }
-
-        .event-duration-save {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .event-duration-save:hover {
-            background: #45a049;
-        }
-
-        .event-duration-cancel {
-            background: #f44336;
-            color: white;
-        }
-
-        .event-duration-cancel:hover {
-            background: #d32f2f;
-        }
-
-
-
-        .event-options-button {
-            color: black;
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-        }
-
-        .event-options {
-            position: absolute;
-            top: 80%;
-            right: 0;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            min-width: 120px;
-            z-index: 10;
-        }
-
-        .event-options button {
-            background: none;
-            border: none;
-            padding: 8px;
-            text-align: left;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .event-options button:hover {
-            background: #f0f0f0;
-        }
-
-        /* 메뉴 기본 숨김 */
-        .hidden {
-            display: none;
-        }
-
-
-        .sortable-ghost .tour-image {
-            display: none !important;
-        }
-
-        .sortable-drag .event-order{
-            visibility: hidden !important;
-
-        }
-        .sortable-drag .travel-info{
-            visibility: hidden !important;
-
-        }
-
-
-        .sortable-ghost {
-            opacity: 0.5;
-            background: transparent;
-        }
-        .sortable-drag {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
-
-        /* 🚀 이동 시간 레이블 스타일 */
-        .travel-time {
-            text-align: center;
-            font-size: 0.8rem;
-            margin: 3px auto;
-            padding: 5px;
-            width: 100%;
-            background: #E9DCBE; /* Beige 계열로 자연스럽게 배경 적용 */
-            color: #343434; /* 가독성 향상을 위한 Black 계열 적용 */
-            border-radius: 5px;
-            pointer-events: none;
-            user-select: none;
-        }
-
-
-
-    </style>
-
-
-
-
-
-    <style>
-
-
-        .modal-dialog {
-            max-width: 750px; /* 모달이 달력을 포함할 만큼 충분히 넓게 설정 */
-            user-select: none;
-        }
-
-
-        .modal-content {
-            height: auto;
-            min-height: 100%;
-        }
-
-        .date-range-container{ width: 17em; padding: .2em .2em 0; display: none; font-size:62.5%; }
-
-        /* 날짜 선택기 래퍼 스타일 */
-        .date-picker-wrapper {
-            width:100%; font-size: 11px;
-            display: flex; /* 내부 요소를 가로로 배치 */
-            /*flex-wrap: nowrap; !* 줄바꿈 방지 *!*/
-            /*justify-content: center; !* 요소를 중앙 정렬 *!*/
-            /*align-items: flex-start; !* 상단 정렬 *!*/
-            /*padding: 16px; !* 내부 여백 설정 *!*/
-            background: #ffffff; /* 배경색 설정 */
-            border: none; /* 테두리 제거 */
-            /*max-width: 100%;*/
-        }
-
-
-        /* 월 이름 스타일 */
-        .date-picker-wrapper .month-name {
-            padding-top: .2em;
-            font-size:120%;
-            font-weight: 500;
-            color: #000000;
-        }
-
-        /* 월 래퍼 스타일 */
-        .date-picker-wrapper .month-wrapper {
-            display: flex;
-            border: none;
-            width: 100% !important;
-            flex-wrap: wrap;
-            justify-content: center;
-            /*min-width: 650px;*/
-        }
-
-
-        .date-picker-wrapper .month-wrapper table.month1 {
-            border-right: 1px solid rgba(0, 0, 0, 0.10);
-        }
-
-        /* 월 캡션 스타일 */
-        .date-picker-wrapper .month-wrapper .caption {
-            height: 80px;
-        }
-
-        /* 요일명 스타일 */
-        .date-picker-wrapper .month-wrapper table .week-name {
-            font-size: 120%;
-            font-weight: 100;
-            color: #000000;
-        }
-
-        /* 날짜 셀 스타일 */
-        .date-picker-wrapper .month-wrapper table td {
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .date-picker-wrapper .month-wrapper table .day.real-today {
-            background-color: #00ff59;
-            border-radius: 30px;
-        }
-
-        #date-range-container {
-            width : 100%;
-            background: #ffffff; /* 배경색 설정 */
-            /*display: inline-block; !* 인라인 블록 요소로 설정 *!*/
-        }
-
-
-        /* 개별 날짜 스타일 */
-        .date-picker-wrapper .month-wrapper table .day {
-            margin: 2px;
-            width: 2.5em;
-            height: 2.5em;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 32px;
-        }
-
-        /* 다른 달의 날짜 스타일 */
-        .date-picker-wrapper .day.other-month {
-            color: #d1d5db;
-        }
-
-        /* 유효한 날짜에 마우스를 올렸을 때의 스타일 */
-        .date-picker-wrapper .day.valid:hover {
-            background: #f3f4f6;
-            color: #000000;
-        }
-
-        /* 선택된 날짜 스타일 */
-        .date-picker-wrapper .day.selected {
-            background: #9c9c9c !important;
-            color: #ffffff !important;
-            font-weight: bold;
-        }
-
-        /* 날짜에 마우스를 올렸을 때 스타일 */
-        .date-picker-wrapper .day.hovering {
-            background: #ededed !important;
-            border-radius: 6px; /* 15% → 6px */
-        }
-
-        /* 선택된 날짜 범위 스타일 */
-        .date-picker-wrapper .day.toMonth.valid.checked {
-            background: #e6e6e6 !important;
-            border-radius: 6px; /* 15% → 6px */
-        }
-
-        /* 범위 선택 시 첫 번째 날짜 스타일 */
-        .date-picker-wrapper .day.toMonth.valid.checked.first-date-selected {
-            border-top-left-radius: 6px; /* 15% → 6px */
-            border-bottom-left-radius: 6px; /* 15% → 6px */
-            background: #000000 !important;
-            color: #ffffff !important;
-        }
-
-        /* 범위 선택 시 마지막 날짜 스타일 */
-        .date-picker-wrapper .day.toMonth.valid.checked.last-date-selected {
-            border-top-right-radius: 6px; /* 15% → 6px */
-            border-bottom-right-radius: 6px; /* 15% → 6px */
-            background: #000000 !important;
-            color: #ffffff !important;
-        }
-
-        /* 캡션(월 표기 부분) 스타일 */
-        .date-picker-wrapper table .caption {
-            font-size: 16px; /* 1rem → 16px */
-        }
-
-        /* 다음 달 이동 버튼 스타일 */
-        .date-picker-wrapper table .caption .next:hover {
-            color: #000000 !important;
-            background: transparent !important;
-        }
-
-        /* 이전 달 이동 버튼 스타일 */
-        .date-picker-wrapper table .caption .prev:hover {
-            color: #000000 !important;
-            background: transparent !important;
-        }
-
-        .drp_top-bar normal{
-            display: none;
-        }
-
-
-        #step-container {
-            position: relative; /* 자식 absolute 위치 기준 */
-            min-height: 527px; /* 가장 높은 폼 기준으로 설정 */
-        }
-
-        /* 두 요소를 완전히 겹치도록 설정 */
-        #step-date-selection,
-        #step-time-selection {
-            position: absolute;
-            overflow-y: auto;
-            overflow-x:hidden;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* 초기 설정: 첫 번째 폼만 보이게 */
-        #step-date-selection {
-            visibility: visible;
-            opacity: 1;
-            z-index: 2;
-        }
-
-        #step-time-selection {
-            visibility: hidden;
-            opacity: 0;
-            z-index: 1;
-        }
-
-        .time-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .date-picker-wrapper .gap {
-            display: none;
-        }
-        .date-label { width: 120px; font-weight: bold; text-align: right; margin-right: 10px;}
-
-        .time-input {
-            width: 150px;
-            margin-right: 10px;
-        }
-
 
 
     </style>
 
 </head>
 <body>
+
+<!-- 상단 헤더 -->
+<div th:replace="~{fragments/header}"></div>
+
 
 <div class="modal fade" id="travelModal" data-bs-backdrop="static" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -702,16 +65,6 @@
     </div>
 </div>
 
-<!-- 상단 헤더 -->
-<div id="header">
-    <div id="header-inner">
-    <div id="left-header"> 나들이</div>
-    <div id="mid-header"> 나들이</div>
-    <div id="right-header">   <button id="save-button">저장하기</button></div>
-    </div>
-
-</div>
-
 <div class="container-fluid">
 
         <!-- 왼쪽 패널 -->
@@ -722,28 +75,89 @@
                     <div class="schedule-header-date">2025/03/02(화) ~ 2025/03/08(목)</div>
                 </div>
                 <div class="schedule-header-right">
-                    <button class="event-options-button schedule">⚙️</button>
+                    <button class="event-options-button schedule"><i class="fas fa-cog"></i></button>
                     <div class="event-options hidden">
+                        <button id="save-button">저장하기</button>
                         <button class="event-date-change">기간 및 시간 변경</button>
                         <button class="event-remove">일정표 삭제</button>
                     </div>️
                 </div>
             </div>
+            <div class="container-wrap">
+                <div class="place-container">
+                    <div class="day-header place-container-header">
+                        <div class="place-container-name">장소 추가</div>
+                        <div class="place-container-close"><i class="bi bi-x-lg"></i></div>
+                    </div>
+                    <!-- ✅ 커스텀 탭 버튼 -->
+                    <div class="custom-tabs">
+                        <button class="tab-button active" id="nadeuli-tab-btn" onclick="showTab('nadeuli-search-tab')">추천 장소 검색</button>
+                        <button class="tab-button" id="google-tab-btn" onclick="showTab('google-search-tab')">미등록 장소 추가</button>
+                    </div>
 
-            <div class="schedule-container" id="scheduleContainer"></div>
+                    <div class="tab-content-wrap">
+                        <div class="tab-content">
+                            <!-- ✅ 나들이 서버 검색 탭 -->
+                            <div class="tab-pane active" id="nadeuli-search-tab">
+                                <div class="search-area">
+                                    <div class="search-container">
+                                        <span class="search-icon" onclick="textSearchNadeuliPlaces()"><i class="bi bi-search"></i></span>
+                                        <input type="text" id="nadeuli-place-search" class="search-input" placeholder="나들이 장소 검색" autocomplete="off" onkeydown="handleNadeuliKeyPress(event)" />
+                                        <span class="search-clear" onclick="clearNadeuliSearch()"><i class="bi bi-x"></i></span>
+                                    </div>
+                                    <div class="filter-buttons">
+                                        <button class="filter-button" data-filter="LANDMARK">명소</button>
+                                        <button class="filter-button" data-filter="RESTAURANT">식당</button>
+                                        <button class="filter-button" data-filter="LODGING">숙소</button>
+                                        <button class="filter-button" data-filter="CAFE">카페</button>
+                                        <button class="filter-button" data-filter="TRANSPORTATION">교통</button>
+                                        <button class="filter-button" data-filter="ATTRACTION">어트랙션</button>
+                                        <button class="filter-button" data-filter="CONVENIENCE">편의시설</button>
+                                    </div>
+                                    <div class="search-results-wrap" id="nadeuli-search-results">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ✅ Google 검색 탭 -->
+                            <div class="tab-pane" id="google-search-tab">
+                                <div class="search-area">
+                                    <div class="search-container">
+                                        <span class="search-icon" onclick="searchGooglePlaces()"><i class="bi bi-search"></i></span>
+                                        <input type="text" id="google-place-search" class="search-input" placeholder="Google 장소 검색" autocomplete="off" onkeydown="handleGoogleKeyPress(event)" />
+                                        <span class="search-clear" onclick="clearGoogleSearch()"><i class="bi bi-x"></i></span>
+                                    </div>
+                                    <div class="place-map-area-wrap">
+                                        <div class="map-area">
+                                            <div id="map"></div>
+                                        </div>
+                                    </div>
+                                    <div id="google-search-results-header" class="search-results-header">검색 결과 총 0건</div>
+                                    <div class="search-results-wrap">
+                                        <div id="google-search-results" class="list-group"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="schedule-container" id="scheduleContainer"></div>
+            </div>
         </div>
 
         <!-- 크기 조절 핸들 -->
         <div id="resize-handle"></div>
 
-        <!-- 오른쪽 지도 -->
-        <div class="col-md-9">
-            <div id="map" style="height: 100%; background: lightblue;">지도 영역</div>
-        </div>
+            <!-- 오른쪽 지도 사이드 박스 -->
+            <div class="right-side-map">
+                <div class="map-area">
+                    <div id="side-map"></div>
+                </div>
+            </div>
 
 </div>
 <script src="/js/edit.js"></script>
-<script src="edit.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
