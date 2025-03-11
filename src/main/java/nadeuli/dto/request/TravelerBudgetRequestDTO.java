@@ -1,13 +1,13 @@
-/* BudgetRequestDTO.java
+/* TravelerBudgetRequestDTO.java
  * 작성자 : 고민정
- * 최초 작성 날짜 : 2025-02-21
+ * 최초 작성 날짜 : 2025-03-11
  *
  * ========================================================
  * 프로그램 수정 / 보완 이력
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- * 고민정    2025.02.26   Req DTO 생성
+ * 고민정    2025.03.11   Req DTO 생성
  *
  * ========================================================
  */
@@ -22,8 +22,8 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
-public class BudgetRequestDTO {
-    @NotNull()
+public class TravelerBudgetRequestDTO {
+    @NotNull
     private Long totalBudget;
 }
 

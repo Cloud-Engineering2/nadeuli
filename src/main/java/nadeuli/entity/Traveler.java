@@ -10,7 +10,7 @@
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
  * 고민정    2025.02.25     생성자 접근수준 수정
- * 고민정    2025.03.11     total_budget, expense 필드 추가
+ * 고민정    2025.03.11     total_budget, expense 필드 추가, budget update 메서드 추가
  * ========================================================
  */
 
@@ -66,6 +66,10 @@ public class Traveler {
 
     public void updateTotalExpense(Long totalExpense) {
         this.totalExpense = totalExpense;
+    }
+
+    public void updateTotalBudget(Long totalBudget) {
+        this.totalBudget = totalBudget;
     }
 
 }

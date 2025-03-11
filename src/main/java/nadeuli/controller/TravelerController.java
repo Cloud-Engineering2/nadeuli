@@ -9,7 +9,7 @@
  * ========================================================
  * 고민정    2025.02.26   Controller 생성, 여행자 추가/조회 메서드 추가
  * 고민정    2025.02.27   여행자 삭제 메서드 추가
- *
+ * 고민정    2025.03.11   여행자 예산 수정 메서드 추가
  * ========================================================
  */
 
@@ -17,7 +17,9 @@ package nadeuli.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.TravelerDTO;
+import nadeuli.dto.request.TravelerBudgetRequestDTO;
 import nadeuli.dto.request.TravelerRequestDTO;
 import nadeuli.dto.response.TravelerResponseDTO;
 import nadeuli.service.TravelerService;
@@ -62,11 +64,22 @@ public class TravelerController {
     @DeleteMapping("/{iid}/traveler/{travelerName}")
     public ResponseEntity<List<TravelerDTO>> deleteTraveler(@PathVariable("iid") Integer iid, @PathVariable("travelerName") String travelerName) {
         Long itineraryId = Long.valueOf(iid);
-        List<TravelerDTO> travelerDtos = travelerService.deleteTraveler(travelerName, itineraryId);
+        List<TravelerDTO> travelerDtos = travelerService.deleteTraveler(itineraryId, travelerName);
 
         return ResponseEntity.ok(travelerDtos);
     }
 
+
+    // 여행자 예산 수정
+    @PutMapping("/{iid}/traveler/{travelerName}")
+        public ResponseEntity<ExpenseBookDTO> changeBudget(@PathVariable("iid") Integer iid, @PathVariable("travelerName") String travelerName, @RequestBody @Valid TravelerBudgetRequestDTO travelerBudgetRequestDTO) {
+        Long itineraryId = Long.valueOf(iid);
+        Long change = travelerBudgetRequestDTO.getTotalBudget();
+
+        ExpenseBookDTO expenseBookDto = travelerService.updateBudget(itineraryId, travelerName, change);
+        return ResponseEntity.ok(expenseBookDto);
+
+    }
 
 
 
