@@ -34,6 +34,10 @@ public class WithWhomController {
     @PostMapping("/{iid}/expense/{emid}/withWhom")
     public ResponseEntity<Void> createWithWhom(@PathVariable("iid") Integer iid, @PathVariable("emid") Integer emid,
                                                @RequestBody WithWhomRequestDTO nameList) {
+
+        System.out.println("📢 [DEBUG] Received RequestBody: " + nameList);
+        System.out.println("📢 [DEBUG] withWhomNames: " + nameList.getWithWhomNames());
+
         Long itineraryId = Long.valueOf(iid);
         Long expenseItemId = Long.valueOf(emid);
         List<String> names = nameList.getWithWhomNames();

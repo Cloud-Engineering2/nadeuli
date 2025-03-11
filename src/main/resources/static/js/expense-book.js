@@ -1325,11 +1325,11 @@ function getExpenseItemForm(itineraryId, itineraryEventId) {
 <!--                <button type="submit" class="expense-item-creation-button" id="expenseItemCreationButton" >추가</button>-->
 <!--                <button type="button" class="expense-item-creation-button-close" id="expenseItemCreationButtonClose">닫기</button>-->
 <!--            </div>-->
-            </form>
-            <!-- Expense Item 추가 + 버튼 -->
-            <div class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
-                <i class="fa-solid fa-plus plus-icon"></i>
-            </div>`;
+                <!-- Expense Item 추가 + 버튼 -->
+                <button type="submit" class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
+                    <i class="fa-solid fa-plus plus-icon"></i>
+                </button>
+            </form>`;
 }
 
 
@@ -1346,7 +1346,7 @@ async function callApiAt(url, method, requestData) {
             throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
         }
 
-        const data = await response.json();
+        const data = response.headers.get("Content-Length") === "0" ? null : await response.json();
         return data;
     } catch (error) {
         console.error("에러 발생:", error);
@@ -1455,7 +1455,7 @@ $(document).on("click", ".expense-item-addition-button", function() {
     const ieid = $(this).data("ieid"); // event ID
 
     // 추가 버튼 -> 폼 제출
-    $("#expenseItemCreationForm").submit(function (event) {
+    $("#expenseItemCreationForm").submit(async function (event) {
         event.preventDefault(); // 기본 폼 제출 방지
 
         // Request Data
@@ -1464,131 +1464,59 @@ $(document).on("click", ".expense-item-addition-button", function() {
         const payer = $("#expenseItemCreationPayer").val();
         const withWhom = $("#expenseItemCreationWithWhom").val() || null;
 
+        const withWhomList = withWhom.split(",").map(name => name.trim()).filter(name => name.length > 0);
+
+        console.log(withWhomList); // ["GAYEON", "NAYEON"]
+
+
         // 유효성 검사
         if (!expenditure || !payer) {
             alert("금액과 지출자는 반드시 입력해야 합니다.");
             return;
         }
 
-        // 1. 지출 내역 추가 (AJAX 요청)
-        const expenseItemData = { // RequestBody -> ExpenseItemRequestDTO
+        const expenseItemRequestData = { // RequestBody -> ExpenseItemRequestDTO
             content: content,
             payer: payer,
-            expense: parseInt(expenditure),
+            expense: parseInt(expenditure)
         };
 
         const withWhomData = {
-
+            withWhomNames: withWhomList // WithWhomRequestDTO 키 값과 동일해야 함
         };
+        console.log("withWhom data 확인하는 부분 :");
+        console.log(withWhomData);
 
-        // addExpenseItem(iid, ieid);
+        let expenseItemId = await addExpenseItem(iid, ieid, expenseItemRequestData);
+        console.log("expense Item Id: 여기에서 출력되면 이제 됨");
+        console.log(expenseItemId);
+        await addWithWhom(iid, expenseItemId, withWhomData);
     });
 });
 
-//
-    // 추가 버튼 -> 폼 제출
-    // $("#expenseItemCreationForm").submit(function (event) {
-    //     event.preventDefault(); // 기본 폼 제출 방지
-//
-//         // input 데이터
-//         const content = $("#expenseItemCreationContent").val() || null;
-//         const expenditure = $("#expenseItemCreationExpenditure").val();
-//         const payer = $("#expenseItemCreationPayer").val();
-//         const withWhom = $("#expenseItemCreationWithWhom").val() || null;
-// //
-//         // 유효성 검사
-//         if (!expenditure || !payer) {
-//             alert("금액과 지출자는 반드시 입력해야 합니다.");
-//             return;
-//         }
-//
-        // 1. 지출 내역 추가 (AJAX 요청)
-
-        const expenseItemData = { // RequestBody -> ExpenseItemRequestDTO
-            content: content,
-            payer: payer,
-            expense: parseInt(expenditure),
-        };
-//
-//         $.ajax({
-//             url: `/api/itineraries/${itineraryId}/events/${itineraryEventId}/expense`,
-//             method: 'POST',
-//             contentType: 'application/json',
-//             data: JSON.stringify(expenseItemData), // JSON 형식으로 데이터 전송
-//             success: function (response, textStatus, xhr) {
-//                 // Location 헤더에서 expenseItemId 가져오기
-//                 let locationHeader = xhr.getResponseHeader("Location");
-//                 let expenseItemId = locationHeader ? locationHeader.split('/').pop() : null;
-//
-//                 if (!expenseItemId) {
-//                     alert("비용 항목 추가는 성공했지만 ID를 가져오지 못했습니다.");
-//                     $("#expenseItemCreationModal").css("display", "none");
-//                     location.reload();
-//                     return;
-//                 }
-//
-//                 // 2. withWhom 값이 있을 경우, withWhom 추가 (AJAX 요청) : REQUEST DTO 안에 같이 하고 서비스 단에서 분리 (비동기 안에 비동기 있으면 XO)
-//                 if (withWhom) { // 폼데이터 JQUERY 컨트롤러
-//                     let withWhomList = withWhom.split(',').map(name => name.trim());
-//
-//                     $.ajax({
-//                         url: `/api/itineraries/${itineraryId}/expense/${expenseItemId}/withWhom`,
-//                         method: 'POST',
-//                         contentType: 'application/json',
-//                         data: JSON.stringify({ names: withWhomList }),
-//                         success: function() {
-//                             alert("비용 항목 및 함께한 사람 추가 완료!");
-//                             $("#expenseItemCreationModal").css("display", "none");
-//                             location.reload();
-//                         },
-//                         error: function (xhr, status, error) {
-//                             alert("함께한 사람 추가 중 에러 발생: " + error);
-//                             $("#expenseItemCreationModal").css("display", "none");
-//                             location.reload();
-//                         }
-//                     });
-//                 } else {
-//                     alert("비용 항목 추가 완료!")
-//                     $("#expenseItemCreationModal").css("display", "none");
-//                     location.reload();
-//                 }
-//             },
-//             error: function (xhr, status, error) {
-//                 alert("에러가 발생했습니다: " + error);
-//             }
-//         });
-//     });
-// });
-
-async function addExpenseItem(iid, ieid) {
-    // input 데이터
-    const content = $("#expenseItemCreationContent").val() || null;
-    const expenditure = $("#expenseItemCreationExpenditure").val();
-    const payer = $("#expenseItemCreationPayer").val();
-
-    if (!expenditure || !payer) {
-        alert("금액과 지출자는 반드시 입력해야 합니다.");
-        return;
-    }
-
-    // 1. 지출 내역 추가 (AJAX 요청)
-    const expenseItemRequest = { // RequestBody -> ExpenseItemRequestDTO
-        content: content,
-        payer: payer,
-        expense: parseInt(expenditure),
-    };
-
+async function addExpenseItem(iid, ieid, expenseItemRequestData) {
     try {
-        const response = await callPostApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, expenseItemRequest);
-        console.log("여기부터는 Response");
-        console.log(response);
-        const expenseItemList = $("#expenseItemList");
-        if (!expenseItemList.length) {
-            console.error("Expense list element not found!");
-            return;
-        }
+        const response = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, "POST", expenseItemRequestData);
 
-        return response;
+        console.log("ExpenseItem " + expenseItemRequestData.content + ": " + expenseItemRequestData.expense + "(원) - 생성 완료");
+        // console.log("Expense Book Id", response.itineraryEventId);
+        // console.log("Expense Book ID:", response.expenseBookId);
+        // console.log("Traveler Name:", response.travelerDTO.travelerName);
+        return response.id;
+
+    } catch (error) {
+        console.error("Error loading expense data:", error);
+    }
+}
+
+
+async function addWithWhom(iid, emid, withWhomRequestData) {
+    try {
+        console.log("withWhomRequestData 확인 부분 ");
+        console.log("WithWhom Data:", withWhomRequestData);
+        const response = await callApiAt(`/api/itineraries/${iid}/expense/${emid}/withWhom`, "POST", withWhomRequestData);
+        console.log("WithWhom 응답 : ");
+        console.log(response);
 
     } catch (error) {
         console.error("Error loading expense data:", error);

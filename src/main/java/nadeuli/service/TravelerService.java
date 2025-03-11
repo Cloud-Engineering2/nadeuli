@@ -71,7 +71,7 @@ public class TravelerService {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
 
-        List<Traveler> travelers = travelerRepository.findByIidAndTravelerNameIn(itinerary, withWhomNames);
+        List<Traveler> travelers = travelerRepository.findByItineraryIdAndTravelerNames(itineraryId, withWhomNames);
 
         return travelers.stream()
                 .map(TravelerDTO::from)
