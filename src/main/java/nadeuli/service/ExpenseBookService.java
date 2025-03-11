@@ -9,9 +9,10 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 고민정    2025.02.26   예산 산정 메서드 추가
- *
+ * 이홍비    2025.03.10   ExpenseBookDTO 반환 함수 구현
  * ========================================================
  */
+
 package nadeuli.service;
 
 import jakarta.transaction.Transactional;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ExpenseBookService {
     private final ExpenseBookRepository expenseBookRepository;
@@ -43,7 +45,6 @@ public class ExpenseBookService {
 
 
     // 예산 설정
-    @Transactional
     public ExpenseBookDTO setBudget(Long iid, Long budget) {
         Itinerary itinerary = itineraryRepository.findById(iid)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다. ID: " + iid));
@@ -55,7 +56,6 @@ public class ExpenseBookService {
     }
 
     // ExpenseBook 조회 by Itinerary
-    @Transactional
     public Long get(Long iid) {
         Itinerary itinerary = itineraryRepository.findById(iid)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary 존재하지 않습니다"));
@@ -66,7 +66,6 @@ public class ExpenseBookService {
 
 
     // 1/n 정산
-    @Transactional
     public Map<String, Person> adjustmentExpense(Long itineraryEventId) {
 
         // Itinerary Event 가져오기
@@ -105,6 +104,7 @@ public class ExpenseBookService {
         }
         return persons;
     }
+
 
     // 총 예산, 지출, 잔액 조회
     public FinanceResponseDTO calculateTotalMoney(Long itineraryId) {
@@ -238,4 +238,19 @@ public class ExpenseBookService {
         return new FinanceResponseDTO(response, budget, currentExpense, totalExpense, balance);
 
     }
+
+    // ExpenseBookDTO 반환
+    public ExpenseBookDTO getExpenseBook(Long iid) {
+        // 일정 조회
+        Itinerary itinerary = itineraryRepository.findById(iid)
+                .orElseThrow(() -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
+
+        // 장부 조회
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 장부가 존재하지 않습니다."));
+
+        return ExpenseBookDTO.from(expenseBook); // DTO 로 반환
+    }
+
+
 }
