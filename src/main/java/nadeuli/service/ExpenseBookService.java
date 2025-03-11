@@ -15,7 +15,6 @@
 
 package nadeuli.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.Person;
@@ -32,7 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ExpenseBookService {
     private final ExpenseBookRepository expenseBookRepository;
