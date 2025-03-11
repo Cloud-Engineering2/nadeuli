@@ -24,16 +24,16 @@ import java.util.Map;
 @NoArgsConstructor
 public class FinanceResponseDTO {
     Map<String, Person> adjustment;
-    private Long totalBudget;
-    private Long totalExpenses;
-    private Long currentExpense;
-    private Long totalBalance;
+//    private Long totalBudget;
+    private Long totalExpense;
+//    private Long currentExpense;
+//    private Long totalBalance;
 
-    public FinanceResponseDTO(Map<String, Person> adjustment, Long totalBudget, Long currentExpense, Long totalExpenses, Long totalBalance) {
+    public FinanceResponseDTO(Map<String, Person> adjustment, Long totalExpenses) {
         this.adjustment = adjustment;
-        this.totalBudget = totalBudget;
-        this.currentExpense = currentExpense;
-        this.totalExpenses = totalExpenses;
-        this.totalBalance = totalBalance;
+//        this.totalBudget = totalBudget;
+//        this.currentExpense = currentExpense;
+        this.totalExpense = totalExpenses;
+//        this.totalBalance = totalBalance;
     }
 }
