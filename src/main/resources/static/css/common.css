@@ -141,10 +141,10 @@
 .dropdown::before {
     content: "";
     position: absolute;
-    top: -20px;  /* 풍선과 겹치는 부분 */
+    top: -30px;  /* 풍선과 겹치는 부분 */
     left: 0;
     width: 100%;
-    height: 20px; /* 마우스 인식 영역 확장 */
+    height: 30px; /* 마우스 인식 영역 확장 */
     background: transparent; /* 눈에는 안 보이지만 영역만 확장 */
 }
 
