@@ -8,20 +8,25 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 고민정    2025.02.26   예산 산정 메서드 추가
- *
+ * 고민정    2025.03.11   예산 산정 메서드 삭제
+ * 고민정    2025.03.11   최종, itinerary event 별 정산 메서드 추가
  * ========================================================
  */
 
 package nadeuli.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
-import nadeuli.dto.request.BudgetRequestDTO;
+import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
+import nadeuli.repository.ItineraryRepository;
+import nadeuli.repository.TravelerRepository;
 import nadeuli.service.ExpenseBookService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/itineraries")
@@ -30,38 +35,37 @@ public class ExpenseBookController {
 
     private final ExpenseBookService expenseBookService;
 
-
-    // 예산 설정  /api/itineraries/{iid}/budget
-    @PutMapping("/{iid}/budget")
-    public ResponseEntity<ExpenseBookDTO> updateBudget(@RequestBody @Valid BudgetRequestDTO budgetRequestDTO,
-                                             @PathVariable("iid") Long iid) {
-        Long budget = budgetRequestDTO.getTotalBudget();
-        ExpenseBookDTO expenseBookDto = expenseBookService.setBudget(iid, budget);
-
-        return ResponseEntity.ok(expenseBookDto);
-    }
-
-
-
-    // 총 예산, 지출, 잔액 조회
-    @GetMapping("/{iid}/expenses") // url 필요...!
-    public ResponseEntity<FinanceResponseDTO> getTotalExpense(@PathVariable("iid") Integer iid) {
-        Long itineraryId = Long.valueOf(iid);
-        FinanceResponseDTO response = expenseBookService.calculateTotalMoney(itineraryId);
-
-        return ResponseEntity.ok(response);
-    }
-
-
-    // ItineraryEvent 별 정산
+    // ItineraryEvent 별 정산 : 총 지출, 1/n 정산
     @GetMapping("/{iid}/events/{ieid}/adjustment")
     public ResponseEntity<FinanceResponseDTO> getAdjustment(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid) {
         // PathVariable
-        Long itineraryEventId = Long.valueOf(ieid);
         Long itineraryId = Long.valueOf(iid);
+        Long itineraryEventId = Long.valueOf(ieid);
 
         FinanceResponseDTO response = expenseBookService.calculateMoney(itineraryId, itineraryEventId);
 
         return ResponseEntity.ok(response);
     }
+
+
+    // Total 예산/잔액/지출 조회 및 Traveler 별 최종 1/n 정산
+    @GetMapping("/{iid}/adjustment")
+    public ResponseEntity<AdjustmentResponseDTO> getFinalAdjustment(@PathVariable("iid") Integer iid) {
+        Long itineraryId = Long.valueOf(iid);
+
+        FinanceResponseDTO financeResponseDTO = expenseBookService.getAdjustment(itineraryId);
+        Long totalExpense = financeResponseDTO.getTotalExpense();
+
+        // 지출, 잔액 갱신
+        ExpenseBookDTO expenseBookDto = expenseBookService.updateExpenseBook(itineraryId, totalExpense);
+
+        Long balance = expenseBookDto.getTotalBudget() - totalExpense;
+
+        return ResponseEntity.ok(new AdjustmentResponseDTO(financeResponseDTO.getAdjustment(),
+                                                            financeResponseDTO.getEachExpenses(),
+                                                            expenseBookDto,
+                                                            balance)
+                                );
+    }
+
 }

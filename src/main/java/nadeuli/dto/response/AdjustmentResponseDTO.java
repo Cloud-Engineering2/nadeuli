@@ -16,24 +16,25 @@ package nadeuli.dto.response;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.Person;
 
 import java.util.Map;
 
 @Getter
 @NoArgsConstructor
-public class FinanceResponseDTO {
+public class AdjustmentResponseDTO {
     Map<String, Person> adjustment;
-//    private Long totalBudget;
-    private Long totalExpense;
-    private Map<String, Long> eachExpenses;
-//    private Long totalBalance;
+    private Map<String, Long> eachExpense;
+    private Long totalBalance;
+    private ExpenseBookDTO expenseBookDTO;
 
-    public FinanceResponseDTO(Map<String, Person> adjustment, Long totalExpenses, Map<String, Long> eachExpenses) {
+    public AdjustmentResponseDTO(Map<String, Person> adjustment, Map<String, Long> eachExpense, ExpenseBookDTO expenseBookDto, Long totalBalance) {
         this.adjustment = adjustment;
 //        this.totalBudget = totalBudget;
-        this.eachExpenses = eachExpenses;
-        this.totalExpense = totalExpenses;
-//        this.totalBalance = totalBalance;
+        this.eachExpense = eachExpense;
+//        this.totalExpense = totalExpenses;
+        this.totalBalance = totalBalance;
+        this.expenseBookDTO = expenseBookDto;
     }
 }
