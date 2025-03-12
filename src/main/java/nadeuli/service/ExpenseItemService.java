@@ -9,7 +9,7 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 고민정    2025.02.27   지출 내역 crud 메서드 추가
- *
+ * 고민정    2025.03.10   지출 추가 메서드 반환값 변경
  * ========================================================
  */
 package nadeuli.service;
@@ -43,7 +43,7 @@ public class ExpenseItemService {
 
     // 지출 내역 추가
     @Transactional
-    public void addExpense(ExpenseItemDTO expenseItemDto) {
+    public ExpenseItemDTO addExpense(ExpenseItemDTO expenseItemDto) {
         Long ebid = expenseItemDto.getExpenseBookId();
         TravelerDTO payerDto = expenseItemDto.getTravelerDTO();
         Long ieid = expenseItemDto.getItineraryEventId();
@@ -56,8 +56,10 @@ public class ExpenseItemService {
         Traveler payer = travelerRepository.findByTravelerName(payerName)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Traveler가 존재하지 않습니다"));
 
-        ExpenseItem expensItem = expenseItemDto.toEntity(expenseBook, itineraryEvent, payer);
-        expenseItemRepository.save(expensItem);
+        ExpenseItem expenseItem = expenseItemDto.toEntity(expenseBook, itineraryEvent, payer);
+        expenseItemRepository.save(expenseItem);
+
+        return ExpenseItemDTO.from(expenseItem);
     }
 
 

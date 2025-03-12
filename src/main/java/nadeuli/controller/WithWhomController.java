@@ -38,8 +38,6 @@ public class WithWhomController {
         Long expenseItemId = Long.valueOf(emid);
         List<String> names = nameList.getWithWhomNames();
 
-        // Traveler 조회 : List<TravelerDTO> travelers = travelerService.getIds(itineraryId, names);
-
         // WithWhom 생성
         withWhomService.addWithWhom(itineraryId, expenseItemId, names);
         return ResponseEntity.ok().build();

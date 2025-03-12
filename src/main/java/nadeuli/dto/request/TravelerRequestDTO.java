@@ -15,6 +15,7 @@
 package nadeuli.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 
@@ -25,6 +26,9 @@ import lombok.*;
 public class TravelerRequestDTO {
     @NotBlank(message = "이름을 입력하세요")
     private String travelerName;
+
+    @NotNull
+    private Long totalBudget;
 }
 
 

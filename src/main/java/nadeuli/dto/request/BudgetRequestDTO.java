@@ -23,7 +23,7 @@ import lombok.*;
 @Getter
 @Builder
 public class BudgetRequestDTO {
-    @NotNull(message = "남은 예산 : ")
+    @NotNull()
     private Long totalBudget;
 }
 

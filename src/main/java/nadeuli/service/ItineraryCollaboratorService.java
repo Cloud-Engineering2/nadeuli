@@ -15,11 +15,28 @@
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
+import nadeuli.entity.Itinerary;
+import nadeuli.entity.ItineraryCollaborator;
+import nadeuli.repository.ExpenseBookRepository;
 import nadeuli.repository.ItineraryCollaboratorRepository;
+import nadeuli.repository.ItineraryRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ItineraryCollaboratorService {
     private final ItineraryCollaboratorRepository itineraryCollaboratorRepository;
+    private final ItineraryRepository itineraryRepository;
+    private final ExpenseBookRepository expenseBookRepository;
+
+    public String getOwner(Itinerary itinerary) {
+
+        // ItineraryCollaborator 조회
+        ItineraryCollaborator itineraryCollaborator = itineraryCollaboratorRepository.findFirstByItinerary(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ItineraryCollaborator가 존재하지 않습니다"));
+
+        // owner username
+        return itineraryCollaborator.getUser().getUserName();
+    }
+
 }
