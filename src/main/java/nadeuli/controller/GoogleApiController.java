@@ -28,15 +28,10 @@ public class GoogleApiController {
         return ResponseEntity.ok(googleMapsApiKey);
     }
 
-//    @GetMapping("/autocomplete")
-//    public ResponseEntity<String> autocomplete(@RequestParam String input) {
-//        return ResponseEntity.ok(placeService.getAutocompleteResults(input));
-//    }
-
-//    @PostMapping("/place-details")
-//    public ResponseEntity<String> getPlaceDetails(@RequestBody PlaceRequest request) {
-//        return ResponseEntity.ok(placeService.fetchPlaceDetails(request.getPlaceId(), request.getMainText()));
-//    }
+    @GetMapping("/autocomplete")
+    public ResponseEntity<String> autocomplete(@RequestParam String input) {
+        return ResponseEntity.ok(placeService.getAutocompleteResults(input));
+    }
 
     @GetMapping("/search")
     public ResponseEntity<String> searchPlaces(

@@ -14,6 +14,7 @@
  * 박한철    2025.02.27     DB 구조 수정 ItineraryDTO -> ItineraryPerDayDTO ,  *_date -> *_minute_since_start_day 수정
  *                         moving_minute_from_prev_place 추가
  * 박한철    2025.02.28     @JsonIgnore로 직렬화시 중첩된 데이터 출력되지 않게 적용
+ * 박한철    2025.03.11     movingDistanceFromPrevPlace 추가
  * ========================================================
  */
 
@@ -32,21 +33,31 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ItineraryEventDTO {
     private Long id;
+
     @JsonIgnore
     private ItineraryPerDayDTO itineraryPerDayDTO;
+
     private PlaceDTO placeDTO;
     private int startMinuteSinceStartDay;
     private int endMinuteSinceStartDay;
     private int movingMinuteFromPrevPlace;
-
+    private int movingDistanceFromPrevPlace;
 
     // static factory method
-    public static ItineraryEventDTO of(Long id, ItineraryPerDayDTO itineraryPerDayDTO, PlaceDTO placeDTO, int startMinuteSinceStartDay, int endMinuteSinceStartDay, int movingMinuteFromPrevPlace) {
-        return new ItineraryEventDTO(id, itineraryPerDayDTO, placeDTO, startMinuteSinceStartDay, endMinuteSinceStartDay, movingMinuteFromPrevPlace);
+    public static ItineraryEventDTO of(Long id, ItineraryPerDayDTO itineraryPerDayDTO, PlaceDTO placeDTO,
+                                       int startMinuteSinceStartDay, int endMinuteSinceStartDay,
+                                       int movingMinuteFromPrevPlace, int movingDistanceFromPrevPlace) {
+        return new ItineraryEventDTO(id, itineraryPerDayDTO, placeDTO,
+                startMinuteSinceStartDay, endMinuteSinceStartDay,
+                movingMinuteFromPrevPlace, movingDistanceFromPrevPlace);
     }
 
-    public static ItineraryEventDTO of(ItineraryPerDayDTO itineraryPerDayDTO, PlaceDTO placeDTO, int startMinuteSinceStartDay, int endMinuteSinceStartDay, int movingMinuteFromPrevPlace) {
-        return new ItineraryEventDTO(null, itineraryPerDayDTO, placeDTO, startMinuteSinceStartDay, endMinuteSinceStartDay, movingMinuteFromPrevPlace);
+    public static ItineraryEventDTO of(ItineraryPerDayDTO itineraryPerDayDTO, PlaceDTO placeDTO,
+                                       int startMinuteSinceStartDay, int endMinuteSinceStartDay,
+                                       int movingMinuteFromPrevPlace, int movingDistanceFromPrevPlace) {
+        return new ItineraryEventDTO(null, itineraryPerDayDTO, placeDTO,
+                startMinuteSinceStartDay, endMinuteSinceStartDay,
+                movingMinuteFromPrevPlace, movingDistanceFromPrevPlace);
     }
 
     // entity -> dto
@@ -57,7 +68,8 @@ public class ItineraryEventDTO {
                 PlaceDTO.from(itineraryEvent.getPlace()),
                 itineraryEvent.getStartMinuteSinceStartDay(),
                 itineraryEvent.getEndMinuteSinceStartDay(),
-                itineraryEvent.getMovingMinuteFromPrevPlace()
+                itineraryEvent.getMovingMinuteFromPrevPlace(),
+                itineraryEvent.getMovingDistanceFromPrevPlace()
         );
     }
 
@@ -68,7 +80,8 @@ public class ItineraryEventDTO {
                 placeDTO.toEntity(),
                 startMinuteSinceStartDay,
                 endMinuteSinceStartDay,
-                movingMinuteFromPrevPlace
+                movingMinuteFromPrevPlace,
+                movingDistanceFromPrevPlace
         );
     }
 }

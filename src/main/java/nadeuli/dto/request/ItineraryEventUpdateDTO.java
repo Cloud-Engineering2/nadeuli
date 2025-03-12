@@ -10,6 +10,7 @@
  * ========================================================
  * 박한철    2025.02.25     최초 작성
  * 박한철    2025.02.28     PerDayID 대신 dayCount를 받도록 , placeDTO 대신 pid를 받도록 수정
+ * 박한철    2025.03.11     movingDistanceFromPrevPlace 추가
  * ========================================================
  */
 package nadeuli.dto.request;
@@ -28,5 +29,7 @@ public class ItineraryEventUpdateDTO {
     private int startMinuteSinceStartDay;
     private int endMinuteSinceStartDay;
     private int movingMinuteFromPrevPlace;
+    private int movingDistanceFromPrevPlace;
+    private String hashId;
 
 }

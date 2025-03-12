@@ -1,6 +1,11 @@
 package nadeuli.controller;
 
 import nadeuli.dto.PlaceRequest;
+import nadeuli.dto.request.PlaceListResponseDto;
+import nadeuli.dto.request.PlaceRecommendRequestDto;
+import nadeuli.dto.request.RouteRequestDto;
+import nadeuli.dto.response.PlaceResponseDto;
+import nadeuli.dto.response.RouteResponseDto;
 import nadeuli.service.PlaceCacheService;
 import lombok.RequiredArgsConstructor;
 import nadeuli.service.PlaceService;
@@ -45,5 +50,38 @@ public class PlaceController {
                     return ResponseEntity.badRequest().body(errorResponse);
                 });
     }
+
+
+    @PostMapping("/routes")
+    public ResponseEntity<List<RouteResponseDto>> getRoutes(@RequestBody List<RouteRequestDto> requests) {
+        List<CompletableFuture<RouteResponseDto>> futures = requests.stream()
+                .map(placeService::computeRouteAsync)
+                .toList();
+
+        List<RouteResponseDto> result = futures.stream()
+                .map(CompletableFuture::join)
+                .toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * POST 방식 장소 추천 (커서 기반 페이징)
+     */
+    @PostMapping("/recommend")
+    public PlaceListResponseDto getRecommendedPlaces(@RequestBody PlaceRecommendRequestDto request) {
+        return placeService.getRecommendedPlacesWithCursor(
+                request.getUserLng(),
+                request.getUserLat(),
+                request.getRadius(),
+                request.getCursorScore(),
+                request.getCursorId(),
+                request.getPageSize(),
+                request.getPlaceTypes(),
+                request.isSearchEnabled(),
+                request.getSearchQuery()
+        );
+    }
+
 
 }

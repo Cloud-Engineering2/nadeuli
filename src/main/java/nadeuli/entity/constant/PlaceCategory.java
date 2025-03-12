@@ -109,27 +109,28 @@ public class PlaceCategory {
         addPlaceType("truck_stop", PlaceType.TRANSPORTATION, 5);
 
         // 어트랙션 (Entertainment & Activity)
-        addPlaceType("amusement_park", PlaceType.ATTRACTION, 10);
-        addPlaceType("water_park", PlaceType.ATTRACTION, 10);
-        addPlaceType("casino", PlaceType.ATTRACTION, 8);
-        addPlaceType("ferris_wheel", PlaceType.ATTRACTION, 8);
-        addPlaceType("movie_theater", PlaceType.ATTRACTION, 8);
-        addPlaceType("concert_hall", PlaceType.ATTRACTION, 7);
-        addPlaceType("performing_arts_theater", PlaceType.ATTRACTION, 7);
-        addPlaceType("opera_house", PlaceType.ATTRACTION, 7);
-        addPlaceType("ski_resort", PlaceType.ATTRACTION, 7);
-        addPlaceType("stadium", PlaceType.ATTRACTION, 7);
-        addPlaceType("golf_course", PlaceType.ATTRACTION, 7);
-        addPlaceType("hiking_area", PlaceType.ATTRACTION, 6);
-        addPlaceType("playground", PlaceType.ATTRACTION, 6);
+        addPlaceType("amusement_park", PlaceType.ATTRACTION, 20);
+        addPlaceType("water_park", PlaceType.ATTRACTION, 20);
+        addPlaceType("casino", PlaceType.ATTRACTION, 20);
+        addPlaceType("ferris_wheel", PlaceType.ATTRACTION, 20);
+        addPlaceType("movie_theater", PlaceType.ATTRACTION, 20);
+        addPlaceType("concert_hall", PlaceType.ATTRACTION, 20);
+        addPlaceType("performing_arts_theater", PlaceType.ATTRACTION, 20);
+        addPlaceType("opera_house", PlaceType.ATTRACTION, 20);
+        addPlaceType("ski_resort", PlaceType.ATTRACTION, 20);
+        addPlaceType("stadium", PlaceType.ATTRACTION, 20);
+        addPlaceType("golf_course", PlaceType.ATTRACTION, 20);
+        addPlaceType("hiking_area", PlaceType.ATTRACTION, 20);
+        addPlaceType("playground", PlaceType.ATTRACTION, 20);
 
         // 편의시설 (Convenience & Services)
-        addPlaceType("public_bathroom", PlaceType.CONVENIENCE, 9);
-        addPlaceType("public_bath", PlaceType.CONVENIENCE, 8);
-        addPlaceType("laundry", PlaceType.CONVENIENCE, 7);
-        addPlaceType("pharmacy", PlaceType.CONVENIENCE, 8);
-        addPlaceType("supermarket", PlaceType.CONVENIENCE, 8);
-        addPlaceType("convenience_store", PlaceType.CONVENIENCE, 7);
+        addPlaceType("bank", PlaceType.CONVENIENCE, 19);
+        addPlaceType("public_bathroom", PlaceType.CONVENIENCE, 19);
+        addPlaceType("public_bath", PlaceType.CONVENIENCE, 18);
+        addPlaceType("laundry", PlaceType.CONVENIENCE, 17);
+        addPlaceType("pharmacy", PlaceType.CONVENIENCE, 18);
+        addPlaceType("supermarket", PlaceType.CONVENIENCE, 18);
+        addPlaceType("convenience_store", PlaceType.CONVENIENCE, 17);
         addPlaceType("market", PlaceType.CONVENIENCE, 7);
         addPlaceType("grocery_store", PlaceType.CONVENIENCE, 7);
         addPlaceType("shopping_mall", PlaceType.CONVENIENCE, 7);
