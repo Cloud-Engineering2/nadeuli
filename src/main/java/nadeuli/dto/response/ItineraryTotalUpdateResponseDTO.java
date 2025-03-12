@@ -9,6 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 박한철    2025.02.28     최초 작성
+ * 박한철    2025.03.12     새로 생성된 Event의 DOM hashid - eventid를 리턴하도록 수정
  * ========================================================
  */
 
@@ -30,4 +31,5 @@ public class ItineraryTotalUpdateResponseDTO {
     private ItineraryDTO itinerary;
     private List<ItineraryPerDayDTO> itineraryPerDays;
     private List<ItineraryEventDTO> itineraryEvents;
+    private List<CreatedEventMapping> createdMappings;
 }

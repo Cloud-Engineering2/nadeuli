@@ -13,6 +13,7 @@
  * 박한철    2025.02.27     DB 구조 수정 iid -> ipdid ,  *_date -> *_minute_since_start_day
  *                         moving_minute_from_prev_place 추가
  * 박한철    2025.02.28     업데이트용 메소드 updateFromDto 추가
+ * 박한철    2025.03.11     movingDistanceFromPrevPlace 추가
  * ========================================================
  */
 
@@ -56,29 +57,38 @@ public class ItineraryEvent extends BaseTimeEntity{
     @Column(name = "moving_minute_from_prev_place", nullable = false)
     private int movingMinuteFromPrevPlace; // 이전 장소에서 이동 시간 (분)
 
+    @Column(name = "moving_distance_from_prev_place", nullable = false)
+    private int movingDistanceFromPrevPlace;
+
+
+
     // 생성자
-    public ItineraryEvent(ItineraryPerDay itineraryPerDay, Place place, int startMinuteSinceStartDay, int endMinuteSinceStartDay, int movingMinuteFromPrevPlace) {
+    public ItineraryEvent(ItineraryPerDay itineraryPerDay, Place place, int startMinuteSinceStartDay,
+                          int endMinuteSinceStartDay, int movingMinuteFromPrevPlace, int movingDistanceFromPrevPlace) {
         this.itineraryPerDay = itineraryPerDay;
         this.place = place;
         this.startMinuteSinceStartDay = startMinuteSinceStartDay;
         this.endMinuteSinceStartDay = endMinuteSinceStartDay;
         this.movingMinuteFromPrevPlace = movingMinuteFromPrevPlace;
+        this.movingDistanceFromPrevPlace = movingDistanceFromPrevPlace;
     }
 
+    // static factory method
+    public static ItineraryEvent of(ItineraryPerDay itineraryPerDay, Place place, int startMinuteSinceStartDay,
+                                    int endMinuteSinceStartDay, int movingMinuteFromPrevPlace, int movingDistanceFromPrevPlace) {
+        return new ItineraryEvent(itineraryPerDay, place, startMinuteSinceStartDay, endMinuteSinceStartDay,
+                movingMinuteFromPrevPlace, movingDistanceFromPrevPlace);
+    }
+
+    // updateFromDto 수정
     public void updateFromDto(ItineraryEventUpdateDTO dto, ItineraryPerDay itineraryPerDay) {
         this.itineraryPerDay = itineraryPerDay; // 일정 날짜 업데이트
         this.startMinuteSinceStartDay = dto.getStartMinuteSinceStartDay();
         this.endMinuteSinceStartDay = dto.getEndMinuteSinceStartDay();
         this.movingMinuteFromPrevPlace = dto.getMovingMinuteFromPrevPlace();
+        this.movingDistanceFromPrevPlace = dto.getMovingDistanceFromPrevPlace();
     }
 
-
-
-
-    // static factory method
-    public static ItineraryEvent of(ItineraryPerDay itineraryPerDay, Place place, int startMinuteSinceStartDay, int endMinuteSinceStartDay, int movingMinuteFromPrevPlace) {
-        return new ItineraryEvent(itineraryPerDay, place, startMinuteSinceStartDay, endMinuteSinceStartDay, movingMinuteFromPrevPlace);
-    }
 
 
 }

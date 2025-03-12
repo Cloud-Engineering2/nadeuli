@@ -17,7 +17,9 @@
  * 이홍비    2025.03.03     파일 다운로드 관련 처리 추가
  *                         불필요한 것 처리
  * 이홍비    2025.03.05     지역 사진 저장 경로 추가
+ * 박한철    2025.03.10     S3 이미지 URL로 업로드 기능 추가
  * 이홍비    2025.03.10     google places 받은 사진 저장 경로 추가
+ * 이홍비    2025.03.11     google places s3 저장 경로 변경 처리
  * ========================================================
  */
 
@@ -147,7 +149,7 @@ public class S3Service {
 
                 // 4️⃣ InputStream을 BufferedInputStream으로 감싸서 메모리 절약
                 try (InputStream inputStream = new BufferedInputStream(connection.getInputStream())) {
-                    String s3Key = JOURNAL_DIR_NAME + "/" + fileName;
+                    String s3Key = PLACE_DIR_NAME + "/" + fileName;
 
                     // 5️⃣ 메타데이터 설정 (파일 크기 설정 포함)
                     ObjectMetadata metadata = new ObjectMetadata();
