@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import nadeuli.dto.UserDTO;
 import nadeuli.service.JwtTokenService;
 import nadeuli.service.OAuthService;
+import nadeuli.service.RefreshTokenService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,13 +43,13 @@ import java.util.Optional;
 public class OAuthController {
     private final OAuthService oAuthService;
     private final JwtTokenService jwtTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     /**
      * ✅ OAuth 로그인 성공 후 JWT 발급 API
      */
     @GetMapping("/loginSuccess")
     public ResponseEntity<Map<String, Object>> loginSuccess() {
-        // ✅ OAuth2 인증 정보 확인
         OAuth2AuthenticationToken authToken = getOAuth2AuthenticationToken().orElse(null);
         if (authToken == null) {
             return ResponseEntity.status(401).body(Map.of(
@@ -57,15 +58,13 @@ public class OAuthController {
             ));
         }
 
-        // ✅ OAuth2User 및 Provider 정보 가져오기
         OAuth2User user = authToken.getPrincipal();
         String provider = authToken.getAuthorizedClientRegistrationId();
         log.info("🔹 [OAuthController] OAuth 로그인 요청 - Provider: {}", provider);
 
-        // ✅ OAuth 사용자 정보 처리
         UserDTO userDTO;
         try {
-            userDTO = oAuthService.processOAuthUser(user, provider, authToken);
+            userDTO = oAuthService.processOAuthUser(user, provider);
         } catch (Exception e) {
             log.error("🚨 [OAuthController] OAuth 사용자 정보 처리 중 오류 발생: {}", e.getMessage());
             return ResponseEntity.internalServerError().body(Map.of(
@@ -75,31 +74,25 @@ public class OAuthController {
             ));
         }
 
-        // ✅ JWT 발급 및 저장
         try {
             String email = userDTO.getUserEmail();
-            String existingRefreshToken = jwtTokenService.getRefreshToken(email);
+            String refreshToken = refreshTokenService.getOrGenerateRefreshToken(email, provider);
 
-            // ✅ 새로운 JWT 발급
+            // ✅ 새로운 Access Token 발급
             String accessToken = jwtTokenService.createAccessToken(email);
-            String refreshToken = (existingRefreshToken != null) ? existingRefreshToken : jwtTokenService.createRefreshToken(email);
 
-            // ✅ Redis에 JWT 저장 (Refresh Token은 없을 때만 저장)
-            jwtTokenService.storeToken("accessToken:" + email, accessToken, 30 * 60 * 1000L); // 30분
-            if (existingRefreshToken == null) {
-                jwtTokenService.storeToken("refreshToken:" + email, refreshToken, 7 * 24 * 60 * 60 * 1000L); // 7일
-            }
+            // ✅ Redis에 Access Token 저장 (30분)
+            jwtTokenService.storeAccessToken(email, accessToken);
 
-            log.info("✅ [OAuthController] JWT 발급 완료 - Email: {}, Access Token: [HIDDEN], Refresh Token: [HIDDEN]", email);
+            log.info("✅ [OAuthController] JWT 발급 완료 - Email: {}", email);
 
-            // ✅ JSON 응답 반환
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "tokens", Map.of(
                             "accessToken", accessToken,
                             "refreshToken", refreshToken,
                             "accessTokenExpiresIn", "30분",
-                            "refreshTokenExpiresIn", "7일"
+                            "refreshTokenExpiresIn", "최대 6개월 (Google 정책 적용)"
                     ),
                     "user", Map.of(
                             "email", email,

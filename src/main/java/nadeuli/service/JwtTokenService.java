@@ -30,7 +30,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -44,50 +43,38 @@ public class JwtTokenService {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final long ACCESS_TOKEN_VALID_TIME = 60 * 60 * 1000L; // 1시간
-    private static final long REFRESH_TOKEN_VALID_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주일
-
-    private volatile Key signingKey; // ✅ 멀티스레드 환경에서 안전한 키 캐싱
-
-    /**
-     * 🔹 JWT 서명 키 생성 (최초 1회 캐싱)
-     */
-    private Key getSigningKey() {
-        if (signingKey == null) {
-            synchronized (this) {
-                if (signingKey == null) { // ✅ 이중 체크로 불필요한 생성 방지
-                    signingKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-                }
-            }
-        }
-        return signingKey;
-    }
+    private static final long ACCESS_TOKEN_VALID_TIME = 30 * 60 * 1000L; // ✅ 30분
 
     /**
      * ✅ JWT 액세스 토큰 생성
      */
     public String createAccessToken(String userEmail) {
-        return generateToken(userEmail, ACCESS_TOKEN_VALID_TIME);
-    }
-
-    /**
-     * ✅ JWT 리프레시 토큰 생성
-     */
-    public String createRefreshToken(String userEmail) {
-        return generateToken(userEmail, REFRESH_TOKEN_VALID_TIME);
-    }
-
-    /**
-     * ✅ JWT 토큰 생성 공통 메서드
-     */
-    private String generateToken(String userEmail, long expirationTime) {
         Date now = new Date();
         return Jwts.builder()
                 .setSubject(userEmail)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + expirationTime))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(now.getTime() + ACCESS_TOKEN_VALID_TIME))
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    /**
+     * ✅ Redis에서 Access Token 저장
+     */
+    public void storeAccessToken(String userEmail, String accessToken) {
+        String redisKey = "jwt:accessToken:" + userEmail;
+        redisTemplate.opsForValue().set(redisKey, accessToken, ACCESS_TOKEN_VALID_TIME, TimeUnit.MILLISECONDS);
+        log.info("✅ [storeAccessToken] Redis 저장 완료 - key: {}, TTL: {}ms", redisKey, ACCESS_TOKEN_VALID_TIME);
+    }
+
+    /**
+     * ✅ Redis에서 Access Token 삭제 (로그아웃 시 호출됨)
+     */
+    public boolean deleteAccessToken(String userEmail) {
+        String redisKey = "jwt:accessToken:" + userEmail;
+        Boolean isDeleted = redisTemplate.delete(redisKey);
+        log.info("✅ [deleteAccessToken] Redis Access Token 삭제 - key: {}, 결과: {}", redisKey, isDeleted);
+        return Boolean.TRUE.equals(isDeleted);
     }
 
     /**
@@ -95,7 +82,7 @@ public class JwtTokenService {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8))).build().parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException e) {
             log.warn("🚨 [validateToken] 만료된 토큰");
@@ -116,7 +103,7 @@ public class JwtTokenService {
      */
     public String getUserEmail(String token) {
         try {
-            return Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
+            return Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8))).build()
                     .parseClaimsJws(token).getBody().getSubject();
         } catch (ExpiredJwtException e) {
             log.warn("🚨 [getUserEmail] 만료된 토큰에서 이메일 추출");
@@ -125,40 +112,5 @@ public class JwtTokenService {
             log.error("🚨 [getUserEmail] 토큰에서 이메일 추출 중 오류 발생: {}", e.getMessage());
             return null;
         }
-    }
-
-    /**
-     * ✅ Redis에서 저장된 Refresh Token 가져오기
-     */
-    public String getRefreshToken(String userEmail) {
-        String redisKey = "jwt:refreshToken:" + userEmail;
-        try {
-            Object token = redisTemplate.opsForValue().get(redisKey);
-            if (token instanceof String refreshToken) {
-                return refreshToken;
-            }
-        } catch (Exception e) {
-            log.error("🚨 [getRefreshToken] Redis에서 Refresh Token 조회 중 오류 발생: {}", e.getMessage());
-        }
-        return null;
-    }
-
-    /**
-     * ✅ Redis에 JWT 저장
-     */
-    public void storeToken(String key, String token, long duration) {
-        String redisKey = "jwt:" + key; // ✅ 일관된 키 네이밍 적용
-        redisTemplate.opsForValue().set(redisKey, token, duration, TimeUnit.MILLISECONDS);
-        log.info("✅ [storeToken] Redis 저장 완료 - key: {}, duration: {}ms", redisKey, duration);
-    }
-
-    /**
-     * ✅ Redis에서 JWT 삭제
-     */
-    public boolean deleteTokens(String key) {
-        String redisKey = "jwt:" + key;
-        Boolean isDeleted = redisTemplate.delete(redisKey);
-        log.info("✅ [deleteTokens] Redis 토큰 삭제 - key: {}, 결과: {}", redisKey, isDeleted);
-        return Boolean.TRUE.equals(isDeleted);
     }
 }

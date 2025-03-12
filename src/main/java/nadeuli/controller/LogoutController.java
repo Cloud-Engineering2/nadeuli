@@ -29,16 +29,17 @@ import java.util.Map;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class LogoutController {
+
     private final JwtTokenService jwtTokenService;
 
     /**
-     * ✅ 로그아웃 API (Redis에서 JWT 삭제)
+     * ✅ 로그아웃 API (Redis에서 Access Token 삭제, Refresh Token 유지)
      */
     @DeleteMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(@RequestHeader(value = "Authorization", required = false) String token) {
         // 🚨 예외 처리: Authorization 헤더 확인
         if (token == null || !token.startsWith("Bearer ")) {
-            log.warn("🚨 [로그아웃 실패] 유효하지 않은 토큰 형식 - token: {}", token);
+            log.warn("🚨 [로그아웃 실패] 유효하지 않은 토큰 형식: {}", token);
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "🚨 유효하지 않은 토큰 형식입니다.",
@@ -47,9 +48,26 @@ public class LogoutController {
         }
 
         // 🔹 AccessToken에서 "Bearer " 제거
-        String accessToken = token.replace("Bearer ", "");
+        String accessToken = token.substring(7);
 
-        // ✅ JWT에서 사용자 이메일 추출 (만료된 토큰에서도 이메일 가져오기 가능하도록 수정)
+        // ✅ JWT에서 사용자 이메일 추출
+        try {
+            if (!jwtTokenService.validateToken(accessToken)) {
+                log.warn("🚨 [로그아웃 실패] 유효하지 않은 JWT");
+                return ResponseEntity.status(403).body(Map.of(
+                        "success", false,
+                        "message", "🚨 유효하지 않은 JWT입니다. 다시 로그인해주세요."
+                ));
+            }
+        } catch (Exception e) {
+            log.error("🚨 [로그아웃 실패] JWT 검증 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", "🚨 JWT 검증 중 오류가 발생했습니다.",
+                    "error", e.getMessage()
+            ));
+        }
+
         String userEmail = jwtTokenService.getUserEmail(accessToken);
 
         if (userEmail == null || userEmail.isEmpty()) {
@@ -61,19 +79,19 @@ public class LogoutController {
             ));
         }
 
-        // ✅ Redis에서 토큰 삭제
-        boolean accessDeleted = jwtTokenService.deleteTokens("accessToken:" + userEmail);
-        boolean refreshDeleted = jwtTokenService.deleteTokens("refreshToken:" + userEmail);
+        // ✅ Redis에서 Access Token 삭제
+        boolean accessDeleted = jwtTokenService.deleteAccessToken(userEmail);
 
-        // ✅ 로그아웃 성공 처리 (이미 삭제된 경우도 성공으로 간주)
-        log.info("✅ 로그아웃 완료 - userEmail: {}, AccessToken 삭제: {}, RefreshToken 삭제: {}",
-                userEmail, accessDeleted, refreshDeleted);
+        if (!accessDeleted) {
+            log.warn("⚠️ [로그아웃] Access Token 삭제 실패 또는 존재하지 않음 - userEmail: {}", userEmail);
+        }
+
+        log.info("✅ 로그아웃 완료 - userEmail: {}, AccessToken 삭제: {}", userEmail, accessDeleted);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "✅ 로그아웃 완료",
-                "accessTokenDeleted", accessDeleted,
-                "refreshTokenDeleted", refreshDeleted
+                "accessTokenDeleted", accessDeleted
         ));
     }
 }

@@ -24,9 +24,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.entity.User;
 import nadeuli.repository.UserRepository;
-import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -36,110 +36,71 @@ import org.springframework.web.client.RestTemplate;
 public class OAuthUnlinkService {
 
     private final UserRepository userRepository;
-    private final JwtTokenService jwtTokenService; // ✅ Redis에서 JWT 삭제를 위해 사용
-    private final RestTemplate restTemplate; // ✅ Bean으로 등록한 RestTemplate 주입
-    private final Environment env; // ✅ 환경 변수에서 값 가져오기 위해 사용
-
-    private static final String KAKAO_UNLINK_URL = "https://kapi.kakao.com/v1/user/unlink";
-    private static final String GOOGLE_UNLINK_URL = "https://oauth2.googleapis.com/revoke?token=";
+    private final RestTemplate restTemplate;
+    private final RefreshTokenService refreshTokenService;
 
     /**
-     * ✅ OAuth 계정 해제 및 회원 삭제
+     * ✅ OAuth 제공사에서 계정 연결 해제 (Google/Kakao)
      */
-    public boolean unlinkAndDeleteUser(String email) {
-        User user = userRepository.findByUserEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("🚨 [unlinkAndDeleteUser] 사용자 찾을 수 없음: " + email));
+    public boolean unlinkProviderAccount(String email, String provider, String accessToken) {
+        String unlinkUrl;
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
 
-        String provider = user.getProvider();
-        String refreshToken = user.getRefreshToken(); // ✅ Refresh Token 사용
-
-        // ✅ OAuth 계정 해제 실패 시 삭제 진행하지 않음
-        if (!unlinkUser(provider, refreshToken)) {
-            log.warn("🚨 [{}] OAuth 계정 해제 실패 - 사용자 삭제 중단: {}", provider, email);
+        if ("google".equals(provider)) {
+            unlinkUrl = "https://accounts.google.com/o/oauth2/revoke?token=" + accessToken;
+        } else if ("kakao".equals(provider)) {
+            unlinkUrl = "https://kapi.kakao.com/v1/user/unlink";
+            headers.set("Authorization", "Bearer " + accessToken);
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            requestEntity = new HttpEntity<>("target_id_type=user_id", headers);
+        } else {
+            log.warn("🚨 [unlinkProviderAccount] 지원되지 않는 OAuth 제공사: {}", provider);
             return false;
         }
 
-        log.info("✅ [{}] OAuth 계정 해제 완료: {}", provider, email);
-
-        // ✅ Redis에서 JWT 삭제
-        boolean accessDeleted = jwtTokenService.deleteTokens("accessToken:" + email);
-        boolean refreshDeleted = jwtTokenService.deleteTokens("refreshToken:" + email);
-        log.info("✅ [{}] Redis에서 JWT 삭제 완료 - AccessToken 삭제: {}, RefreshToken 삭제: {}", provider, accessDeleted, refreshDeleted);
-
-        // ✅ MySQL에서 사용자 삭제
         try {
-            userRepository.delete(user);
-            log.info("✅ [{}] DB에서 사용자 삭제 완료: {}", provider, email);
-            return true;
-        } catch (Exception e) {
-            log.error("🚨 [{}] 사용자 삭제 중 오류 발생: {}", provider, e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * ✅ OAuth 제공자별 계정 해제 API 호출 (향상된 switch 적용)
-     */
-    private boolean unlinkUser(String provider, String refreshToken) {
-        return switch (provider.toLowerCase()) {
-            case "kakao" -> unlinkKakaoUser();
-            case "google" -> unlinkGoogleUser(refreshToken);
-            default -> throw new IllegalArgumentException("🚨 지원되지 않는 OAuth 제공자: " + provider);
-        };
-    }
-
-    /**
-     * ✅ 카카오 OAuth 계정 해제 API 호출
-     */
-    private boolean unlinkKakaoUser() {
-        try {
-            String kakaoAdminKey = env.getProperty("kakao.admin-key"); // ✅ `@Value` 대신 `Environment` 사용
-
-            if (kakaoAdminKey == null || kakaoAdminKey.isBlank()) {
-                log.error("🚨 [Kakao] 카카오 Admin Key가 설정되지 않음.");
+            ResponseEntity<String> response = restTemplate.exchange(unlinkUrl, HttpMethod.POST, requestEntity, String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                log.info("✅ [unlinkProviderAccount] OAuth 계정 연결 해제 성공 - Email: {}, Provider: {}", email, provider);
+                return true;
+            } else {
+                log.error("🚨 [unlinkProviderAccount] OAuth 해제 실패 - Email: {}, Provider: {}, 응답 코드: {}", email, provider, response.getStatusCode());
                 return false;
             }
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "KakaoAK " + kakaoAdminKey);
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-            HttpEntity<String> request = new HttpEntity<>("", headers);
-            ResponseEntity<String> response = restTemplate.exchange(KAKAO_UNLINK_URL, HttpMethod.POST, request, String.class);
-
-            if (response.getStatusCode() == HttpStatus.OK) {
-                log.info("✅ [Kakao] 계정 해제 성공");
-                return true;
-            }
         } catch (Exception e) {
-            log.error("🚨 [Kakao] 계정 해제 중 오류 발생: {}", e.getMessage());
+            log.error("🚨 [unlinkProviderAccount] OAuth 계정 연결 해제 중 오류 발생 - Email: {}, Provider: {}, 오류: {}", email, provider, e.getMessage());
+            return false;
         }
-        return false;
     }
 
     /**
-     * ✅ 구글 OAuth 계정 해제 API 호출
+     * ✅ OAuth 계정 해제 및 사용자 정보 삭제
      */
-    private boolean unlinkGoogleUser(String refreshToken) {
-        if (refreshToken == null || refreshToken.isEmpty()) {
-            log.warn("🚨 [Google] Refresh Token이 없음. 계정 해제 불가");
+    @Transactional
+    public boolean unlinkAndDeleteUser(String email, String accessToken) {
+        User user = userRepository.findByUserEmail(email).orElse(null);
+
+        if (user == null) {
+            log.warn("🚨 [unlinkAndDeleteUser] 사용자 정보를 찾을 수 없음 - Email: {}", email);
             return false;
         }
 
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-            HttpEntity<String> request = new HttpEntity<>("", headers);
-            ResponseEntity<String> response = restTemplate.exchange(GOOGLE_UNLINK_URL + refreshToken, HttpMethod.POST, request, String.class);
-
-            if (response.getStatusCode() == HttpStatus.OK) {
-                log.info("✅ [Google] 계정 해제 성공");
-                return true;
-            }
-        } catch (Exception e) {
-            log.error("🚨 [Google] 계정 해제 중 오류 발생: {}", e.getMessage());
+        // OAuth 계정 해제
+        boolean unlinkSuccess = unlinkProviderAccount(email, user.getProvider(), accessToken);
+        if (!unlinkSuccess) {
+            log.error("🚨 [unlinkAndDeleteUser] OAuth 계정 해제 실패 - Email: {}", email);
+            return false;
         }
-        return false;
+
+        // Refresh Token 삭제 (회원 탈퇴 시만 삭제)
+        refreshTokenService.deleteRefreshToken(email);
+
+        // 사용자 정보 삭제
+        userRepository.delete(user);
+        log.info("✅ [unlinkAndDeleteUser] 사용자 정보 삭제 완료 - Email: {}", email);
+        return true;
     }
 }
+
+

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.service.JwtTokenService;
 import nadeuli.service.OAuthUnlinkService;
+import nadeuli.service.RefreshTokenService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,7 @@ public class OAuthUnlinkController {
 
     private final OAuthUnlinkService oAuthUnlinkService;
     private final JwtTokenService jwtTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     /**
      * ✅ OAuth 계정 해제 및 회원 탈퇴 API
@@ -73,7 +75,7 @@ public class OAuthUnlinkController {
 
         String authenticatedEmail = jwtTokenService.getUserEmail(accessToken);
 
-        if (!email.equals(authenticatedEmail)) { // ✅ 불필요한 `null` 체크 제거
+        if (!email.equals(authenticatedEmail)) {
             log.warn("🚨 [OAuthUnlink] 본인 계정만 탈퇴할 수 있습니다. 요청: {}, 인증된 이메일: {}", email, authenticatedEmail);
             return ResponseEntity.status(403).body(Map.of(
                     "success", false,
@@ -81,40 +83,33 @@ public class OAuthUnlinkController {
             ));
         }
 
-        // 2️⃣ OAuth 계정 해제 및 MySQL 삭제
-        boolean isDeleted;
-        try {
-            isDeleted = oAuthUnlinkService.unlinkAndDeleteUser(email);
-        } catch (Exception e) {
-            log.error("🚨 [OAuthUnlink] 회원 탈퇴 처리 중 오류 발생: {}", e.getMessage());
+        // 2️⃣ OAuth 계정 해제
+        boolean unlinkSuccess = oAuthUnlinkService.unlinkAndDeleteUser(email, accessToken);
+
+// unlinkSuccess 값이 항상 true인 경우, 실제 API 응답 값을 반영하도록 수정
+        if (!unlinkSuccess) {
+            log.error("🚨 [OAuthUnlink] OAuth 계정 해제 실패 - Email: {}", email);
             return ResponseEntity.status(500).body(Map.of(
                     "success", false,
-                    "message", "🚨 회원 탈퇴 처리 중 오류가 발생했습니다.",
-                    "error", e.getMessage()
+                    "message", "🚨 OAuth 계정 해제 중 오류가 발생했습니다."
             ));
         }
 
-        if (isDeleted) {
-            // ✅ Redis에서 JWT 삭제 추가
-            boolean accessDeleted = jwtTokenService.deleteTokens("accessToken:" + email);
-            boolean refreshDeleted = jwtTokenService.deleteTokens("refreshToken:" + email);
-            log.info("✅ [OAuthUnlink] 회원 탈퇴 완료 - Email: {}, AccessToken 삭제: {}, RefreshToken 삭제: {}",
-                    email, accessDeleted, refreshDeleted);
+        // 3️⃣ Redis에서 Access Token 삭제
+        boolean accessDeleted = jwtTokenService.deleteAccessToken(email);
 
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "email", email,
-                    "message", "✅ OAuth 계정 해제 및 회원 탈퇴 완료",
-                    "accessTokenDeleted", accessDeleted,
-                    "refreshTokenDeleted", refreshDeleted
-            ));
-        }
+        // 4️⃣ DB에서 Refresh Token 삭제
+        boolean refreshDeleted = refreshTokenService.deleteRefreshToken(email);
 
-        log.error("🚨 [OAuthUnlink] 회원 탈퇴 실패 - Email: {}", email);
-        return ResponseEntity.status(500).body(Map.of(
-                "success", false,
+        log.info("✅ [OAuthUnlink] 회원 탈퇴 완료 - Email: {}, OAuth 해제: {}, AccessToken 삭제: {}, RefreshToken 삭제: {}",
+                email, unlinkSuccess, accessDeleted, refreshDeleted);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
                 "email", email,
-                "message", "❌ 회원 탈퇴 실패"
+                "message", "✅ OAuth 계정 해제 및 회원 탈퇴 완료",
+                "accessTokenDeleted", accessDeleted,
+                "refreshTokenDeleted", refreshDeleted
         ));
     }
 }
