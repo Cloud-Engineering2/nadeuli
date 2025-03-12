@@ -9,7 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 박한철    2025.03.05     최초 작성
- *
+ * 박한철    2025.03.12     description -> explanation
  * ========================================================
  */
 
@@ -59,8 +59,8 @@ public class Region {
     @Column(name = "image_url", length = 300)
     private String imageUrl;
 
-    @Column(name = "description", length = 300)
-    private String description;
+    @Column(name = "explanation", length = 300)
+    private String explanation;
 
     /**
      * 기존에 사용하던 생성자(위도, 경도, radius가 필요 없는 경우).
@@ -77,7 +77,7 @@ public class Region {
      * 새로 추가한 생성자: 위도, 경도, radius까지 포함
      */
     public Region(String name, String alias, int level, Region parent,
-                  Double latitude, Double longitude, Double radius, String imageUrl, String description) {
+                  Double latitude, Double longitude, Double radius, String imageUrl, String explanation) {
         this.name = name;
         this.alias = alias;
         this.level = level;
@@ -86,7 +86,7 @@ public class Region {
         this.longitude = longitude;
         this.radius = radius;
         this.imageUrl = imageUrl;
-        this.description = description;
+        this.explanation = explanation;
     }
 
     // 정적 팩토리 메서드 (위도/경도/반경 미포함)
@@ -96,16 +96,16 @@ public class Region {
 
     // 정적 팩토리 메서드 (위도/경도/반경 포함)
     public static Region of(String name, String alias, int level, Region parent,
-                            Double latitude, Double longitude, Double radius, String imageUrl, String description) {
-        return new Region(name, alias, level, parent, latitude, longitude, radius, imageUrl, description);
+                            Double latitude, Double longitude, Double radius, String imageUrl, String explanation) {
+        return new Region(name, alias, level, parent, latitude, longitude, radius, imageUrl, explanation);
     }
 
     public void setImageUrl(String newImageUrl) {
         this.imageUrl = newImageUrl;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
 
 }

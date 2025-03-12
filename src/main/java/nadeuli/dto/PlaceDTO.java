@@ -10,7 +10,8 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     최초 작성
- * 박한철    2025.03.09     description, googleRating 등 필드 추가
+ * 박한철    2025.03.09     explanation, googleRating 등 필드 추가
+ * 박한철    2025.03.12     explanation -> explanation
  * ========================================================
  */
 
@@ -33,7 +34,7 @@ public class PlaceDTO {
     private double latitude;
     private double longitude;
     private int searchCount;
-    private String description;
+    private String explanation;
     private Double googleRating;
     private Integer googleRatingCount;
     private String googleURL;
@@ -42,15 +43,15 @@ public class PlaceDTO {
     private String regularOpeningHours;
 
     public static PlaceDTO of(Long id, String googlePlaceId, String placeName, String address, double latitude, double longitude,
-                              int searchCount, String description, Double googleRating, Integer googleRatingCount,
+                              int searchCount, String explanation, Double googleRating, Integer googleRatingCount,
                               String googleURL, String imageUrl, PlaceType placeType, String regularOpeningHours) {
-        return new PlaceDTO(id, googlePlaceId, placeName, address, latitude, longitude, searchCount, description, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
+        return new PlaceDTO(id, googlePlaceId, placeName, address, latitude, longitude, searchCount, explanation, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
     }
 
     public static PlaceDTO of(String googlePlaceId, String placeName, String address, double latitude, double longitude,
-                              String description, Double googleRating, Integer googleRatingCount, String googleURL, String imageUrl,
+                              String explanation, Double googleRating, Integer googleRatingCount, String googleURL, String imageUrl,
                               PlaceType placeType, String regularOpeningHours) {
-        return new PlaceDTO(null, googlePlaceId, placeName, address, latitude, longitude, 1, description, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
+        return new PlaceDTO(null, googlePlaceId, placeName, address, latitude, longitude, 1, explanation, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
     }
 
     // entity -> dto 변환
@@ -63,7 +64,7 @@ public class PlaceDTO {
                 place.getLatitude(),
                 place.getLongitude(),
                 place.getSearchCount(),
-                place.getDescription(),
+                place.getExplanation(),
                 place.getGoogleRating(),
                 place.getGoogleRatingCount(),
                 place.getGoogleURL(),
@@ -75,6 +76,6 @@ public class PlaceDTO {
 
     // dto -> entity 변환
     public Place toEntity() {
-        return new Place(googlePlaceId, placeName, address, latitude, longitude, description, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
+        return new Place(googlePlaceId, placeName, address, latitude, longitude, explanation, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
     }
 }
