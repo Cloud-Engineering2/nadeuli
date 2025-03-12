@@ -19,9 +19,7 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.request.BudgetRequestDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
-import nadeuli.repository.*;
 import nadeuli.service.ExpenseBookService;
-import nadeuli.service.ItineraryCollaboratorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,12 +29,6 @@ import org.springframework.web.bind.annotation.*;
 public class ExpenseBookController {
 
     private final ExpenseBookService expenseBookService;
-    private final ItineraryCollaboratorService itineraryCollaboratorService;
-    private final ItineraryRepository itineraryRepository;
-    private final ItineraryPerDayRepository itineraryPerDayRepository;
-    private final ItineraryEventRepository itineraryEventRepository;
-    private final ItineraryCollaboratorRepository itineraryCollaboratorRepository;
-    private final ExpenseBookRepository expenseBookRepository;
 
 
     // 예산 설정  /api/itineraries/{iid}/budget
