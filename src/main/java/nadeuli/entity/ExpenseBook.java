@@ -56,6 +56,10 @@ public class ExpenseBook extends BaseTimeEntity {
 //
 
     // static factory method
+    public static ExpenseBook of (Long id, Itinerary iid, Long totalBudget, Long totalExpenses) {
+        return new ExpenseBook(id, iid, totalBudget, totalExpenses);
+    }
+
     public static ExpenseBook of (Itinerary iid, Long totalBudget, Long totalExpenses) {
         return new ExpenseBook(null, iid, totalBudget, totalExpenses);
     }
@@ -64,8 +68,8 @@ public class ExpenseBook extends BaseTimeEntity {
         this.totalBudget = budget;
     }
 
-    public void updateExpenses(Long expenses) {
-        this.totalExpenses = expenses;
+    public void updateExpense(Long expense) {
+        this.totalExpenses = expense;
     }
 
 

@@ -18,7 +18,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.WithWhomDTO;
 import nadeuli.entity.ExpenseItem;
-import nadeuli.entity.Itinerary;
 import nadeuli.entity.Traveler;
 import nadeuli.entity.WithWhom;
 import nadeuli.repository.ExpenseItemRepository;
@@ -37,22 +36,13 @@ public class WithWhomService {
     private final ExpenseItemRepository expenseItemRepository;
     private final ItineraryRepository itineraryRepository;
     private final TravelerRepository travelerRepository;
+    private final ExpenseBookService expenseBookService;
 
     // WithWhom 추가
     @Transactional
     public void addWithWhom(Long itineraryId, Long expenseItemId, List<String> withWhomNames) {
-
-        // Itinerary 조회
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
-
         // Traveler 조회
         List<Traveler> travelers = travelerRepository.findByItineraryIdAndTravelerNames(itineraryId, withWhomNames);
-        System.out.println("travelerRepository: ");
-        System.out.println(withWhomNames);
-        System.out.println(travelers);
-        System.out.println("Traveler 조회 결과: " + travelers.size());
-
         // ExpenseItem 조회
         ExpenseItem expenseItem = expenseItemRepository.findById(expenseItemId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseItem이 존재하지 않습니다"));
@@ -62,6 +52,7 @@ public class WithWhomService {
                 .map(traveler -> WithWhom.of(expenseItem, traveler))
                 .forEach(withWhomRepository::save);
     }
+
 
     // WithWhom 삭제
     @Transactional

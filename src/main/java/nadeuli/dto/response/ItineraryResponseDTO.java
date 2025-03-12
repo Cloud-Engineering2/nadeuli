@@ -1,5 +1,5 @@
 /* ItineraryResponseDTO.java
- * 수정시간, 생성시간을 포함한 일정을 리턴하기 위한 Response DTO
+ * 수정 시간, 생성 시간을 포함한 일정을 반환하기 위한 Response DTO
  * 작성자 : 박한철
  * 최초 작성 날짜 : 2025.02.25
  *
@@ -9,20 +9,24 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 박한철    2025.02.25     최초 작성
- * 박한철    2025.02.26     DTO 변환방식 오버로딩 방식으로 추가
+ * 박한철    2025.02.26     DTO 변환 방식 오버로딩 방식으로 추가
+ * 이홍비    2025.03.10     @ToString 추가
  * ========================================================
  */
+
 package nadeuli.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
 import java.time.LocalDateTime;
 
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItineraryResponseDTO {private Long id;

@@ -11,7 +11,8 @@
  * ========================================================
  * 이홍비    2025.02.25     최초 작성
  * 고민정    2025;02.25     필드 수정
- *
+ * 이홍비    2025.03.10     @ToString 추가
+ * 고민정    2025.03.12     of, toEntity 메서드 수정
  * ========================================================
  */
 
@@ -20,9 +21,12 @@ package nadeuli.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import nadeuli.entity.ExpenseBook;
+import nadeuli.entity.Itinerary;
 
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExpenseBookDTO {
@@ -37,9 +41,9 @@ public class ExpenseBookDTO {
         return new ExpenseBookDTO(id, itineraryDTO, totalBudget, totalExpenses);
     }
 
-    public static ExpenseBookDTO of (ItineraryDTO itineraryDTO, Long totalBudget, Long totalExpenses) {
-        return new ExpenseBookDTO(null, itineraryDTO, totalBudget, totalExpenses);
-    }
+//    public static ExpenseBookDTO of (ItineraryDTO itineraryDTO, Long totalBudget, Long totalExpenses) {
+//        return new ExpenseBookDTO(null, itineraryDTO, totalBudget, totalExpenses);
+//    }
 
     // entity -> dto
     public static ExpenseBookDTO from(ExpenseBook expenseBook) {
@@ -52,7 +56,11 @@ public class ExpenseBookDTO {
     }
 
     // dto => entity
-    public ExpenseBook toEntity() {
-        return ExpenseBook.of(itineraryDTO.toEntity(), totalBudget, totalExpenses);
+//    public ExpenseBook toEntity() {
+//        return ExpenseBook.of(itineraryDTO.toEntity(), totalBudget, totalExpenses);
+//    }
+
+    public ExpenseBook toEntity(Itinerary itinerary) {
+        return ExpenseBook.of(this.id, itinerary, totalBudget, totalExpenses);
     }
 }

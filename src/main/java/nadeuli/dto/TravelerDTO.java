@@ -11,7 +11,7 @@
  * ========================================================
  * 이홍비    2025.02.25     최초 작성
  * 고민정    2025.02.25     필드 수정
- *
+ * 고민정    2025.03.11     budget, expense 필드 추가
  * ========================================================
  */
 
@@ -30,14 +30,16 @@ public class TravelerDTO {
     private Integer id;
     private Long itineraryId;
     private String travelerName;
+    private Long totalBudget;
+    private Long totalExpense;
 
     // static factory method
-    public static TravelerDTO of (Integer id, Long itineraryId, String travelerName) {
-        return new TravelerDTO(id, itineraryId, travelerName);
+    public static TravelerDTO of (Integer id, Long itineraryId, String travelerName, Long totalBudget) {
+        return new TravelerDTO(id, itineraryId, travelerName, totalBudget, 0L);
     }
 
-    public static TravelerDTO of (Long itineraryId, String travelerName) {
-        return new TravelerDTO(null, itineraryId, travelerName);
+    public static TravelerDTO of (Long itineraryId, String travelerName, Long totalBudget) {
+        return new TravelerDTO(null, itineraryId, travelerName, totalBudget, 0L);
     }
 
     // entity -> dto
@@ -45,13 +47,15 @@ public class TravelerDTO {
         return new TravelerDTO(
                 traveler.getId(),
                 traveler.getIid().getId(),
-                traveler.getTravelerName()
+                traveler.getTravelerName(),
+                traveler.getTotalBudget(),
+                traveler.getTotalExpense()
         );
     }
 
     // dto => entity
     public Traveler toEntity(Itinerary itinerary) {
-        return Traveler.of(itinerary, travelerName);
+        return Traveler.of(itinerary, travelerName, totalBudget);
     }
 
 }
