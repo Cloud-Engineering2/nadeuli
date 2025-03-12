@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bottomline.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <title>일정 - 최종 결과물 열람</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module" src="/js/common.js"></script>
+    <script src="/js/bottomline.js"></script>
+    <style>
+        /*body { display: flex; flex-wrap: wrap; height: 100vh; margin: 0; }*/
+        /*.quadrant { box-sizing: border-box; border: 1px solid #ddd; }*/
+        /*#map { width: 50%; height: calc(50% - 50px); margin-top:50px; }*/
+        /*#journal-images { width: 50%; height: 50%; overflow: hidden; position: relative; }*/
+        /*#journal-text { width: 50%; height: 50%; overflow: auto; padding: 10px; position: relative; }*/
+        /*#expenses { width: 50%; height: 50%; overflow: auto; padding: 10px; }*/
+        /*#prev-btn, #next-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0, 0, 0, 0.5); color: white; border: none; cursor: pointer; padding: 5px 10px; }*/
+        /*#prev-btn { left: 10px; }*/
+        /*#next-btn { right: 10px; }*/
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header}"></div>
+
+<!--<div id="map" class="quadrant"></div>-->
+<!--<div id="journal-images" class="quadrant">-->
+<!--    <img id="journal-image" src="" alt="여행 사진" style="width: 100%; height: 100%; object-fit: cover; display: none;">-->
+<!--    <button id="prev-btn">◀</button>-->
+<!--    <button id="next-btn">▶</button>-->
+<!--</div>-->
+<!--<div id="journal-text" class="quadrant">-->
+<!--    <p id="journal-content">방문지를 선택해 주세요.</p>-->
+<!--</div>-->
+<!--<div id="expenses" class="quadrant">-->
+<!--    <p id="expense-summary">공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--    <ul id="expense-list"></ul>-->
+<!--</div>-->
+
+<div class="container">
+    <!-- 왼쪽 공간 -->
+    <div class="left-space">
+        <div class="map-container" id="map"></div>
+        <div class="expenses-container">
+            <p id="expense-summary">공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>1공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>2공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>3공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>4공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>5공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>6공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>7공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>8공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>9공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>10공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>11공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>12공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>13공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>14공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>15공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>16공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>17공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>18공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>19공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>20공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>21공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>22공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>23공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>24공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>25공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>26공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>27공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>28공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>29공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+            <p>30 공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>
+
+
+
+            <ul id="expense-list"></ul>
+        </div>
+    </div>
+
+    <!-- 오른쪽 공간 -->
+    <div class="right-space">
+<!--        <div class="image-container">-->
+<!--            <img id="journal-image" src="" alt="여행 사진">-->
+<!--            <div class="image-buttons">-->
+<!--                <button id="prev-btn">◀</button>-->
+<!--                <button id="next-btn">▶</button>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <hr class="divider">-->
+
+<!--        <div class="journal-container">-->
+<!--            <p id="journal-content">방문지를 선택해 주세요.</p>-->
+<!--        </div>-->
+
+        <div class="journal-space">
+            <div class="image-container">
+                <img id="journal-image" src="https://d2tfgua35fdi4.cloudfront.net/journal/877125ce-19fa-4205-8ade-c933787c95e8_나들이.png" alt="여행 사진">
+                <div class="image-buttons">
+                    <button id="prev-btn">◀</button>
+                    <button id="next-btn">▶</button>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="journal-content">
+                <div id="no-content"></div>
+                <div id="has-content"></div>
+
+<!--                <p id="journal-content">방문지를 선택해 주세요.</p>-->
+
+<!--                <p>1공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>2공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>3공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>4공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>5공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>6공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>7공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>8공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>9공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>10공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>11공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>12공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>13공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>14공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>15공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>16공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>17공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>18공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>19공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>20공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>21공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>22공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>23공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>24공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>25공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>26공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>27공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>28공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>29공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+<!--                <p>30 공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer-div mt-4 flex flex-col space-y-0.5 text-xs text-gray-500 md:mt-1 md:flex-row md:space-x-2 md:space-y-0 lg:mt-1">
+    <span>© 2025 나들이 & 멋쟁이사자처럼 All rights reserved.</span>
+</div>
+</body>
