@@ -1,20 +1,4 @@
 /* GlobalExceptionHandler.java
- * nadeuli Service - 여행
- * 전역 예외 처리 클래스
- * 작성자 : 이홍비
- * 최종 수정 날짜 : 2025.02.25
- *
- * ========================================================
- * 프로그램 수정 / 보완 이력
- * ========================================================
- * 작업자        날짜        수정 / 보완 내용
- * ========================================================
- * 이홍비    2025.02.25     최초 작성 : GlobalExceptionHandler
- * 국경민    2025.03.04        OAuth 및 JWT 관련 예외 처리 추가
- * ========================================================
- */
-
-/* GlobalExceptionHandler.java
  * 공통 예외 처리 핸들러 (OAuth 및 JWT 예외 포함)
  * 작성자 : 국경민
  * 최초 작성 날짜 : 2025-03-04
@@ -26,15 +10,14 @@
  * ========================================================
  * 국경민      03-04       기본 예외 처리 추가
  * 국경민      03-06       OAuth 및 JWT 관련 예외 처리 추가
+ * 국경민      03-12       Deprecated API 제거 및 로그 처리 개선
  * ========================================================
  */
 
 package nadeuli.common;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -43,6 +26,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.NoSuchElementException;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -51,7 +35,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNoSuchElementExceptions(NoSuchElementException e) {
-        e.printStackTrace(); // 로그 출력
+        log.warn("🚨 [handleNoSuchElementExceptions] 데이터 없음: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 자료를 찾을 수 없습니다: " + e.getMessage());
     }
 
@@ -60,7 +44,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllExceptions(Exception e) {
-        e.printStackTrace(); // 로그 출력
+        log.error("🚨 [handleAllExceptions] 시스템 오류 발생: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("예기치 못한 오류가 발생했습니다: " + e.getMessage());
     }
 
@@ -69,7 +53,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<String> handleIllegalStateException(IllegalStateException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); // 400 코드 반환
+        log.warn("🚨 [handleIllegalStateException] 잘못된 요청: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
     /**
@@ -77,7 +62,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 일치하지 않습니다: " + e.getMessage());
+        log.warn("🚨 [handleBadCredentialsException] 인증 실패: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 일치하지 않습니다.");
     }
 
     // 🔥 OAuth & JWT 관련 예외 처리 추가 🔥
@@ -87,7 +73,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<String> handleOAuthSecurityException(SecurityException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OAuth 인증에 실패했습니다: " + e.getMessage());
+        log.warn("🚨 [handleOAuthSecurityException] OAuth 인증 실패: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OAuth 인증에 실패했습니다.");
     }
 
     /**
@@ -95,6 +82,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException e) {
+        log.warn("🚨 [handleExpiredJwtException] JWT 만료됨");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("JWT 토큰이 만료되었습니다. 다시 로그인해주세요.");
     }
 
@@ -103,6 +91,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(SignatureException.class)
     public ResponseEntity<String> handleJwtSignatureException(SignatureException e) {
+        log.warn("🚨 [handleJwtSignatureException] 잘못된 JWT 서명");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("잘못된 JWT 서명입니다.");
     }
 
@@ -111,6 +100,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(UnsupportedJwtException.class)
     public ResponseEntity<String> handleUnsupportedJwtException(UnsupportedJwtException e) {
+        log.warn("🚨 [handleUnsupportedJwtException] 지원되지 않는 JWT 형식");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("지원되지 않는 JWT 형식입니다.");
     }
 
@@ -119,6 +109,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MalformedJwtException.class)
     public ResponseEntity<String> handleMalformedJwtException(MalformedJwtException e) {
+        log.warn("🚨 [handleMalformedJwtException] JWT 형식 오류");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("JWT 형식이 올바르지 않습니다.");
     }
 
@@ -127,7 +118,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("JWT 처리 중 오류가 발생했습니다: " + e.getMessage());
+        log.warn("🚨 [handleIllegalArgumentException] JWT 처리 오류: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("JWT 처리 중 오류가 발생했습니다.");
     }
 }
-

@@ -1,18 +1,13 @@
 package nadeuli;
 
-import nadeuli.service.EmailNotificationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest
-public class NadeuliApplicationTests {
-
-    @MockBean
-    private EmailNotificationService emailNotificationService; // ✅ 메일 서비스 Mock 처리
+@SpringBootTest // ✅ 실제 `application.properties` 설정을 그대로 사용
+class NadeuliApplicationTests {
 
     @Test
     void contextLoads() {
-        // ✅ 간단한 테스트 실행
+        // ✅ 애플리케이션 컨텍스트가 정상적으로 로딩되는지 테스트
     }
 }

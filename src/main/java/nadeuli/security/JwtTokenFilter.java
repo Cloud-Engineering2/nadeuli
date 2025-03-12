@@ -9,6 +9,9 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 국경민      03-04       JWT 필터 생성 초안
+ * 국경민      03-12       JWT 검증 로직 개선 및 예외 처리 강화
+ * 국경민      03-12       SecurityContextHolder 설정 최적화 및 중복 방지
+ * 국경민      03-12       JWT 인증 실패 시 SecurityContext 초기화 및 예외 처리 강화
  * ========================================================
  */
 
@@ -21,12 +24,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.service.JwtTokenService;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -37,42 +41,56 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenService jwtTokenService;
 
+    /**
+     * ✅ JWT를 검증하고 SecurityContext에 저장
+     */
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain chain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain chain)
             throws ServletException, IOException {
 
-        // 1️⃣ 요청에서 JWT 토큰 추출
         String token = resolveToken(request);
 
-        if (token != null) {
-            if (jwtTokenService.validateToken(token)) {
-                String userEmail = jwtTokenService.getUserEmail(token);
+        if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                if (jwtTokenService.validateToken(token)) {
+                    String userEmail = jwtTokenService.getUserEmail(token);
+                    if (userEmail != null) {
+                        UserDetails userDetails = User.withUsername(userEmail)
+                                .password("")
+                                .authorities(Collections.emptyList()) // ✅ ROLE 적용 가능
+                                .build();
 
-                if (userEmail != null && !userEmail.isEmpty()) { // ✅ Null 및 빈 값 체크 추가
-                    // 2️⃣ UserDetails 객체 생성
-                    UserDetails userDetails = User.withUsername(userEmail)
-                            .password("") // 비밀번호는 JWT에서 관리하지 않음
-                            .authorities(Collections.emptyList()) // 권한 없음
-                            .build();
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-                    // 3️⃣ SecurityContextHolder에 인증 정보 설정
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                        // ✅ SecurityContext 생성 및 설정
+                        SecurityContext context = SecurityContextHolder.createEmptyContext();
+                        context.setAuthentication(authentication);
+                        SecurityContextHolder.setContext(context);
 
-                    log.info("✅ [JwtTokenFilter] 인증 완료 - Email: {}", userEmail);
+                        log.info("✅ JWT 인증 성공 - 사용자: {}", userEmail);
+                    } else {
+                        log.warn("🚨 JWT에서 이메일 추출 실패");
+                        SecurityContextHolder.clearContext();
+                        sendUnauthorizedResponse(response, "🚨 JWT에서 이메일을 추출할 수 없습니다.");
+                        return;
+                    }
                 } else {
-                    log.warn("🚨 [JwtTokenFilter] JWT에서 이메일 추출 실패 - 유효한 이메일 없음");
+                    log.warn("🚨 유효하지 않은 JWT 토큰");
+                    SecurityContextHolder.clearContext();
+                    sendUnauthorizedResponse(response, "🚨 유효하지 않은 JWT 토큰입니다.");
+                    return;
                 }
-            } else {
-                log.warn("🚨 [JwtTokenFilter] 유효하지 않은 토큰!");
+            } catch (Exception e) {
+                log.error("🚨 JWT 필터 처리 중 오류 발생: {}", e.getMessage());
+                SecurityContextHolder.clearContext();
+                sendUnauthorizedResponse(response, "🚨 JWT 오류: " + e.getMessage());
+                return;
             }
         }
 
-        // 4️⃣ 다음 필터 실행
         chain.doFilter(request, response);
     }
 
@@ -81,8 +99,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
      */
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        return (bearerToken != null && bearerToken.startsWith("Bearer "))
-                ? bearerToken.substring(7)
-                : null;
+        return (bearerToken != null && bearerToken.startsWith("Bearer ")) ? bearerToken.substring(7) : null;
+    }
+
+    /**
+     * ✅ 401 Unauthorized JSON 응답 반환 메서드
+     */
+    private void sendUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write("{\"success\": false, \"message\": \"" + message + "\"}");
     }
 }

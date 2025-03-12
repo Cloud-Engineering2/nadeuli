@@ -13,6 +13,9 @@
  * 국경민      03-05       JWT 생성 및 검증 기능 추가
  * 국경민      03-05       JWT 생성 공통화 및 예외 처리 강화
  * 국경민      03-06       JWT 검증 방식 최신화 및 Redis Key 개선
+ * 국경민      03-12       서명 키 캐싱 및 Redis 키 네이밍 정리
+ * 국경민      03-12       서명 키 캐싱 최적화 및 동기화 문제 해결
+ * 국경민      03-12       JWT 예외 처리 방식 개선 및 성능 최적화
  * ========================================================
  */
 
@@ -25,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -43,34 +47,43 @@ public class JwtTokenService {
     private static final long ACCESS_TOKEN_VALID_TIME = 60 * 60 * 1000L; // 1시간
     private static final long REFRESH_TOKEN_VALID_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주일
 
+    private volatile Key signingKey; // ✅ 멀티스레드 환경에서 안전한 키 캐싱
+
     /**
-     * 🔹 JWT 서명 키 생성
+     * 🔹 JWT 서명 키 생성 (최초 1회 캐싱)
      */
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        if (signingKey == null) {
+            synchronized (this) {
+                if (signingKey == null) { // ✅ 이중 체크로 불필요한 생성 방지
+                    signingKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        }
+        return signingKey;
     }
 
     /**
      * ✅ JWT 액세스 토큰 생성
      */
-    public String createAccessToken(String userPk) {
-        return generateToken(userPk, ACCESS_TOKEN_VALID_TIME);
+    public String createAccessToken(String userEmail) {
+        return generateToken(userEmail, ACCESS_TOKEN_VALID_TIME);
     }
 
     /**
      * ✅ JWT 리프레시 토큰 생성
      */
-    public String createRefreshToken(String userPk) {
-        return generateToken(userPk, REFRESH_TOKEN_VALID_TIME);
+    public String createRefreshToken(String userEmail) {
+        return generateToken(userEmail, REFRESH_TOKEN_VALID_TIME);
     }
 
     /**
      * ✅ JWT 토큰 생성 공통 메서드
      */
-    private String generateToken(String userPk, long expirationTime) {
+    private String generateToken(String userEmail, long expirationTime) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(userPk)
+                .setSubject(userEmail)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + expirationTime))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -85,9 +98,15 @@ public class JwtTokenService {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException e) {
-            log.warn("🚨 [validateToken] 만료된 토큰: {}", token);
+            log.warn("🚨 [validateToken] 만료된 토큰");
+        } catch (MalformedJwtException e) {
+            log.warn("🚨 [validateToken] 변조된 토큰");
+        } catch (UnsupportedJwtException e) {
+            log.warn("🚨 [validateToken] 지원되지 않는 JWT");
+        } catch (IllegalArgumentException e) {
+            log.warn("🚨 [validateToken] 빈 토큰");
         } catch (Exception e) {
-            log.warn("🚨 [validateToken] 유효하지 않은 JWT: {}", token);
+            log.warn("🚨 [validateToken] 유효하지 않은 JWT: {}", e.getMessage());
         }
         return false;
     }
@@ -100,8 +119,8 @@ public class JwtTokenService {
             return Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
                     .parseClaimsJws(token).getBody().getSubject();
         } catch (ExpiredJwtException e) {
-            log.warn("🚨 [getUserEmail] 만료된 토큰에서 이메일 추출 - {}", e.getClaims().getSubject());
-            return e.getClaims().getSubject();
+            log.warn("🚨 [getUserEmail] 만료된 토큰에서 이메일 추출");
+            return e.getClaims().getSubject(); // ✅ 만료된 토큰에서도 이메일 추출 가능
         } catch (Exception e) {
             log.error("🚨 [getUserEmail] 토큰에서 이메일 추출 중 오류 발생: {}", e.getMessage());
             return null;
@@ -128,16 +147,18 @@ public class JwtTokenService {
      * ✅ Redis에 JWT 저장
      */
     public void storeToken(String key, String token, long duration) {
-        redisTemplate.opsForValue().set("jwt:" + key, token, duration, TimeUnit.MILLISECONDS);
-        log.info("✅ [storeToken] Redis 저장 완료 - key: {}, duration: {}ms", key, duration);
+        String redisKey = "jwt:" + key; // ✅ 일관된 키 네이밍 적용
+        redisTemplate.opsForValue().set(redisKey, token, duration, TimeUnit.MILLISECONDS);
+        log.info("✅ [storeToken] Redis 저장 완료 - key: {}, duration: {}ms", redisKey, duration);
     }
 
     /**
      * ✅ Redis에서 JWT 삭제
      */
     public boolean deleteTokens(String key) {
-        Boolean isDeleted = redisTemplate.delete("jwt:" + key);
-        log.info("✅ [deleteTokens] Redis 토큰 삭제 - key: {}, 결과: {}", key, isDeleted);
+        String redisKey = "jwt:" + key;
+        Boolean isDeleted = redisTemplate.delete(redisKey);
+        log.info("✅ [deleteTokens] Redis 토큰 삭제 - key: {}, 결과: {}", redisKey, isDeleted);
         return Boolean.TRUE.equals(isDeleted);
     }
 }

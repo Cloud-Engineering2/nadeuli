@@ -12,6 +12,9 @@
  * 국경민      03-05       provider 값을 OAuth2UserRequest에서 가져오도록 수정
  * 국경민      03-05       JWT 발급 오류 수정 및 디버깅 로그 추가
  * 국경민      03-05       Provider 값 설정 방식 개선 및 예외 처리 추가
+ * 국경민      03-12       SecurityContext 중복 호출 제거 및 코드 최적화
+ * 국경민      03-12       Refresh Token 저장 로직 개선 및 예외 처리 강화
+ * 국경민      03-12       Optional 적용 및 JWT 저장 방식 최적화
  * ========================================================
  */
 
@@ -30,6 +33,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -44,73 +48,85 @@ public class OAuthController {
      */
     @GetMapping("/loginSuccess")
     public ResponseEntity<Map<String, Object>> loginSuccess() {
-        // ✅ Spring Security의 SecurityContextHolder에서 인증 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // 🚨 예외 처리: OAuth2 인증 정보 확인
-        if (authentication == null) {
-            log.error("🚨 SecurityContextHolder에 인증 정보가 없습니다!");
+        // ✅ OAuth2 인증 정보 확인
+        OAuth2AuthenticationToken authToken = getOAuth2AuthenticationToken().orElse(null);
+        if (authToken == null) {
             return ResponseEntity.status(401).body(Map.of(
                     "success", false,
-                    "message", "🚨 로그인 정보가 없습니다. 다시 로그인해주세요.",
-                    "status", 401
+                    "message", "🚨 OAuth2 인증을 먼저 수행해야 합니다. 다시 로그인해주세요."
             ));
         }
 
-        if (!(authentication instanceof OAuth2AuthenticationToken authToken)) {
-            log.error("🚨 OAuth2 인증 정보가 없습니다! 로그인 과정에서 문제가 발생함.");
-            return ResponseEntity.status(400).body(Map.of(
-                    "success", false,
-                    "message", "🚨 OAuth2 인증을 먼저 수행해야 합니다!",
-                    "status", 400
-            ));
-        }
-
-        // ✅ OAuth2User 가져오기
+        // ✅ OAuth2User 및 Provider 정보 가져오기
         OAuth2User user = authToken.getPrincipal();
         String provider = authToken.getAuthorizedClientRegistrationId();
-        log.info("🔹 OAuth 로그인 요청 - Provider: {}", provider);
+        log.info("🔹 [OAuthController] OAuth 로그인 요청 - Provider: {}", provider);
 
         // ✅ OAuth 사용자 정보 처리
-        UserDTO userDTO = oAuthService.processOAuthUser(user, provider, authToken);
-
+        UserDTO userDTO;
         try {
-            // ✅ 기존 Refresh Token 확인
-            String existingRefreshToken = jwtTokenService.getRefreshToken(userDTO.getUserEmail());
+            userDTO = oAuthService.processOAuthUser(user, provider, authToken);
+        } catch (Exception e) {
+            log.error("🚨 [OAuthController] OAuth 사용자 정보 처리 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "success", false,
+                    "message", "🚨 OAuth 사용자 정보 처리 중 오류가 발생했습니다.",
+                    "details", e.getMessage()
+            ));
+        }
+
+        // ✅ JWT 발급 및 저장
+        try {
+            String email = userDTO.getUserEmail();
+            String existingRefreshToken = jwtTokenService.getRefreshToken(email);
 
             // ✅ 새로운 JWT 발급
-            String accessToken = jwtTokenService.createAccessToken(userDTO.getUserEmail());
-            String refreshToken = (existingRefreshToken != null) ? existingRefreshToken : jwtTokenService.createRefreshToken(userDTO.getUserEmail());
+            String accessToken = jwtTokenService.createAccessToken(email);
+            String refreshToken = (existingRefreshToken != null) ? existingRefreshToken : jwtTokenService.createRefreshToken(email);
 
-            // ✅ Redis에 토큰 저장 (새로운 Refresh Token이 있을 경우 업데이트)
-            jwtTokenService.storeToken("accessToken:" + userDTO.getUserEmail(), accessToken, 30 * 60 * 1000L); // 30분
+            // ✅ Redis에 JWT 저장 (Refresh Token은 없을 때만 저장)
+            jwtTokenService.storeToken("accessToken:" + email, accessToken, 30 * 60 * 1000L); // 30분
             if (existingRefreshToken == null) {
-                jwtTokenService.storeToken("refreshToken:" + userDTO.getUserEmail(), refreshToken, 7 * 24 * 60 * 60 * 1000L); // 7일
+                jwtTokenService.storeToken("refreshToken:" + email, refreshToken, 7 * 24 * 60 * 60 * 1000L); // 7일
             }
 
-            log.info("✅ JWT 발급 완료 - Email: {}, Access Token: [HIDDEN], Refresh Token: [HIDDEN]", userDTO.getUserEmail());
+            log.info("✅ [OAuthController] JWT 발급 완료 - Email: {}, Access Token: [HIDDEN], Refresh Token: [HIDDEN]", email);
 
             // ✅ JSON 응답 반환
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "accessToken", accessToken,
-                    "refreshToken", refreshToken,
-                    "accessTokenExpiresIn", "30분",
-                    "refreshTokenExpiresIn", "7일",
-                    "userEmail", userDTO.getUserEmail(),
-                    "userName", userDTO.getUserName(),
-                    "profileImage", userDTO.getProfileImage(),
-                    "provider", provider
+                    "tokens", Map.of(
+                            "accessToken", accessToken,
+                            "refreshToken", refreshToken,
+                            "accessTokenExpiresIn", "30분",
+                            "refreshTokenExpiresIn", "7일"
+                    ),
+                    "user", Map.of(
+                            "email", email,
+                            "name", userDTO.getUserName(),
+                            "profileImage", userDTO.getProfileImage(),
+                            "provider", provider
+                    )
             ));
         } catch (Exception e) {
-            log.error("🚨 JWT 발급 중 오류 발생: {}", e.getMessage());
+            log.error("🚨 [OAuthController] JWT 발급 중 오류 발생: {}", e.getMessage());
             return ResponseEntity.internalServerError().body(Map.of(
                     "success", false,
                     "message", "🚨 JWT 발급 중 오류가 발생했습니다.",
-                    "details", e.getMessage(),
-                    "status", 500
+                    "details", e.getMessage()
             ));
         }
     }
-}
 
+    /**
+     * ✅ SecurityContext에서 OAuth2AuthenticationToken 가져오는 메서드
+     */
+    private Optional<OAuth2AuthenticationToken> getOAuth2AuthenticationToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof OAuth2AuthenticationToken authToken) {
+            return Optional.of(authToken);
+        }
+        log.error("🚨 [OAuthController] SecurityContextHolder에 OAuth2 인증 정보가 없습니다!");
+        return Optional.empty();
+    }
+}

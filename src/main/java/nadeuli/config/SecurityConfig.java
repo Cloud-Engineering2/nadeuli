@@ -28,50 +28,61 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.io.PrintWriter;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 
 @Slf4j
 @Configuration
-@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtTokenService jwtTokenService;
     private final CustomOAuth2UserService customOAuth2UserService;
 
+    /**
+     * ✅ Spring Security 설정을 정의하는 메서드
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // ✅ CSRF 비활성화 (REST API)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ JWT 기반 인증 유지
+                // ✅ CSRF 보호 비활성화 (REST API 기반이므로 필요 없음)
+                .csrf(csrf -> csrf.disable()) // ✅ 메서드 참조 불가 → 람다 유지
+
+                // ✅ 세션을 사용하지 않고 JWT 기반 인증을 적용
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // ✅ API 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/", "/auth/**").permitAll()
-                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/**", "/public/**").permitAll()
                         .anyRequest().authenticated()
                 )
+
+                // ✅ OAuth2 로그인 설정
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler((request, response, authentication) -> {
                             // ✅ SecurityContext 유지
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
                             log.info("✅ OAuth2 로그인 성공 - 사용자: {}", authentication.getPrincipal());
-
-                            // ✅ 로그인 성공 시 JSON 응답 반환 (리다이렉트 방지)
                             response.setContentType("application/json");
                             response.setCharacterEncoding("UTF-8");
-                            PrintWriter writer = response.getWriter();
-                            writer.println("{ \"message\": \"로그인 성공\", \"status\": 200 }");
-                            writer.flush();
+                            response.getWriter().println("{ \"success\": true, \"message\": \"로그인 성공\" }");
+                            response.getWriter().flush();
                         })
                 )
+
+                // ✅ JWT 인증 필터 추가 (OAuth2 로그인 이후에도 정상 동작 보장)
                 .addFilterBefore(new JwtTokenFilter(jwtTokenService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * ✅ OpenID Connect (OIDC) 사용자 서비스 등록
+     */
+    @Bean
+    public OidcUserService oidcUserService() {
+        return new OidcUserService();
     }
 }
