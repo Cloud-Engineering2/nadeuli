@@ -17,6 +17,7 @@
 
 package nadeuli.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.Person;
@@ -38,9 +39,8 @@ public class ExpenseBookService {
     private final WithWhomRepository withWhomRepository;
     private final ItineraryEventRepository itineraryEventRepository;
     private final ExpenseItemRepository expenseItemRepository;
-    private final ItineraryPerDayRepository itineraryPerDayRepository;
-    private final ItineraryCollaboratorService itineraryCollaboratorService;
     private final TravelerRepository travelerRepository;
+    private final ItineraryEventService itineraryEventService;
 
     // ExpenseBook 조회 by Itinerary
     public Long get(Long iid) {
@@ -52,115 +52,9 @@ public class ExpenseBookService {
     }
 
 
-    // 1/n 정산
-//    public Map<String, Person> adjustmentExpense(Long itineraryEventId) {
-//
-//        // Itinerary Event 가져오기
-//        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(itineraryEventId)
-//                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary Event가 존재하지 않습니다"));
-//        // Expense Item 가져오기
-//        List<ExpenseItem> expenseItems = expenseItemRepository.findAllByIeid(itineraryEvent);
-//
-//        // Map : Persons
-//        Map<String, Person> persons = new HashMap<>();
-//
-//        for (ExpenseItem expenseItem : expenseItems) {
-//            List<WithWhom> withWhoms = withWhomRepository.findAllByEmid(expenseItem);
-//
-//            // WithWhom 이름 리스트
-//            List<String> withWhomNames = withWhoms.stream()
-//                    .map(whom -> whom.getTid().getTravelerName()).collect(Collectors.toList());
-//
-//            // 비용
-//            Long amount = expenseItem.getExpense();
-//
-//            // payer
-//            String payerName = expenseItem.getPayer().getTravelerName();
-//            Person payer = persons.getOrDefault(payerName, new Person());
-//
-//            // 정산 비용
-//            Long splitAmount = amount / (withWhoms.size()+1);
-//
-//            for (String with : withWhomNames) {
-//                Person withWhomPerson = persons.getOrDefault(with, new Person());
-//                withWhomPerson.send(payerName, splitAmount);
-//                persons.put(with, withWhomPerson);
-//                payer.receive(with, splitAmount);
-//                persons.put(payerName, payer);
-//            }
-//
-//            // 개별 총 지출 : payer의 expense + 지불 - 수금
-//            payer.updateTotalExpense(payer.getTotalExpense() + amount);
-//            persons.put(payerName, payer); // traveler의 expense에 set 필요
-//        }
-//        return persons;
-//    }
-
-
-    // 총 예산, 지출, 잔액 조회
-//    public FinanceResponseDTO calculateTotalMoney(Long itineraryId) {
-//        // Itinerary 조회
-//        Itinerary itinerary = itineraryRepository.findById(itineraryId)
-//                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
-//        // ExpenseBook 조회
-//        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
-//                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다"));
-//        // ItineraryPerDay 조회
-//        List<ItineraryPerDay> itineraryPerDays = itineraryPerDayRepository.findByItinerary(itinerary);
-//        // ItineraryEvent 조회
-//        List<ItineraryEvent> itineraryEvents = itineraryPerDays.stream()
-//                .flatMap(itineraryPerDay -> itineraryEventRepository.findByItineraryPerDay(itineraryPerDay).stream())
-//                .collect(Collectors.toList());
-//
-//        // owner username
-//        String owner = itineraryCollaboratorService.getOwner(itinerary);
-//
-//
-//        // 총 지출
-//        AtomicReference<Long> expenditure = new AtomicReference<>(0L);
-//
-//
-//        for (ItineraryEvent itineraryEvent : itineraryEvents) {
-//            // 정산 완료 후
-//            Map<String, Person> adjustment = adjustmentExpense(itineraryEvent.getId());
-//
-//            // UserName과 똑같은 TravelerName을 가진 Traveler 찾기
-//
-//            Optional<Person> personOptional = Optional.ofNullable(adjustment.get(owner));
-//
-//            personOptional.ifPresentOrElse(
-//                    person -> { // 존재할 때
-//                        Long total = person.getTotalExpense();
-//                        Long totalSendedMoney = person.getSendedMoney() != null
-//                                ? person.getSendedMoney().values().stream().mapToLong(Long::longValue).sum()
-//                                : 0L;
-//
-//                        Long totalReceivedMoney = person.getReceivedMoney() != null
-//                                ? person.getReceivedMoney().values().stream().mapToLong(Long::longValue).sum()
-//                                : 0L;
-//
-//                        expenditure.updateAndGet(v -> v + (total + totalSendedMoney - totalReceivedMoney));
-//                    },
-//                    () -> { // 존재하지 않을 때
-//                    }
-//            );
-//
-//        }
-//        Long totalExpense = expenditure.get();
-//        expenseBook.updateExpenses(totalExpense);
-//
-//        // 총 예산
-//        Long budget = expenseBook.getTotalBudget();
-//
-//        // 총 잔액
-//        Long balance = budget - totalExpense;
-//
-//        return new FinanceResponseDTO(null, budget, 0L, totalExpense, balance);
-//
-//    }
-
 
     // 1/n 정산
+    @Transactional
     public FinanceResponseDTO calculateMoney(Long itineraryId, Long itineraryEventId) {
         // Itinerary 조회
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
@@ -215,15 +109,87 @@ public class ExpenseBookService {
         return new FinanceResponseDTO(persons, currentItineraryEventTotalExpense, eachExpenses);
     }
 
-    // traveler : total expense 계산
-    public void calculateTotalExpense(Long itineraryId, Long ItineraryEventId) {
-        // Itinerary 조회
+
+
+    // 최종 정산 정보 조회
+    @Transactional
+    public FinanceResponseDTO getAdjustment(Long itineraryId) {
+        // 1. Itinerary로 모든 ItineraryEvent 조회하기
+        List<ItineraryEvent> itineraryEventList = itineraryEventService.getAllByItineraryId(itineraryId);
+
+        // 2. 변수
+        Long totalExpense = 0L;   // 여행 총 지출
+        Map<String, Long> eachExpense = new HashMap<>(); // 여행 개별 총 지출
+        Map<String, Person> totalAdjustment = new HashMap<>(); // 최종 1/n 정산
+
+        // 3. 최종 정산
+        for (ItineraryEvent event : itineraryEventList) {
+            FinanceResponseDTO response = calculateMoney(itineraryId, event.getId());
+            // 여행 총 지출
+            totalExpense += response.getTotalExpense();
+            // 여행 개별 총 지출
+            for (Map.Entry<String, Long> entry : response.getEachExpenses().entrySet()) {
+                eachExpense.put(entry.getKey(), eachExpense.getOrDefault(entry.getKey(), 0L) + entry.getValue());
+            }
+            // 1/n 정산
+            Map<String, Person> adjustment = response.getAdjustment();
+
+            for (String personName : adjustment.keySet()) {
+                Person currentPerson = totalAdjustment.getOrDefault(personName, new Person()); // 기존 값 or 새 Person 객체
+
+                Person newPerson = adjustment.get(personName);
+
+                // sendedMoney 업데이트
+                for (Map.Entry<String, Long> entry : newPerson.getSendedMoney().entrySet()) {
+                    currentPerson.send(entry.getKey(), entry.getValue());
+                }
+
+                // receivedMoney 업데이트
+                for (Map.Entry<String, Long> entry : newPerson.getReceivedMoney().entrySet()) {
+                    currentPerson.receive(entry.getKey(), entry.getValue());
+                }
+
+                // 업데이트된 currentPerson을 다시 totalAdjustment에 저장
+                totalAdjustment.put(personName, currentPerson);
+            }
+        }
+
+        // 4. Traveler 지출 설정
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
         List<Traveler> travelerList = travelerRepository.findAllByIid(itinerary);
+        for (Traveler traveler : travelerList) {
+            traveler.updateTotalExpense(eachExpense.get(traveler.getTravelerName()));
+            System.out.println(traveler.getTotalExpense());
+        }
+
+        return new FinanceResponseDTO(totalAdjustment, totalExpense, eachExpense);
     }
 
+    @Transactional
+    public ExpenseBookDTO updateExpenseBook(Long itineraryId, Long totalExpense) {
+        // Itinerary 조회
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
+        ExpenseBookDTO expenseBookDto = getExpenseBook(itineraryId);
+        ExpenseBook expenseBook = expenseBookDto.toEntity(itinerary);
+
+        expenseBook.updateExpense(totalExpense);
+        ExpenseBookDTO responseDto = ExpenseBookDTO.from(expenseBook);
+
+        return responseDto;
+
+    }
+
+
+    // 남은 예산 조회
+
+
+
+
+
     // ExpenseBookDTO 반환
+    @Transactional
     public ExpenseBookDTO getExpenseBook(Long iid) {
         // 일정 조회
         Itinerary itinerary = itineraryRepository.findById(iid)
