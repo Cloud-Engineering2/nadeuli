@@ -12,6 +12,8 @@
  * 박한철      2025.03.09   구글 TextSearch 위도경도반경 제한 포함  API 프록시 함수 작성
  * 박한철      2025.03.10   getRecommendedPlacesWithCursor 작성 (나들이 장소 페이징 커서)
  * 박한철      2025.03.11   computeRouteAsync   카카오 거리 API 작성
+ * 김대환      2025.03.12   구글 TextSearch 캐싱 추가
+ * 박한철      2025.03.12   카카오 computeRouteAsync 캐싱 추가
  * ========================================================
  */
 package nadeuli.service;
@@ -61,7 +63,8 @@ public class PlaceService {
 
     private static final String CACHE_PREFIX = "place_details:";
     private static final Duration CACHE_TTL = Duration.ofDays(5);
-
+    private static final Duration SEARCH_CACHE_TTL = Duration.ofHours(5);
+    private static final Duration ROUTE_CACHE_TTL = Duration.ofDays(30);
 
     // 나들이 장소 커서 페이징 호출함수
     public PlaceListResponseDto getRecommendedPlacesWithCursor(double userLng, double userLat, double radius, Double cursorScore, Long cursorId, int pageSize, List<String> placeTypes, boolean searchEnabled, String searchQuery) {
@@ -211,9 +214,39 @@ public class PlaceService {
     //카카오 장소간 거리(시간) 측정 API 프록시
     @Async
     public CompletableFuture<RouteResponseDto> computeRouteAsync(RouteRequestDto dto) {
+        // 캐시 키 구성
+        String cacheKey = String.format(
+                "route_cache:%.6f:%.6f:%.6f:%.6f",
+                dto.getOriginLatitude(), dto.getOriginLongitude(),
+                dto.getDestinationLatitude(), dto.getDestinationLongitude()
+        );
+
+        // Redis 캐시 조회
+        String cachedResult = redisTemplate.opsForValue().get(cacheKey);
+        if (cachedResult != null) {
+            System.out.println("✅ 캐시에서 거리/시간 정보 반환: " + cacheKey);
+            try {
+                // JSON 문자열 → DTO 파싱
+                RouteResponseDto cachedDto = objectMapper.readValue(cachedResult, RouteResponseDto.class);
+                return CompletableFuture.completedFuture(cachedDto);
+            } catch (Exception e) {
+                System.err.println("캐시 응답 파싱 오류: " + e.getMessage());
+                // 캐시 파싱 실패 시 캐시 무시하고 진행
+            }
+        }
+
+        // API 호출 URL 구성
         String url = "https://apis-navi.kakaomobility.com/v1/directions";
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url).queryParam("origin", dto.getOriginLongitude() + "," + dto.getOriginLatitude()).queryParam("destination", dto.getDestinationLongitude() + "," + dto.getDestinationLatitude()).queryParam("summary", true).queryParam("priority", "RECOMMEND").queryParam("car_fuel", "GASOLINE").queryParam("car_hipass", true).queryParam("alternatives", false).queryParam("road_details", false);
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("origin", dto.getOriginLongitude() + "," + dto.getOriginLatitude())
+                .queryParam("destination", dto.getDestinationLongitude() + "," + dto.getDestinationLatitude())
+                .queryParam("summary", true)
+                .queryParam("priority", "RECOMMEND")
+                .queryParam("car_fuel", "GASOLINE")
+                .queryParam("car_hipass", true)
+                .queryParam("alternatives", false)
+                .queryParam("road_details", false);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "KakaoAK " + kakaoRestApiKey);
@@ -235,17 +268,23 @@ public class PlaceService {
             int resultCode = route.path("result_code").asInt(-1);
             if (resultCode != 0) {
                 System.out.println("❌ Kakao 길찾기 실패 result_code=" + resultCode);
-                return CompletableFuture.completedFuture(new RouteResponseDto(0, 0)); // 거리 0m, 시간 "0"
+                return CompletableFuture.completedFuture(new RouteResponseDto(0, 0));
             }
 
-            // 성공 시 거리/시간 추출
             double distance = route.path("summary").path("distance").asDouble(0); // meters
             int distanceMeters = (int) Math.round(distance);
 
             double durationSeconds = route.path("summary").path("duration").asDouble(0); // seconds
             int durationMinutes = (int) Math.ceil(durationSeconds / 60.0);
 
-            return CompletableFuture.completedFuture(new RouteResponseDto(distanceMeters, durationMinutes));
+            RouteResponseDto resultDto = new RouteResponseDto(distanceMeters, durationMinutes);
+
+            // 캐시에 저장 (JSON 문자열로 직렬화)
+            String jsonToCache = objectMapper.writeValueAsString(resultDto);
+            redisTemplate.opsForValue().set(cacheKey, jsonToCache, ROUTE_CACHE_TTL);
+            System.out.println("✅ 거리/시간 정보 캐시에 저장: " + cacheKey);
+
+            return CompletableFuture.completedFuture(resultDto);
 
         } catch (Exception e) {
             System.err.println("Kakao 응답 파싱 오류: " + e.getMessage());
@@ -254,8 +293,19 @@ public class PlaceService {
     }
 
 
+
     //구글 TextSearch 위도경도반경 제한 포함  API 프록시
     public String searchPlaces(String query, double lat, double lng, double radius) {
+        String cacheKey = String.format("search_places:%s:%.6f:%.6f:%.1f", query, lat, lng, radius);
+
+        String cachedResult = redisTemplate.opsForValue().get(cacheKey);
+        if (cachedResult != null) {
+            System.out.println("캐시에서 검색 결과 반환: " + cacheKey);
+            return cachedResult;
+        }
+
+        System.out.println("Google Places API 요청 실행...");
+
         String url = "https://places.googleapis.com/v1/places:searchText";
 
         // 요청 헤더 설정
@@ -283,14 +333,35 @@ public class PlaceService {
         // 요청 객체 생성
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-        // API 요청
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            throw new RuntimeException("Google API 오류: " + response.getStatusCode());
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        } catch (Exception e) {
+            System.out.println("Google API 호출 중 예외 발생: " + e.getMessage());
+            return null; //
         }
 
-        return response.getBody();
+        // 응답 상태 코드 검증
+        System.out.println("응답 코드: " + response.getStatusCode());
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            System.out.println("응답 상태 코드: " + response.getStatusCode());
+            return null;
+        }
+
+        // 응답 본문 확인 (디버깅용)
+        String responseBody = response.getBody();
+        System.out.println("Google API Response Body: " + responseBody);
+
+        if (responseBody == null || responseBody.isEmpty()) {
+            System.out.println("Google API 응답 본문이 비어 있음.");
+            return null;
+        }
+
+        // 캐시에 저장
+        redisTemplate.opsForValue().set(cacheKey, responseBody, SEARCH_CACHE_TTL);
+        System.out.println("검색 결과를 캐시에 저장: " + cacheKey);
+
+        return responseBody;
     }
 
     // Google Place 이미지 API URL 생성
