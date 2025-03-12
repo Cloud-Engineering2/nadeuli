@@ -19,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
-import nadeuli.repository.ItineraryRepository;
-import nadeuli.repository.TravelerRepository;
 import nadeuli.service.ExpenseBookService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

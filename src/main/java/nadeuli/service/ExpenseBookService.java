@@ -42,7 +42,7 @@ public class ExpenseBookService {
     private final TravelerRepository travelerRepository;
     private final ItineraryEventService itineraryEventService;
 
-    // ExpenseBook 조회 by Itinerary
+    // ExpenseBook Id 조회 by Itinerary
     public Long get(Long iid) {
         Itinerary itinerary = itineraryRepository.findById(iid)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary 존재하지 않습니다"));
@@ -180,11 +180,6 @@ public class ExpenseBookService {
         return responseDto;
 
     }
-
-
-    // 남은 예산 조회
-
-
 
 
 
