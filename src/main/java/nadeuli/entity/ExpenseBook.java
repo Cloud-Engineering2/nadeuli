@@ -64,8 +64,8 @@ public class ExpenseBook extends BaseTimeEntity {
         this.totalBudget = budget;
     }
 
-    public void updateExpenses(Long expenses) {
-        this.totalExpenses = expenses;
+    public void updateExpense(Long expense) {
+        this.totalExpenses = expense;
     }
 
 
