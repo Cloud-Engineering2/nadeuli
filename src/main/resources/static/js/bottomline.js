@@ -224,7 +224,8 @@ function toggleMarker(marker) {
         selectedMarker = marker;
 
         const index = marker.getLabel().text;
-        // console.log("Label Text : ", index);
+        console.log("Label Text : ", index);
+
 
         // index - 1 : label 값 설정할 때 index + 1 해서 기록함 : index 1 부터 시작
         // ieidList 에서 index 는 0 부터 시작함
@@ -241,7 +242,7 @@ function toggleMarker(marker) {
                 console.log("Expense Item List:", expense);
                 console.log("Journal:", journal);
 
-                hasChoice();
+                hasChoice(index);
 
             })
             .catch(error => console.error("Error saving content:", error));
@@ -264,6 +265,16 @@ function getMarkerIcon(color) {
 // 화면 출력 - 방문지 선택 x
 function noChoice() {
     // 방문지 선택 x
+
+    // 이전, 다음 버튼 제거
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    prevBtn.disabled = true;
+    // prevBtn.style.display = "none";
+    prevBtn.style.visibility = "hidden";
+    nextBtn.disabled = true;
+    // nextBtn.style.display = "none";
+    nextBtn.style.visibility = "hidden";
 
     // 날짜 출력 null 처리
     const datetime = document.getElementById("date-time");
@@ -299,10 +310,44 @@ function noChoice() {
 }
 
 // 화면 출력 - 방문지 선택 o
-function hasChoice() {
+function hasChoice(index) {
     // journal
-    // document.getElementById("journal-no-choice").style.display = "none";
 
+    // 이전, 다음 버튼 관련 처리
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    if (parseInt(index) === 1) {
+        // index ; 첫 번째 방문지 => prev 버튼 비활성화
+        console.log("index === 1");
+        prevBtn.disabled = true;
+        // prevBtn.style.display = "none";
+        prevBtn.style.visibility = "hidden";
+        nextBtn.disabled = false;
+        // nextBtn.style.display = "block";
+        nextBtn.style.visibility = "visible";
+    }
+    else if (parseInt(index) === ieidList.length) {
+        // index ; 마지막 방문지 => next 버튼 비활성화
+        console.log("index === ", ieidList.length);
+        prevBtn.disabled = false;
+        // prevBtn.style.display = "block";
+        prevBtn.style.visibility = "visible";
+        nextBtn.disabled = true;
+        // nextBtn.style.display = "none";
+        nextBtn.style.visibility = "hidden";
+    }
+    else {
+        // 1 < index < length
+        console.log("1 < index < length");
+        prevBtn.disabled = false;
+        // prevBtn.style.display = "block";
+        prevBtn.style.visibility = "visible";
+        nextBtn.disabled = false;
+        // nextBtn.style.display = "block";
+        nextBtn.style.visibility = "visible";
+    }
+
+    // 사진, 본문 출력 관련 처리
     const journalImage = document.getElementById("journal-image");
     // const journalNoContent = document.getElementById("no-content");
     // const journalHasContent = document.getElementById("has-content");
@@ -360,4 +405,16 @@ function hasChoice() {
 
 function goToJournal() {
     window.location.href = `/itineraries/${this_iid}/events/${this_ieid}/journal`;
+}
+
+function prevJournal() {
+    // if (document.getElementById("prev-btn").disabled) return; // 버튼 비활성화 => 종료
+
+    console.log("prevJournal");
+}
+
+function nextJournal() {
+    // if (document.getElementById("next-btn").disabled) return; // 버튼 비활성화 =>  종료
+
+    console.log("nextJournal");
 }
