@@ -70,7 +70,7 @@ public class PlaceService {
     public PlaceListResponseDto getRecommendedPlacesWithCursor(double userLng, double userLat, double radius, Double cursorScore, Long cursorId, int pageSize, List<String> placeTypes, boolean searchEnabled, String searchQuery) {
         List<Object[]> result = placeNativeQueryExecutor.findPlacesWithDynamicQuery(userLng, userLat, radius, cursorScore, cursorId, pageSize, placeTypes, searchEnabled, searchQuery);
 
-        List<PlaceResponseDto> places = result.stream().map(row -> PlaceResponseDto.builder().id(((Number) row[0]).longValue()).googlePlaceId((String) row[1]).placeName((String) row[2]).searchCount(((Number) row[3]).intValue()).address((String) row[4]).latitude(((Number) row[5]).doubleValue()).longitude(((Number) row[6]).doubleValue()).description((String) row[7]).googleRating((row[8] != null) ? ((Number) row[8]).doubleValue() : null).googleRatingCount((row[9] != null) ? ((Number) row[9]).intValue() : null).googleURL((String) row[10]).imageUrl((String) row[11]).placeType(PlaceCategory.PlaceType.valueOf((String) row[12])).regularOpeningHours((String) row[13]).distance(((Number) row[14]).doubleValue()).finalScore(((Number) row[15]).doubleValue()).build()).toList();
+        List<PlaceResponseDto> places = result.stream().map(row -> PlaceResponseDto.builder().id(((Number) row[0]).longValue()).googlePlaceId((String) row[1]).placeName((String) row[2]).searchCount(((Number) row[3]).intValue()).address((String) row[4]).latitude(((Number) row[5]).doubleValue()).longitude(((Number) row[6]).doubleValue()).explanation((String) row[7]).googleRating((row[8] != null) ? ((Number) row[8]).doubleValue() : null).googleRatingCount((row[9] != null) ? ((Number) row[9]).intValue() : null).googleURL((String) row[10]).imageUrl((String) row[11]).placeType(PlaceCategory.PlaceType.valueOf((String) row[12])).regularOpeningHours((String) row[13]).distance(((Number) row[14]).doubleValue()).finalScore(((Number) row[15]).doubleValue()).build()).toList();
 
         Double nextCursorScore = null;
         Long nextCursorId = null;
@@ -113,7 +113,7 @@ public class PlaceService {
             double rating = placeDetails.path("rating").asDouble(0.0);
             int ratingCount = placeDetails.path("userRatingCount").asInt(0);
             String googleUrl = "https://www.google.com/maps/place/?q=place_id:" + placeId;
-            String description = "Google Place API에서 제공하는 기본 데이터"; // 필요 시 추가 가공
+            String explanation = "Google Place API에서 제공하는 기본 데이터"; // 필요 시 추가 가공
 
             // 3️⃣ 장소 유형 (PlaceType) 분류
             List<String> types = new ArrayList<>();
@@ -150,7 +150,7 @@ public class PlaceService {
                     return null;  // 실패 시 null 반환
                 }).thenCompose(s3Url -> CompletableFuture.supplyAsync(() -> {
                     // 7️⃣ Place 저장
-                    Place newPlace = new Place(placeId, placeName, address, latitude, longitude, description, rating, ratingCount, googleUrl, s3Url, placeType, resultRegularOpeningHoursJson);
+                    Place newPlace = new Place(placeId, placeName, address, latitude, longitude, explanation, rating, ratingCount, googleUrl, s3Url, placeType, resultRegularOpeningHoursJson);
 
                     newPlace = placeRepository.save(newPlace);
 
@@ -163,7 +163,7 @@ public class PlaceService {
                 }));
             } else {
                 // 7️⃣ 이미지가 없을 경우 바로 장소 저장
-                Place newPlace = new Place(placeId, placeName, address, latitude, longitude, description, rating, ratingCount, googleUrl, null, placeType, resultRegularOpeningHoursJson);
+                Place newPlace = new Place(placeId, placeName, address, latitude, longitude, explanation, rating, ratingCount, googleUrl, null, placeType, resultRegularOpeningHoursJson);
 
                 newPlace = placeRepository.save(newPlace);
 

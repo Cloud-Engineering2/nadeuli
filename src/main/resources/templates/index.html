@@ -70,8 +70,8 @@
 
                         results.forEach((place, index) => {
                             let li = document.createElement("li");
-                            li.textContent = place.description;
-                            li.onclick = () => selectPlace(place.place_id, place.description);
+                            li.textContent = place.explanation;
+                            li.onclick = () => selectPlace(place.place_id, place.explanation);
                             list.appendChild(li);
                         });
                     })
