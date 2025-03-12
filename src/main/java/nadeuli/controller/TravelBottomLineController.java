@@ -24,14 +24,10 @@ import nadeuli.dto.JournalDTO;
 import nadeuli.dto.TravelerDTO;
 import nadeuli.dto.response.ItineraryEventSimpleDTO;
 import nadeuli.dto.response.ItineraryTotalReadResponseDTO;
-import nadeuli.entity.ExpenseItem;
 import nadeuli.service.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,6 +72,22 @@ public class TravelBottomLineController {
         response.put("expenseBook", expenseBookDTO);
 
         System.out.println("📌 최종 결과물 - 방문지 선택 x : " + response);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @ResponseBody
+    @GetMapping("/api/itineraries/{iid}/bottomline/{ieid}")
+    public ResponseEntity<Map<String, Object>> getItineraryDataSelected(@PathVariable Long iid, @PathVariable Long ieid) {
+        Map<String, Object> response = new HashMap<>();
+
+        List<ExpenseItemDTO> expenseItemDTOList = expenseItemService.getAll(ieid);
+        JournalDTO journalDTO = journalService.getJournal(ieid);
+
+        response.put("expenseItemList", expenseItemDTOList);
+        response.put("journal", journalDTO);
+
+        System.out.println("📌 최종 결과물 - 방문지 선택 : " + response);
 
         return ResponseEntity.ok(response);
     }
