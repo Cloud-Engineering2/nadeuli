@@ -10,11 +10,12 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.03.10     최초 작성 : bottomline.js
+ * 이홍비    2025.03.12     방문지 선택 => 기행문 조회 처리
  * ========================================================
  */
 
 let this_iid;
-let this_ieid = 0;
+let this_ieid;
 
 // map 쪽
 let map;
@@ -26,6 +27,12 @@ let infowindow;
 
 let itineraryTotalRead;
 let ieidList = [];
+
+let adjustment;
+let journal;
+let expense;
+
+
 
 // 시간 출력 형태 -
 // fetchJournal(), next() 사용
@@ -50,8 +57,14 @@ async function fetchBottomLine(iid) {
     console.log("Traveler List : ", itineraryTotalRead.travelerList);
     console.log("Expense Book : ", itineraryTotalRead.expenseBook);
 
+    axios.get(`/api/itineraries/${this_iid}/adjustment`)
+        .then(response => {
+            adjustment = response.data;
+            console.log("adjustment : ", adjustment);
+        })
+        .catch(error => console.error("Error saving content:", error));
+
     initMap();
-    showExpense();
 
     // updateContentView();
     // updatePhotoView();
@@ -132,6 +145,8 @@ function initMap() {
 
     map.setCenter(centerLatLng);
     console.log("📌 지도 중심 위치:", centerLatLng);
+
+    noChoice();
 }
 
 function addMarker(place, order) {
@@ -195,6 +210,8 @@ function toggleMarker(marker) {
         // marker.setIcon("http://maps.google.com/mapfiles/ms/icons/blue-dot.png");
         marker.setIcon(getMarkerIcon('skyblue')); // 색상을 기본 색으로 되돌림
         selectedMarker = null;
+
+        noChoice();
     }
     else {
         // 새로운 마커 선택하면 기존 마커 원래 색으로 되돌리기
@@ -206,7 +223,28 @@ function toggleMarker(marker) {
         marker.setIcon(getMarkerIcon('red'));
         selectedMarker = marker;
 
+        const index = marker.getLabel().text;
+        // console.log("Label Text : ", index);
 
+        // index - 1 : label 값 설정할 때 index + 1 해서 기록함 : index 1 부터 시작
+        // ieidList 에서 index 는 0 부터 시작함
+        this_ieid = ieidList[index - 1];
+        // console.log("ieid : ", ieid);
+
+        console.log("this_iid : ", this_iid, "this_ieid : ", this_ieid);
+
+        axios.get(`/api/itineraries/${this_iid}/bottomline/${this_ieid}`)
+            .then(response => {
+                journal = response.data.journal;
+                expense = response.data.expenseItemList;
+
+                console.log("Expense Item List:", expense);
+                console.log("Journal:", journal);
+
+                hasChoice();
+
+            })
+            .catch(error => console.error("Error saving content:", error));
     }
 }
 
@@ -223,8 +261,103 @@ function getMarkerIcon(color) {
 }
 
 
-// 장부 - 지출 내역 관련
+// 화면 출력 - 방문지 선택 x
+function noChoice() {
+    // 방문지 선택 x
 
-function showExpense() {
+    // 날짜 출력 null 처리
+    const datetime = document.getElementById("date-time");
+    datetime.textContent = null;
+    datetime.style.display = "none";
 
+    // 기행문 - 사진 로고 출력
+    document.getElementById("journal-image").src = "/pic-icon/logo-letter-o.png";
+
+    // 기행문 - 출력 내용 변경
+    // document.getElementById("journal-no-choice").display = "block";
+    const journalContent = document.getElementById("journal-content-p");
+    journalContent.innerText = "방문지를 선택해 주세요!"
+    journalContent.style.textAlign = "center";
+
+    document.getElementById("go-to-journal").style.display = "none";
+
+
+    // 기행문 - content 쪽 null 처리
+    // const noContent = document.getElementById("no-content");
+    // noContent.textContent = null;
+    // noContent.style.display = "none";
+
+    // const hasContent = document.getElementById("has-content");
+    // hasContent.textContent = null;
+    // hasContent.style.display = "none";
+
+
+
+
+    // 장부 출력
+
+}
+
+// 화면 출력 - 방문지 선택 o
+function hasChoice() {
+    // journal
+    // document.getElementById("journal-no-choice").style.display = "none";
+
+    const journalImage = document.getElementById("journal-image");
+    // const journalNoContent = document.getElementById("no-content");
+    // const journalHasContent = document.getElementById("has-content");
+    const journalContent = document.getElementById("journal-content-p");
+    const goToJournal = document.getElementById("go-to-journal");
+    const datetime = document.getElementById('date-time');
+
+    console.log("journal.imageUrl:", journal.imageUrl);
+    console.log("journal.content:", journal.content);
+    // console.log("journalNoContent:", journalNoContent);
+    // console.log("journalHasContent:", journalHasContent);
+    if ((journal.imageUrl === null) && (journal.content === null)) {
+        datetime.textContent = null;
+        datetime.style.display = "none";
+
+        journalImage.src = "/pic-icon/logo-letter-o.png";
+        journalContent.innerText = "기억이 옅어지기 전에 소중한 순간을 남겨 주세요!";
+        journalContent.style.textAlign = "center";
+        goToJournal.style.display = "block";
+    }
+    else {
+        datetime.textContent = new Intl.DateTimeFormat('ko-KR', timeFormat).format(new Date(journal.modifiedAt));
+        datetime.style.display = "block";
+
+        if ((journal.imageUrl !== null) && (journal.content !== null)) {
+            journalImage.src = journal.imageUrl;
+            journalContent.textContent = journal.content;
+            goToJournal.style.display = "none";
+            // journalHasContent.textContent = journal.content;
+            // journalHasContent.style.display = "block";
+            // journalNoContent.style.display = "none";
+        }
+        else if ((journal.imageUrl !== null) && (journal.content === null)) {
+            journalImage.src = journal.imageUrl;
+            journalContent.innerText = "기억이 옅어지기 전에 소중한 순간을 남겨 주세요!";
+            journalContent.style.textAlign = "center";
+            goToJournal.style.display = "block";
+            // journalHasContent.style.display = "none";
+            // journalNoContent.style.display = "block";
+        }
+        else if ((journal.imageUrl === null) && (journal.content !== null)) {
+            journalImage.src = "/pic-icon/logo-letter-o.png";
+            journalContent.innerText = journal.content;
+            journalContent.style.textAlign = "left";
+            goToJournal.style.display = "none";
+            // journalHasContent.textContent = journal.content;
+            // journalHasContent.style.display = "block";
+            // journalNoContent.style.display = "none";
+        }
+    }
+
+
+}
+
+
+function goToJournal() {
+    window.location.href = `/itineraries/${this_iid}/events/${this_ieid}/journal`;
 }
