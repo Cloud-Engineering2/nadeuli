@@ -14,7 +14,7 @@ public class PlaceResponseDto {
     private String address;
     private double latitude;
     private double longitude;
-    private String description;
+    private String explanation;
     private Double googleRating;
     private Integer googleRatingCount;
     private String googleURL;

@@ -8,7 +8,7 @@ let allMarkers = [];
 let allPolylines = [];
 let markerState = 0;
 let infoWindow=null;
-
+let isDirty = false;
 let mapReady = false;
 let dataReady = false;
 
@@ -429,7 +429,7 @@ function createSortableInstance(element) {
 
                 markerState = extractDayId(toDayId);
                 renderMarkerByMarkerState();
-
+                isDirty = true;
             })();
 
             if (toDayId !== 'day-0') {
@@ -1026,7 +1026,7 @@ function dateChangeSubmit() {
 
         }
     }
-
+    isDirty = true;
     console.log("Updated perDayMap:", perDayMap);
 }
 
@@ -1114,11 +1114,51 @@ function generateItineraryJson() {
     return JSON.stringify({itinerary: filteredItinerary, itineraryPerDays, itineraryEvents});
 }
 
+// function saveItinerary() {
+//     const $button = $(".save-button");
+//     // $button.prop("disabled", true).text("저장중...");
+//
+//     const jsonData = generateItineraryJson();
+//
+//     $.ajax({
+//         url: "http://localhost:8085/api/itinerary/update",
+//         method: "POST",
+//         contentType: "application/json",
+//         data: jsonData,
+//         success: function (response) {
+//             console.log("저장 성공:", response);
+//             if (response.createdMappings) {
+//                 response.createdMappings.forEach(mapping => {
+//                     const event = getEventById(mapping.hashId);
+//                     if (event) {
+//                         event.id = mapping.eventId; // 서버 DB ID 반영
+//                         console.log(`${mapping.hashId} <- ${mapping.eventId} 설정완료`)
+//                     }
+//                 });
+//             }
+//             alert("저장이 완료되었습니다!");
+//             isDirty = false;
+//         },
+//         error: function (xhr, status, error) {
+//             console.error("저장 실패:", error);
+//             alert("저장 중 오류가 발생했습니다.");
+//         },
+//         complete: function () {
+//             // $button.prop("disabled", false).text("저장하기");
+//         }
+//     });
+// }
 function saveItinerary() {
-    const $button = $(".save-button");
-    // $button.prop("disabled", true).text("저장중...");
-
     const jsonData = generateItineraryJson();
+
+    // 1️⃣ 저장 중 로딩 모달 띄우기
+    Swal.fire({
+        title: '저장 중...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     $.ajax({
         url: "http://localhost:8085/api/itinerary/update",
@@ -1127,23 +1167,42 @@ function saveItinerary() {
         data: jsonData,
         success: function (response) {
             console.log("저장 성공:", response);
+
             if (response.createdMappings) {
                 response.createdMappings.forEach(mapping => {
                     const event = getEventById(mapping.hashId);
                     if (event) {
-                        event.id = mapping.eventId; // 서버 DB ID 반영
-                        console.log(`${mapping.hashId} <- ${mapping.eventId} 설정완료`)
+                        event.id = mapping.eventId;
                     }
                 });
             }
-            alert("저장이 완료되었습니다!");
+
+            isDirty = false;
+
+            // 2️⃣ 저장 완료 모달 띄우기 (버튼 2개)
+            Swal.fire({
+                icon: 'success',
+                title: '저장 완료!',
+                text: '일정이 성공적으로 저장되었습니다.',
+                showCancelButton: true,
+                confirmButtonText: '일정 보기',
+                cancelButtonText: '계속 수정하기',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // ✅ 일정 보기 페이지로 이동
+                    window.location.href = `/itinerary/view/${itinerary.itineraryId}`; // 실제 view URL로 수정
+                }
+                // ❌ 취소 선택 → 아무 것도 안 함 (계속 수정)
+            });
         },
         error: function (xhr, status, error) {
             console.error("저장 실패:", error);
-            alert("저장 중 오류가 발생했습니다.");
-        },
-        complete: function () {
-            // $button.prop("disabled", false).text("저장하기");
+            Swal.fire({
+                icon: 'error',
+                title: '저장 실패',
+                text: '저장 중 오류가 발생했습니다. 다시 시도해 주세요.'
+            });
         }
     });
 }
@@ -1258,6 +1317,7 @@ $(document).on("click", ".event-remove", function () {
 
 
     }
+    isDirty = true;
 });
 
 
@@ -1307,7 +1367,7 @@ $(document).on("click", ".event-duplicate", function (event) {
     if (!eventData) return;
 
     cloneAndInsertBelow(eventId);
-
+    isDirty = true;
 });
 
 
@@ -1332,7 +1392,7 @@ $(document).on("click", ".event-duration-save", function (event) {
 
     // ⏳ 값 저장
     eventData.stayMinute = totalMinutes;
-
+    isDirty = true;
     // 📌 UI 업데이트
     updateEventDisplay(`day-${eventData.dayCount}`, 0);
 
@@ -1344,6 +1404,8 @@ $(document).on("click", ".event-duration-save", function (event) {
 
     // 📌 입력창 숨기기
     inputContainer.addClass("hidden");
+
+
 });
 
 //  "✖ 취소" 버튼 클릭 시 입력창 닫기 & 드래그 다시 활성화
@@ -1957,7 +2019,7 @@ function showPlaceModal(hashId, placeId = null) {
     $('#placeModalRatingCount').text(placeData.googleRatingCount || '0');
     $('#placeModalRating').text(placeData.googleRating || 'N/A');
     $('#placeModalImage').attr('src', placeData.imageUrl || '/default-placeholder.jpg');
-    $('#placeModalDescription').text(placeData.description || '-');
+    $('#placeModalExplanation').text(placeData.explanation || '-');
     $('#placeModalAddress').text(placeData.address || '-');
     $('#placeModalMapLink').attr('href', placeData.googleURL || '#');
 
@@ -1965,8 +2027,8 @@ function showPlaceModal(hashId, placeId = null) {
     $('#placeModalHours').empty();
     try {
         const hours = JSON.parse(placeData.regularOpeningHours || '{}');
-        if (Array.isArray(hours.weekdayDescriptions)) {
-            hours.weekdayDescriptions.forEach(desc => {
+        if (Array.isArray(hours.weekdayExplanations)) {
+            hours.weekdayExplanations.forEach(desc => {
                 $('#placeModalHours').append(`<li>${desc}</li>`);
             });
         } else {
@@ -2142,9 +2204,6 @@ $(document).on('click', '.day-header', function () {
 
 
 
-// 전역에 placeMap이 있다고 가정
-// const placeMap = new Map(); // <placeId, placeObject>
-
 function placeToSavedPlace(placeId) {
     console.log(placeMap);
     console.log(placeId);
@@ -2166,6 +2225,50 @@ function placeToSavedPlace(placeId) {
     };
 
     addEvent(event);
+    isDirty = true;
     console.log(event.hashId);
     updateSavedPlaceUI([event]);
 }
+
+
+// 수정후 브라우저 뒤로가기,나가기, 새로고침시 경고 메세지
+window.addEventListener("beforeunload", function (e) {
+    if (isDirty) {
+        e.preventDefault();  // 크롬 기준 필요
+        e.returnValue = '저장되지 않은 변경 사항이 있습니다. 정말 페이지를 나가시겠습니까?';
+    }
+});
+
+// 수정후 링크 이동시 경고 메세지
+function handleDirtyNavigation(targetUrl) {
+    if (!isDirty) {
+        window.location.href = targetUrl;
+        return;
+    }
+
+    Swal.fire({
+        title: '저장되지 않은 변경사항이 있습니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '나가기',
+        cancelButtonText: '취소',
+        reverseButtons: true,
+        customClass: {
+            title: 'swal2-sm-title'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = targetUrl;
+        }
+    });
+}
+
+
+// 수정후 링크 이동시 경고 메세지 event 핸들러
+$("a[href]").click(function(e) {
+    const href = $(this).attr("href");
+    if (!href || e.ctrlKey || e.metaKey) return;
+    e.preventDefault();
+    handleDirtyNavigation(href);
+});
+

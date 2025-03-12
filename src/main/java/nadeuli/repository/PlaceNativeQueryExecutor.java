@@ -70,7 +70,7 @@ public class PlaceNativeQueryExecutor {
              // SQL 조건 생성
              for (int i = 0; i < tokens.size(); i++) {
                  sql.append(" AND (LOWER(p.place_name) LIKE :token").append(i)
-                         .append(" OR LOWER(p.description) LIKE :token").append(i)
+                         .append(" OR LOWER(p.explanation) LIKE :token").append(i)
                          .append(" OR LOWER(p.address) LIKE :token").append(i).append(")");
              }
          }
@@ -79,7 +79,7 @@ public class PlaceNativeQueryExecutor {
         sql.append("""
             )
             SELECT pid, google_place_id, place_name, search_count, address,
-                   latitude, longitude, description, google_rating,
+                   latitude, longitude, explanation, google_rating,
                    google_rating_count, google_url, image_url, place_type,
                    regular_opening_hours, distance, final_score
             FROM scored_place
