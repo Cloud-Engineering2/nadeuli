@@ -23,38 +23,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
-@Repository  // ✅ JPA Repository임을 명시
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    /**
-     * ✅ 이메일을 기반으로 사용자 찾기
-     */
     Optional<User> findByUserEmail(String email);
 
-    /**
-     * ✅ Refresh Token을 기반으로 사용자 찾기
-     */
-    Optional<User> findByRefreshToken(String refreshToken);
 
-    /**
-     * ✅ 이메일을 기반으로 사용자 삭제 (트랜잭션 적용)
-     */
-    @Transactional
-    void deleteByUserEmail(String email);
-
-    /**
-     * ✅ 5개월 이상 로그인하지 않은 사용자 조회
-     */
-    @Query("SELECT u FROM User u WHERE u.lastLoginAt <= :fiveMonthsAgo")
-    List<User> findInactiveUsersSince(@Param("fiveMonthsAgo") LocalDateTime fiveMonthsAgo);
-
-    /**
-     * ✅ Refresh Token 만료 30일 전 사용자 조회
-     */
-    @Query("SELECT u FROM User u WHERE u.refreshToken IS NOT NULL AND u.refreshTokenExpiryAt <= :thirtyDaysFromNow")
-    List<User> findUsersWithExpiringRefreshTokens(@Param("thirtyDaysFromNow") LocalDateTime thirtyDaysFromNow);
 }

@@ -22,9 +22,6 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class AppConfig {
 
-    /**
-     * ✅ RestTemplate Bean 등록 (OAuth API 호출용)
-     */
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
