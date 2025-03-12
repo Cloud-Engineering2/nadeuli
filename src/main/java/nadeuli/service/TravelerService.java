@@ -18,9 +18,12 @@ package nadeuli.service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.TravelerDTO;
+import nadeuli.entity.ExpenseBook;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.Traveler;
+import nadeuli.repository.ExpenseBookRepository;
 import nadeuli.repository.ItineraryRepository;
 import nadeuli.repository.TravelerRepository;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
 public class TravelerService {
     private final TravelerRepository travelerRepository;
     private final ItineraryRepository itineraryRepository;
+    private final ExpenseBookRepository expenseBookRepository;
 
     // 여행자 추가
     @Transactional
@@ -40,9 +44,16 @@ public class TravelerService {
         Long itineraryId = travelerDto.getItineraryId();
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
 
+        // 여행자 생성
         Traveler traveler = travelerDto.toEntity(itinerary);
         travelerRepository.save(traveler);
+
+        // ExpenseBook 예산 설정 : traveler들의 예산의 합
+        Long beforeBudget = expenseBook.getTotalBudget();
+        expenseBook.updateBudget(beforeBudget + traveler.getTotalBudget());
     }
 
     // 여행자들 조회
@@ -68,10 +79,8 @@ public class TravelerService {
     // 일정에 있는 Traveler 조회
     @Transactional
     public List<TravelerDTO> getByNames(Long itineraryId, List<String> withWhomNames) {
-        Itinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다"));
 
-        List<Traveler> travelers = travelerRepository.findByIidAndTravelerNameIn(itinerary, withWhomNames);
+        List<Traveler> travelers = travelerRepository.findByItineraryIdAndTravelerNames(itineraryId, withWhomNames);
 
         return travelers.stream()
                 .map(TravelerDTO::from)
@@ -80,24 +89,50 @@ public class TravelerService {
 
     // Traveler 삭제
     @Transactional
-    public List<TravelerDTO> deleteTraveler(String travelerName, Long itineraryId) {
+    public List<TravelerDTO> deleteTraveler(Long itineraryId, String travelerName) {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 Itinerary가 존재하지 않습니다"));
-        List<Traveler> travelers = travelerRepository.findAllByIid(itinerary);
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new EntityNotFoundException("해당 Itinerary가 존재하지 않습니다"));
 
-        // 삭제할 대상 필터링
-        Traveler deletion = travelers.stream()
-                                        .filter(traveler -> traveler.getTravelerName().equals(travelerName))
-                                        .findFirst()
-                                        .orElseThrow(() -> new EntityNotFoundException("해당 Traveler가 존재하지 않습니다"));
+        // 삭제 대상 조회
+        Traveler traveler = travelerRepository.findTravelerByItineraryIdAndTravelerName(itineraryId, travelerName)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Traveler가 존재하지 않습니다"));
+
+        // Expense Book 예산 조정
+        expenseBook.updateBudget(expenseBook.getTotalBudget() - traveler.getTotalBudget());
+
         // 삭제 수행
-        travelerRepository.delete(deletion);
+        travelerRepository.delete(traveler);
+
 
         // 남아 있는 여행자 리스트 변환 후 반환
         List<Traveler> remainedTravelers = travelerRepository.findAllByIid(itinerary);
         return remainedTravelers.stream()
                                     .map(TravelerDTO::from)
                                     .collect(Collectors.toList());
+
+    }
+
+    // 예산 수정
+    @Transactional
+    public ExpenseBookDTO updateBudget(Long itineraryId, String travelerName, Long change) {
+
+        Traveler traveler = travelerRepository.findTravelerByItineraryIdAndTravelerName(itineraryId, travelerName)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Traveler가 존재하지 않습니다."));
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다."));
+
+        // 여행자 예산 수정
+        Long beforeTravelerBudget = traveler.getTotalBudget();
+        traveler.updateTotalBudget(change);
+
+        // ExpenseBook 예산 수정
+        Long beforeBudget = expenseBook.getTotalBudget();
+        expenseBook.updateBudget(beforeBudget - beforeTravelerBudget + change);
+        return ExpenseBookDTO.from(expenseBook);
 
     }
 }

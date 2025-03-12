@@ -775,6 +775,7 @@ body {
     padding: 3px;
 }
 
+
 /*************** add button : expense item *************/
 .expense-item-addition-button {
     display: flex; /* Flexbox 레이아웃 */
@@ -795,7 +796,7 @@ body {
 }
 
 
-/*************** 모달창 : expense item 생성 *************/
+/*************** expense item 생성 *************/
 /* 모달 배경 */
 /*.expense-item-creation-modal {*/
 /*    display: none; !* 기본적으로 숨김 *!*/

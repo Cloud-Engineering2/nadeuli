@@ -31,7 +31,10 @@ public interface TravelerRepository extends JpaRepository<Traveler, Integer> {
 
     List<Traveler> findAllByIid(Itinerary itinerary);
 
-    List<Traveler> findByIidAndTravelerNameIn(Itinerary itinerary, List<String> withWhomNames);
+    @Query("SELECT t FROM Traveler t WHERE t.iid.id = :itineraryId AND t.travelerName IN :withWhomNames")
+    List<Traveler> findByItineraryIdAndTravelerNames(@Param("itineraryId") Long itineraryId, @Param("withWhomNames") List<String> withWhomNames);
+
+//    List<Traveler> findByIidAndTravelerNameIn(Itinerary itinerary, List<String> withWhomNames);
 
     @Query("SELECT t FROM Traveler t WHERE t.iid.id = :iid AND t.travelerName = :travelerName")
     Optional<Traveler> findTravelerByItineraryIdAndTravelerName(@Param("iid") Long iid, @Param("travelerName") String travelerName);
