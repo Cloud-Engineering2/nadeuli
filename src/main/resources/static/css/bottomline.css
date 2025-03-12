@@ -230,6 +230,11 @@ body {
     border: none;
     cursor: pointer;
     padding: 5px 10px;
+    display: none;
+}
+
+.journal-space:hover .image-buttons button {
+    display: block;
 }
 
 .divider {
