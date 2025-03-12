@@ -100,7 +100,7 @@
 
         <div class="journal-space">
             <div class="image-container">
-                <img id="journal-image" src="https://d2tfgua35fdi4.cloudfront.net/journal/877125ce-19fa-4205-8ade-c933787c95e8_나들이.png" alt="여행 사진">
+                <img id="journal-image" src="" alt="여행 사진">
                 <div class="image-buttons">
                     <button id="prev-btn">◀</button>
                     <button id="next-btn">▶</button>
@@ -109,12 +109,19 @@
 
             <hr class="divider">
 
+            <span id="date-time">hello</span>
+
+
             <div class="journal-content">
-                <div id="no-content"></div>
-                <div id="has-content"></div>
+<!--                <div id="no-content">기억이 옅어지기 전에 소중한 순간을 남겨 주세요!</div>-->
+<!--                <div id="has-content"></div>-->
 
-<!--                <p id="journal-content">방문지를 선택해 주세요.</p>-->
-
+<!--                <a id="no-content" th:href="/itineraries/${this_iid}/events/${this_ieid}/journal" style="text-align: center; color: #3498DB; text-underline-offset: 5px">-->
+<!--                    기억이 옅어지기 전에 소중한 순간을 남겨 주세요!-->
+<!--                </a>-->
+<!--                <p id="has-content"></p>-->
+                <p id="journal-content-p" style="text-align: center">방문지를 선택해 주세요.</p>
+                <span id="go-to-journal" style="color: #3498DB; cursor: pointer; text-align: center; text-decoration: underline; text-underline-offset: 5px" onclick="goToJournal()">기행문 작성 ⌨️</span>
 <!--                <p>1공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
 <!--                <p>2공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
 <!--                <p>3공동 경비 총지출: 0원, 개인 경비 총지출: 0원</p>-->
