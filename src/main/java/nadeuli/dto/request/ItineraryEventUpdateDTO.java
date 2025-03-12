@@ -30,5 +30,6 @@ public class ItineraryEventUpdateDTO {
     private int endMinuteSinceStartDay;
     private int movingMinuteFromPrevPlace;
     private int movingDistanceFromPrevPlace;
+    private String hashId;
 
 }

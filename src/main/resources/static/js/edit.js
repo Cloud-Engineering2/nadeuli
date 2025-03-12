@@ -4,7 +4,13 @@ const perDayMap = new Map();
 const eventMap = new Map();
 const groupedByDay = {}; // 렌더링용 - perDay 별로 정렬된 event 리스트
 let eventPairs = [];
+let allMarkers = [];
+let allPolylines = [];
+let markerState = 0;
+let infoWindow=null;
 
+let mapReady = false;
+let dataReady = false;
 
 // 모달 전역변수
 let currentModalStep = 1;
@@ -40,6 +46,8 @@ $(document).ready(function () {
             renderItinerary();
             initDateRangePickerModal();
             initSidebarResize();
+            dataReady = true;
+            tryRenderMarkerAll();
         },
         error: function (xhr, status, error) {
             console.error("Error fetching itinerary:", error);
@@ -119,7 +127,7 @@ function renderItinerary() {
         console.log(dayKey);
         // 📌 0일차는 장소 보관함으로 설정
         const dayColumn = $(`
-            <div class='day-column ${dayNumber === 0 ? "savedPlace" : ""}'>
+            <div class='day-column ${dayNumber === 0 ? "savedPlace" : ""}' data-day-number='${dayNumber}'>
                 <div class='day-header'>${dayNumber === 0 ? `장소보관함 <div class="place-toggle-button">+ 장소 추가</div> ` : `${dayKey}` + `일차 (${startTime})`}
                 </div>
                 <div class='event-container' id='day-${dayNumber}'></div>
@@ -175,12 +183,19 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="event-under-content">
+                                                                   <div class='event-place-type' data-place-type='${event.placeDTO.placeType}'>${getKoreanLabel(event.placeDTO.placeType)}</div>
                                             ${isSavedPlace ? "" : `<div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>`}
+                                            </div>
                                         </div>
                                         <div class="event-right">
-                                            <button class="event-options-button">⋮</button>
+                                        ${isSavedPlace ? `
+                                            <button class="event-duplicate place-btn"><i class="fas fa-copy"></i></button>
+                                            <button class="event-remove place-btn"><i class="fas fa-trash"></i> </button>` :`
+                                            <button class="event-options-button">⋮</button>`}
                                             <div class="event-options hidden">
-                                             ${isSavedPlace ? "" :`<button class="event-duration">머무는 시간</button>`}
+                                                <button class="event-duration">머무는 시간</button>
+                                                <button class="event-duplicate">복제</button>
                                                 <button class="event-remove">삭제</button>
                                             </div>
                                         </div>
@@ -342,6 +357,7 @@ function createSortableInstance(element) {
             let event = getEventById(eventId);
 
             let isPlaceSaved = evt.to.id === 'day-0';
+            console.log(createEventElement);
             let eventElement = createEventElement(event, null, null, isPlaceSaved);
             newItem.replaceWith(eventElement);
 
@@ -408,12 +424,13 @@ function createSortableInstance(element) {
                 if (updateStartIndexTo !== null) {
                     updateEventDisplay(toDayId, updateStartIndexTo);
                 }
+
+                $(".travel-info").css("visibility", "visible");
+
+                markerState = extractDayId(toDayId);
+                renderMarkerByMarkerState();
+
             })();
-
-
-            console.log(eventMap);
-            $(".travel-info").css("visibility", "visible");
-
 
             if (toDayId !== 'day-0') {
                 $(evt.to).find(".event .travel-info").css("display", "block");
@@ -436,6 +453,11 @@ function createSortableInstance(element) {
     });
 }
 
+//day-? 에서 ? 추출
+function extractDayId(toDayId) {
+    const match = toDayId.match(/^day-(\d+)$/);
+    return match ? parseInt(match[1], 10) : 0;
+}
 
 //사이드바 크기 조절 기능
 //사이드바 크기 조절 기능 초기화
@@ -460,6 +482,48 @@ function resizeSidebar(e) {
 function stopSidebarResize() {
     $(document).off("mousemove", resizeSidebar);
     $(document).off("mouseup", stopSidebarResize);
+}
+
+//Event 복제후 바로 밑에 추가
+function cloneAndInsertBelow(originalHashId) {
+    const originalEvent = getEventById(originalHashId);
+    if (!originalEvent) return;
+
+    // 1. 복제 이벤트 생성
+    const clonedEvent = cloneEvent(originalEvent);
+    clonedEvent.dayCount = originalEvent.dayCount;
+
+    const container = document.getElementById(`day-${originalEvent.dayCount}`);
+    if (!container) return;
+
+    // 2. 원본 이벤트 요소 찾기 및 index 파악
+    const eventElements = container.querySelectorAll('.event');
+    let insertIndex = -1;
+    eventElements.forEach((el, idx) => {
+        if (el.getAttribute('data-id') === originalHashId) {
+            insertIndex = idx;
+        }
+    });
+
+    if (insertIndex === -1) return;
+
+    // 3. 복제 이벤트 DOM 생성 및 삽입
+    const clonedEventElement = createEventElement(clonedEvent, null, null, clonedEvent.dayCount === 0);
+
+    console.log("클론 엘리먼트:", clonedEventElement);
+    console.log("클론 엘리먼트[0]:", clonedEventElement[0]);
+
+
+    if (insertIndex === eventElements.length - 1) {
+        container.appendChild(clonedEventElement[0]); // ✅ DOM 노드로
+    } else {
+        container.insertBefore(clonedEventElement[0], eventElements[insertIndex + 1]); // ✅ DOM 노드로
+    }
+
+    // 4. 시간 및 순서 업데이트
+    if(clonedEvent.dayCount !==0){
+        updateEventDisplay(`day-${clonedEvent.dayCount}`, insertIndex + 1);
+    }
 }
 
 
@@ -489,6 +553,19 @@ function addEvent(event) {
     eventMap.set(id, event);
     return id;
 }
+
+// 기존 이벤트를 복제하고 새로운 hashId를 부여하여 eventMap에 추가
+function cloneEvent(originalEvent) {
+    const clonedEvent = structuredClone(originalEvent); // 깊은 복제
+    const newId = generateUniqueId(eventMap);
+    clonedEvent.id = null;
+    clonedEvent.hashId = newId;
+    clonedEvent.movingDistanceFromPrevPlace = 0;
+    clonedEvent.movingMinuteFromPrevPlace = 0;
+    eventMap.set(newId, clonedEvent);
+    return clonedEvent;
+}
+
 
 //주어진 ID로 `eventMap`에서 이벤트 조회
 function getEventById(id) {
@@ -534,6 +611,8 @@ function moveDeletedPerDayEventsToSavedPlace(deletedPerDays) {
         }
     });
 
+    markerState = 0;
+    renderMarkerByMarkerState();
     console.log(`✅ ${eventsToMove.size}개 이벤트 장소보관함 이동 완료, 삭제된 day-column 및 perDayMap 정리 완료`);
 }
 
@@ -583,7 +662,6 @@ function calculateDistanceUpdates(dayId, oldIndex, newIndex, movedForward) {
     return movedForward ? newIndex : oldIndex; // updateEventDisplay의 시작 인덱스를 반환
 }
 
-
 // 삭제 시 거리 재계산
 function calculateRemovalImpact(dayId, oldIndex) {
     eventPairs.push(findEventPairByDayIdAndIndex(dayId, oldIndex - 1, oldIndex));
@@ -621,7 +699,7 @@ function findEventPairByDayIdAndIndex(dayId, index1, index2) {
     // 예외 처리: 끝부분 (범위를 초과하는 경우)
     if (index1 >= itemCount || index2 >= itemCount) {
         console.warn(`❌ 유효하지 않은 인덱스: index1=${index1}, index2=${index2}`);
-        return;
+        return [null,null];
     }
 
     const eventId1 = items[index1]?.getAttribute("data-id");
@@ -629,7 +707,7 @@ function findEventPairByDayIdAndIndex(dayId, index1, index2) {
 
     if (!eventId1 || !eventId2) {
         console.warn(`❌ 이벤트 ID 없음: index1=${index1}, index2=${index2}`);
-        return;
+        return [null,null];
     }
 
     const event1 = getEventById(eventId1);
@@ -641,6 +719,7 @@ function findEventPairByDayIdAndIndex(dayId, index1, index2) {
     else {
         console.warn(`❌ 이벤트 조회 실패: eventId1=${eventId1}, eventId2=${eventId2}`);
     }
+    return [null,null];
 }
 
 
@@ -1027,7 +1106,6 @@ function generateItineraryJson() {
     const itineraryEvents = Array.from(eventMap.values()).map(event => ({
         ...event,
         pid: event.placeDTO.id, // placeDTO.id를 pid로 변경
-        hashId: undefined, // hashId 제거
         placeDTO: undefined, // placeDTO 제거
         stayMinute: undefined // stayMinute 제거
     }));
@@ -1037,8 +1115,8 @@ function generateItineraryJson() {
 }
 
 function saveItinerary() {
-    const $button = $("#save-button");
-    $button.prop("disabled", true).text("저장중...");
+    const $button = $(".save-button");
+    // $button.prop("disabled", true).text("저장중...");
 
     const jsonData = generateItineraryJson();
 
@@ -1049,6 +1127,15 @@ function saveItinerary() {
         data: jsonData,
         success: function (response) {
             console.log("저장 성공:", response);
+            if (response.createdMappings) {
+                response.createdMappings.forEach(mapping => {
+                    const event = getEventById(mapping.hashId);
+                    if (event) {
+                        event.id = mapping.eventId; // 서버 DB ID 반영
+                        console.log(`${mapping.hashId} <- ${mapping.eventId} 설정완료`)
+                    }
+                });
+            }
             alert("저장이 완료되었습니다!");
         },
         error: function (xhr, status, error) {
@@ -1056,7 +1143,7 @@ function saveItinerary() {
             alert("저장 중 오류가 발생했습니다.");
         },
         complete: function () {
-            $button.prop("disabled", false).text("저장하기");
+            // $button.prop("disabled", false).text("저장하기");
         }
     });
 }
@@ -1090,7 +1177,7 @@ function formatTime(minutes) {
 //  🎭 이벤트 핸들링
 //------------------------------------------
 
-$("#save-button").click(saveItinerary);
+$(".save-button").click(saveItinerary);
 
 $('#apply-global-time').click(function () {
     let globalStart = $('#start-global').val();
@@ -1164,6 +1251,9 @@ $(document).on("click", ".event-remove", function () {
             $(eventContainer).find(".event .event-order-line").removeClass("transparent");
             $(eventContainer).find(".event .event-order-line.top").first().addClass("transparent");
             $(eventContainer).find(".event .event-order-line.bottom").last().addClass("transparent");
+
+            markerState = extractDayId(dayId);
+            renderMarkerByMarkerState();
         })();
 
 
@@ -1203,6 +1293,24 @@ $(document).on("click", ".event-duration", function (event) {
     // 📌 event-time 숨기기
     eventTime.css("visibility", "hidden");
 });
+
+// "복제" 버튼 클릭 시
+$(document).on("click", ".event-duplicate", function (event) {
+    event.stopPropagation();
+
+    $(".event-options").addClass("hidden");
+
+    let eventElement = $(this).closest(".event");
+    let eventId = eventElement.data("id");
+    let eventData = eventMap.get(eventId);
+
+    if (!eventData) return;
+
+    cloneAndInsertBelow(eventId);
+
+});
+
+
 
 // "✔️ 확인" 버튼 클릭 시 값 저장 & 드래그 다시 활성화
 $(document).on("click", ".event-duration-save", function (event) {
@@ -1258,7 +1366,7 @@ $(document).on("click", ".event-duration-cancel", function (event) {
 });
 
 
-// =================================================================
+
 // 장소추가 관련 코드
 // =================================================================
 
@@ -1408,7 +1516,7 @@ function renderRecommendedPlaces(placeList) {
             <div class="info">
                 <div class="title">${place.placeName}</div>
                 <div class="info-line">
-                    <div class="place-type">${getKoreanLabel(place.placeType)}</div>
+                    <div class="place-type" data-place-type='${place.placeType}'>${getKoreanLabel(place.placeType)}</div>
                     <div class="address">${place.address}</div>
                 </div>
                 <div class="info-line">
@@ -1475,7 +1583,7 @@ function searchGooglePlaces() {
             try {
                 let parsedData = typeof data === "string" ? JSON.parse(data) : data; // JSON 문자열인지 확인 후 변환
                 let results = parsedData.places || []; // `places` 키에서 데이터 가져오기
-                clearMarkers();
+                clearGoogleMarkers();
                 displayGoogleSearchResults(results);
             } catch (error) {
                 console.error("JSON parsing error:", error);
@@ -1546,11 +1654,11 @@ function clearGoogleSearch() {
     document.getElementById("google-place-search").value = "";
     document.getElementById("google-search-results").innerHTML = "";
     document.getElementById("google-search-results-header").innerText = "검색 결과 총 0건";
-    clearMarkers();
+    clearGoogleMarkers();
 }
 
 //구글맵 마커삭제
-function clearMarkers() {
+function clearGoogleMarkers() {
     markers.forEach((marker) => marker.setMap(null));
     markers = [];
 }
@@ -1637,71 +1745,251 @@ function showTab(tabId) {
     }
 }
 
-const markerData = [[
-    { hashId: 1, order: 2, lat: 37.5651, lng: 126.9895 },
-    { hashId: 2, order: 1, lat: 37.5665, lng: 126.9780 },
-    { hashId: 3, order: 3, lat: 37.5673, lng: 126.9768 }
-],[
-    { hashId: 4, order: 2, lat: 37.5651, lng: 126.9895 },
-    { hashId: 5, order: 1, lat: 37.5665, lng: 126.9780 },
-    { hashId: 6, order: 3, lat: 37.5673, lng: 126.9768 }
-]];
 
-function clickMarker(hashId){
-
-}
+// 지도 마커 그룹별 색상
+const groupColors = ["#343434", "#fd7a2b", "#16c35d", "#00b2ff"
+    , "#9b59b6", "#c63db8", "#cc3434", "#462ad3"];
 
 
-function drawMap() {
-    console.log("sideMap 확인:", sideMap); // undefined 아닌지 확인
-    const sortedMarkers = markerData.sort((a, b) => a.order - b.order);
+// 모든 PerDayMarker 생성
+function renderMarkerByMarkerState() {
+    console.log("renderMarkerByMarkerState");
+    clearMarkers();
+    clearPolylines();
 
-    sortedMarkers.forEach((item, index) => {
-        const marker = new google.maps.Marker({
-            position: { lat: item.lat, lng: item.lng },
-            map: sideMap,
-            label: {
-                text: (index + 1).toString(), // 숫자 라벨 (1부터 시작)
-                fontWeight: "bold",
-                fontSize: "17px",
-                color: "#ffffff"
-            },
-            icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 14,
-                fillColor: "#bd0000",
-                fillOpacity: 1,
-                strokeWeight: 1,
-                strokeColor: "#ffffff"
+    const bounds = new google.maps.LatLngBounds();
+
+
+    $('.day-column').each(function () {
+        const $dayColumn = $(this);
+
+        if ($dayColumn.hasClass('savedPlace')) return;
+        const dayNumber = parseInt($dayColumn.data('day-number'));
+        if(markerState !== 0 && markerState !== dayNumber)  return;
+
+
+        const eventIds = $dayColumn.find('.event-container .event').map(function () {
+            return $(this).data('id');
+        }).get();
+
+        renderMarker(dayNumber, eventIds, false);
+
+        console.log(eventIds);
+        // bounds에 포함시킬 좌표 계산
+        eventIds.forEach(eventId => {
+            const event = getEventById(eventId);
+            if (event && event.placeDTO) {
+                bounds.extend({ lat: event.placeDTO.latitude, lng: event.placeDTO.longitude });
+                console.log("bounds.extend !");
             }
         });
 
-        marker.addListener("click", () => {
-            clickMarker(item.hashId);
+        if(markerState !== 0 && markerState === dayNumber) return false;
+    });
+
+    console.log(bounds);
+
+    // 마지막에 한 번만 지도 중심과 줌 조정
+    if (!bounds.isEmpty()) {
+        sideMap.fitBounds(bounds);
+    }
+}
+
+
+
+function renderMarker(dayNumber, eventIds) {
+    let markerData = [[]];
+
+    let idx = 0;
+    eventIds.forEach(eventId => {
+        const event = getEventById(eventId);
+        if (event && event.placeDTO) {
+            console.log(event.placeDTO);
+            markerData[0].push({
+                hashId: event.hashId,
+                order: idx,
+                lat: event.placeDTO.latitude,
+                lng: event.placeDTO.longitude,
+                isLodging : event.placeDTO.placeType === "LODGING"
+            });
+            idx = idx + 1;
+        }
+    });
+    console.log(markerData);
+    drawMap(markerData, dayNumber);
+}
+
+
+// 맵에 마커 그리는 함수
+function drawMap(markerData, startColorIndex = 0) {
+    markerData.forEach((group, groupIndex) => {
+        const sortedGroup = group.sort((a, b) => a.order - b.order);
+
+        const colorIndex = (startColorIndex + groupIndex) % groupColors.length;
+        const groupColor = groupColors[colorIndex];
+
+        const pathCoords = [];
+
+        // 마커 그리기
+        sortedGroup.forEach((item, index) => {
+            const marker = new google.maps.Marker({
+                hashId: item.hashId,
+                position: { lat: item.lat, lng: item.lng },
+                map: sideMap,
+                label: {
+                    text: item.isLodging ? "H" : (index + 1).toString(),
+                    fontWeight: "600",
+                    fontSize: "13px",
+                    color: "#ffffff"
+                },
+                icon: {
+                    path: `
+                            M 0,0 
+                            m -10,-20 
+                            a 10,10 0 1,0 20,0 
+                            a 10,10 0 1,0 -20,0 
+                            M 0,0 
+                            l -7,-10 
+                            l 14,0 
+                            z
+                        `,
+                    fillColor: groupColor,
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 0.5,
+                    scale: 1,
+                    labelOrigin: new google.maps.Point(0, -20)
+                }
+            });
+
+
+
+            marker.addListener("click", function() {
+                clickMarker(marker);
+            });
+
+
+            allMarkers.push(marker);
+            pathCoords.push({ lat: item.lat, lng: item.lng });
         });
-    });
 
-    const pathCoords = sortedMarkers.map(item => ({ lat: item.lat, lng: item.lng }));
-    const polyline = new google.maps.Polyline({
-        path: pathCoords,
-        map: sideMap,
-        strokeOpacity: 0,
-        icons: [{
-            icon: {
-                path: 'M 0,-1 0,1',
-                strokeOpacity: 1,
-                scale: 4
-            },
-            offset: '0',
-            repeat: '20px'
-        }]
-    });
+        // 경로(polyline) 그리기
+        const polyline = new google.maps.Polyline({
+            path: pathCoords,
+            map: sideMap,
+            strokeOpacity: 0,
+            icons: [{
+                icon: {
+                    path: 'M 0,-1 0,1',
+                    strokeOpacity: 1,
+                    scale: 4,
+                    strokeColor: groupColor
+                },
+                offset: '0',
+                repeat: '20px'
+            }]
+        });
 
-    const bounds = new google.maps.LatLngBounds();
-    sortedMarkers.forEach(item => {
-        bounds.extend({ lat: item.lat, lng: item.lng });
+        allPolylines.push(polyline);
     });
-    sideMap.fitBounds(bounds);
+}
+
+//마커 z-index 초기화
+function resetAllMarkersZIndex(markers, defaultZIndex = 1) {
+    markers.forEach(m => m.setZIndex(defaultZIndex));
+}
+
+
+//마커 크기를 키우는 함수
+function enlargeMarkerTemporarily(marker, scaleFactor = 2, duration = 2000) {
+    const originalIcon = marker.getIcon();
+    const originalLabel = marker.getLabel();
+
+    // 기존 타이머 있으면 클리어
+    if (marker._resetTimerId) {
+        clearTimeout(marker._resetTimerId);
+        marker._resetTimerId = null;
+    }
+
+    // 아이콘 확대
+    const biggerIcon = {
+        ...originalIcon,
+        scale: (originalIcon.scale || 1) * scaleFactor
+    };
+
+    // 라벨 확대
+    const fontSize = originalLabel?.fontSize || "13px";
+    const newFontSize = (parseFloat(fontSize) * scaleFactor) + "px";
+    const biggerLabel = {
+        ...originalLabel,
+        fontSize: newFontSize
+    };
+
+    marker.setIcon(biggerIcon);
+    marker.setLabel(biggerLabel);
+
+
+    // 복구 예약
+    marker._resetTimerId = setTimeout(() => {
+        marker.setIcon(originalIcon);
+        marker.setLabel(originalLabel);
+        marker._resetTimerId = null;
+    }, duration);
+}
+
+
+
+
+function clickMarker(marker){
+    showPlaceModal(marker.hashId);
+    enlargeMarkerTemporarily(marker);
+}
+
+function showPlaceModal(hashId, placeId = null) {
+
+    console.log(hashId)
+    const placeData = getEventById(hashId).placeDTO;
+
+    console.log(placeData);
+
+    $('#placeModalName').text(placeData.placeName || '-');
+    $('#placeModalType').text(getKoreanLabel(placeData.placeType) || '-');
+    $('#placeModalRatingCount').text(placeData.googleRatingCount || '0');
+    $('#placeModalRating').text(placeData.googleRating || 'N/A');
+    $('#placeModalImage').attr('src', placeData.imageUrl || '/default-placeholder.jpg');
+    $('#placeModalDescription').text(placeData.description || '-');
+    $('#placeModalAddress').text(placeData.address || '-');
+    $('#placeModalMapLink').attr('href', placeData.googleURL || '#');
+
+    // 영업 시간 출력
+    $('#placeModalHours').empty();
+    try {
+        const hours = JSON.parse(placeData.regularOpeningHours || '{}');
+        if (Array.isArray(hours.weekdayDescriptions)) {
+            hours.weekdayDescriptions.forEach(desc => {
+                $('#placeModalHours').append(`<li>${desc}</li>`);
+            });
+        } else {
+            $('#placeModalHours').append(`<li>영업 시간 정보 없음</li>`);
+        }
+    } catch (e) {
+        $('#placeModalHours').append(`<li>영업 시간 정보 없음</li>`);
+    }
+
+    $('#placeModal').modal('show');
+}
+
+
+
+
+function clearMarkers() {
+    allMarkers.forEach(marker => marker.setMap(null));
+    allMarkers = [];
+}
+
+function clearPolylines() {
+    allPolylines.forEach(polyline => polyline.setMap(null));
+    allPolylines = [];
 }
 
 
@@ -1721,9 +2009,22 @@ function initMap() {
         streetViewControl: false,    // 스트리트뷰 버튼 비활성화
         mapTypeControl: false        // 지도 유형 변경 버튼 비활성화
     });
-    drawMap();
 
+    mapReady = true;
+    tryRenderMarkerAll();
 }
+
+// 데이터 fetch와 map 로딩이 끝났을때 마커 render를 작동
+function tryRenderMarkerAll() {
+    if (mapReady && dataReady) {
+        markerState = 0;
+        renderMarkerByMarkerState();
+        infoWindow = new google.maps.InfoWindow();
+    }
+}
+
+
+
 //
 //
 // // 구글 Place api키 GITHUB 및 검색엔진에서 숨기기 위한 함수
@@ -1791,6 +2092,10 @@ $(document).ready(function() {
 });
 
 
+$(document).on("click", ".schedule-header-left", function () {
+    markerState=0;
+    renderMarkerByMarkerState();
+});
 
 $(document).on("click", ".place-toggle-button", function () {
     const btn = $('.place-toggle-button');
@@ -1821,6 +2126,21 @@ $(document).on("click", ".add-button", function () {
     }, 2000); // 애니메이션 시간에 맞춰 제거
 });
 
+$(document).on('click', '.day-header', function () {
+    const $header = $(this);
+    const $dayColumn = $header.closest('.day-column');
+
+    // 장소보관함이면 무시
+    if ($dayColumn.hasClass('savedPlace')) return;
+
+    // dayNumber 추출
+    const dayNumber = parseInt($dayColumn.data('day-number'));
+
+    markerState = dayNumber;
+    renderMarkerByMarkerState();
+});
+
+
 
 // 전역에 placeMap이 있다고 가정
 // const placeMap = new Map(); // <placeId, placeObject>
@@ -1838,7 +2158,7 @@ function placeToSavedPlace(placeId) {
     const event = {
         dayCount: 0,
         placeDTO: place,
-        stayMinute: 0,
+        stayMinute: 60,
         startMinuteSinceStartDay: 0,
         endMinuteSinceStartDay: 0,
         movingMinuteFromPrevPlace: 0,

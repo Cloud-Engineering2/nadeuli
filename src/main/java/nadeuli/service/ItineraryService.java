@@ -13,6 +13,7 @@
  * 박한철    2025.02.26     일정 생성 파트 수정 완료
  * 박한철    2025.02.28     일정 전체 (itinerary, PerDay, Event) Update 기능 개발 완료
  * 박한철    2025.03.11     엔티티에 movingDistanceFromPrevPlace 추가로 인한 변경사항
+ * 박한철    2025.03.12     Update 이후 createdMappings 또한 리턴하도록 수정
  * ========================================================
  */
 package nadeuli.service;
@@ -26,6 +27,7 @@ import nadeuli.dto.request.ItineraryCreateRequestDTO;
 import nadeuli.dto.request.ItineraryEventUpdateDTO;
 import nadeuli.dto.request.ItineraryTotalUpdateRequestDTO;
 import nadeuli.dto.response.*;
+import nadeuli.dto.response.SaveEventResult;
 import nadeuli.entity.*;
 import nadeuli.repository.*;
 import org.springframework.data.domain.Page;
@@ -155,14 +157,15 @@ public class ItineraryService {
         List<ItineraryPerDay> itineraryPerDays = saveOrUpdateItineraryPerDays(itinerary, requestDto.getItineraryPerDays());
 
         // 일정의 이벤트 정보를 저장 또는 업데이트
-        List<ItineraryEvent> itineraryEvents = saveOrUpdateItineraryEvents(itineraryPerDays, requestDto.getItineraryEvents());
+        SaveEventResult result = saveOrUpdateItineraryEvents(itineraryPerDays, requestDto.getItineraryEvents());
 
         // 업데이트된 일정 정보를 DTO로 반환
         // Response DTO로 변환 후 반환
         return new ItineraryTotalUpdateResponseDTO(
                 ItineraryDTO.from(itinerary),
                 itineraryPerDays.stream().map(ItineraryPerDayDTO::from).collect(Collectors.toList()),
-                itineraryEvents.stream().map(ItineraryEventDTO::from).collect(Collectors.toList())
+                result.getEvents(),
+                result.getCreatedMappings()
         );
     }
 
@@ -228,64 +231,81 @@ public class ItineraryService {
         return itineraryPerDayRepository.findByItinerary(itinerary);
     }
 
-    private List<ItineraryEvent> saveOrUpdateItineraryEvents(List<ItineraryPerDay> existingDays, List<ItineraryEventUpdateDTO> eventDtos) {
-        if (eventDtos == null) return Collections.emptyList();
 
-        // 일정과 관련된 기존 이벤트 및 일별 일정 데이터 조회
+    public SaveEventResult saveOrUpdateItineraryEvents(List<ItineraryPerDay> existingDays,
+                                                       List<ItineraryEventUpdateDTO> eventDtos) {
+        if (eventDtos == null || eventDtos.isEmpty()) {
+            return new SaveEventResult(Collections.emptyList(), Collections.emptyList());
+        }
+
+        // 기존 이벤트 조회
         List<ItineraryEvent> existingEvents = itineraryEventRepository.findByItineraryPerDayIn(existingDays);
 
-        // 일별 일정 데이터를 Map 형태로 변환
+        // 매핑
         Map<Integer, ItineraryPerDay> dayCountToEntityMap = existingDays.stream()
                 .collect(Collectors.toMap(ItineraryPerDay::getDayCount, Function.identity()));
 
-        // 기존 이벤트 데이터를 Map 형태로 변환
         Map<Long, ItineraryEvent> existingEventMap = existingEvents.stream()
                 .collect(Collectors.toMap(ItineraryEvent::getId, Function.identity()));
 
-        // Place 객체를 한 번에 조회하여 캐싱
         Map<Long, Place> placeCache = placeRepository.findAllById(
                 eventDtos.stream().map(ItineraryEventUpdateDTO::getPid).collect(Collectors.toSet())
         ).stream().collect(Collectors.toMap(Place::getId, Function.identity()));
 
-        List<ItineraryEvent> updatedEvents = new ArrayList<>();
+        List<ItineraryEvent> allEvents = new ArrayList<>();
+        List<ItineraryEvent> newEvents = new ArrayList<>();
+        List<CreatedEventMapping> createdMappings = new ArrayList<>();
 
         for (ItineraryEventUpdateDTO dto : eventDtos) {
             if (dto.getId() != null && existingEventMap.containsKey(dto.getId())) {
-                // 기존 이벤트가 존재하면 업데이트 수행
+                // 기존 이벤트 수정
                 ItineraryEvent existingEvent = existingEventMap.get(dto.getId());
                 existingEvent.updateFromDto(dto, dayCountToEntityMap.get(dto.getDayCount()));
-                updatedEvents.add(existingEvent);
-                existingEventMap.remove(dto.getId());
+                allEvents.add(existingEvent);
+                existingEventMap.remove(dto.getId()); // 남은 것은 삭제 대상으로 분류
             } else {
-                // 새로운 이벤트 추가
+                // 신규 이벤트 생성
                 Place place = placeCache.get(dto.getPid());
                 if (place == null) {
-                    throw new EntityNotFoundException("Place not found with id " + dto.getPid());
+                    throw new EntityNotFoundException("Place not found: " + dto.getPid());
                 }
-                updatedEvents.add(ItineraryEvent.of(
+
+                ItineraryEvent newEvent = ItineraryEvent.of(
                         dayCountToEntityMap.get(dto.getDayCount()),
                         place,
                         dto.getStartMinuteSinceStartDay(),
                         dto.getEndMinuteSinceStartDay(),
                         dto.getMovingMinuteFromPrevPlace(),
                         dto.getMovingDistanceFromPrevPlace()
-                ));
+                );
+
+                allEvents.add(newEvent);
+                newEvents.add(newEvent);
+
+                // hashId → eventId 매핑 준비 (eventId는 save 이후 할당)
+                createdMappings.add(new CreatedEventMapping(dto.getHashId(), null));
             }
         }
 
-        // 삭제할 이벤트 리스트 추출
+        // 삭제 처리 (요청에서 누락된 기존 이벤트 → 삭제 대상)
         List<ItineraryEvent> toDelete = new ArrayList<>(existingEventMap.values());
-
-        // 삭제 및 업데이트 수행
         if (!toDelete.isEmpty()) {
             itineraryEventRepository.deleteAll(toDelete);
         }
-        if (!updatedEvents.isEmpty()) {
-            itineraryEventRepository.saveAll(updatedEvents);
+
+        // 저장 (업데이트 + 신규 통합)
+        itineraryEventRepository.saveAll(allEvents);
+
+        // createdMappings ID 채우기
+        for (int i = 0; i < newEvents.size(); i++) {
+            CreatedEventMapping mapping = createdMappings.get(i);
+            createdMappings.set(i, new CreatedEventMapping(mapping.getHashId(), newEvents.get(i).getId()));
         }
+        // 최종 전체 이벤트 → DTO 변환
+        List<ItineraryEventDTO> eventDtoList = allEvents.stream()
+                .map(ItineraryEventDTO::from)
+                .collect(Collectors.toList());
 
-        return itineraryEventRepository.findByItineraryPerDayIn(existingDays);
+        return new SaveEventResult(eventDtoList, createdMappings);
     }
-
-
 }

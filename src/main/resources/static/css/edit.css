@@ -1,19 +1,20 @@
-
+@font-face {
+    font-family: 'NotoSansKRVar';
+    src: url('../fonts/NotoSansKR-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+}
 
 
 html, body {
     height: 100%;
     margin: 0;
     overflow: hidden; /* 스크롤 제거 */
-}
-
-html {
-    font-family: 'Noto Sans KR', sans-serif; /* 폰트 설정 */
-    font-size: 16px; /* 기본 글꼴 크기를 px 단위로 고정 */
+    font-family: 'NotoSansKRVar', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
 }
 
 body {
-    font-family: Arial, sans-serif;
     background: #F3F3F3; /* 기존 배경색을 부드러운 White 계열로 변경 */
 }
 /*body {*/
@@ -59,11 +60,11 @@ body {
 }
 /* 왼쪽 패널 */
 #sidebar {
-    background: #e7e7e7; /* 기존 배경을 Beige 계열로 변경 */
+    background: #fdfdfd; /* 기존 배경을 Beige 계열로 변경 */
     color: #343434; /* 텍스트를 Black 계열로 변경하여 가독성 향상 */
     flex-grow: 1;
     min-width: 300px;
-    max-width: 2000px;
+    max-width: 3000px;
     width: 1000px; /* 기본 너비 */
 
     height: 100%;
@@ -141,8 +142,8 @@ body {
 
 .savedPlace {
     margin-left: 5px;
-    width: 200px !important;
-    min-width: 200px  !important;/* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
+    width: 250px !important;
+    min-width: 250px  !important;/* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
 }
 
 .savedPlace .event-order{
@@ -154,18 +155,18 @@ body {
 .day-column {
     /* border: 1px #896b2782 solid; */
     border-radius: 2px;
-    width: 280px;
-    min-width: 280px; /* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
+    width: 30px;
+    min-width: 300px; /* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
 }
 .day-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #343434;
+    /*background-color: #343434;*/
     font-weight: bold;
-    color: #fefefe;
+    color: #2f2f2f;
     padding: 8px;
-    border-bottom: 1px #e3e3e3 solid;
+    /*border-bottom: 1px #e3e3e3 solid;*/
 }
 
 .place-container-header{
@@ -174,12 +175,14 @@ body {
     justify-content: space-between;
 }
 
+
+
 .schedule-header {
     user-select: none;
     display: flex;
     justify-content: space-between; /* 좌우 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
-    background: linear-gradient(88deg, #d5d3cf, #ffffff00); /* White와 Beige 그라디언트 적용 */
+    /*background: linear-gradient(88deg, #d5d3cf, #ffffff00); !* White와 Beige 그라디언트 적용 *!*/
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     width: 100%;
     position: sticky;
@@ -187,8 +190,13 @@ body {
     left: 0;
     z-index: 10;
 }
+.schedule-header.place {
+    cursor: default;
+}
+
 .schedule-header-left{
     display:flex;
+    cursor:pointer;
     align-items: flex-start;
     flex-direction: column;
     flex-wrap: wrap;
@@ -216,10 +224,23 @@ body {
     margin-left: auto; /* 버튼을 오른쪽 끝으로 이동 */
 }
 
+.save-button{
+    background: none;
+    border: none;
+    font-size: 25px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.save-button:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
 .event-options-button.schedule {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 25px;
     cursor: pointer;
     padding: 5px 10px;
     border-radius: 5px;
@@ -230,10 +251,11 @@ body {
 }
 
 .event-container {
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-    background: #f9f9f9;
+    /*box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);*/
+    background: #f5f5f5;
     min-height: 70px;
-    padding: 10px;
+    border-radius: 12px;
+    padding: 20px;
 }
 
 
@@ -253,7 +275,8 @@ body {
 .travel-info {
     padding: 5px;
     border-radius: 3px;
-    background-color: #dddddd;
+    /*background-color: #dddddd;*/
+    text-align: center;
     width: 100%;
 }
 
@@ -284,7 +307,7 @@ body {
 .event-order-line {
     width: 1px;
 
-    background-color: #8E8B82; /* Grey 적용하여 자연스러움 추가 */
+    /*background-color: #8E8B82; !* Grey 적용하여 자연스러움 추가 *!*/
 
     z-index: 0; /* 선을 원의 뒤로 배치 */
 }
@@ -292,12 +315,12 @@ body {
 
 
 .event-order-line.top {
-    height: 30%;
+    height: 50%;
 }
 
 
 .event-order-line.bottom {
-    height: 90%;
+    height: 50%;
 }
 
 .event .event-order-line.transparent {
@@ -309,28 +332,27 @@ body {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    border: 1px solid gray;
-    background-color: white;
+    /*border: 1px solid gray;*/
+    background-color: #3f3f3f;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     font-size: 12px;
     position: absolute;
-    top: 30%;
+    top: 50%;
     transform: translateY(-50%);
     z-index: 1; /* 원이 선 위로 오도록 설정 */
 }
 .event-main {
     display: flex;
     width: 100%;
-    padding-top: 4px;
-    padding-left: 4px;
-    padding-bottom: 4px;
+    padding: 10px 0 10px 9px;
     color: #514f49;
     border-radius: 4px;
-    background: #ffffff87;
-    border: 1px solid rgb(0 0 0 / 34%);
+    background: #ffffff;
+    /*border: 1px solid rgb(0 0 0 / 34%);*/
     box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
     text-align: left;
     cursor: grab;
@@ -340,6 +362,15 @@ body {
 
 .event-title {
     font-size:0.9em;
+}
+
+.event-place-type{
+    font-size:0.8em;
+}
+
+.event-under-content{
+    display:flex;
+    gap: 5px;
 }
 
 .event-time{
@@ -357,6 +388,24 @@ body {
     position: relative;
     justify-content: center; /* 버튼 가운데 정렬 */
     align-items: center;
+}
+
+.event-duplicate.place-btn {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 3px;
+}
+
+.event-remove.place-btn {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
 }
 
 
@@ -714,10 +763,10 @@ body {
 
 
 .place-container {
-    margin: 5px 0 0 5px;
+    margin: 5px 0 0 10px;
     padding-bottom: 10px;
-    width: 350px;
-    min-width: 350px;
+    width: 400px;
+    min-width: 400px;
     min-height: 0;
     display: none;
     flex-direction: column;
@@ -756,7 +805,7 @@ body {
     padding: 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     position: relative;
-    margin: 0 0 5px 0;
+    margin: 5px 0 5px 0;
 }
 .search-icon, .search-clear {
     display: flex;
@@ -773,7 +822,7 @@ body {
     border: none;
     background-color: transparent;
     height: 100%;
-    font-size: 0.8em;
+    font-size: 0.85em;
     padding: 0 10px;
 }
 .search-input:focus {
@@ -875,7 +924,7 @@ body {
     font-size: 0.9rem;
     color: #343434;
     font-weight: bold;
-    background-color: white;
+    background-color: #fdfdfd;
     border: none;
     border-bottom: 2px solid transparent;
     transition: border-bottom 0.3s;
@@ -1089,10 +1138,74 @@ body {
 
 .right-side-map {
     width: 100%;         /* 사이드 지도 너비 */
-    height: calc(100vh - 59px);        /* 전체 화면 높이 */
+    height: calc(100vh - 50px);        /* 전체 화면 높이 */
     border-left: 1px solid #ddd;
     background-color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+
+#placeModalImage {
+    height: 300px;
+    object-fit: cover;
+}
+
+
+.event-place-type[data-place-type="LANDMARK"] {
+    color: #971414; /* 모던 레드 */
+}
+
+.event-place-type[data-place-type="RESTAURANT"] {
+    color: #d66803; /* 웜 오렌지 */
+}
+
+.event-place-type[data-place-type="LODGING"] {
+    color: #207bb5; /* 톤다운된 블루 */
+}
+
+.event-place-type[data-place-type="CAFE"] {
+    color: #8d6e63; /* 소프트 브라운 (카페 느낌) */
+}
+
+.event-place-type[data-place-type="TRANSPORTATION"] {
+    color: #2a9d8f; /* 세련된 그린/블루 */
+}
+
+.event-place-type[data-place-type="ATTRACTION"] {
+    color: #9b5de5; /* 포인트 퍼플 */
+}
+
+.event-place-type[data-place-type="CONVENIENCE"] {
+    color: #364350; /* 모던 그레이 (뉴트럴 톤) */
+}
+
+
+.place-type[data-place-type="LANDMARK"] {
+    color: #971414; /* 모던 레드 */
+}
+
+.place-type[data-place-type="RESTAURANT"] {
+    color: #d66803; /* 웜 오렌지 */
+}
+
+.place-type[data-place-type="LODGING"] {
+    color: #207bb5; /* 톤다운된 블루 */
+}
+
+.place-type[data-place-type="CAFE"] {
+    color: #8d6e63; /* 소프트 브라운 (카페 느낌) */
+}
+
+.place-type[data-place-type="TRANSPORTATION"] {
+    color: #2a9d8f; /* 세련된 그린/블루 */
+}
+
+.place-type[data-place-type="ATTRACTION"] {
+    color: #9b5de5; /* 포인트 퍼플 */
+}
+
+.place-type[data-place-type="CONVENIENCE"] {
+    color: #364350; /* 모던 그레이 (뉴트럴 톤) */
 }
