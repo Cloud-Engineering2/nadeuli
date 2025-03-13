@@ -1,8 +1,9 @@
+/************* 🧳 전역 변수 선언 🧳 *************/
 // Event 전역변수
 let itinerary = null;                   // Itinerary
-const perDayMap = new Map();    // ItineraryPerDay { 1: itineraryPerDay 객체 }
+const perDayMap = new Map();    // ItineraryPerDay - ex) { 1: 1일차 itineraryPerDay 객체 }
 const eventMap = new Map();
-const groupedByDay = {}; // 렌더링용 - perDay 별로 정렬된 event 리스트
+const groupedByDay = {}; // 렌더링용 - perDay 별로 정렬된 event - ex) { 1:[event1, event2, ..., ], 2:[] } (1,2,..,일차)
 
 // 모달 전역변수
 let currentModalStep = 1;
@@ -18,8 +19,7 @@ let prevDayCount = null;
 //디버깅용
 let isDEBUG = false;
 
-// 🔄 데이터 로딩 및 초기화
-//------------------------------------------
+/***** 🧳 Itinerary 상세 조회 기본 페이지 🧳 *****/
 $(document).ready(function () {
 
     // 현재 페이지 URL에서 iid 추출
@@ -35,7 +35,7 @@ $(document).ready(function () {
             createData(data);
             renderItinerary();
             // initDateRangePickerModal();
-            initSidebarResize();
+            initSidebarResize(); // 사이드 바
         },
         error: function (xhr, status, error) {
             console.error("Error fetching itinerary:", error);
@@ -44,8 +44,7 @@ $(document).ready(function () {
 });
 
 
-// 📆 일정 데이터 생성 함수
-//------------------------------------------
+// 🎈 Itinerary Event data 생성
 function createData(data) {
 
     // 일정 정보 복사
@@ -88,31 +87,26 @@ function createData(data) {
 
 
 
-// 🏗️ ui 요소 관리
-//------------------------------------------
-
-
-//일정 UI 요소 생성
+// 🎈 렌더링
 function renderItinerary() {
-    // 🏷일정 제목 설정
+    // 💡여행 제목
     $(".schedule-header-name").text(itinerary.itineraryName);
 
-
-    // 일정 기간 표시 (시작 날짜 ~ 종료 날짜)
+    // 여행 기간 (시작 날짜 ~ 종료 날짜)
     let startDate = new Date(itinerary.startDate);
     let endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + itinerary.totalDays - 1);
-
+    // 여행 기간 : 날짜 형식 변환
     let options = {year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short'};
     $(".schedule-header-date").text(
         `${startDate.toLocaleDateString("ko-KR", options)} ~ ${endDate.toLocaleDateString("ko-KR", options)}`
     );
 
-    // 🚀 일정 UI 렌더링
+    // 💡일정 UI 렌더링
     const itineraryEventList = $("#itineraryEventList").empty();
     console.log("groupedByDay entries:", Object.entries(groupedByDay));  // key-value
 
-    // 탭 컨테이너 초기화 //
+    // 💡일자별 탭 컨테이너
     const tabContainer = $("#tabContainer").empty();
 
     Object.keys(groupedByDay).forEach(dayKey =>  {
@@ -120,7 +114,7 @@ function renderItinerary() {
         const startTime = perDayMap.get(dayNumber)?.startTime?.substring(0, 5) || "00:00";
         console.log(dayKey);
 
-        // 📌 탭 버튼 //
+        // 💡탭 버튼
         const tab = $(`
             <div class="tab ${dayNumber === 0 ? "active" : ""}" data-day="${dayNumber}">
                 ${dayNumber === 0 ? "장소보관함" : dayNumber + "일차 (" + startTime + ")"}
@@ -129,7 +123,7 @@ function renderItinerary() {
         tabContainer.append(tab);
 
 
-        // 📌 0일차는 장소 보관함으로 설정 ( 탭 콘텐츠 ) //
+        // 💡탭 콘텐츠 (0일차는 장소 보관함으로 설정)
         const dayColumn = $(`
 <!--        <div class='day-column ${dayNumber === 0 ? "savedPlace" : ""}'> -->
                 <div class="tab-content ${dayNumber === 0 ? "active" : ""}" id="tab-content-${dayNumber}" data-day="${dayNumber}">
@@ -149,15 +143,15 @@ function renderItinerary() {
         itineraryEventList.append(dayColumn);
     });
 
-    // 탭 클릭 이벤트 처리 //
+    // 💡탭 클릭 이벤트 처리
     $(".tab").on("click", function () {
         const selectedDay = $(this).data("day");
 
-        // 탭 활성화
+        // 탭 활성화(active)
         $(".tab").removeClass("active");
         $(this).addClass("active");
 
-        // 해당 day의 콘텐츠 활성화
+        // (해당 day) 탭의 콘텐츠 활성화
         $(".tab-content").removeClass("active");
         $(`#tab-content-${selectedDay}`).addClass("active");
 
@@ -175,7 +169,8 @@ function renderItinerary() {
     initializeSortable(); // 드래그 & 드롭 기능 활성화
 }
 
-// 이벤트 요소 생성 함수 (장소 보관함 & 일반 이벤트 공통 사용)
+
+// 🎈 Itinerary Event 이벤트 요소 생성 (장소 보관함 & 일반 이벤트 공통 사용)
 function createEventElement(event, index = null, totalEvents = null, isSavedPlace = false) {
     console.log("Event Object:", event);
 
@@ -206,11 +201,11 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                             </div>
                                             ${isSavedPlace ? "" : `<div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>`}
                                             <!-- 총 지출 --> 
-                                            <div class="itinerary-event-total-expense" id="itineraryEventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
+                                            <div class="event-total-expense" id="eventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
                                                 0 원
                                             </div>
                                             <!-- 경비 내역 추가 -->
-                                            <div class="expense-addition" id="expenseAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
+                                            <div class="expense-item-addition" id="expenseItemAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
                                         </div>
                                         <div class="event-right">
                                             <button class="event-options-button">⋮</button>
@@ -228,10 +223,10 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
     // 현재 지출액
     // getTotalExpenseByItineraryEvent(itinerary.id, event.id).then(totalExpense => {
     //     // totalExpense 값이 받아지면 해당 div의 내용을 업데이트
-    //     itineraryEventDiv.find(".itinerary-event-total-expense").html(`${totalExpense} 원`);
+    //     itineraryEventDiv.find(".event-total-expense").html(`${totalExpense} 원`);
     // }).catch(err => {
     //     console.error("Error fetching total expense:", err);
-    //     itineraryEventDiv.find(".itinerary-event-total-expense").html("0 원"); // 에러 발생 시 '0 원'으로 설정
+    //     itineraryEventDiv.find(".event-total-expense").html("0 원"); // 에러 발생 시 '0 원'으로 설정
     // });
 
     return itineraryEventDiv;
@@ -476,7 +471,7 @@ function createSortableInstance(element) {
 }
 
 
-//사이드바 크기 조절 기능
+/************ 🧳 사이드바 크기 조절 기능 🧳************/
 //사이드바 크기 조절 기능 초기화
 function initSidebarResize() {
     $("#resize-handle").mousedown(function (e) {
@@ -485,6 +480,7 @@ function initSidebarResize() {
         $(document).mouseup(stopSidebarResize);
     });
 }
+
 //마우스 이동에 따라 사이드바 너비 조절
 function resizeSidebar(e) {
     let newWidth = e.pageX;
@@ -493,6 +489,7 @@ function resizeSidebar(e) {
         $("#resize-handle").css("left", newWidth + "px");
     }
 }
+
 //마우스 버튼을 놓으면 크기 조절 종료
 function stopSidebarResize() {
     $(document).off("mousemove", resizeSidebar);
@@ -502,8 +499,7 @@ function stopSidebarResize() {
 
 
 
-// 🛠️ 이벤트 데이터 관리
-// ---------------------------------------------------
+/************ 🧳 이벤트 데이터 관리 🧳************/
 
 //지정된 길이의 랜덤 해시 코드 생성
 function generateHashCode(length = 10) {
@@ -511,6 +507,7 @@ function generateHashCode(length = 10) {
     window.crypto.getRandomValues(array);
     return btoa(String.fromCharCode(...array)).replace(/[^a-zA-Z0-9]/g, '').substring(0, length);
 }
+
 //중복되지 않는 고유 ID 생성
 function generateUniqueId(map, length = 10) {
     let id;
@@ -519,6 +516,7 @@ function generateUniqueId(map, length = 10) {
     } while (map.has(id));
     return id;
 }
+
 //새로운 이벤트를 `eventMap`에 추가하고 ID 반환
 function addEvent(event) {
     const id = generateUniqueId(eventMap);
@@ -526,10 +524,14 @@ function addEvent(event) {
     eventMap.set(id, event);
     return id;
 }
+
 //주어진 ID로 `eventMap`에서 이벤트 조회
 function getEventById(id) {
     return eventMap.get(id) || null;
 }
+
+
+
 
 // PerDay 삭제로 인한 장소보관함으로의 event들의 이동 함수
 function moveDeletedPerDayEventsToSavedPlace(deletedPerDays) {
@@ -585,11 +587,7 @@ function changeDayCount(toDayId, newIndex) {
 }
 
 
-// 🛠️ 일정 조작 및 거리 계산
-//------------------------------------------
-
-
-
+/************ 🧳 일정 조작 및 거리 계산 🧳************/
 // 거리(시간) 계산 요청을 함수로 분리
 function calculateDistanceUpdates(dayId, oldIndex, newIndex, movedForward) {
     console.log(`🔄 거리 계산 업데이트: ${dayId}, oldIndex: ${oldIndex} → newIndex: ${newIndex}`);
@@ -703,9 +701,7 @@ function requestDistanceCalculation(placeId1, placeId2) {
 }
 
 
-//======================================================
-// 📅 여행 기간 및 시간 설정
-//======================================================
+/******** 🧳 여행 기간 및 시간 설정 🧳 ********/
 
 // DateRangePickerModal 초기화
 function initDateRangePickerModal() {
@@ -982,8 +978,7 @@ function saveItinerary() {
 
 
 
-// 🎨 기타 유틸리티 함수
-//------------------------------------------
+/************** 🧳 기타 유틸리티 함수 🧳 **************/
 
 //날짜 포맷 변환
 function formatDateToYYYYMMDD(date) {
@@ -1007,9 +1002,7 @@ function formatTime(minutes) {
 }
 
 
-//  🎭 이벤트 핸들링
-//------------------------------------------
-
+/************** 🧳 이벤트 핸들링 🧳 **************/
 $("#save-button").click(saveItinerary);
 
 $('#apply-global-time').click(function () {
@@ -1169,16 +1162,15 @@ $(document).on("click", ".event-duration-cancel", function (event) {
     inputContainer.addClass("hidden");
 });
 
-// ***********************************************************************************************************************************
 
-// 🏗️ 경비 작성
 
-// (왼쪽 화면에서) + 경비 내역 추가 클릭 시, (오른쪽 화면에) 입력 항목 로드
-$(document).on("click", ".expense-addition", function () {
+/************** 🧳 경비 & 작성 이벤트 핸들링 🧳 **************/
+//🎈 왼쪽 패널 - +경비 내역 추가 클릭 시 -> 오른쪽 패널에 경비 내역 로드
+$(document).on("click", ".expense-item-addition", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
 
-    console.log(`Clicked expenseAddition: iid=${iid}, ieid=${ieid}`);
+    console.log(`Clicked expenseItemAddition: iid=${iid}, ieid=${ieid}`);
 
     // expense-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
     fetch(`/itinerary/${iid}/events/${ieid}/expense-right`) // fetch("/expense-book/expense-right.html")
@@ -1299,8 +1291,8 @@ async function getTotalExpenseByItineraryEvent(itineraryId, eventId) {
 
 
 
-// Itinerary Event 별 정산 정보 <- 현재 총 지출액 클릭 (right)
-$(document).on("click", ".itinerary-event-total-expense", function () {
+// 🎈왼쪽 패널 - 현재 총 지출액 클릭 : Itinerary Event 별 정산 정보 오른쪽 패널에 로드
+$(document).on("click", ".event-total-expense", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
 
@@ -1332,7 +1324,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
         }
 
         // 데이터 추출
-        const { totalBudget, totalExpenses, currentExpense, totalBalance, adjustment } = adjustmentData;
+        const { totalExpense, eachExpenses, adjustment } = adjustmentData;
 
         // 개인별 adjustment 데이터를 테이블 형태로 변환
         let adjustmentDetails = "<table class='table table-bordered'>";
@@ -1351,22 +1343,34 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
                 <td>${name}</td>
                 <td>${received}</td>
                 <td>${sended}</td>
-                <td>${details.total.toLocaleString()} 원</td>
             </tr>`;
         }
+        adjustmentDetails += "</tbody></table>";
 
-            adjustmentDetails += "</tbody></table>";
-            console.log("📌 HTML로 추가될 데이터:", adjustmentDetails);
-            // HTML 업데이트
-            adjustmentInfo.html(`
-            <h3>💰 정산 정보</h3>
-            <p><strong>총 예산:</strong> ${totalBudget.toLocaleString()} 원</p>
-            <p><strong>현재 총 지출:</strong> ${totalExpenses.toLocaleString()} 원</p>
-            <p><strong>현재 이벤트 지출:</strong> ${currentExpense.toLocaleString()} 원</p>
-            <p><strong>남은 금액:</strong> ${totalBalance.toLocaleString()} 원</p>
-            <h4>🧾 개인별 정산 내역</h4>
-            ${adjustmentDetails}
-        `);
+
+        // 💰 개인별 총 지출 테이블 추가
+        let eachExpensesTable = "<table class='table table-striped'>";
+        eachExpensesTable += "<thead><tr><th>이름</th><th>총 지출</th></tr></thead><tbody>";
+
+        for (const [name, expense] of Object.entries(eachExpenses)) {
+            eachExpensesTable += `<tr>
+            <td>${name}</td>
+            <td>${expense.toLocaleString()} 원</td>
+        </tr>`;
+        }
+        eachExpensesTable += "</tbody></table>";
+
+        console.log("📌 HTML로 추가될 데이터:", adjustmentDetails, eachExpensesTable);
+
+        // HTML 업데이트
+        adjustmentInfo.html(`
+        <h3>💰 정산 정보</h3>
+        <p><strong>현재 총 지출:</strong> ${totalExpense.toLocaleString()} 원</p>
+        <h4>🧾 개인별 정산 내역</h4>
+        ${adjustmentDetails}
+        <h4>💸 개인별 총 지출</h4>
+        ${eachExpensesTable}
+    `);
 
     } catch (error) {
         console.error("Error loading expense data:", error);

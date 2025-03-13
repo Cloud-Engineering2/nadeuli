@@ -31,39 +31,7 @@ body {
     overflow: auto;
 }
 
-/* 🎈 왼쪽 패널 헤더 - 여행 제목, 날짜 */
-.schedule-header {
-    user-select: none;
-    display: flex;
-    justify-content: space-between; /* 좌우 정렬 */
-    align-items: center; /* 세로 중앙 정렬 */
-    padding: 10px;
-    background: linear-gradient(88deg, #d5d3cf, #ffffff00); /* White와 Beige 그라디언트 적용 */
-    border-radius: 10px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    position: sticky;
-    margin-bottom: 10px;
-    top: 0;
-    left: 0;
-    z-index: 10;
-}
 
-.schedule-header-name {
-    margin-left: 10px;
-    font-size: 1.5rem; /* 크고 강조된 텍스트 */
-    font-weight: bold;
-    color: #343434;
-    text-transform: uppercase; /* 대문자로 변환 */
-    letter-spacing: 1px; /* 글자 간격 */
-}
-
-.schedule-header-date {
-    margin-left: 10px;
-    font-size: 1rem;
-    color: #6c757d; /* 회색톤으로 보조 정보 느낌 */
-    font-weight: 500;
-}
 
 
 /* 🎈 일자별 탭 컨테이너  */
