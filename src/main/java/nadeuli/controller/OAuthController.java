@@ -52,7 +52,7 @@ public class OAuthController {
             case "kakao" -> unlinkKakaoUser(accessToken);
             case "google" -> unlinkGoogleUser(accessToken);
             default -> {
-                log.error("🚨 [OAuthUnlink] 지원되지 않는 OAuth 제공자: {}", provider);
+                log.error("[OAuthUnlink] 지원되지 않는 OAuth 제공자: {}", provider);
                 yield false;
             }
         };

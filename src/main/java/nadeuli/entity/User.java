@@ -75,15 +75,15 @@ public class User implements Serializable {
     public static User createNewUser(String userEmail, String userName, String profileImage, String provider,
                                      String userToken, LocalDateTime lastLoginAt) {
         return new User(
-                null,  // ID는 자동 생성 (DB에서 자동 증가)
+                null,
                 userEmail,
                 provider,
                 userName,
                 profileImage,
-                UserRole.MEMBER, // 기본 역할 (MEMBER)
-                userToken, // 초기 userToken (null 가능)
+                UserRole.MEMBER,
+                userToken,
                 lastLoginAt,
-                LocalDateTime.now() // 생성 시간은 현재 시간
+                LocalDateTime.now()
         );
     }
 
