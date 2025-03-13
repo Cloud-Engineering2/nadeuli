@@ -21,17 +21,28 @@ package nadeuli.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nadeuli.security.CustomOAuth2User;
 import nadeuli.security.CustomOAuth2UserService;
 import nadeuli.security.JwtTokenFilter;
 import nadeuli.service.JwtTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Configuration
@@ -47,35 +58,57 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ CSRF 보호 비활성화 (REST API 기반이므로 필요 없음)
-                .csrf(csrf -> csrf.disable()) // ✅ 메서드 참조 불가 → 람다 유지
+                .csrf(csrf -> csrf.disable()) // ✅ CSRF 보호 비활성화 (REST API 기반이므로 필요 없음)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ JWT 기반 인증 적용
 
-                // ✅ 세션을 사용하지 않고 JWT 기반 인증을 적용
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // ✅ API 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/auth/**", "/public/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
-                // ✅ OAuth2 로그인 설정
+                // ✅ OAuth2 로그인 설정 (SecurityContext 유지 문제 해결)
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler((request, response, authentication) -> {
-                            // ✅ SecurityContext 유지
                             log.info("✅ OAuth2 로그인 성공 - 사용자: {}", authentication.getPrincipal());
-                            response.setContentType("application/json");
-                            response.setCharacterEncoding("UTF-8");
-                            response.getWriter().println("{ \"success\": true, \"message\": \"로그인 성공\" }");
-                            response.getWriter().flush();
+
+                            if (authentication.getPrincipal() instanceof CustomOAuth2User customUser) {
+                                // ✅ SecurityContext에 인증 정보 강제 저장 (Redis 또는 In-Memory)
+                                saveSecurityContext(customUser);
+
+                                log.info("✅ SecurityContext 업데이트 완료 - Email: {}", customUser.getUsername());
+
+                                // ✅ JWT 발급
+                                String accessToken = jwtTokenService.createAccessToken(customUser.getUsername());
+                                String refreshToken = jwtTokenService.createRefreshToken(customUser.getUsername());
+
+                                // ✅ JSON 응답으로 반환
+                                sendJsonResponse(response, true, accessToken, refreshToken);
+                            } else {
+                                sendJsonResponse(response, false, null, null);
+                            }
                         })
                 )
 
-                // ✅ JWT 인증 필터 추가 (OAuth2 로그인 이후에도 정상 동작 보장)
+                // ✅ SecurityContext 유지 필터 추가 (중요)
+                .addFilterBefore(new SecurityContextPersistenceFilter(), UsernamePasswordAuthenticationFilter.class)
+
+                // ✅ JWT 인증 필터 추가 (OAuth2 인증 이후에도 SecurityContext 유지)
                 .addFilterBefore(new JwtTokenFilter(jwtTokenService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * ✅ SecurityContext 저장 (Redis 또는 In-Memory)
+     */
+    private void saveSecurityContext(CustomOAuth2User customUser) {
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken(
+                customUser, null, customUser.getAuthorities()
+        ));
+        SecurityContextHolder.setContext(securityContext);
+        log.info("✅ SecurityContextHolder에 사용자 정보 강제 저장 완료 - Email: {}", customUser.getUsername());
     }
 
     /**
@@ -84,5 +117,29 @@ public class SecurityConfig {
     @Bean
     public OidcUserService oidcUserService() {
         return new OidcUserService();
+    }
+
+    /**
+     * ✅ JSON 응답 전송 메서드 (에러 처리 포함)
+     */
+    private void sendJsonResponse(HttpServletResponse response, boolean success, String accessToken, String refreshToken) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(success ? HttpServletResponse.SC_OK : HttpServletResponse.SC_UNAUTHORIZED);
+
+        // ✅ JSON 객체 생성
+        Map<String, Object> jsonResponse = new HashMap<>();
+        jsonResponse.put("success", success);
+
+        if (success) {
+            jsonResponse.put("accessToken", accessToken);
+            jsonResponse.put("refreshToken", refreshToken);
+        } else {
+            jsonResponse.put("message", "OAuth2 사용자 정보가 존재하지 않습니다.");
+        }
+
+        // ✅ JSON 변환 후 응답
+        new ObjectMapper().writeValue(response.getWriter(), jsonResponse);
+        response.getWriter().flush();
     }
 }

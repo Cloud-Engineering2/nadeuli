@@ -44,6 +44,7 @@ public class JwtTokenService {
     private String secretKey;
 
     private static final long ACCESS_TOKEN_VALID_TIME = 30 * 60 * 1000L; // ✅ 30분
+    private static final long REFRESH_TOKEN_VALID_TIME = 180 * 24 * 60 * 60 * 1000L; // ✅ 6개월 (180일)
 
     /**
      * ✅ JWT 액세스 토큰 생성
@@ -59,12 +60,31 @@ public class JwtTokenService {
     }
 
     /**
-     * ✅ Redis에서 Access Token 저장
+     * ✅ JWT 리프레시 토큰 생성 (6개월 유효기간)
+     */
+    public String createRefreshToken(String userEmail) {
+        Date now = new Date();
+        return Jwts.builder()
+                .setSubject(userEmail)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_VALID_TIME))
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * ✅ Redis에서 Access Token 저장 (로그 추가)
      */
     public void storeAccessToken(String userEmail, String accessToken) {
         String redisKey = "jwt:accessToken:" + userEmail;
-        redisTemplate.opsForValue().set(redisKey, accessToken, ACCESS_TOKEN_VALID_TIME, TimeUnit.MILLISECONDS);
-        log.info("✅ [storeAccessToken] Redis 저장 완료 - key: {}, TTL: {}ms", redisKey, ACCESS_TOKEN_VALID_TIME);
+        log.info("🟡 [storeAccessToken] Redis 저장 시도 - key: {}", redisKey); // ✅ 로그 추가
+
+        try {
+            redisTemplate.opsForValue().set(redisKey, accessToken, ACCESS_TOKEN_VALID_TIME, TimeUnit.MILLISECONDS);
+            log.info("✅ [storeAccessToken] Redis 저장 완료 - key: {}, TTL: {}ms", redisKey, ACCESS_TOKEN_VALID_TIME);
+        } catch (Exception e) {
+            log.error("🚨 [storeAccessToken] Redis 저장 실패 - 오류: {}", e.getMessage()); // ✅ 에러 발생 시 로그 추가
+        }
     }
 
     /**
@@ -78,35 +98,30 @@ public class JwtTokenService {
     }
 
     /**
-     * ✅ JWT 유효성 검사
+     * ✅ JWT 유효성 검사 (디버깅용 로그 추가)
      */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8))).build().parseClaimsJws(token);
+            log.info("✅ [validateToken] 유효한 JWT 토큰");
             return true;
         } catch (ExpiredJwtException e) {
-            log.warn("🚨 [validateToken] 만료된 토큰");
-        } catch (MalformedJwtException e) {
-            log.warn("🚨 [validateToken] 변조된 토큰");
-        } catch (UnsupportedJwtException e) {
-            log.warn("🚨 [validateToken] 지원되지 않는 JWT");
-        } catch (IllegalArgumentException e) {
-            log.warn("🚨 [validateToken] 빈 토큰");
-        } catch (Exception e) {
-            log.warn("🚨 [validateToken] 유효하지 않은 JWT: {}", e.getMessage());
+            log.warn("🚨 [validateToken] 만료된 토큰 - {}", e.getMessage());
+        } catch (JwtException e) {
+            log.warn("🚨 [validateToken] 유효하지 않은 토큰 - {}", e.getMessage());
         }
         return false;
     }
 
     /**
-     * ✅ JWT에서 사용자 이메일 추출
+     * ✅ JWT에서 사용자 이메일 추출 (만료된 토큰도 처리 가능하도록 변경)
      */
     public String getUserEmail(String token) {
         try {
             return Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8))).build()
                     .parseClaimsJws(token).getBody().getSubject();
         } catch (ExpiredJwtException e) {
-            log.warn("🚨 [getUserEmail] 만료된 토큰에서 이메일 추출");
+            log.warn("🚨 [getUserEmail] 만료된 토큰에서 이메일 추출 가능 - {}", e.getClaims().getSubject());
             return e.getClaims().getSubject(); // ✅ 만료된 토큰에서도 이메일 추출 가능
         } catch (Exception e) {
             log.error("🚨 [getUserEmail] 토큰에서 이메일 추출 중 오류 발생: {}", e.getMessage());
@@ -114,3 +129,4 @@ public class JwtTokenService {
         }
     }
 }
+

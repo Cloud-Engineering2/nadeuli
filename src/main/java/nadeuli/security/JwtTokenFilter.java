@@ -42,7 +42,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final JwtTokenService jwtTokenService;
 
     /**
-     * ✅ JWT를 검증하고 SecurityContext에 저장
+     * ✅ JWT를 검증하고 SecurityContext에 저장 (로그 추가)
      */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -70,21 +70,21 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                         context.setAuthentication(authentication);
                         SecurityContextHolder.setContext(context);
 
-                        log.info("✅ JWT 인증 성공 - 사용자: {}", userEmail);
+                        log.info("✅ [JwtTokenFilter] JWT 인증 성공 - 사용자: {}", userEmail);
                     } else {
-                        log.warn("🚨 JWT에서 이메일 추출 실패");
+                        log.warn("🚨 [JwtTokenFilter] JWT에서 이메일 추출 실패");
                         SecurityContextHolder.clearContext();
                         sendUnauthorizedResponse(response, "🚨 JWT에서 이메일을 추출할 수 없습니다.");
                         return;
                     }
                 } else {
-                    log.warn("🚨 유효하지 않은 JWT 토큰");
+                    log.warn("🚨 [JwtTokenFilter] 유효하지 않은 JWT 토큰");
                     SecurityContextHolder.clearContext();
                     sendUnauthorizedResponse(response, "🚨 유효하지 않은 JWT 토큰입니다.");
                     return;
                 }
             } catch (Exception e) {
-                log.error("🚨 JWT 필터 처리 중 오류 발생: {}", e.getMessage());
+                log.error("🚨 [JwtTokenFilter] JWT 필터 처리 중 오류 발생: {}", e.getMessage());
                 SecurityContextHolder.clearContext();
                 sendUnauthorizedResponse(response, "🚨 JWT 오류: " + e.getMessage());
                 return;

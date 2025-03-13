@@ -1,19 +1,3 @@
-/* LogoutController.java
- * JWT 삭제 및 로그아웃 API
- * 작성자 : 국경민
- * 최초 작성 날짜 : 2025-03-04
- *
- * ========================================================
- * 프로그램 수정 / 보완 이력
- * ========================================================
- * 작업자       날짜       수정 / 보완 내용
- * ========================================================
- * 국경민      03-04       로그아웃 API 초안
- * 국경민      03-05       Redis에서 JWT 삭제 기능 추가
- * 국경민      03-06       JWT 검증 방식 개선 및 로그 추가
- * ========================================================
- */
-
 package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +33,7 @@ public class LogoutController {
 
         // 🔹 AccessToken에서 "Bearer " 제거
         String accessToken = token.substring(7);
+        log.info("🔹 [로그아웃] 요청된 Access Token: {}", accessToken);
 
         // ✅ JWT에서 사용자 이메일 추출
         try {
@@ -86,7 +71,7 @@ public class LogoutController {
             log.warn("⚠️ [로그아웃] Access Token 삭제 실패 또는 존재하지 않음 - userEmail: {}", userEmail);
         }
 
-        log.info("✅ 로그아웃 완료 - userEmail: {}, AccessToken 삭제: {}", userEmail, accessDeleted);
+        log.info("✅ [로그아웃 완료] - userEmail: {}, AccessToken 삭제: {}", userEmail, accessDeleted);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -95,4 +80,3 @@ public class LogoutController {
         ));
     }
 }
-

@@ -17,27 +17,23 @@
 package nadeuli.common.util;
 
 import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Convert;
+import jakarta.persistence.Converter;
 import nadeuli.entity.constant.UserRole;
 
-@Convert
+@Converter(autoApply = true) // ✅ @Converter 사용 및 자동 적용 설정
 public class UserRoleAttributeConverter implements AttributeConverter<UserRole, String> {
 
-    // 열거형 UserRole => DB 문자열
+    // ✅ 열거형 UserRole → DB 저장 문자열 변환
     @Override
     public String convertToDatabaseColumn(UserRole attribute) {
-
         System.out.println("🔄 convertToDatabaseColumn() - 열거형 -> 문자열 : " + attribute);
-
-        return (attribute == null) ? null : attribute.getUserRole(); // null 고려
+        return (attribute != null) ? attribute.getUserRole() : null;
     }
 
-    // DB 문자열 => 열거형 UserRole
+    // ✅ DB 저장 문자열 → 열거형 UserRole 변환
     @Override
     public UserRole convertToEntityAttribute(String dbData) {
-
-        System.out.println("🔄 convertToEntityAttribute() - 문자열 -> 열거형 : " + dbData +  " - " + UserRole.getInstance(dbData));
-
-        return ((dbData == null) || dbData.isEmpty()) ? null : UserRole.getInstance(dbData); // null 고려
+        System.out.println("🔄 convertToEntityAttribute() - 문자열 -> 열거형 : " + dbData + " - " + UserRole.getInstance(dbData));
+        return (dbData != null && !dbData.isEmpty()) ? UserRole.getInstance(dbData) : null;
     }
 }

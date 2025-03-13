@@ -31,7 +31,7 @@ public class RefreshTokenController {
     private final RefreshTokenService refreshTokenService;
 
     /**
-     * ✅ Refresh Token을 사용하여 새로운 Access Token 발급
+     * ✅ Refresh Token을 사용하여 새로운 Access Token 발급 (로그 추가 및 예외 처리 강화)
      */
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, Object>> refreshAccessToken(@RequestHeader(value = "Authorization", required = false) String token) {
@@ -47,6 +47,7 @@ public class RefreshTokenController {
 
         // 🔹 Refresh Token에서 "Bearer " 제거
         String refreshToken = token.substring(7);
+        log.info("🔹 [Refresh Token] 요청된 Refresh Token: {}", refreshToken);
 
         // ✅ RefreshTokenService를 통해 새로운 Access Token 발급
         try {

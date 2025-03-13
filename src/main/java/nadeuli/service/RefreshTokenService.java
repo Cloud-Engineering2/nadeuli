@@ -44,9 +44,8 @@ public class RefreshTokenService {
         if ("google".equals(provider) &&
                 (user.getRefreshToken() == null || user.getRefreshTokenExpiryAt().isBefore(LocalDateTime.now().minusMonths(5)))) {
             log.info("🔄 [getOrGenerateRefreshToken] Google Refresh Token 만료 - 새로 발급");
-            String newRefreshToken = jwtTokenService.createAccessToken(userEmail);
-            user.updateProfile(user.getUserName(), user.getProfileImage(), user.getProvider(), newRefreshToken, user.getLastLoginAt(), LocalDateTime.now().plusMonths(6));
-            userRepository.save(user);
+            String newRefreshToken = requestNewGoogleRefreshToken(userEmail);
+            updateRefreshToken(userEmail, newRefreshToken, provider);
             return newRefreshToken;
         }
 
@@ -54,7 +53,7 @@ public class RefreshTokenService {
     }
 
     /**
-     * ✅ Refresh Token을 이용하여 새로운 Access Token 발급
+     * ✅ Refresh Token을 이용하여 새로운 Access Token 발급 (로그 추가 및 예외 처리 강화)
      */
     @Transactional
     public Map<String, Object> refreshAccessToken(String refreshToken) {
@@ -102,6 +101,7 @@ public class RefreshTokenService {
         log.warn("🚨 [deleteRefreshToken] 사용자 정보를 찾을 수 없음 - Email: {}", userEmail);
         return false;
     }
+
     /**
      * ✅ Google Refresh Token 갱신 요청 (Google 사용자 전용)
      */
@@ -109,18 +109,20 @@ public class RefreshTokenService {
         log.info("🔄 [requestNewGoogleRefreshToken] Google Refresh Token 갱신 요청 - Email: {}", email);
         return "new_refresh_token"; // ✅ 실제 Google API 연동 필요
     }
+
     /**
      * ✅ Refresh Token 갱신 (Google 사용자의 경우 5개월(150일) 이상 사용되지 않으면 갱신)
      */
     @Transactional
     public void updateRefreshToken(String userEmail, String newRefreshToken, String provider) {
+        log.info("🟡 [updateRefreshToken] 실행됨 - Email: {}, Provider: {}", userEmail, provider); // ✅ 로그 추가
+
         User user = userRepository.findByUserEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("🚨 [updateRefreshToken] 사용자를 찾을 수 없음 - Email: " + userEmail));
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime newExpiry = now.plusMonths(6); // ✅ 6개월 후 만료
+        LocalDateTime newExpiry = now.plusMonths(6);
 
-        // ✅ Google 사용자만 5개월마다 Refresh Token 갱신 (Kakao는 자동 갱신)
         if ("google".equals(provider)) {
             boolean shouldUpdate = user.getRefreshTokenExpiryAt() == null ||
                     user.getRefreshTokenExpiryAt().isBefore(now.minusDays(150));
@@ -129,13 +131,10 @@ public class RefreshTokenService {
                 log.info("🔄 [updateRefreshToken] Google Refresh Token 갱신 - Email: {}", userEmail);
                 user.updateProfile(user.getUserName(), user.getProfileImage(), provider, newRefreshToken, user.getLastLoginAt(), newExpiry);
                 userRepository.save(user);
+                log.info("✅ [updateRefreshToken] Google Refresh Token 저장 완료 - Email: {}", userEmail);
             } else {
                 log.info("🔹 [updateRefreshToken] Google Refresh Token 유지 - Email: {}", userEmail);
             }
         }
     }
-
-
 }
-
-

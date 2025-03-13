@@ -35,6 +35,7 @@ public class OAuthService {
         final String email = getSafeAttribute(user, "email");
         final String name = getSafeAttribute(user, "name");
         final String profileImage = getSafeAttribute(user, "picture");
+        log.info("🔹 [processOAuthUser] 로그인 요청 - Email: {}, Provider: {}", email, provider);
 
         // ✅ Google OAuth 사용자의 경우 새로운 Refresh Token 요청
         final String refreshToken = "google".equals(provider)
@@ -45,27 +46,32 @@ public class OAuthService {
         final LocalDateTime now = LocalDateTime.now();
         final LocalDateTime refreshTokenExpiryAt = now.plusMonths(6);
 
-        // ✅ 기존 사용자가 있으면 업데이트, 없으면 새로 저장
+        // ✅ 기존 사용자가 있으면 업데이트 후 저장, 없으면 새로 저장
         final User userEntity = userRepository.findByUserEmail(email)
                 .map(existingUser -> updateExistingUser(existingUser, name, profileImage, provider, refreshToken, now, refreshTokenExpiryAt))
-                .orElseGet(() -> createNewUser(email, name, profileImage, provider, refreshToken, now, refreshTokenExpiryAt));
+                .orElseGet(() -> {
+                    UserDTO newUserDTO = new UserDTO(null, email, name, profileImage, provider, null, refreshToken, now.toString(), refreshTokenExpiryAt.toString(), now.toString());
+                    return createNewUser(newUserDTO);
+                });
 
         // ✅ Access Token 발급 및 Redis 저장 (30분 TTL)
         String accessToken = jwtTokenService.createAccessToken(email);
         jwtTokenService.storeAccessToken(email, accessToken);
+        log.info("✅ [processOAuthUser] Access Token 저장 완료 - Email: {}", email);
 
         return UserDTO.from(userEntity);
     }
 
     /**
-     * ✅ 기존 사용자 업데이트 메서드
+     * ✅ 기존 사용자 업데이트 후 저장 (Google Refresh Token 5개월마다 갱신)
      */
     private User updateExistingUser(User existingUser, String name, String profileImage, String provider,
                                     String newRefreshToken, LocalDateTime now, LocalDateTime refreshTokenExpiryAt) {
 
         boolean shouldUpdateRefreshToken = "google".equals(provider) &&
-                (existingUser.getRefreshTokenExpiryAt() == null ||
-                        existingUser.getRefreshTokenExpiryAt().isBefore(now.minusDays(150)));
+                Optional.ofNullable(existingUser.getRefreshTokenExpiryAt())
+                        .map(expiryAt -> expiryAt.isBefore(now.minusDays(150)))
+                        .orElse(true);
 
         if (shouldUpdateRefreshToken) {
             log.info("🔄 [updateExistingUser] Google Refresh Token 갱신 필요 - Email: {}", existingUser.getUserEmail());
@@ -73,16 +79,20 @@ public class OAuthService {
         }
 
         existingUser.updateProfile(name, profileImage, provider, newRefreshToken, now, refreshTokenExpiryAt);
-        return existingUser;
+
+        // ✅ UserDTO로 변환 후 다시 toEntity() 호출하여 저장
+        UserDTO updatedUserDTO = UserDTO.from(existingUser);
+        User updatedUser = updatedUserDTO.toEntity();
+
+        return userRepository.save(updatedUser);
     }
 
     /**
-     * ✅ 신규 사용자 생성 메서드
+     * ✅ 신규 사용자 생성 후 저장 (toEntity() 적용)
      */
-    private User createNewUser(String email, String name, String profileImage, String provider,
-                               String refreshToken, LocalDateTime now, LocalDateTime refreshTokenExpiryAt) {
-        log.info("✅ [processOAuthUser] 신규 사용자 등록 - Email: {}", email);
-        return userRepository.save(User.createNewUser(email, name, profileImage, provider, refreshToken, now, refreshTokenExpiryAt));
+    private User createNewUser(UserDTO userDTO) {
+        log.info("✅ [processOAuthUser] 신규 사용자 등록 - Email: {}", userDTO.getUserEmail());
+        return userRepository.save(userDTO.toEntity());
     }
 
     /**

@@ -27,23 +27,22 @@ public enum UserRole {
     ADMIN("ROLE_ADMIN"),
     MEMBER("ROLE_MEMBER");
 
-    private String userRole;
+    private final String userRole; // ✅ final 키워드 추가하여 불변성 유지
 
     UserRole(String userRole) {
         this.userRole = userRole;
     }
 
-    public static UserRole getInstance(String userRole) { // userRole 의 값을 문자열로 찾는 함수
-
-        return Arrays.stream(UserRole.values()) // UserRole 값 -> 배열 -> 스트림
-                .filter(type -> type.getUserRole().equals(userRole)) // userRole 과 type(UserRole) 값 일치 여부로 정제
-                .findFirst() // 정제된 것에서 첫 번째 요소 반환
+    /**
+     * ✅ 문자열을 UserRole로 변환하는 메서드
+     */
+    public static UserRole getInstance(String userRole) {
+        return Arrays.stream(UserRole.values()) // UserRole 값 -> 배열 -> 스트림 변환
+                .filter(type -> type.getUserRole().equals(userRole)) // 문자열과 일치하는 enum 찾기
+                .findFirst() // 첫 번째 값 반환
                 .orElseThrow(() -> {
-                    System.out.println("❌ getInstance() - 변환 실패.. 유효 x 값: " + userRole);
+                    System.out.println("❌ getInstance() - 변환 실패.. 유효하지 않은 값: " + userRole);
                     return new IllegalArgumentException("getInstance() - Invalid UserRole : " + userRole);
-                }); // 값 x => 예외
+                });
     }
-
-
-
 }

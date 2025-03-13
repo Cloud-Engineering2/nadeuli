@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -40,7 +39,7 @@ public class OAuthUnlinkService {
     private final RefreshTokenService refreshTokenService;
 
     /**
-     * ✅ OAuth 제공사에서 계정 연결 해제 (Google/Kakao)
+     * ✅ OAuth 제공사에서 계정 연결 해제 (Google/Kakao) - 로그 추가 및 예외 처리 강화
      */
     public boolean unlinkProviderAccount(String email, String provider, String accessToken) {
         String unlinkUrl;
@@ -75,7 +74,7 @@ public class OAuthUnlinkService {
     }
 
     /**
-     * ✅ OAuth 계정 해제 및 사용자 정보 삭제
+     * ✅ OAuth 계정 해제 및 사용자 정보 삭제 (로그 추가 및 예외 처리 강화)
      */
     @Transactional
     public boolean unlinkAndDeleteUser(String email, String accessToken) {
@@ -102,5 +101,3 @@ public class OAuthUnlinkService {
         return true;
     }
 }
-
-

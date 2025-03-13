@@ -37,7 +37,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -49,54 +48,37 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        // ✅ Provider 값 가져오기
+        // ✅ OAuth Provider 정보 가져오기
         final String provider = userRequest.getClientRegistration().getRegistrationId();
         final String userNameAttributeName = userRequest.getClientRegistration()
                 .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
-        log.info("🔹 [OAuth2 로그인 요청] Provider: {}, userNameAttribute: {}", provider, userNameAttributeName);
+        log.info("🔹 [CustomOAuth2UserService] OAuth2 로그인 요청 - Provider: {}, userNameAttribute: {}", provider, userNameAttributeName);
 
-        return processOAuthUser(oAuth2User, provider, userNameAttributeName);
+        // ✅ 사용자 정보 처리 및 SecurityContext 반영
+        OAuth2User authenticatedUser = processOAuthUser(oAuth2User, provider, userNameAttributeName);
+
+        // ✅ SecurityContextHolder에 저장 (JWT 없이도 SecurityContext에서 접근 가능)
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(authenticatedUser, null, authenticatedUser.getAuthorities())
+        );
+
+        log.info("✅ [CustomOAuth2UserService] SecurityContext 업데이트 완료 - 사용자: {}", authenticatedUser.getName());
+        return authenticatedUser;
     }
 
     /**
-     * ✅ OAuth 사용자 정보를 가져와서 DB에 저장하는 메서드
+     * ✅ OAuth 사용자 정보를 가져와서 SecurityContext에 저장하는 메서드
      */
     private OAuth2User processOAuthUser(OAuth2User oAuth2User, String provider, String userNameAttributeName) {
         final Map<String, Object> attributes = oAuth2User.getAttributes();
 
         // ✅ 기본 사용자 정보 추출
-        final String extractedEmail = getSafeAttribute(attributes, "email");
-        final String extractedName = getSafeAttribute(attributes, "name");
-        final String extractedProfileImage = getSafeAttribute(attributes, "picture");
-        final String refreshToken;
+        final String email = getSafeAttribute(attributes, "email");
+        final String name = getSafeAttribute(attributes, "name");
+        final String profileImage = getSafeAttribute(attributes, "picture");
 
-        // ✅ Google 로그인 시 Refresh Token 저장 (최초 로그인에서만 제공됨)
-        if ("google".equals(provider)) {
-            refreshToken = getSafeAttribute(attributes, "refresh_token");
-        } else {
-            refreshToken = "";
-        }
-
-        // ✅ 카카오 로그인 시 데이터 매핑
-        final String email;
-        final String name;
-        final String profileImage;
-        if ("kakao".equals(provider)) {
-            final Map<String, Object> kakaoAccount = getSafeMap(attributes, "kakao_account");
-            final Map<String, Object> profile = getSafeMap(kakaoAccount, "profile");
-
-            email = getSafeAttribute(kakaoAccount, "email");
-            name = getSafeAttribute(profile, "nickname");
-            profileImage = getSafeAttribute(profile, "profile_image_url");
-        } else {
-            email = extractedEmail;
-            name = extractedName;
-            profileImage = extractedProfileImage;
-        }
-
-        log.info("🔹 [processOAuthUser] Email: {}, Provider: {}, Name: {}, ProfileImage: {}, RefreshToken: {}",
-                email, provider, name, profileImage, refreshToken);
+        log.info("🔹 [processOAuthUser] OAuth 사용자 정보 - Email: {}, Name: {}, Provider: {}", email, name, provider);
 
         if (email.isEmpty()) {
             log.warn("🚨 [processOAuthUser] 이메일 정보가 없음 - OAuth 로그인 실패");
@@ -105,58 +87,26 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // ✅ 기존 사용자 조회 및 업데이트
         final User userEntity = userRepository.findByUserEmail(email)
-                .map(existingUser -> updateExistingUser(existingUser, name, profileImage, provider, refreshToken))
-                .orElseGet(() -> createNewUser(email, name, profileImage, provider, refreshToken));
+                .orElseGet(() -> createNewUser(email, name, profileImage, provider));
 
-        // ✅ SecurityContextHolder에 인증 정보 강제 저장
-        final CustomOAuth2User customOAuth2User = new CustomOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
+        // ✅ `CustomOAuth2User`를 반환하여 SecurityContext에 적용
+        return new CustomOAuth2User(
+                Collections.singletonList(new SimpleGrantedAuthority(userEntity.getUserRole().name())), // 권한 적용
                 attributes,
                 userNameAttributeName,
                 userEntity
         );
-
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities())
-        );
-
-        log.info("✅ SecurityContext에 사용자 인증 정보 저장 완료 - Email: {}", email);
-        return customOAuth2User;
-    }
-
-    /**
-     * ✅ 기존 사용자 정보 업데이트
-     */
-    private User updateExistingUser(final User existingUser, final String name, final String profileImage,
-                                    final String provider, final String refreshToken) {
-        boolean isUpdated = false;
-
-        if (!existingUser.getUserName().equals(name) || !existingUser.getProfileImage().equals(profileImage) ||
-                !existingUser.getProvider().equals(provider)) {
-            existingUser.updateProfile(name, profileImage, provider, refreshToken,
-                    LocalDateTime.now(),  // 🔹 마지막 로그인 시간 추가
-                    LocalDateTime.now().plusDays(14)  // 🔹 Refresh Token 만료일 추가
-            );
-            isUpdated = true;
-        }
-
-        if (isUpdated) {
-            userRepository.save(existingUser);
-            log.info("✅ [processOAuthUser] 기존 사용자 정보 업데이트 완료 - Email: {}", existingUser.getUserEmail());
-        }
-        return existingUser;
     }
 
     /**
      * ✅ 신규 사용자 생성
      */
-    private User createNewUser(final String email, final String name, final String profileImage,
-                               final String provider, final String refreshToken) {
+    private User createNewUser(final String email, final String name, final String profileImage, final String provider) {
         log.info("✅ [processOAuthUser] 신규 사용자 등록 - Email: {}", email);
         return userRepository.save(User.createNewUser(
-                email, name, profileImage, provider, refreshToken,
+                email, name, profileImage, provider, null,
                 LocalDateTime.now(), // 🔹 마지막 로그인 시간 추가
-                LocalDateTime.now().plusDays(14) // 🔹 Refresh Token 만료일 추가
+                LocalDateTime.now().plusMonths(6) // 🔹 Refresh Token 만료일 추가 (Google 기준)
         ));
     }
 
@@ -166,17 +116,5 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private String getSafeAttribute(final Map<String, Object> attributes, final String key) {
         Object value = attributes.get(key);
         return value != null ? value.toString() : "";
-    }
-
-    /**
-     * ✅ 안전한 Map 변환 메서드
-     */
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> getSafeMap(final Map<String, Object> attributes, final String key) {
-        Object value = attributes.get(key);
-        if (value instanceof Map) {
-            return (Map<String, Object>) value;
-        }
-        return Collections.emptyMap(); // ⚠️ null 대신 빈 Map 반환 (NPE 방지)
     }
 }

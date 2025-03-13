@@ -24,47 +24,51 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter // ✅ DTO 변환을 위해 Setter 추가
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // 객체 생성 제한
-@AllArgsConstructor(access = AccessLevel.PRIVATE) // static factory method 사용 유도
-@Table(name = "users")
-public class User implements Serializable {  // Redis 저장을 위해 Serializable 추가
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // ✅ 객체 생성 제한
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // ✅ static factory method 사용 유도
+@Builder // ✅ DTO 변환을 위해 빌더 추가
+@Table(name = "users") // ✅ 테이블 이름 매핑
+public class User implements Serializable {
 
     @Serial
-    private static final long serialVersionUID = 1L;  // 직렬화 버전 ID 추가
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "uid")
-    private Long id; // 사용자 고유 ID (Primary Key)
+    private Long id;
 
-    @Column(name = "user_email", nullable = false, unique = true)
-    private String userEmail; // 이메일 (OAuth에서 제공)
+    @Column(name = "user_email", nullable = false, unique = true, length = 255)
+    private String userEmail;
 
     @Column(name = "provider", nullable = false, length = 20)
-    private String provider; // OAuth 제공자 (Google, Kakao 등)
+    private String provider;
 
     @Column(name = "user_name", nullable = false, length = 255)
-    private String userName; // 사용자 이름
+    private String userName;
 
     @Column(name = "profile_image", columnDefinition = "TEXT")
-    private String profileImage; // OAuth 프로필 이미지 URL
+    private String profileImage;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false, length = 20)
-    private UserRole userRole; // 사용자 역할 (예: ROLE_MEMBER)
+    @Builder.Default // ✅ 기본값 설정
+    private UserRole userRole = UserRole.MEMBER;
 
-    @Column(name = "refresh_token", columnDefinition = "TEXT")
-    private String refreshToken; // OAuth Refresh Token 저장
+    @Column(name = "refresh_token", columnDefinition = "TEXT", nullable = true)
+    @Builder.Default // ✅ 기본값 설정 (null 방지)
+    private String refreshToken = "";
 
-    @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt; // 마지막 로그인 시간
+    @Column(name = "last_login_at", nullable = false)
+    private LocalDateTime lastLoginAt;
 
-    @Column(name = "refresh_token_expiry_at")
-    private LocalDateTime refreshTokenExpiryAt; // Refresh Token 만료일 저장
+    @Column(name = "refresh_token_expiry_at", nullable = true)
+    private LocalDateTime refreshTokenExpiryAt;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt; // MySQL `CURRENT_TIMESTAMP` 사용 (JPA에서 값 설정 안 함)
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
 
     /**
      * ✅ OAuth 로그인 시 기존 사용자 정보 업데이트
@@ -81,25 +85,46 @@ public class User implements Serializable {  // Redis 저장을 위해 Serializa
     }
 
     /**
-     * ✅ static factory method - User 객체 생성 (새로운 회원 가입 시 사용)
+     * ✅ static factory method - 새로운 회원 가입 시 사용
      */
     public static User createNewUser(String userEmail, String userName, String profileImage, String provider, String refreshToken, LocalDateTime lastLoginAt, LocalDateTime refreshTokenExpiryAt) {
-        return new User(null, userEmail, provider, userName, profileImage, UserRole.MEMBER, refreshToken, lastLoginAt, refreshTokenExpiryAt, LocalDateTime.now());
+        return User.builder()
+                .userEmail(userEmail)
+                .provider(provider)
+                .userName(userName)
+                .profileImage(profileImage)
+                .userRole(UserRole.MEMBER) // ✅ 기본값 설정
+                .refreshToken(refreshToken != null ? refreshToken : "") // ✅ Null 방지
+                .lastLoginAt(lastLoginAt != null ? lastLoginAt : LocalDateTime.now()) // ✅ Null 방지
+                .refreshTokenExpiryAt(refreshTokenExpiryAt)
+                .createdAt(LocalDateTime.now()) // ✅ 기본값 설정
+                .build();
     }
 
     /**
-     * ✅ static factory method - 기존 회원 정보 불러오기
-     */
-    public static User of(Long id, String userEmail, String provider, String userName, String profileImage, UserRole userRole, String refreshToken, LocalDateTime lastLoginAt, LocalDateTime refreshTokenExpiryAt, LocalDateTime createdAt) {
-        return new User(id, userEmail, provider, userName, profileImage, userRole, refreshToken, lastLoginAt, refreshTokenExpiryAt, createdAt);
-    }
-
-    /**
-     * ✅ 생성 시 createdAt 자동 설정 (DB `CURRENT_TIMESTAMP` 동기화)
+     * ✅ 생성 시 createdAt 및 기본값 설정 (DB `CURRENT_TIMESTAMP` 동기화)
      */
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.lastLoginAt == null) {
+            this.lastLoginAt = LocalDateTime.now();
+        }
+        if (this.userRole == null) {
+            this.userRole = UserRole.MEMBER; // ✅ 기본값 설정
+        }
+        if (this.refreshToken == null) {
+            this.refreshToken = ""; // ✅ 빈 값이라도 저장
+        }
+    }
+
+    /**
+     * ✅ 로그인 시 자동으로 lastLoginAt 업데이트
+     */
+    @PreUpdate
+    protected void onUpdate() {
+        this.lastLoginAt = LocalDateTime.now();
     }
 }
-

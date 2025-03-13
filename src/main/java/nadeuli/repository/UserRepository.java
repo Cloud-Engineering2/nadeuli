@@ -18,6 +18,7 @@ package nadeuli.repository;
 
 import nadeuli.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -41,10 +42,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByRefreshToken(String refreshToken);
 
     /**
-     * ✅ 이메일을 기반으로 사용자 삭제 (트랜잭션 적용)
+     * ✅ 이메일을 기반으로 사용자 삭제 (트랜잭션 + Modifying 적용)
      */
     @Transactional
-    void deleteByUserEmail(String email);
+    @Modifying // ✅ DELETE 쿼리 실행을 명시적으로 지정
+    @Query("DELETE FROM User u WHERE u.userEmail = :email")
+    void deleteByUserEmail(@Param("email") String email);
 
     /**
      * ✅ 5개월 이상 로그인하지 않은 사용자 조회

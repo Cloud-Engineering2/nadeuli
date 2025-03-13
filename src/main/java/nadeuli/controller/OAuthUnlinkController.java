@@ -38,7 +38,7 @@ public class OAuthUnlinkController {
     private final RefreshTokenService refreshTokenService;
 
     /**
-     * ✅ OAuth 계정 해제 및 회원 탈퇴 API
+     * ✅ OAuth 계정 해제 및 회원 탈퇴 API (로그 추가 및 예외 처리 강화)
      */
     @DeleteMapping("/unlink/{email}")
     public ResponseEntity<Map<String, Object>> unlinkUser(
@@ -53,9 +53,10 @@ public class OAuthUnlinkController {
             ));
         }
 
-        // 1️⃣ JWT 검증 및 사용자 인증
-        String accessToken = token.substring(7); // "Bearer " 제거
+        // 🔹 AccessToken에서 "Bearer " 제거
+        String accessToken = token.substring(7);
 
+        // ✅ JWT 검증 및 사용자 인증
         try {
             if (!jwtTokenService.validateToken(accessToken)) {
                 log.warn("🚨 [OAuthUnlink] 유효하지 않은 JWT");
@@ -83,10 +84,9 @@ public class OAuthUnlinkController {
             ));
         }
 
-        // 2️⃣ OAuth 계정 해제
+        // ✅ OAuth 계정 해제
         boolean unlinkSuccess = oAuthUnlinkService.unlinkAndDeleteUser(email, accessToken);
 
-// unlinkSuccess 값이 항상 true인 경우, 실제 API 응답 값을 반영하도록 수정
         if (!unlinkSuccess) {
             log.error("🚨 [OAuthUnlink] OAuth 계정 해제 실패 - Email: {}", email);
             return ResponseEntity.status(500).body(Map.of(
@@ -95,10 +95,10 @@ public class OAuthUnlinkController {
             ));
         }
 
-        // 3️⃣ Redis에서 Access Token 삭제
+        // ✅ Redis에서 Access Token 삭제
         boolean accessDeleted = jwtTokenService.deleteAccessToken(email);
 
-        // 4️⃣ DB에서 Refresh Token 삭제
+        // ✅ DB에서 Refresh Token 삭제
         boolean refreshDeleted = refreshTokenService.deleteRefreshToken(email);
 
         log.info("✅ [OAuthUnlink] 회원 탈퇴 완료 - Email: {}, OAuth 해제: {}, AccessToken 삭제: {}, RefreshToken 삭제: {}",
