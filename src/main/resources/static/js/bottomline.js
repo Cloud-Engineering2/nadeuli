@@ -12,11 +12,15 @@
  * 이홍비    2025.03.10     최초 작성 : bottomline.js
  * 이홍비    2025.03.12     방문지 선택 => 기행문 조회 처리
  * 이홍비    2025.03.13     방문지 선택한 상태 - 이전, 다음 방문지 조회 버튼 관련 처리
+ * 이홍비    2025.03.14     기행문 - 본문 출력 시 왼쪽 정렬 + 줄 바꿈 유지
+ *                         방문지 선택 => 그에 해당하는 경비 출력
+ *                         지도 - 기행문 - 경비 연동 완료
  * ========================================================
  */
 
 let this_iid;
 let this_ieid;
+let this_index; // 현재 선택한 방문지 번호
 
 // map 쪽
 let map;
@@ -29,9 +33,12 @@ let infowindow;
 let itineraryTotalRead;
 let ieidList = [];
 
-let adjustment;
-let journal;
-let expense;
+let travler;
+
+let finalSettlement; // 방문지 선택 x - 최종 정산
+let partialSettlement; // 방문지 선택 o - 방문지별 정산
+let journal; // 방문지 선택 o - 기행문
+let expense; //
 
 
 
@@ -52,18 +59,23 @@ async function fetchBottomLine(iid) {
 
     const response = await fetch(`/api/itineraries/${iid}/bottomline`);
     itineraryTotalRead = await response.json();
+    travler = itineraryTotalRead.travelerList;
+    finalSettlement = itineraryTotalRead.finalSettlement;
 
     console.log("fetchBottomLine - itineraryTotalRead : ", itineraryTotalRead); // 데이터 확인
     console.log("Itinerary Total : ", itineraryTotalRead.itineraryTotal);
     console.log("Traveler List : ", itineraryTotalRead.travelerList);
-    console.log("Expense Book : ", itineraryTotalRead.expenseBook);
+    console.log("Final Settlement : ", itineraryTotalRead.finalSettlement);
+    // console.log("Expense Book : ", itineraryTotalRead.expenseBook);
 
-    axios.get(`/api/itineraries/${this_iid}/adjustment`)
-        .then(response => {
-            adjustment = response.data;
-            console.log("adjustment : ", adjustment);
-        })
-        .catch(error => console.error("Error saving content:", error));
+    noChoice();
+
+    // axios.get(`/api/itineraries/${this_iid}/adjustment`)
+    //     .then(response => {
+    //         adjustment = response.data;
+    //         console.log("adjustment : ", adjustment);
+    //     })
+    //     .catch(error => console.error("Error saving content:", error));
 
     initMap();
 
@@ -212,11 +224,17 @@ function toggleMarker(marker) {
         marker.setIcon(getMarkerIcon('skyblue')); // 색상을 기본 색으로 되돌림
         selectedMarker = null;
 
+        this_index = -1; // 아예 관련 없는 값으로 처리
         noChoice();
     }
     else {
         // 새로운 마커 선택하면 기존 마커 원래 색으로 되돌리기
         if (selectedMarker) {
+            if (infowindow) {
+                // 장소 정보 출력 창 켜져 있으면 꺼지도록
+                infowindow.close();
+            }
+
             // selectedMarker.setIcon("http://maps.google.com/mapfiles/ms/icons/blue-dot.png");
             selectedMarker.setIcon(getMarkerIcon('skyblue'));
         }
@@ -226,22 +244,40 @@ function toggleMarker(marker) {
 
         const index = marker.getLabel().text;
         console.log("Label Text : ", index);
-
+        this_index = index - 1;
 
         // index - 1 : label 값 설정할 때 index + 1 해서 기록함 : index 1 부터 시작
         // ieidList 에서 index 는 0 부터 시작함
-        this_ieid = ieidList[index - 1];
+        this_ieid = ieidList[this_index];
         // console.log("ieid : ", ieid);
 
-        console.log("this_iid : ", this_iid, "this_ieid : ", this_ieid);
+        console.log("this_iid : ", this_iid, "this_ieid : ", this_ieid, "this_index : ", this_index);
+        console.log("itineraryTotalRead:", itineraryTotalRead);
+        console.log("itineraryTotalRead.itineraryEvents:", itineraryTotalRead?.itineraryEvents);
+
+        console.log("itineraryTotalRead.itineraryEvents[this_index] : ", itineraryTotalRead.itineraryTotal.itineraryEvents[this_index]);
+        console.log("itineraryTotalRead.itineraryEvents[this_index].placeDTO.imageUrl : ", itineraryTotalRead.itineraryTotal.itineraryEvents[this_index].placeDTO.imageUrl);
+
+        // 장소 정보 창 업데이트
+        const content = `
+        <div class="place-info">
+            <img src="${itineraryTotalRead.itineraryTotal.itineraryEvents[this_index].placeDTO.imageUrl}" style="width:80%; max-width:300px; margin-bottom:10px;" alt="">
+            <h2>${itineraryTotalRead.itineraryTotal.itineraryEvents[this_index].placeDTO.placeName}</h2>
+            <p>${itineraryTotalRead.itineraryTotal.itineraryEvents[this_index].placeDTO.address}</p>
+        </div>`;
+        infowindow.setContent(content);
+        infowindow.open(map, marker);
+
 
         axios.get(`/api/itineraries/${this_iid}/bottomline/${this_ieid}`)
             .then(response => {
                 journal = response.data.journal;
                 expense = response.data.expenseItemList;
+                partialSettlement = response.data.partialSettlement;
 
                 console.log("Expense Item List:", expense);
                 console.log("Journal:", journal);
+                console.log("partialSettlement:", partialSettlement);
 
                 hasChoice(index);
 
@@ -304,9 +340,9 @@ function noChoice() {
     // hasContent.style.display = "none";
 
 
-
-
     // 장부 출력
+    removeAndCreateExpense("noChoice");
+
 
 }
 
@@ -376,6 +412,7 @@ function hasChoice(index) {
         if ((journal.imageUrl !== null) && (journal.content !== null)) {
             journalImage.src = journal.imageUrl;
             journalContent.textContent = journal.content;
+            journalContent.style.textAlign = "left";
             goToJournal.style.display = "none";
             // journalHasContent.textContent = journal.content;
             // journalHasContent.style.display = "block";
@@ -400,6 +437,8 @@ function hasChoice(index) {
         }
     }
 
+    // 장부
+    removeAndCreateExpense("hasChoice");
 
 }
 
@@ -410,12 +449,362 @@ function goToJournal() {
 
 function prevJournal() {
     // if (document.getElementById("prev-btn").disabled) return; // 버튼 비활성화 => 종료
-
     console.log("prevJournal");
+
+    this_index -= 1;
+    toggleMarker(markerList[this_index]);
 }
 
 function nextJournal() {
     // if (document.getElementById("next-btn").disabled) return; // 버튼 비활성화 =>  종료
-
     console.log("nextJournal");
+
+    this_index += 1;
+    toggleMarker(markerList[this_index]);
+}
+
+function removeAndCreateExpense(kind) {
+    // p 태그 삭제
+    const existingTags = document.querySelectorAll('.dynamic-expense');
+    if (existingTags && existingTags.length > 0) {
+        existingTags.forEach(tag => tag.remove());
+    }
+
+    // 장부 출력
+    // p 태그 생성 -> dynamic-expense classList 추가 + p 태그 내용 설정 -> container 자식으로 추가
+    // 생성한 p 태그 : dynamic-expense 로 관리
+    // const expensesContainer = document.querySelector('.expenses-container');
+    const jointExpenseContainer = document.querySelector('.joint-expense-container');
+    const personalExpenseContainer = document.querySelector('.personal-expense-container');
+
+    if (kind === "noChoice") {
+        // 방문지 선택 x
+        const adjustment = finalSettlement.adjustment;
+        console.log("adjustment", adjustment);
+
+        // 공동 경비 정산
+        const jointExpenseTitle = document.createElement("p");
+        jointExpenseTitle.classList.add('dynamic-expense');
+        jointExpenseTitle.textContent = "공동 경비";
+        // expensesContainer.appendChild(expenseTitle);
+        jointExpenseContainer.appendChild(jointExpenseTitle);
+
+        const jointExpenseTitleSeparator = document.createElement('hr');
+        jointExpenseTitleSeparator.classList.add('dynamic-expense', 'separator');
+        // expensesContainer.appendChild(expenseTitleSeparator);
+        jointExpenseContainer.appendChild(jointExpenseTitleSeparator);
+
+        let moneyFormat = formatKoreanMoney(finalSettlement.expenseBookDTO.totalBudget);
+        const totalBudget = document.createElement("p");
+        totalBudget.classList.add('dynamic-expense');
+        totalBudget.textContent = `예산 : ${moneyFormat}원`;
+        // expensesContainer.appendChild(totalBudget);
+        jointExpenseContainer.appendChild(totalBudget);
+
+        moneyFormat = formatKoreanMoney(finalSettlement.expenseBookDTO.totalExpenses);
+        const totalExpenses = document.createElement("p");
+        totalExpenses.classList.add('dynamic-expense');
+        totalExpenses.textContent = `총지출 : ${moneyFormat}원`;
+        // expensesContainer.appendChild(totalBudget);
+        jointExpenseContainer.appendChild(totalExpenses);
+
+        moneyFormat = formatKoreanMoney(finalSettlement.totalBalance);
+        const totalBalance = document.createElement("p");
+        totalBalance.classList.add('dynamic-expense');
+        totalBalance.textContent = `잔액 : ${moneyFormat}원`;
+        // expensesContainer.appendChild(totalBudget);
+        jointExpenseContainer.appendChild(totalBalance);
+
+        const expenseSeparator = document.createElement('hr');
+        expenseSeparator.classList.add('dynamic-expense', 'separator');
+        // expensesContainer.appendChild(expenseTitleSeparator);
+        jointExpenseContainer.appendChild(expenseSeparator);
+
+
+        Object.keys(adjustment).forEach(key => {
+            // Key 출력
+            const keyTag = document.createElement('p');
+            keyTag.classList.add('dynamic-expense');
+            keyTag.textContent = `${key} 님`;
+            // expensesContainer.appendChild(keyTag);
+            jointExpenseContainer.appendChild(keyTag);
+
+
+            // "송금" 출력
+            const sendTag = document.createElement('p');
+            sendTag.classList.add('dynamic-expense');
+            sendTag.textContent = `송금`;
+            // expensesContainer.appendChild(sendTag);
+            jointExpenseContainer.appendChild(sendTag);
+
+
+            // 송금 항목 출력
+            if (adjustment[key].sendedMoney && Object.keys(adjustment[key].sendedMoney).length > 0) {
+                // 송금할 게 있다
+                Object.keys(adjustment[key].sendedMoney).forEach(sendKey => {
+                    moneyFormat = formatKoreanMoney(adjustment[key].sendedMoney[sendKey]);
+
+                    const sendDetailTag = document.createElement('p');
+                    sendDetailTag.classList.add('dynamic-expense');
+                    sendDetailTag.textContent = `  ${sendKey} 님 : ${moneyFormat}원`;
+                    // expensesContainer.appendChild(sendDetailTag);
+                    jointExpenseContainer.appendChild(sendDetailTag);
+
+                });
+            }
+            else {
+                // 송금할 게 없다
+                const noSendDataTag = document.createElement('p');
+                noSendDataTag.classList.add('dynamic-expense');
+                noSendDataTag.textContent = "없음";
+                // expensesContainer.appendChild(noSendDataTag);
+                jointExpenseContainer.appendChild(noSendDataTag);
+
+            }
+
+            // "수금" 출력
+            const receiveTag = document.createElement('p');
+            receiveTag.classList.add('dynamic-expense');
+            receiveTag.textContent = `수금`;
+            // expensesContainer.appendChild(receiveTag);
+            jointExpenseContainer.appendChild(receiveTag);
+
+
+            // 수금 항목 출력
+            if (adjustment[key].receivedMoney && Object.keys(adjustment[key].receivedMoney).length > 0) {
+                // 수금 받을 게 있다
+                Object.keys(adjustment[key].receivedMoney).forEach(receiveKey => {
+                    moneyFormat = formatKoreanMoney(adjustment[key].receivedMoney[receiveKey]);
+
+                    const receiveDetailTag = document.createElement('p');
+                    receiveDetailTag.classList.add('dynamic-expense');
+                    receiveDetailTag.textContent = `  ${receiveKey} 님 : ${moneyFormat}원`;
+                    // expensesContainer.appendChild(receiveDetailTag);
+                    jointExpenseContainer.appendChild(receiveDetailTag);
+
+                });
+            }
+            else {
+                // 수금 받을 게 없다
+                const noReceiveDataTag = document.createElement('p');
+                noReceiveDataTag.classList.add('dynamic-expense');
+                noReceiveDataTag.textContent = "없음";
+                // expensesContainer.appendChild(noReceiveDataTag);
+                jointExpenseContainer.appendChild(noReceiveDataTag);
+
+            }
+
+            // <hr> 태그 추가 (dynamic-expense 클래스 포함)
+            const separator = document.createElement('hr');
+            separator.classList.add('dynamic-expense', 'separator');
+            // expensesContainer.appendChild(separator);
+            jointExpenseContainer.appendChild(separator);
+
+        });
+
+        // 개인별 예산, 지출 출력
+        // const eachExpense = finalSettlement.eachExpense;
+        // console.log("eachExpense", eachExpense);
+
+        const personalExpenseTitle = document.createElement("p");
+        personalExpenseTitle.classList.add('dynamic-expense');
+        personalExpenseTitle.textContent = "개인 경비";
+        // expensesContainer.appendChild(expenseTitle);
+        personalExpenseContainer.appendChild(personalExpenseTitle);
+
+        const personalExpenseTitleSeparator = document.createElement('hr');
+        personalExpenseTitleSeparator.classList.add('dynamic-expense', 'separator');
+        // expensesContainer.appendChild(expenseTitleSeparator);
+        personalExpenseContainer.appendChild(personalExpenseTitleSeparator);
+
+
+        Object.keys(travler).forEach(key => {
+            // 이름 출력
+            const nameTag = document.createElement('p');
+            nameTag.classList.add('dynamic-expense');
+            nameTag.textContent = `${travler[key].travelerName} 님`;
+            // expensesContainer.appendChild(nameTag);
+            personalExpenseContainer.appendChild(nameTag);
+
+            // 예산 출력
+            moneyFormat = formatKoreanMoney(travler[key].totalBudget)
+            const totalBudget = document.createElement('p');
+            totalBudget.classList.add('dynamic-expense');
+            totalBudget.textContent = `예산 : ${moneyFormat}원`;
+            // expensesContainer.appendChild(nameTag);
+            personalExpenseContainer.appendChild(totalBudget);
+
+            // 총지출 출력
+            moneyFormat = formatKoreanMoney(travler[key].totalExpense)
+            const totalExpense = document.createElement('p');
+            totalExpense.classList.add('dynamic-expense');
+            totalExpense.textContent = `총지출 : ${moneyFormat}원`;
+            // expensesContainer.appendChild(nameTag);
+            personalExpenseContainer.appendChild(totalExpense);
+
+            // <hr> 태그 추가 (dynamic-expense 클래스 포함)
+            const separator = document.createElement('hr');
+            separator.classList.add('dynamic-expense', 'separator');
+            // expensesContainer.appendChild(separator);
+            personalExpenseContainer.appendChild(separator);
+
+        });
+    }
+    else if (kind === "hasChoice") {
+        // 방문지 선택 o
+        console.log("partialSettlement : ", partialSettlement);
+
+        const adjustment = partialSettlement.adjustment;
+        console.log("adjustment", adjustment);
+
+        // 공동 경비 정산
+        const jointExpenseTitle = document.createElement("p");
+        jointExpenseTitle.classList.add('dynamic-expense');
+        jointExpenseTitle.textContent = "공동 경비";
+        // expensesContainer.appendChild(expenseTitle);
+        jointExpenseContainer.appendChild(jointExpenseTitle);
+
+        const jointExpenseTitleSeparator = document.createElement('hr');
+        jointExpenseTitleSeparator.classList.add('dynamic-expense', 'separator');
+        // expensesContainer.appendChild(expenseTitleSeparator);
+        jointExpenseContainer.appendChild(jointExpenseTitleSeparator);
+
+        let moneyFormat = formatKoreanMoney(partialSettlement.totalExpense);
+        const totalExpenses = document.createElement("p");
+        totalExpenses.classList.add('dynamic-expense');
+        totalExpenses.textContent = `총지출 : ${moneyFormat}원`;
+        // expensesContainer.appendChild(totalBudget);
+        jointExpenseContainer.appendChild(totalExpenses);
+
+        const expenseSeparator = document.createElement('hr');
+        expenseSeparator.classList.add('dynamic-expense', 'separator');
+        // expensesContainer.appendChild(expenseTitleSeparator);
+        jointExpenseContainer.appendChild(expenseSeparator);
+
+        Object.keys(adjustment).forEach(key => {
+            // Key 출력
+            const keyTag = document.createElement('p');
+            keyTag.classList.add('dynamic-expense');
+            keyTag.textContent = `${key} 님`;
+            // expensesContainer.appendChild(keyTag);
+            jointExpenseContainer.appendChild(keyTag);
+
+
+            // "송금" 출력
+            const sendTag = document.createElement('p');
+            sendTag.classList.add('dynamic-expense');
+            sendTag.textContent = `송금`;
+            // expensesContainer.appendChild(sendTag);
+            jointExpenseContainer.appendChild(sendTag);
+
+
+            // 송금 항목 출력
+            if (adjustment[key].sendedMoney && Object.keys(adjustment[key].sendedMoney).length > 0) {
+                // 송금할 게 있다
+                Object.keys(adjustment[key].sendedMoney).forEach(sendKey => {
+                    moneyFormat = formatKoreanMoney(adjustment[key].sendedMoney[sendKey]);
+
+                    const sendDetailTag = document.createElement('p');
+                    sendDetailTag.classList.add('dynamic-expense');
+                    sendDetailTag.textContent = `  ${sendKey} 님 : ${moneyFormat}원`;
+                    // expensesContainer.appendChild(sendDetailTag);
+                    jointExpenseContainer.appendChild(sendDetailTag);
+
+                });
+            }
+            else {
+                // 송금할 게 없다
+                const noSendDataTag = document.createElement('p');
+                noSendDataTag.classList.add('dynamic-expense');
+                noSendDataTag.textContent = "없음";
+                // expensesContainer.appendChild(noSendDataTag);
+                jointExpenseContainer.appendChild(noSendDataTag);
+
+            }
+
+            // "수금" 출력
+            const receiveTag = document.createElement('p');
+            receiveTag.classList.add('dynamic-expense');
+            receiveTag.textContent = `수금`;
+            // expensesContainer.appendChild(receiveTag);
+            jointExpenseContainer.appendChild(receiveTag);
+
+
+            // 수금 항목 출력
+            if (adjustment[key].receivedMoney && Object.keys(adjustment[key].receivedMoney).length > 0) {
+                // 수금 받을 게 있다
+                Object.keys(adjustment[key].receivedMoney).forEach(receiveKey => {
+                    moneyFormat = formatKoreanMoney(adjustment[key].receivedMoney[receiveKey]);
+
+                    const receiveDetailTag = document.createElement('p');
+                    receiveDetailTag.classList.add('dynamic-expense');
+                    receiveDetailTag.textContent = `  ${receiveKey} 님 : ${moneyFormat}원`;
+                    // expensesContainer.appendChild(receiveDetailTag);
+                    jointExpenseContainer.appendChild(receiveDetailTag);
+
+                });
+            }
+            else {
+                // 수금 받을 게 없다
+                const noReceiveDataTag = document.createElement('p');
+                noReceiveDataTag.classList.add('dynamic-expense');
+                noReceiveDataTag.textContent = "없음";
+                // expensesContainer.appendChild(noReceiveDataTag);
+                jointExpenseContainer.appendChild(noReceiveDataTag);
+
+            }
+
+            // <hr> 태그 추가 (dynamic-expense 클래스 포함)
+            const separator = document.createElement('hr');
+            separator.classList.add('dynamic-expense', 'separator');
+            // expensesContainer.appendChild(separator);
+            jointExpenseContainer.appendChild(separator);
+
+        });
+
+        // 개인 경비 총지출 출력
+        const personalExpenseTitle = document.createElement("p");
+        personalExpenseTitle.classList.add('dynamic-expense');
+        personalExpenseTitle.textContent = "개인 경비";
+        // expensesContainer.appendChild(expenseTitle);
+        personalExpenseContainer.appendChild(personalExpenseTitle);
+
+        const personalExpenseTitleSeparator = document.createElement('hr');
+        personalExpenseTitleSeparator.classList.add('dynamic-expense', 'separator');
+        // expensesContainer.appendChild(expenseTitleSeparator);
+        personalExpenseContainer.appendChild(personalExpenseTitleSeparator);
+
+        const eachExpense = partialSettlement.eachExpenses;
+        console.log("eachExpense", eachExpense);
+        Object.keys(eachExpense).forEach(key => {
+            // 이름 : 총지출 출력
+            const nameTag = document.createElement('p');
+            nameTag.classList.add('dynamic-expense');
+            nameTag.textContent = `${key} 님`;
+            // expensesContainer.appendChild(nameTag);
+            personalExpenseContainer.appendChild(nameTag);
+
+            moneyFormat = formatKoreanMoney(eachExpense[key]);
+            const expense = document.createElement('p');
+            expense.classList.add('dynamic-expense');
+            expense.textContent = `총지출 : ${moneyFormat}원`;
+            // expensesContainer.appendChild(expense);
+            personalExpenseContainer.appendChild(expense);
+
+            // <hr> 태그 추가 (dynamic-expense 클래스 포함)
+            const separator = document.createElement('hr');
+            separator.classList.add('dynamic-expense', 'separator');
+            // expensesContainer.appendChild(separator);
+            personalExpenseContainer.appendChild(separator);
+
+        });
+    }
+}
+
+function formatKoreanMoney(value) {
+    // 숫자를 문자열로 변환
+    const stringValue = String(value);
+
+    // 정규식을 사용하여 4자리 단위로 나눔
+    return stringValue.replace(/\B(?=(\d{4})+(?!\d))/g, ',');
 }
