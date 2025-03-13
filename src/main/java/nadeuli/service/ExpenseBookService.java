@@ -12,6 +12,8 @@
  * 이홍비    2025.03.10   ExpenseBookDTO 반환 함수 구현
  * 고민정    2025.03.11   예산 산정 메서드 삭제
  * 고민정    2025.03.11   1/n 정산 메서드 수정
+ * 이홍비    2025.03.13   고민정 작성 ExpenseBookController - getFinalAdjustment() 내부 로직
+ *                       Service 에 추가
  * ========================================================
  */
 
@@ -21,6 +23,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.Person;
+import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
 import nadeuli.entity.*;
 import nadeuli.repository.*;
@@ -32,6 +35,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ExpenseBookService {
     private final ExpenseBookRepository expenseBookRepository;
@@ -54,7 +58,6 @@ public class ExpenseBookService {
 
 
     // 1/n 정산
-    @Transactional
     public FinanceResponseDTO calculateMoney(Long itineraryId, Long itineraryEventId) {
         // Itinerary 조회
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
@@ -112,7 +115,6 @@ public class ExpenseBookService {
 
 
     // 최종 정산 정보 조회
-    @Transactional
     public FinanceResponseDTO getAdjustment(Long itineraryId) {
         // 1. Itinerary로 모든 ItineraryEvent 조회하기
         List<ItineraryEvent> itineraryEventList = itineraryEventService.getAllByItineraryId(itineraryId);
@@ -166,7 +168,6 @@ public class ExpenseBookService {
         return new FinanceResponseDTO(totalAdjustment, totalExpense, eachExpense);
     }
 
-    @Transactional
     public ExpenseBookDTO updateExpenseBook(Long itineraryId, Long totalExpense) {
         // Itinerary 조회
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
@@ -184,7 +185,6 @@ public class ExpenseBookService {
 
 
     // ExpenseBookDTO 반환
-    @Transactional
     public ExpenseBookDTO getExpenseBook(Long iid) {
         // 일정 조회
         Itinerary itinerary = itineraryRepository.findById(iid)
@@ -195,6 +195,22 @@ public class ExpenseBookService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 장부가 존재하지 않습니다."));
 
         return ExpenseBookDTO.from(expenseBook); // DTO 로 반환
+    }
+
+
+    // ExpenseBookController 에 있던 getFinalAdjustment 로직 옮김
+    public AdjustmentResponseDTO getFinalSettlement(Long iid) {
+        FinanceResponseDTO financeResponseDTO = getAdjustment(iid);
+        Long totalExpense = financeResponseDTO.getTotalExpense();
+
+        // 지출, 잔액 갱신
+        ExpenseBookDTO expenseBookDto = updateExpenseBook(iid, totalExpense); // 지출
+        Long balance = expenseBookDto.getTotalBudget() - totalExpense; // 잔액
+
+        return new AdjustmentResponseDTO(financeResponseDTO.getAdjustment(),
+                financeResponseDTO.getEachExpenses(),
+                expenseBookDto,
+                balance);
     }
 
 
