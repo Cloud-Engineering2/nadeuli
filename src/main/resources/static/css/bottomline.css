@@ -6,7 +6,7 @@
 
 body {
     font-family: 'GriunNoltoTAENGGU';
-    font-size: 1.1rem; /* 기존 : 17px*/
+    font-size: 1.2rem; /* 기존 : 17px*/
     background-color: #E9DCBE;
     color: #343434;
     margin: 0;
@@ -104,34 +104,63 @@ body {
     padding: 10px;
     margin-bottom: 5px;
 
-    overflow: auto;
-    scroll-behavior: initial;
+
 }
 
+.expenses-container {
+    display: flex; /* Flexbox 활성화 */
+    flex-direction: row; /* 가로로 나열 */
+}
+
+/* 스크롤바를 클릭하거나 드래그할 때 */
+/* 왼쪽과 오른쪽 칸 설정 */
+.joint-expense-container, .personal-expense-container {
+    flex: 1; /* 두 컨테이너를 동일한 크기로 설정 */
+    padding: 5px;
+    overflow: auto;
+    /*scroll-behavior: initial;*/
+    width: 50%; /* 정확히 50%씩 나눔 */
+    min-width: 0; /* Flexbox 내부 요소가 넘치지 않도록 설정 */
+    max-height: 100%; /* 부모 높이를 초과하지 않도록 제한 */
+    box-sizing: border-box;
+}
+
+/* 경계를 위한 스타일(선택 사항) */
+.joint-expense-container {
+    border-right: 1px solid #ddd; /* 구분선 추가 */
+}
+
+.personal-expense-container {
+    /*border-left: 1px solid #ddd; !* 구분선 추가 *!*/
+    margin-left: 5px;
+}
+
+
 /* 스크롤바 기본 디자인 */
-.expenses-container::-webkit-scrollbar {
+.joint-expense-container::-webkit-scrollbar, .personal-expense-container::-webkit-scrollbar {
     width: 0.5vh;  /* 얇고 슬림하게 */
+    height: 0.5vh;
 }
 
 /* 스크롤바 트랙 (배경) */
-.expenses-container::-webkit-scrollbar-track {
+.joint-expense-container::-webkit-scrollbar-track, .personal-expense-container::-webkit-scrollbar-track {
     background: transparent; /* 기본적으로 배경 투명 */
 }
 
 /* 스크롤바 핸들(움직이는 부분) */
-.expenses-container::-webkit-scrollbar-thumb {
+.joint-expense-container::-webkit-scrollbar-thumb, .personal-expense-container::-webkit-scrollbar-thumb {
     background: rgba(100, 100, 100, 0);  /* 기본적으로 투명 */
     border-radius: 10px; /* 둥글게 */
     transition: background 0.3s ease-in-out;  /* 부드러운 효과 */
 }
 
 /* 마우스를 올리면 스크롤바가 보임 */
-.expenses-container:hover::-webkit-scrollbar-thumb {
+
+.joint-expense-container:hover::-webkit-scrollbar-thumb, .personal-expense-container:hover::-webkit-scrollbar-thumb {
     background: #8E8B82;
 }
 
-/* 스크롤바를 클릭하거나 드래그할 때 */
-.expenses-container::-webkit-scrollbar-thumb:active {
+.joint-expense-container::-webkit-scrollbar-thumb:active, .personal-expense-container::-webkit-scrollbar-thumb:active {
     background: #343434;
 }
 
@@ -242,7 +271,16 @@ body {
     border: 1px solid #8E8B82;
     margin-bottom: 10px;
     width: 100%;
+    /*border-left: 1px solid #ddd;*/
+    /*border-right: 1px solid #ddd;*/
 
+}
+
+.separator {
+    display: block;
+    border: 1px dashed #8E8B82;
+    margin-bottom: 10px;
+    width: 99%;
     /*border-left: 1px solid #ddd;*/
     /*border-right: 1px solid #ddd;*/
 
@@ -256,6 +294,8 @@ body {
 }*/
 
 .journal-content {
+    overflow: auto;
+    scroll-behavior: initial;
     border: none;
 }
 
