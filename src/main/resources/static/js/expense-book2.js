@@ -19,6 +19,7 @@ $(document).ready(function () {
         success: function (data) {
             createData(data);
             renderItinerary();
+            initSidebarResize();
         },
         error: function (xhr, status, error) {
             console.error("Error fetching itinerary:", error);
@@ -145,7 +146,7 @@ function renderItinerary() {
         $(this).find(".event .travel-info").first().css("display", "none");
     });
 
-    // initializeSortable(); // 드래그 & 드롭 기능 활성화
+    initializeSortable(); // 드래그 & 드롭 기능 활성화
 }
 
 
@@ -183,11 +184,244 @@ function createEventElement(event, index = null, totalEvents = null) {
     return itineraryEventDiv;
 }
 
-// 🎈 일정 드래그 & 드롭 활성화
+// renderItinerary - 일정 드래그 & 드롭 활성화
 function initializeSortable() {
     $(".event-container").each(function () {
-        // createSortableInstance(this);  // 뭐지?
+        createSortableInstance(this);  // 뭐지?
     });
+}
+
+// initializeSortable - element 에 Sortable 추가
+function createSortableInstance(element) {
+    return new Sortable(element, {
+        group: "shared",
+        animation: 200,
+        ghostClass: "sortable-ghost",
+        dragClass: "sortable-drag",
+        handle: ".event-content",
+        filter: ".js-remove",
+        preventOnFilter: false,
+        onStart: function (evt) {
+            $(".travel-info").css("visibility", "hidden");
+        },
+        onAdd: function (evt) {
+
+            let newItem = $(evt.item);
+            let eventId = newItem.data("id");
+            let event = getEventById(eventId);
+
+            let isPlaceSaved = evt.to.id === 'day-0';
+            let eventElement = createEventElement(event,null,null);
+            newItem.replaceWith(eventElement);
+
+            console.log("ON ADD !");
+        },
+        onEnd: function (evt) {
+
+            let fromDayId = evt.from.id;
+            let oldIndex = evt.oldIndex;
+            let toDayId = evt.to.id;
+            let newIndex = evt.newIndex;
+
+            console.log(`[출발] ${fromDayId}, oldIndex: ${oldIndex}`);
+            console.log(`[도착] ${toDayId}, newIndex: ${newIndex}`);
+
+            let updateStartIndexFrom = null;
+            let updateStartIndexTo = null;
+
+            if (toDayId === fromDayId) {
+                console.log(`- 같은 리스트(${toDayId})에서 이동`);
+                console.log(`-- 영향을 받는 인덱스`);
+                if (toDayId !== 'day-0') {
+                    if (oldIndex !== newIndex) {
+                        let movedForward = oldIndex > newIndex;
+                        console.log(movedForward ? `--- 요소가 기존보다 앞쪽으로 이동` : `--- 요소가 기존보다 뒤쪽으로 이동`);
+                        updateStartIndexFrom = calculateDistanceUpdates(toDayId, oldIndex, newIndex, movedForward);
+
+                    } else {
+                        console.log(`--- 이동하지 않음`);
+                    }
+                }
+            } else {
+                if (toDayId === 'day-0') {
+                    console.log(`- 장소보관함으로 이동: ${fromDayId} → 장소보관함`);
+                    changeDayCount(toDayId, newIndex);
+                    console.log(`-- [출발 리스트] ${fromDayId}에서 제거 후 영향`);
+                    updateStartIndexFrom = calculateRemovalImpact(fromDayId, oldIndex);
+
+                } else if (fromDayId === 'day-0') {
+                    console.log(`- 다른 리스트 이동: 장소보관함 → ${toDayId}`);
+                    changeDayCount(toDayId, newIndex);
+                    console.log(`-- [도착 리스트] ${toDayId}에서 추가 후 영향`);
+                    updateStartIndexTo = calculateInsertionImpact(toDayId, newIndex);
+                } else {
+                    console.log(`- 다른 리스트 이동: ${fromDayId} → ${toDayId}`);
+                    changeDayCount(toDayId, newIndex);
+                    console.log(`-- [출발 리스트] ${fromDayId}에서 제거 후 영향`);
+                    updateStartIndexFrom = calculateRemovalImpact(fromDayId, oldIndex);
+                    console.log(`-- [도착 리스트] ${toDayId}에서 추가 후 영향`);
+                    updateStartIndexTo = calculateInsertionImpact(toDayId, newIndex);
+                }
+
+            }
+
+            if (updateStartIndexFrom !== null) {
+                updateEventDisplay(fromDayId, updateStartIndexFrom);
+            }
+            if (updateStartIndexTo !== null) {
+                updateEventDisplay(toDayId, updateStartIndexTo);
+            }
+
+            console.log(eventMap);
+            $(".travel-info").css("visibility", "visible");
+
+
+            if (toDayId !== 'day-0') {
+                $(evt.to).find(".event .travel-info").css("display", "block");
+                $(evt.to).find(".event .travel-info").first().css("display", "none");
+                $(evt.to).find(".event .event-order-line").removeClass("transparent");
+                $(evt.to).find(".event .event-order-line.top").first().addClass("transparent");
+                $(evt.to).find(".event .event-order-line.bottom").last().addClass("transparent");
+            }
+
+            if (fromDayId !== 'day-0') {
+                $(evt.from).find(".event .travel-info").css("display", "block");
+                $(evt.from).find(".event .travel-info").first().css("display", "none");
+                $(evt.from).find(".event .event-order-line").removeClass("transparent");
+                $(evt.from).find(".event .event-order-line.top").first().addClass("transparent");
+                $(evt.from).find(".event .event-order-line.bottom").last().addClass("transparent");
+            }
+
+        }
+
+    });
+}
+
+// createSortableInstance - 주어진 ID로 `eventMap`에서 이벤트 조회
+function getEventById(id) {
+    return eventMap.get(id) || null;
+}
+
+// createSortableInstance - 거리(시간) 계산 요청을 함수로 분리
+function calculateDistanceUpdates(dayId, oldIndex, newIndex, movedForward) {
+    console.log(`🔄 거리 계산 업데이트: ${dayId}, oldIndex: ${oldIndex} → newIndex: ${newIndex}`);
+
+    const calculatedPairs = new Set();
+
+    //중복 방지 함수
+    function safeCalculateDistance(index1, index2) {
+        const pairKey = `${index1}-${index2}`;
+        if (!calculatedPairs.has(pairKey)) {
+            calculatedPairs.add(pairKey);
+            calculateDistanceByIndex(dayId, index1, index2);
+        }
+    }
+
+    if (movedForward) {
+        safeCalculateDistance(newIndex - 1, newIndex); // 새로 삽입된 위치의 앞쪽 영향
+        safeCalculateDistance(newIndex, newIndex + 1); // 새로 삽입된 위치의 뒤쪽 영향
+        safeCalculateDistance(oldIndex, oldIndex + 1); // 원래 위치의 뒤쪽 영향
+
+    } else {
+        safeCalculateDistance(newIndex - 1, newIndex); // 새로 삽입된 위치의 앞쪽 영향
+        safeCalculateDistance(newIndex, newIndex + 1); // 새로 삽입된 위치의 뒤쪽 영향
+        safeCalculateDistance(oldIndex - 1, oldIndex); // 원래 위치의 앞쪽 영향
+    }
+    return movedForward ? newIndex : oldIndex; // updateEventDisplay의 시작 인덱스를 반환
+}
+
+// createSortableInstance - Event의 DayCount 상태 변경 함수
+function changeDayCount(toDayId, newIndex) {
+    const container = document.getElementById(toDayId);
+    if (!container) return;
+    const items = container.children;
+    const eventElement = items[newIndex];
+    const eventId = eventElement.getAttribute("data-id");
+    const event = getEventById(eventId);
+    event.dayCount = parseInt(toDayId.match(/\d+$/)[0]);
+}
+
+// calculateDistanceUpdates - 삭제 시 거리 재계산
+function calculateRemovalImpact(dayId, oldIndex) {
+    calculateDistanceByIndex(dayId, oldIndex - 1, oldIndex);
+    return oldIndex;
+}
+
+// calculateDistanceUpdates - 추가 시 거리 재계산
+function calculateInsertionImpact(dayId, newIndex) {
+    calculateDistanceByIndex(dayId, newIndex - 1, newIndex);
+    calculateDistanceByIndex(dayId, newIndex, newIndex + 1);
+    return newIndex;
+}
+
+// calculateRemovalImpact, calculateDistanceUpdates - dayId 칼럼의 index1, index2의 거리 계산
+function calculateDistanceByIndex(dayId, index1, index2) {
+    const container = document.getElementById(dayId);
+    if (!container) return;
+
+    const items = container.children;
+    const itemCount = items.length;
+
+    if (index1 < 0 || index2 < 0) {
+        console.log(`⚠️ 경고: index1=${index1}, index2=${index2} (index 0의 이동 시간을 0으로 설정)`);
+
+        // 첫 번째 요소의 movingMinuteFromPrevPlace를 0으로 설정
+        const firstEventId = items[0]?.getAttribute("data-id");
+        if (firstEventId) {
+            const firstEvent = getEventById(firstEventId);
+            if (firstEvent) {
+                firstEvent.movingMinuteFromPrevPlace = 0;
+                eventMap.set(firstEventId, firstEvent);
+                console.log(`✅ 업데이트 완료: ${firstEventId}의 movingMinuteFromPrevPlace → 0분`);
+            }
+        }
+        return;
+    }
+
+    // 예외 처리: 끝부분 (범위를 초과하는 경우)
+    if (index1 >= itemCount || index2 >= itemCount) {
+        console.warn(`❌ 유효하지 않은 인덱스: index1=${index1}, index2=${index2}`);
+        return;
+    }
+
+    const eventId1 = items[index1]?.getAttribute("data-id");
+    const eventId2 = items[index2]?.getAttribute("data-id");
+
+    if (!eventId1 || !eventId2) {
+        console.warn(`❌ 이벤트 ID 없음: index1=${index1}, index2=${index2}`);
+        return;
+    }
+
+    const event1 = getEventById(eventId1);
+    const event2 = getEventById(eventId2);
+
+    if (event1 && event2) {
+        const {
+            distance,
+            minute
+        } = requestDistanceCalculation(event1.placeDTO.googlePlaceId, event2.placeDTO.googlePlaceId);
+
+        // event2의 movingMinuteFromPrevPlace 업데이트
+        event2.movingMinuteFromPrevPlace = minute;
+
+        // eventMap 업데이트
+        eventMap.set(eventId2, event2);
+
+        console.log(`✅ 업데이트 완료: ${eventId2}의 movingMinuteFromPrevPlace → ${minute}분`);
+    } else {
+        console.warn(`❌ 이벤트 조회 실패: eventId1=${eventId1}, eventId2=${eventId2}`);
+    }
+}
+
+// calculateDistanceByIndex - 거리 계산 요청 (임시 랜덤 값 반환)
+function requestDistanceCalculation(placeId1, placeId2) {
+    console.log(`🚗 거리(시간) 계산 요청: ${placeId1} → ${placeId2}`);
+
+    // 랜덤 값 생성 (예제)
+    const distance = Math.floor(Math.random() * 50) + 1; // 1 ~ 50km
+    const minute = 30;//Math.floor(Math.random() * 120) + 1; // 1 ~ 120분
+
+    return {distance, minute};
 }
 
 // createData - HH:MM:SS 문자열을 분(minute)으로 변환하는 함수
@@ -225,6 +459,35 @@ function formatTime(minutes) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+}
+
+
+
+/************ 🧳 사이드 바 크기 조절 🧳************/
+//사이드바 크기 조절 기능 초기화
+function initSidebarResize() {
+    $("#resize-handle").mousedown(function (e) {
+        e.preventDefault();
+        $(document).mousemove(resizeSidebar);
+        $(document).mouseup(stopSidebarResize);
+    });
+}
+
+//마우스 이동에 따라 사이드바 너비 조절
+function resizeSidebar(e) {
+    console.log("mousemove detected", e.pageX);
+    let newWidth = e.pageX;
+    if (newWidth >= 300 && newWidth <= 2000) {
+        $("#left").css("width", newWidth + "px");
+        $("#resize-handle").css("left", newWidth + "px");
+    }
+}
+
+//마우스 버튼을 놓으면 크기 조절 종료
+function stopSidebarResize() {
+    console.log("mouseup detected, removing event listeners");
+    $(document).off("mousemove", resizeSidebar);
+    $(document).off("mouseup", stopSidebarResize);
 }
 
 
