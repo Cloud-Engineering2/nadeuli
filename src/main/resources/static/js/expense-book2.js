@@ -19,7 +19,7 @@ $(document).ready(function () {
         success: function (data) {
             createData(data);
             renderItinerary();
-            initSidebarResize();
+            initSidebarResize(); // 사이드 바
         },
         error: function (xhr, status, error) {
             console.error("Error fetching itinerary:", error);
@@ -339,6 +339,83 @@ function changeDayCount(toDayId, newIndex) {
     const eventId = eventElement.getAttribute("data-id");
     const event = getEventById(eventId);
     event.dayCount = parseInt(toDayId.match(/\d+$/)[0]);
+}
+
+
+
+// 순서 및 이동시간을 업데이트하는 함수
+function updateEventDisplay(dayId, startIndex) {
+    console.log('updateEventDisplay 호출 !');
+    const container = document.getElementById(dayId);
+    console.log('updateEventDisplay 체크완료 ', container);
+    if (!container) return;
+    const dayHeader = container.parentElement.querySelector('.day-header');
+
+
+    const dayCount = parseInt(dayId.match(/\d+$/)[0]); // day-숫자 → 숫자 추출
+
+    dayHeader.textContent = `${dayCount}일차 (${perDayMap.get(dayCount)?.startTime.substring(0, 5)})`;
+
+    const items = container.children;
+    let order = startIndex + 1; // 새로운 순서값 설정
+
+    // 초기 시간을 가져옴 (해당 dayCount의 startTime)
+    let baseStartTime = timeToMinutes(perDayMap.get(dayCount)?.startTime || "00:00:00");
+
+    // 이전 이벤트의 종료 시간 가져오기 (이동시간 반영)
+    let prevEndMinute = 0; // startIndex가 0일 경우 기본값 설정
+    if (startIndex > 0) {
+        const prevEventElement = items[startIndex - 1];
+        const prevEventId = prevEventElement.getAttribute("data-id");
+        const prevEvent = getEventById(prevEventId);
+
+        if (prevEvent) {
+            prevEndMinute = prevEvent.startMinuteSinceStartDay + prevEvent.stayMinute;
+        }
+    }
+
+    // ✅ 이벤트 업데이트 루프
+    for (let i = startIndex; i < items.length; i++) {
+        const eventElement = items[i];
+        const eventId = eventElement.getAttribute("data-id");
+        const event = getEventById(eventId);
+
+        if (!event) continue;
+
+        // ✅ 순서 업데이트 (event-order-circle)
+        const orderCircle = eventElement.querySelector(".event-order-circle");
+        if (orderCircle) {
+            orderCircle.textContent = order;
+        }
+
+        // ✅ 이동 시간 업데이트 (travel-info)
+        const travelInfo = eventElement.querySelector(".travel-info");
+        if (travelInfo) {
+            travelInfo.textContent = `이동 시간 ${event.movingMinuteFromPrevPlace ?? 0}분`;
+        }
+
+        // ✅ 이벤트 시간 업데이트 (event-time)
+        const eventTimeElement = eventElement.querySelector(".event-time");
+        if (eventTimeElement) {
+            let startMinute = prevEndMinute + (event.movingMinuteFromPrevPlace ?? 0); // 이동 시간 반영
+            let endMinute = startMinute + event.stayMinute; // 머무는 시간 추가
+
+            // 저장되는 값은 baseStartTime을 제외한 상대 값
+            event.startMinuteSinceStartDay = startMinute;
+            event.endMinuteSinceStartDay = endMinute;
+
+            // UI에 표시할 값은 baseStartTime을 더한 절대 시간
+            eventTimeElement.textContent = `${formatTime(startMinute + baseStartTime)} ~ ${formatTime(endMinute + baseStartTime)}`;
+
+            // 다음 이벤트의 시작 시간 업데이트
+            prevEndMinute = endMinute;
+        }
+
+        // ✅ 최신 이벤트 데이터 업데이트
+        eventMap.set(eventId, event);
+
+        order++; // 다음 순서 증가
+    }
 }
 
 // calculateDistanceUpdates - 삭제 시 거리 재계산
