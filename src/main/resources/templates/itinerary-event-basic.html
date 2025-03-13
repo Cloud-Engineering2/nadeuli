@@ -7,7 +7,7 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Custom Styles -->
-    <link rel="stylesheet" th:href="@{/css/expense-book.css}">
+    <link rel="stylesheet" th:href="@{/css/expense-book2.css}">
     <link rel="stylesheet" th:href="@{/css/admin-common.css}">
     <!-- jQuery & Sortable -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -29,26 +29,37 @@
 <div class="container-fluid">
 
     <!-- 왼쪽 패널 -->
-    <div class="col-md-3" id="sidebar">
+    <div class="col-md-3" id="left"> <!-- sidebar -> left -->
+
+        <!-- -- 헤더 -- -->
         <div class="schedule-header" id="scheduleHeader">
             <div class="schedule-header-left">
-                <div class="schedule-header-name">여행 제목</div>
-                <div class="schedule-header-date">2025/03/02(화) ~ 2025/03/08(목)</div>
+                <div class="schedule-header-name" id="scheduleHeaderName">여행 제목</div>
+                <div class="schedule-header-date" id="scheduleHeaderDate">2025/03/02(화) ~ 2025/03/08(목)</div>
             </div>
-            <div class="schedule-header-right">
-                <button class="event-options-button schedule">⚙️</button>
-                <div class="event-options hidden">
-                    <button class="event-date-change">기간 및 시간 변경</button>
-                    <button class="event-remove">일정표 삭제</button>
-                </div>️
-            </div>
+<!--            <div class="schedule-header-right">-->
+<!--                <button class="event-options-button schedule">⚙️</button>-->
+<!--                <div class="event-options hidden">-->
+<!--                    <button class="event-date-change">기간 및 시간 변경</button>-->
+<!--                    <button class="event-remove">일정표 삭제</button>-->
+<!--                </div>️-->
+<!--            </div>-->
         </div>
 
         <!-- day 별 탭 컨테이너 -->
-        <div class="tab-container" id="tabContainer"></div>
+        <div class="tab-container" id="tabContainer">일자별 탭</div>
 
-        <!-- Itinerary Event -->
-        <div class="schedule-container" id="scheduleContainer"></div>
+
+
+        <!-- day 별 Event, jorunal 리스트 -->
+        <div class="list-itinerary-event-by-day-container" id="listItineraryEventByDayContainer">
+            <!-- Itinerary Event 목록 -->
+            <div class="itinerary-event-list" id="itineraryEventList"></div> <!-- schedule-container -->
+            <!-- journal 목록 -->
+            <div class="journal-list" id="journalList"></div>
+        </div>
+
+
 
 
     </div>
@@ -56,8 +67,8 @@
     <!-- 크기 조절 핸들 -->
     <div id="resize-handle"></div>
 
-    <!-- 오른쪽 화면 -->
-    <div class="col-md-9" id="sidebarRight" >
+    <!-- 오른쪽 패널 -->
+    <div class="col-md-9" id="right" > <!-- sidebarRight -> right -->
         <div class="detail-container" id="detailContainer">지도 영역</div>
     </div>
 

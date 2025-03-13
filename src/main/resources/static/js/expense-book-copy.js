@@ -94,29 +94,29 @@ function createData(data) {
 
 //일정 UI 요소 생성
 function renderItinerary() {
-    // 🏷일정 제목 설정
+    // 💡여행 제목
     $(".schedule-header-name").text(itinerary.itineraryName);
 
-
-    // 일정 기간 표시 (시작 날짜 ~ 종료 날짜)
+    // 💡일정 기간 표시 (시작 날짜 ~ 종료 날짜)
     let startDate = new Date(itinerary.startDate);
     let endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + itinerary.totalDays - 1);
-
+        // 날짜 변환 형식
     let options = {year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short'};
     $(".schedule-header-date").text(
         `${startDate.toLocaleDateString("ko-KR", options)} ~ ${endDate.toLocaleDateString("ko-KR", options)}`
     );
 
-    // 🚀 일정 UI 렌더링
+    // 💡일정 UI 렌더링
     const scheduleContainer = $("#scheduleContainer").empty();
     console.log("groupedByDay entries:", Object.entries(groupedByDay));  // key-value
 
-    // 탭 컨테이너 초기화 //
+    // 💡일자별 탭
     const tabContainer = $("#tabContainer").empty();
 
     Object.keys(groupedByDay).forEach(dayKey =>  {
         const dayNumber = parseInt(dayKey);
+
         const startTime = perDayMap.get(dayNumber)?.startTime?.substring(0, 5) || "00:00";
         console.log(dayKey);
 
@@ -180,45 +180,37 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
     console.log("Event Object:", event);
 
     const itineraryEventDiv = $(`
-                        <div class='event' data-id='${event.hashId}'>
+                        <div class='event' data-id='${event.id}'>
                             <div class="event-wrapper">
                                 <div class="travel-info">${isSavedPlace ? "" : `이동 시간 ${event.movingMinute}분`}</div>
                                 <div class="event-content">
-                                    <div class="event-order">
+                                    <!-- 순서 번호 -->
+                                    <div class="event-order"> 
                                         <div class="event-order-line top ${index === 0 ? "transparent" : ""}"></div>
                                         <div class="event-order-circle">${isSavedPlace ? "X" : index + 1}</div>
                                         <div class="event-order-line bottom ${index === totalEvents - 1 ? "transparent" : ""}"></div>
                                     </div>
-                                    <div class="event-main">
-                                        <div class="event-left">
-                                            <div class='event-title'>${event.placeDTO.placeName}</div>
-                                            <div class="event-duration-container">
-                                                <div class="event-duration-input-container hidden">
-                                                    <div class="event-duration-input-box">
-                                                        <input type="number" class="event-duration-hours" min="0" max="24" step="1"> 시간
-                                                        <input type="number" class="event-duration-minutes" min="0" max="59" step="5"> 분
-                                                    </div>
-                                                    <div class="event-duration-buttons">
-                                                        <button class="event-duration-save">✔️확인</button>
-                                                        <button class="event-duration-cancel">✖ 취소</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            ${isSavedPlace ? "" : `<div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>`}
-                                            <!-- 총 지출 --> 
-                                            <div class="itinerary-event-total-expense" id="itineraryEventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
-                                                0 원
-                                            </div>
-                                            <!-- 경비 내역 추가 -->
-                                            <div class="expense-addition" id="expenseAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
+                                    <div class="event-main">                                        
+                                        <div class='place-title'>${event.placeDTO.placeName}</div> <!-- event-title -> place-title -->
+<!--                                        <div class="event-duration-container">-->
+<!--                                            <div class="event-duration-input-container hidden">-->
+<!--                                                <div class="event-duration-input-box">-->
+<!--                                                    <input type="number" class="event-duration-hours" min="0" max="24" step="1"> 시간-->
+<!--                                                    <input type="number" class="event-duration-minutes" min="0" max="59" step="5"> 분-->
+<!--                                                </div>-->
+<!--                                                <div class="event-duration-buttons">-->
+<!--                                                    <button class="event-duration-save">✔️확인</button>-->
+<!--                                                    <button class="event-duration-cancel">✖ 취소</button>-->
+<!--                                                </div>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+                                        ${isSavedPlace ? "" : `<div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>`}
+                                        <!-- 총 지출 --> 
+                                        <div class="event-total-expense" id="eventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
+                                            0 원
                                         </div>
-                                        <div class="event-right">
-                                            <button class="event-options-button">⋮</button>
-                                            <div class="event-options hidden">
-                                                <button class="event-duration">머무는 시간</button>
-                                                <button class="event-remove">삭제</button>
-                                            </div>
-                                        </div>
+                                        <!-- 경비 내역 추가 -->
+                                        <div class="expense-addition" id="expenseAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>                                        
                                     </div>
                                 </div>
                             </div>
@@ -228,10 +220,10 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
     // 현재 지출액
     // getTotalExpenseByItineraryEvent(itinerary.id, event.id).then(totalExpense => {
     //     // totalExpense 값이 받아지면 해당 div의 내용을 업데이트
-    //     itineraryEventDiv.find(".itinerary-event-total-expense").html(`${totalExpense} 원`);
+    //     itineraryEventDiv.find(".event-total-expense").html(`${totalExpense} 원`);
     // }).catch(err => {
     //     console.error("Error fetching total expense:", err);
-    //     itineraryEventDiv.find(".itinerary-event-total-expense").html("0 원"); // 에러 발생 시 '0 원'으로 설정
+    //     itineraryEventDiv.find(".event-total-expense").html("0 원"); // 에러 발생 시 '0 원'으로 설정
     // });
 
     return itineraryEventDiv;
@@ -1360,7 +1352,7 @@ async function getTotalExpenseByItineraryEvent(itineraryId, eventId) {
 
 
 // Itinerary Event 별 정산 정보 <- 현재 총 지출액 클릭 (right)
-$(document).on("click", ".itinerary-event-total-expense", function () {
+$(document).on("click", ".event-total-expense", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
 
