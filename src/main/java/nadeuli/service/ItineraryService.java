@@ -14,6 +14,7 @@
  * 박한철    2025.02.28     일정 전체 (itinerary, PerDay, Event) Update 기능 개발 완료
  * 박한철    2025.03.11     엔티티에 movingDistanceFromPrevPlace 추가로 인한 변경사항
  * 박한철    2025.03.12     Update 이후 createdMappings 또한 리턴하도록 수정
+ * 박한철    2025.03.14     템플릿 생성시 itineraryRegion, ExpenseBook 도 추가하도록 수정
  * ========================================================
  */
 package nadeuli.service;
@@ -49,7 +50,9 @@ public class ItineraryService {
     private final ItineraryPerDayRepository itineraryPerDayRepository;
     private final ItineraryEventRepository itineraryEventRepository;
     private final PlaceRepository placeRepository;
-
+    private final RegionRepository regionRepository;
+    private final ItineraryRegionRepository itineraryRegionRepository;
+    private final ExpenseBookRepository expenseBookRepository;
     // ===========================
     //  CREATE: 일정 생성
     // ===========================
@@ -71,6 +74,18 @@ public class ItineraryService {
                 .collect(Collectors.toList());
 
         itineraryPerDayRepository.saveAll(itineraryPerDayList);
+
+        //지역 매핑 저장
+        List<Long> selectedRegionIds = requestDTO.getSelectedRegionIds();
+        List<Region> regions = regionRepository.findAllById(selectedRegionIds);
+        List<ItineraryRegion> itineraryRegions = regions.stream()
+                .map(region -> new ItineraryRegion(savedItinerary, region))
+                .collect(Collectors.toList());
+        itineraryRegionRepository.saveAll(itineraryRegions);
+
+        // ExpenseBook 자동 생성
+        ExpenseBook expenseBook = ExpenseBook.of(savedItinerary, 0L, 0L);
+        expenseBookRepository.save(expenseBook);
 
         // 소유자 자동 등록
         ItineraryCollaborator collaborator = ItineraryCollaborator.of(owner, savedItinerary);

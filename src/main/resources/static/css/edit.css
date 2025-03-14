@@ -17,9 +17,6 @@ html, body {
 body {
     background: #F3F3F3; /* 기존 배경색을 부드러운 White 계열로 변경 */
 }
-/*body {*/
-/*    overflow-x: hidden;*/
-/*}*/
 
 /* 기본 스크롤바 스타일 */
 /* 공통 스타일 */
@@ -224,6 +221,28 @@ body {
     margin-left: auto; /* 버튼을 오른쪽 끝으로 이동 */
 }
 
+.toggle-map-button{
+    background: none;
+    border: none;
+    font-size: 25px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.toggle-map-button .on-icon {
+    display: none;
+}
+
+.toggle-map-button.on .on-icon {
+    display: inline-block;
+}
+.toggle-map-button.on .off-icon {
+    display: none;
+}
+
+
+
 .save-button{
     background: none;
     border: none;
@@ -280,7 +299,18 @@ body {
     width: 100%;
 }
 
-
+.input-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+}
+.travel-minute-input {
+    width: 51px;
+    height: 25px;
+    border: none;
+    text-align: right;
+}
 
 .event-content {
     display: flex;
@@ -555,6 +585,7 @@ body {
     pointer-events: none;
     user-select: none;
 }
+
 
 .modal-dialog {
     max-width: 750px; /* 모달이 달력을 포함할 만큼 충분히 넓게 설정 */
@@ -1208,4 +1239,13 @@ body {
 
 .place-type[data-place-type="CONVENIENCE"] {
     color: #364350; /* 모던 그레이 (뉴트럴 톤) */
+}
+
+
+.right-side-map.hidden {
+    display: none !important;
+}
+
+.resize-handle.hidden{
+    display: none !important;
 }

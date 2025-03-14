@@ -1,5 +1,5 @@
-/* RegionController.java
- * RegionController
+/* RegionRestController.java
+ * RegionRestController
  * 지역 관련 API
  * 작성자 : 박한철
  * 최초 작성 날짜 : 2025-03-04
@@ -10,7 +10,7 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 박한철     2025.03.07    최초작성
- *
+ * 박한철     2025.03.14    RegionController -> RegionRestController Rename
  * ========================================================
  */
 
@@ -18,17 +18,19 @@ package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.RegionTreeDTO;
+import nadeuli.dto.response.RegionImageResponseDTO;
 import nadeuli.entity.Region;
 import nadeuli.service.RegionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/regions")
 @RequiredArgsConstructor
-public class RegionController {
+public class RegionRestController {
 
     private final RegionService regionService;
 
@@ -70,6 +72,15 @@ public class RegionController {
     @GetMapping("/tree")
     public ResponseEntity<List<RegionTreeDTO>> getRegionTree() {
         return ResponseEntity.ok(regionService.getRegionTree());
+    }
+
+    /**
+     * 모든 지역의 최종 이미지 URL 조회 (자신 → 부모 → 조부모 → 기본이미지 fallback 적용)
+     */
+    @GetMapping("/image-urls")
+    public ResponseEntity<List<RegionImageResponseDTO>> getRegionImageUrls() {
+        List<RegionImageResponseDTO> dtoList = regionService.getRegionImageDtoListWithCache();
+        return ResponseEntity.ok(dtoList);
     }
 
 }

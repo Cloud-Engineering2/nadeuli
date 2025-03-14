@@ -18,22 +18,44 @@ package nadeuli.service;
 import lombok.RequiredArgsConstructor;
 import nadeuli.common.PhotoType;
 import nadeuli.dto.RegionTreeDTO;
+import nadeuli.dto.response.RegionImageResponseDTO;
 import nadeuli.entity.Region;
 import nadeuli.repository.RegionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class RegionService {
 
     private final RegionRepository regionRepository;
     private final S3Service s3Service;
+    @Qualifier("regionImageRedisTemplate")
+    private final RedisTemplate<String, Map<String, String>> regionImageRedisTemplate;
+
+    public RegionService(RegionRepository regionRepository, S3Service s3Service, RedisTemplate<String, Map<String, String>> regionImageRedisTemplate) {
+        this.regionRepository = regionRepository;
+        this.s3Service = s3Service;
+        this.regionImageRedisTemplate = regionImageRedisTemplate;
+    }
+
+    private static final String REGION_IMAGE_CACHE_KEY = "region:imageUrls";
+    private static final String DEFAULT_IMAGE_URL = "https://picsum.photos/600/600";
+    private static final Duration REGION_IMAGE_CACHE_TTL = Duration.ofHours(6);
+    private static final boolean IS_CACHING_ENABLED = true;
+
+
 
 
     // 모든 지역 조회
@@ -103,6 +125,73 @@ public class RegionService {
         regionRepository.save(region);
 
         return newImageUrl;
+    }
+
+
+
+    //지역 이미지 리스트 가져오기 (DTO 변환)
+    public List<RegionImageResponseDTO> getRegionImageDtoListWithCache() {
+        Map<Long, String> imageMap = getRegionImageUrlsWithCache();
+        return imageMap.entrySet().stream()
+                .map(entry -> new RegionImageResponseDTO(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    //지역 이미지 리스트 가져오기
+    public Map<Long, String> getRegionImageUrlsWithCache() {
+        if (IS_CACHING_ENABLED) {
+            // Redis 캐시에서 먼저 시도
+            Map<String, String> cached = regionImageRedisTemplate.opsForValue().get(REGION_IMAGE_CACHE_KEY);
+            if (cached != null) {
+                System.out.println("REDIS : 캐시된 이미지 리스트 가져오기 완료");
+                Map<Long, String> converted = cached.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                entry -> Long.parseLong(entry.getKey()),
+                                Map.Entry::getValue
+                        ));
+                return converted;
+            }
+
+        }
+
+        // 캐시에 없거나 캐싱 비활성화인 경우 새로 계산
+        List<Region> allRegions = regionRepository.findAllWithParents();
+
+        Map<Long, Region> regionMap = allRegions.stream()
+                .collect(Collectors.toMap(Region::getId, Function.identity()));
+
+        Map<Long, String> result = new HashMap<>();
+        for (Region region : allRegions) {
+            result.put(region.getId(), resolveImageUrl(region, regionMap));
+        }
+
+        // 캐싱이 활성화되어 있다면 Redis에 저장
+        if (IS_CACHING_ENABLED) {
+            Map<String, String> redisValue = result.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            entry -> String.valueOf(entry.getKey()),
+                            Map.Entry::getValue
+                    ));
+
+            regionImageRedisTemplate.opsForValue().set(REGION_IMAGE_CACHE_KEY, redisValue, REGION_IMAGE_CACHE_TTL);
+            System.out.println("REDIS : 이미지 리스트 캐싱 완료");
+        }
+
+        return result;
+    }
+
+    private String resolveImageUrl(Region region, Map<Long, Region> regionMap) {
+        if (region == null) return DEFAULT_IMAGE_URL;
+        if (region.getImageUrl() != null && !region.getImageUrl().isBlank()) {
+            return region.getImageUrl();
+        }
+
+        Region parent = region.getParent();
+        if (parent != null && !regionMap.containsKey(parent.getId())) {
+            return DEFAULT_IMAGE_URL;
+        }
+
+        return resolveImageUrl(parent, regionMap);
     }
 
 

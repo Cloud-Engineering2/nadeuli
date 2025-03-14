@@ -76,7 +76,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
+    user-select: none;
     width: 100%;
     max-width: 1600px; /* 추후 결정 */
 
