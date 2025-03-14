@@ -1172,9 +1172,35 @@ $(document).on("click", ".expense-item-list-addition", function () {
         .then(html => {
             $("#detailContainer").html(html);
             getExpenseBookForWritingByItineraryEvent(iid, ieid);
+            // let travelersResponse = callApiAt(`/api/itinerary/${iid}/travelers`, "POST", null);
+            // let travelers = travelersResponse.travelers.map(traveler => traveler.name);
             document.getElementById("expenseItemCreation").innerHTML = getExpenseItemForm(iid, ieid);
+            setTimeout(() => {
+                var withWhom = document.querySelector('input[name=withWhom]');
+                var payer = document.querySelector('input[name=payer]');
+                var withWhomTag = new Tagify(withWhom);
+                var payerTag = new Tagify(payer);
+                // var payerTag = new Tagify(payer, {
+                //     // 단일 선택 모드로 설정
+                //     mode: 'select',
+                //     whitelist: travelers,  // 여기에 API 호출 결과로 받은 트래블러 이름들을 넣어줍니다.
+                //     maxTags: 1,     // 한 명만 선택 가능
+                // });
+                tag.on('add', function() {
+                    console.log(withWhomTag.value);
+                    console.log(payerTag.value);
+                    // console.log(tag);
+                    // console.log(tag.value);
+                    // console.log(tag.value[0]);
+                    // console.log(tag.value[0].value);
+                    // const a = document.getElementById("expenseItemCreationWithWhom");
+                    // console.log(a.value); // [{"value":"abc"},{"value":"def"}]
+                })
+            }, 100);
+
         })
-        .catch(error => console.error("Error loading expense-right.html:", error));
+        .catch(error => console.error("Error loading expense-right.html:", error)
+    );
 });
 
 // ItineraryEvent 별로 ExpenseItem들 조회
@@ -1226,10 +1252,10 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
 // html : expense item 추가 폼
 function getExpenseItemForm(itineraryId, itineraryEventId) {
     return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
-                <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" value="항목">
-                <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required value="0">
-                <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required value="지출자">
-                <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom">
+                <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" placeholder="지출 내용">
+                <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required placeholder="(원)">
+                <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required placeholder="지출한 사람">
+                <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom" placeholder="함께한 사람">
                 <!-- Expense Item 추가 + 버튼 -->
                 <button type="submit" class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
                     <i class="fa-solid fa-plus plus-icon"></i>
