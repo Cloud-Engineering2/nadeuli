@@ -104,7 +104,6 @@ function renderItinerary() {
 
     // 💡일정 UI 렌더링
     const itineraryEventList = $("#itineraryEventList").empty();
-    console.log("groupedByDay entries:", Object.entries(groupedByDay));  // key-value
 
     // 💡일자별 탭 컨테이너
     const tabContainer = $("#tabContainer").empty();
@@ -112,7 +111,6 @@ function renderItinerary() {
     Object.keys(groupedByDay).forEach(dayKey =>  {
         const dayNumber = parseInt(dayKey);
         const startTime = perDayMap.get(dayNumber)?.startTime?.substring(0, 5) || "00:00";
-        console.log(dayKey);
 
         // 💡탭 버튼
         const tab = $(`
@@ -172,7 +170,6 @@ function renderItinerary() {
 
 // 🎈 Itinerary Event 이벤트 요소 생성 (장소 보관함 & 일반 이벤트 공통 사용)
 function createEventElement(event, index = null, totalEvents = null, isSavedPlace = false) {
-    console.log("Event Object:", event);
 
     const itineraryEventDiv = $(`
                         <div class='event' data-id='${event.hashId}'>
@@ -222,9 +219,6 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
 
     // 현재 지출액
     getTotalExpenseByItineraryEvent(itinerary.id, event.id).then(totalExpense => {
-        // totalExpense 값이 받아지면 해당 div의 내용을 업데이트
-        console.log("어디지?");
-        console.log("✅ Total Expense API 응답 값:", totalExpense);
         itineraryEventDiv.find(".event-total-expense").html(`${totalExpense} 원`);
     }).catch(err => {
         console.error("Error fetching total expense:", err);
@@ -1172,8 +1166,6 @@ $(document).on("click", ".expense-item-list-addition", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
 
-    console.log(`Clicked expenseItemAddition: iid=${iid}, ieid=${ieid}`);
-
     // expense-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
     fetch(`/itinerary/${iid}/events/${ieid}/expense-right`) // fetch("/expense-book/expense-right.html")
         .then(response => response.text())
@@ -1212,10 +1204,8 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
         // 각 expense item에 대한 withWhom 데이터를 개별적으로 가져와 업데이트
         for (const expenseItem of expenseItems) {
             try {
-                console.log(`Fetching withWhom for expense ${expenseItem.id}`, expenseItem);
                 const withWhomResponse = await fetch(`/api/itineraries/${iid}/expense/${expenseItem.id}/withWhom`);
                 const withWhomData = await withWhomResponse.json();
-                console.log(`withWhomData for expense ${expenseItem.id}:`, withWhomData);
 
                 // 특정 expense 항목의 withWhom 데이터를 업데이트
                 $(`#expenseItemWithWhom-${expenseItem.id} .with-whom`).html(
@@ -1237,13 +1227,9 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
 function getExpenseItemForm(itineraryId, itineraryEventId) {
     return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
                 <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" value="항목">
-                <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required value="지출액">
+                <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required value="0">
                 <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required value="지출자">
                 <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom">
-<!--            <div class="expense-item-creation-button-group" id="expenseItemCreationButtonGroup">-->
-<!--                <button type="submit" class="expense-item-creation-button" id="expenseItemCreationButton" >추가</button>-->
-<!--                <button type="button" class="expense-item-creation-button-close" id="expenseItemCreationButtonClose">닫기</button>-->
-<!--            </div>-->
                 <!-- Expense Item 추가 + 버튼 -->
                 <button type="submit" class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
                     <i class="fa-solid fa-plus plus-icon"></i>
@@ -1265,9 +1251,7 @@ async function getTotalExpenseByItineraryEvent(itineraryId, eventId) {
         return '0'; // 실패 시 기본값 '0'
     }
 
-    const data = await response.json();  // 전체 응답 객체를 가져옵니다.
-    console.log("여기부터");
-    console.log(data);
+    const data = await response.json();
     const totalExpense = data.totalExpense.toLocaleString();
     return totalExpense;
 }
@@ -1278,8 +1262,6 @@ async function getTotalExpenseByItineraryEvent(itineraryId, eventId) {
 $(document).on("click", ".event-total-expense", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
-
-    console.log(`Clicked total expense: iid=${iid}, ieid=${ieid}`);
 
     // adjustment-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
     fetch(`/itinerary/${iid}/events/${ieid}/adjustment-right`)
