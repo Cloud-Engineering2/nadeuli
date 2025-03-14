@@ -14,11 +14,9 @@
  */
 package nadeuli.repository;
 
-import nadeuli.entity.Itinerary;
+
 import nadeuli.entity.ItineraryRegion;
 import nadeuli.entity.constant.ItineraryRegionId;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

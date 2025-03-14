@@ -15,13 +15,11 @@
 
 package nadeuli.service;
 
-import lombok.RequiredArgsConstructor;
 import nadeuli.common.PhotoType;
 import nadeuli.dto.RegionTreeDTO;
 import nadeuli.dto.response.RegionImageResponseDTO;
 import nadeuli.entity.Region;
 import nadeuli.repository.RegionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

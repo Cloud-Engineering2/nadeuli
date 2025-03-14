@@ -22,7 +22,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import nadeuli.dto.ItineraryEventDTO;
 import nadeuli.dto.ItineraryPerDayDTO;
 import nadeuli.dto.ItineraryRegionDTO;
 
