@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bottomline.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <title>일정 - 최종 결과물 열람</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module" src="/js/common.js"></script>
+    <script src="/js/bottomline.js"></script>
+</head>
+<body>
+
+<div th:replace="~{fragments/header}"></div>
+
+
+<div class="container">
+    <!-- 왼쪽 공간 -->
+    <div class="left-space">
+        <div class="map-container" id="map"></div>
+        <div class="expenses-container">
+            <div class="joint-expense-container">
+                <!-- 공동 경비 관련 출력 -->
+            </div>
+            <div class="personal-expense-container">
+                <!-- 개인 경비 관련 출력 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 오른쪽 공간 -->
+    <div class="right-space">
+        <div class="journal-space">
+            <div class="image-container">
+                <img id="journal-image" src="" alt="여행 사진">
+                <div class="image-buttons">
+                    <button id="prev-btn" onclick="prevJournal()">◀</button>
+                    <button id="next-btn" onclick="nextJournal()">▶</button>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <span id="date-time">2025. 03. 14. 03:22:28</span>
+
+            <div class="journal-content">
+                <p id="journal-content-p" style="text-align: center; white-space: pre-line;">방문지를 선택해 주세요.</p>
+                <span id="go-to-journal" style="color: #3498DB; cursor: pointer; text-align: center; text-decoration: underline; text-underline-offset: 5px" onclick="goToJournal()">기행문 작성 ⌨️</span>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer-div mt-4 flex flex-col space-y-0.5 text-xs text-gray-500 md:mt-1 md:flex-row md:space-x-2 md:space-y-0 lg:mt-1">
+    <span>© 2025 나들이 & 멋쟁이사자처럼 All rights reserved.</span>
+</div>
+</body>

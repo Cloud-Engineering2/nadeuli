@@ -14,6 +14,8 @@
  * 이홍비    2025.03.03     사진 crud 관련 js 처리 + 다운로드 처리
  *                         첨부 가능한 사진 파일, 파일 크기 제약 추가
  *                         url 에서 iid, ieid 추출
+ * 이홍비    2025.03.13     no-content 일 때 매번 innerText 작성하던 것
+ *                         html 에 문구 작성해 두고 그냥 display block, none 만 하는 것으로 처리
  * ========================================================
  */
 
@@ -134,8 +136,6 @@ function updateContentView() {
         document.getElementById("delete-btn").style.display = "block";
     } else {
         // 글 작성 안 함
-        document.getElementById("no-content").innerText = "소중한 나들이 순간을 기록하세요";
-
         document.getElementById('has-content').style.display = 'none';
         document.getElementById('no-content').style.display = 'block';
 
