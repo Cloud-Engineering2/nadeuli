@@ -3,93 +3,31 @@ let currentPage = 0; // 현재 페이지
 const userId = 1;  // 실제 로그인한 사용자 ID
 let sortBy = sessionStorage.getItem("sortBy") || "createdDate";
 let direction = sessionStorage.getItem("direction") || "DESC";
-let isDebug = false; // 디버그 모드 활성화
 let prevMenuOwner = null;
 let currentMenuOwner = null;
-let debugData = {
-    "content": [
-        {
-            "id": 21,
-            "itineraryName": "서울 여행",
-            "startDate": "2025-03-06T00:00:00",
-            "totalDays": 4,
-            "transportationType": 1,
-            "createdDate": "2025-03-04T03:09:29",
-            "modifiedDate": "2025-03-04T03:09:29",
-            "role": "ROLE_OWNER",
-            "isShared": false,
-            "hasGuest": false
-        },
-        {
-            "id": 20,
-            "itineraryName": "서울 여행",
-            "startDate": "2025-02-12T00:00:00",
-            "totalDays": 7,
-            "transportationType": 1,
-            "createdDate": "2025-03-04T03:07:29",
-            "modifiedDate": "2025-03-04T03:07:29",
-            "role": "ROLE_OWNER",
-            "isShared": true,
-            "hasGuest": false
-        },
-        {
-            "id": 19,
-            "itineraryName": "서울 여행",
-            "startDate": "2025-04-23T00:00:00",
-            "totalDays": 3,
-            "transportationType": 1,
-            "createdDate": "2025-03-01T21:02:59",
-            "modifiedDate": "2025-03-01T21:02:59",
-            "role": "ROLE_GUEST",
-            "isShared": true,
-            "hasGuest": true
-        },
-        {
-            "id": 18,
-            "itineraryName": "서울 여행",
-            "startDate": "2025-03-17T00:00:00",
-            "totalDays": 15,
-            "transportationType": 1,
-            "createdDate": "2025-02-28T15:14:54",
-            "modifiedDate": "2025-02-28T15:14:54",
-            "role": "ROLE_OWNER",
-            "isShared": true,
-            "hasGuest": false
-        }
-    ],
-    "pageable": {
-        "pageNumber": 0,
-        "pageSize": 4,
-        "sort": {
-            "empty": false,
-            "sorted": true,
-            "unsorted": false
-        },
-        "offset": 0,
-        "paged": true,
-        "unpaged": false
-    },
-    "last": false,
-    "totalElements": 17,
-    "totalPages": 5,
-    "size": 4,
-    "number": 0,
-    "sort": {
-        "empty": false,
-        "sorted": true,
-        "unsorted": false
-    },
-    "first": true,
-    "numberOfElements": 4,
-    "empty": false
-};
+let regionImageMap = null;
 
 
 
 // 페이지 로드 시 첫 데이터 로드
 $(document).ready(function () {
 
-    loadItineraries();
+    $.ajax({
+        url: '/api/regions/image-urls',
+        method: 'GET',
+        success: function (response) {
+            regionImageMap = new Map();
+            response.forEach(item => {
+                regionImageMap.set(item.regionId, item.imageUrl);
+            });
+            loadItineraries();
+        },
+        error: function () {
+            console.error('지역 이미지 정보를 불러오는데 실패했습니다.');
+        }
+    });
+
+
 
     $("#dynamicDropdown").hide();
     $(".dropdown-arrow").hide();
@@ -138,10 +76,6 @@ function getItineraryById(id) {
 
 // 일정 데이터를 가져오는 함수
 function fetchItineraryData(reset) {
-    if (isDebug) {
-        return Promise.resolve(createData(debugData)); // 디버그 모드일 경우, Promise로 감싸서 반환
-    }
-
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/api/itinerary/mylist`,
@@ -323,13 +257,22 @@ function createItineraryElement(itinerary, isDisplay) {
         travelStatus = "여행중";
     }
 
-    // 대표 지역 표시 (없을 경우 "미정")
-    const locationName = itinerary.locations && itinerary.locations.length > 0 ? itinerary.locations[0] : "미정";
+    let locationName = "미정";
+    let imageUrl = `https://picsum.photos/600/600`; // 기본 이미지
+
+    if (itinerary.regions && itinerary.regions.length > 0) {
+        const mainRegion = itinerary.regions[0];
+        imageUrl = regionImageMap.get(mainRegion.regionId) || imageUrl;
+
+        // 최대 2개 지역 이름 표시
+        const names = itinerary.regions.slice(0, 2).map(r => r.regionName);
+        locationName = names.join(', ');
+    }
 
     return $(`
     <div class="card-itinerary ${isDisplay ? "" : "hide"}" data-id="${itinerary.hashId}">
       <div class="card-thumbnail">
-        <img src="https://fastly.picsum.photos/id/477/1000/1000.jpg?hmac=y2Qqhq8lLe7PrjRPIxa3UvcKHX_Q4TV-eaTBqhcBCUE"
+        <img src="${imageUrl}"
              alt="${itinerary.itineraryName} 이미지"
              onerror="this.style.display='none'">
         <!-- 항상 표시되는 오버레이 -->
@@ -347,10 +290,10 @@ function createItineraryElement(itinerary, isDisplay) {
           </div>
           <div class="card-footer">
             <div class="card-footer-left">
-              <div><span class="name">${itinerary.itineraryName}(으)로 여행</span></div>
+              <div><span class="name">${itinerary.itineraryName}</span></div>
               <div><span class="date">${formatDate(startDate, false)} - ${formatDate(endDate)}</span></div>
             </div>
-            <div class="card-footer-right dropdown">
+            <div class="card-footer-right card-dropdown">
               <button class="btn btn-link text-white p-0 menu-btn" type="button">
                 ⋮
               </button>

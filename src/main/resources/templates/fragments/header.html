@@ -1,148 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Header</title>
-  <link rel="stylesheet" href="/css/common.css">
-</head>
-<body>
-<div class="header">
-  <div class="header-inner">
-    <div class="left-header">
-<!--      <a href="/" class="logo">나들이</a>-->
-      <a href="/" style="cursor: pointer;">
-        <img src="/pic-icon/logo-letter-x.png" alt="나들이" width="50px" height="50px" style="margin-top: 9px;">
-      </a>
-      <a href="/" style="cursor: pointer; text-decoration: none; text-align: center; color:#8E8B82;">나들이</a>
+<div th:fragment="headerFragment">
+    <div class="header">
+        <div class="header-inner">
+            <div class="left-header">
+                <a href="/" style="cursor: pointer;">
+                    <img src="/pic-icon/logo-letter-x.png" alt="나들이" width="50px" height="50px"/>
+                </a>
+                <a href="/" style="cursor: pointer; text-decoration: none; text-align: center; color:#8E8B82;">나들이</a>
+            </div>
+
+            <div class="right-header" id="right-header"></div>
+        </div>
     </div>
 
-    <div class="right-header" id="right-header">
-    </div>
-  </div>
+    <script src="/js/header.js"></script>
 </div>
-
-<script>
-  const isLoggedIn = true; // 로그인 여부
-  const userName = "나들이 님";
-  const userEmail = "nadeuli@nadueli.store";
-  const userRoleAdmin = "ROLE_ADMIN";
-  const userRoleMember = "ROLE_MEMBER";
-
-
-  function showLoggedInUI() {
-    const header = document.getElementById("right-header");
-    if (userRoleAdmin === "ROLE_ADMI") {
-      header.innerHTML = `
-        <div class="balloon"
-            onmouseover="toggleBalloon(true)"
-            onmouseleave="toggleBalloon(false)">
-            <svg id="balloon-icon" xmlns="http://www.w3.org/2000/svg" width="30" height="30" color="#343434" class="bi bi-balloon" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M8 9.984C10.403 9.506 12 7.48 12 5a4 4 0 0 0-8 0c0 2.48 1.597 4.506 4 4.984M13 5c0 2.837-1.789 5.227-4.52 5.901l.244.487a.25.25 0 1 1-.448.224l-.008-.017c.008.11.02.202.037.29.054.27.161.488.419 1.003.288.578.235 1.15.076 1.629-.157.469-.422.867-.588 1.115l-.004.007a.25.25 0 1 1-.416-.278c.168-.252.4-.6.533-1.003.133-.396.163-.824-.049-1.246l-.013-.028c-.24-.48-.38-.758-.448-1.102a3 3 0 0 1-.052-.45l-.04.08a.25.25 0 1 1-.447-.224l.244-.487C4.789 10.227 3 7.837 3 5a5 5 0 0 1 10 0m-6.938-.495a2 2 0 0 1 1.443-1.443C7.773 2.994 8 2.776 8 2.5s-.226-.504-.498-.459a3 3 0 0 0-2.46 2.461c-.046.272.182.498.458.498s.494-.227.562-.495"/>
-            </svg>
-        </div>
-        <div class="dropdown" id="dropdown">
-            <div style="padding: 5px; color: #343434; text-align: center;">${userName}</div>
-            <div style="padding: 5px; font-size: 15px; color: #8E8B82; text-align: center;">${userEmail}</div>
-            <hr>
-            <a href="#">지역 관리</a>
-            <a href="#">일정 관리</a>
-            <a href="#">회원 관리</a>
-            <hr>
-            <a href="#">로그아웃</a>
-        </div>
-        `;
-    }
-    else if (userRoleMember === "ROLE_MEMBER") {
-      header.innerHTML = `
-        <div class="balloon"
-            onmouseover="toggleBalloon(true)"
-            onmouseleave="toggleBalloon(false)">
-            <svg id="balloon-icon" xmlns="http://www.w3.org/2000/svg" width="30" height="30" color="#343434" class="bi bi-balloon" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M8 9.984C10.403 9.506 12 7.48 12 5a4 4 0 0 0-8 0c0 2.48 1.597 4.506 4 4.984M13 5c0 2.837-1.789 5.227-4.52 5.901l.244.487a.25.25 0 1 1-.448.224l-.008-.017c.008.11.02.202.037.29.054.27.161.488.419 1.003.288.578.235 1.15.076 1.629-.157.469-.422.867-.588 1.115l-.004.007a.25.25 0 1 1-.416-.278c.168-.252.4-.6.533-1.003.133-.396.163-.824-.049-1.246l-.013-.028c-.24-.48-.38-.758-.448-1.102a3 3 0 0 1-.052-.45l-.04.08a.25.25 0 1 1-.447-.224l.244-.487C4.789 10.227 3 7.837 3 5a5 5 0 0 1 10 0m-6.938-.495a2 2 0 0 1 1.443-1.443C7.773 2.994 8 2.776 8 2.5s-.226-.504-.498-.459a3 3 0 0 0-2.46 2.461c-.046.272.182.498.458.498s.494-.227.562-.495"/>
-            </svg>
-        </div>
-        <div class="dropdown" id="dropdown">
-            <div style="padding: 5px; color: #343434; text-align: center;">${userName}</div>
-            <div style="padding: 5px; font-size: 15px; color: #8E8B82; text-align: center;">${userEmail}</div>
-            <hr>
-            <a href="#">일정 생성</a>
-            <a href="#">일정 확인</a>
-            <a href="#">내 정보</a>
-            <hr>
-            <a href="#">로그아웃</a>
-        </div>
-        `;
-    }
-
-    // 🔥 showLoggedInUI 실행 후 이벤트 리스너 추가
-    addDropdownEventListeners();
-  }
-
-  function addDropdownEventListeners() {
-    const dropdown = document.getElementById("dropdown");
-
-    dropdown.addEventListener("mouseenter", function() {
-  //     document.getElementById("balloon-icon").innerHTML = `
-  //   <path fill-rule="evenodd" d="M8.48 10.901C11.211 10.227 13 7.837 13 5A5 5 0 0 0 3 5c0 2.837 1.789 5.227 4.52 5.901l-.244.487a.25.25 0 1 0 .448.224l.04-.08c.009.17.024.315.051.45.068.344.208.622.448 1.102l.013.028c.212.422.182.85.05 1.246-.135.402-.366.751-.534 1.003a.25.25 0 0 0 .416.278l.004-.007c.166-.248.431-.646.588-1.115.16-.479.212-1.051-.076-1.629-.258-.515-.365-.732-.419-1.004a2 2 0 0 1-.037-.289l.008.017a.25.25 0 1 0 .448-.224zM4.352 3.356a4 4 0 0 1 3.15-2.325C7.774.997 8 1.224 8 1.5s-.226.496-.498.542c-.95.162-1.749.78-2.173 1.617a.6.6 0 0 1-.52.341c-.346 0-.599-.329-.457-.644"/>
-  // `;
-
-      this.style.display = "flex";
-    });
-
-    dropdown.addEventListener("mouseleave", function() {
-      document.getElementById("balloon-icon").innerHTML = `
-      <path fill-rule="evenodd" d="M8 9.984C10.403 9.506 12 7.48 12 5a4 4 0 0 0-8 0c0 2.48 1.597 4.506 4 4.984M13 5c0 2.837-1.789 5.227-4.52 5.901l.244.487a.25.25 0 1 1-.448.224l-.008-.017c.008.11.02.202.037.29.054.27.161.488.419 1.003.288.578.235 1.15.076 1.629-.157.469-.422.867-.588 1.115l-.004.007a.25.25 0 1 1-.416-.278c.168-.252.4-.6.533-1.003.133-.396.163-.824-.049-1.246l-.013-.028c-.24-.48-.38-.758-.448-1.102a3 3 0 0 1-.052-.45l-.04.08a.25.25 0 1 1-.447-.224l.244-.487C4.789 10.227 3 7.837 3 5a5 5 0 0 1 10 0m-6.938-.495a2 2 0 0 1 1.443-1.443C7.773 2.994 8 2.776 8 2.5s-.226-.504-.498-.459a3 3 0 0 0-2.46 2.461c-.046.272.182.498.458.498s.494-.227.562-.495"/>
-  `;
-
-
-      this.style.display = "none";
-    });
-  }
-
-  function showLoggedOutUI() {
-    const header = document.getElementById("right-header");
-    header.innerHTML = '<a href="/login" style="text-decoration: none; color: #8E8B82; font-size: 25px;">로그인</a>';
-  }
-
-  function toggleBalloon(isHovered) {
-    const dropdown = document.getElementById("dropdown");
-
-    if (isHovered || dropdown.matches(":hover")) {
-      document.getElementById("balloon-icon").innerHTML = `
-    <path fill-rule="evenodd" d="M8.48 10.901C11.211 10.227 13 7.837 13 5A5 5 0 0 0 3 5c0 2.837 1.789 5.227 4.52 5.901l-.244.487a.25.25 0 1 0 .448.224l.04-.08c.009.17.024.315.051.45.068.344.208.622.448 1.102l.013.028c.212.422.182.85.05 1.246-.135.402-.366.751-.534 1.003a.25.25 0 0 0 .416.278l.004-.007c.166-.248.431-.646.588-1.115.16-.479.212-1.051-.076-1.629-.258-.515-.365-.732-.419-1.004a2 2 0 0 1-.037-.289l.008.017a.25.25 0 1 0 .448-.224zM4.352 3.356a4 4 0 0 1 3.15-2.325C7.774.997 8 1.224 8 1.5s-.226.496-.498.542c-.95.162-1.749.78-2.173 1.617a.6.6 0 0 1-.52.341c-.346 0-.599-.329-.457-.644"/>
-  `;
-
-      dropdown.style.display = "flex";
-    } else {
-      document.getElementById("balloon-icon").innerHTML = `
-      <path fill-rule="evenodd" d="M8 9.984C10.403 9.506 12 7.48 12 5a4 4 0 0 0-8 0c0 2.48 1.597 4.506 4 4.984M13 5c0 2.837-1.789 5.227-4.52 5.901l.244.487a.25.25 0 1 1-.448.224l-.008-.017c.008.11.02.202.037.29.054.27.161.488.419 1.003.288.578.235 1.15.076 1.629-.157.469-.422.867-.588 1.115l-.004.007a.25.25 0 1 1-.416-.278c.168-.252.4-.6.533-1.003.133-.396.163-.824-.049-1.246l-.013-.028c-.24-.48-.38-.758-.448-1.102a3 3 0 0 1-.052-.45l-.04.08a.25.25 0 1 1-.447-.224l.244-.487C4.789 10.227 3 7.837 3 5a5 5 0 0 1 10 0m-6.938-.495a2 2 0 0 1 1.443-1.443C7.773 2.994 8 2.776 8 2.5s-.226-.504-.498-.459a3 3 0 0 0-2.46 2.461c-.046.272.182.498.458.498s.494-.227.562-.495"/>
-  `;
-
-      dropdown.style.display = "none";
-    }
-  }
-
-  // 로그인 상태에 따라 UI 렌더링
-  if (isLoggedIn) {
-    showLoggedInUI();
-  } else {
-    showLoggedOutUI();
-  }
-
-  isLoggedIn ? showLoggedInUI() : showLoggedOutUI();
-
-  // 풍선 아이콘 이벤트
-  // document.querySelector(".balloon").addEventListener("mouseenter", () => toggleBalloon(true));
-  // document.querySelector(".balloon").addEventListener("mouseleave", () => toggleBalloon(false));
-
-  // 드롭다운 내부 이벤트 (마우스 올리면 숨김 취소)
-  // document.getElementById("dropdown").addEventListener("mouseenter", () => toggleBalloon(true));
-  // document.getElementById("dropdown").addEventListener("mouseleave", () => toggleBalloon(false));
-
-  // 드롭다운의 마우스 리브 이벤트 처리
-  // document.getElementById("dropdown").addEventListener("mouseleave", function() {
-  //   this.style.display = "none";
-  // });
-</script>
-</body>
-</html>
