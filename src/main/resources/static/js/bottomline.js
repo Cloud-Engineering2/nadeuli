@@ -15,6 +15,7 @@
  * 이홍비    2025.03.14     기행문 - 본문 출력 시 왼쪽 정렬 + 줄 바꿈 유지
  *                         방문지 선택 => 그에 해당하는 경비 출력
  *                         지도 - 기행문 - 경비 연동 완료
+ *                         style.whiteSpace = "pre"; 추가 => 내어 쓰기 느낌
  * ========================================================
  */
 
@@ -546,7 +547,8 @@ function removeAndCreateExpense(kind) {
 
                     const sendDetailTag = document.createElement('p');
                     sendDetailTag.classList.add('dynamic-expense');
-                    sendDetailTag.textContent = `  ${sendKey} 님 : ${moneyFormat}원`;
+                    sendDetailTag.textContent = `    ${sendKey} 님 : ${moneyFormat}원`;
+                    sendDetailTag.style.whiteSpace = "pre";
                     // expensesContainer.appendChild(sendDetailTag);
                     jointExpenseContainer.appendChild(sendDetailTag);
 
@@ -556,7 +558,8 @@ function removeAndCreateExpense(kind) {
                 // 송금할 게 없다
                 const noSendDataTag = document.createElement('p');
                 noSendDataTag.classList.add('dynamic-expense');
-                noSendDataTag.textContent = "없음";
+                noSendDataTag.textContent = "    없음";
+                noSendDataTag.style.whiteSpace = "pre";
                 // expensesContainer.appendChild(noSendDataTag);
                 jointExpenseContainer.appendChild(noSendDataTag);
 
@@ -578,7 +581,8 @@ function removeAndCreateExpense(kind) {
 
                     const receiveDetailTag = document.createElement('p');
                     receiveDetailTag.classList.add('dynamic-expense');
-                    receiveDetailTag.textContent = `  ${receiveKey} 님 : ${moneyFormat}원`;
+                    receiveDetailTag.textContent = `    ${receiveKey} 님 : ${moneyFormat}원`;
+                    receiveDetailTag.style.whiteSpace = "pre";
                     // expensesContainer.appendChild(receiveDetailTag);
                     jointExpenseContainer.appendChild(receiveDetailTag);
 
@@ -588,7 +592,8 @@ function removeAndCreateExpense(kind) {
                 // 수금 받을 게 없다
                 const noReceiveDataTag = document.createElement('p');
                 noReceiveDataTag.classList.add('dynamic-expense');
-                noReceiveDataTag.textContent = "없음";
+                noReceiveDataTag.textContent = "    없음"
+                noReceiveDataTag.style.whiteSpace = "pre";
                 // expensesContainer.appendChild(noReceiveDataTag);
                 jointExpenseContainer.appendChild(noReceiveDataTag);
 
@@ -706,7 +711,8 @@ function removeAndCreateExpense(kind) {
 
                     const sendDetailTag = document.createElement('p');
                     sendDetailTag.classList.add('dynamic-expense');
-                    sendDetailTag.textContent = `  ${sendKey} 님 : ${moneyFormat}원`;
+                    sendDetailTag.textContent = `    ${sendKey} 님 : ${moneyFormat}원`;
+                    sendDetailTag.style.whiteSpace = "pre";
                     // expensesContainer.appendChild(sendDetailTag);
                     jointExpenseContainer.appendChild(sendDetailTag);
 
@@ -716,7 +722,8 @@ function removeAndCreateExpense(kind) {
                 // 송금할 게 없다
                 const noSendDataTag = document.createElement('p');
                 noSendDataTag.classList.add('dynamic-expense');
-                noSendDataTag.textContent = "없음";
+                noSendDataTag.textContent = "    없음";
+                noSendDataTag.style.whiteSpace = "pre";
                 // expensesContainer.appendChild(noSendDataTag);
                 jointExpenseContainer.appendChild(noSendDataTag);
 
@@ -738,7 +745,8 @@ function removeAndCreateExpense(kind) {
 
                     const receiveDetailTag = document.createElement('p');
                     receiveDetailTag.classList.add('dynamic-expense');
-                    receiveDetailTag.textContent = `  ${receiveKey} 님 : ${moneyFormat}원`;
+                    receiveDetailTag.textContent = `    ${receiveKey} 님 : ${moneyFormat}원`;
+                    receiveDetailTag.style.whiteSpace = "pre";
                     // expensesContainer.appendChild(receiveDetailTag);
                     jointExpenseContainer.appendChild(receiveDetailTag);
 
@@ -748,7 +756,8 @@ function removeAndCreateExpense(kind) {
                 // 수금 받을 게 없다
                 const noReceiveDataTag = document.createElement('p');
                 noReceiveDataTag.classList.add('dynamic-expense');
-                noReceiveDataTag.textContent = "없음";
+                noReceiveDataTag.textContent = "    없음";
+                noReceiveDataTag.style.whiteSpace = "pre";
                 // expensesContainer.appendChild(noReceiveDataTag);
                 jointExpenseContainer.appendChild(noReceiveDataTag);
 
