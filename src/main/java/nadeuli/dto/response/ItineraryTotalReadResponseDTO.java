@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import nadeuli.dto.ItineraryEventDTO;
 import nadeuli.dto.ItineraryPerDayDTO;
+import nadeuli.dto.ItineraryRegionDTO;
 
 import java.util.List;
 
@@ -35,4 +36,5 @@ public class ItineraryTotalReadResponseDTO {
     private ItineraryResponseDTO itinerary;
     private List<ItineraryPerDayDTO> itineraryPerDays;
     private List<ItineraryEventSimpleDTO> itineraryEvents;
+    private List<ItineraryRegionDTO> regions;
 }

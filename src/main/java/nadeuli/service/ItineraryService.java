@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
 import nadeuli.dto.ItineraryEventDTO;
 import nadeuli.dto.ItineraryPerDayDTO;
+import nadeuli.dto.ItineraryRegionDTO;
 import nadeuli.dto.request.ItineraryCreateRequestDTO;
 import nadeuli.dto.request.ItineraryEventUpdateDTO;
 import nadeuli.dto.request.ItineraryTotalUpdateRequestDTO;
@@ -100,19 +101,33 @@ public class ItineraryService {
     //  READ: 내 일정 리스트 조회
     // ===========================
     public Page<ItineraryResponseDTO> getMyItineraries(Long userId, Pageable pageable) {
-        // 1. 사용자(userId)가 참여한 일정(Itinerary) 조회
         Page<Object[]> results = itineraryRepository.findByUserIdWithRole(userId, pageable);
 
-        // 2. 결과 변환
-        return results.map(row -> {
-            Itinerary itinerary = (Itinerary) row[0];  // Itinerary 객체
-            String role = (String) row[1];  // Collaborator 역할 정보
-            boolean isShared = (boolean) row[2];  // isShared 값
-            boolean hasGuest = (boolean) row[3];  // hasGuest 값
+        List<Long> itineraryIds = results.stream()
+                .map(row -> ((Itinerary) row[0]).getId())
+                .distinct()
+                .collect(Collectors.toList());
 
-            return ItineraryResponseDTO.from(itinerary, role, isShared, hasGuest);
+        //  Region을 FETCH JOIN한 ItineraryRegion 리스트
+        List<ItineraryRegion> allRegions = itineraryRegionRepository.findByItineraryIdIn(itineraryIds);
+
+        //  region name까지 포함된 DTO로 변환 후 Map 구성
+        Map<Long, List<ItineraryRegionDTO>> regionsByItineraryId = allRegions.stream()
+                .map(ItineraryRegionDTO::from)
+                .collect(Collectors.groupingBy(ItineraryRegionDTO::getItineraryId));
+
+        return results.map(row -> {
+            Itinerary itinerary = (Itinerary) row[0];
+            String role = (String) row[1];
+            boolean isShared = (boolean) row[2];
+            boolean hasGuest = (boolean) row[3];
+
+            List<ItineraryRegionDTO> regions = regionsByItineraryId.getOrDefault(itinerary.getId(), List.of());
+
+            return ItineraryResponseDTO.from(itinerary, role, isShared, hasGuest, regions);
         });
     }
+
 
 //    public Page<ItineraryResponseDTO> getMyItineraries(Long userId, Pageable pageable) {
 //        // 1. 사용자(userId)가 참여한 일정(Itinerary) 조회
@@ -147,15 +162,23 @@ public class ItineraryService {
         // 4. 해당 일정의 perDay 목록을 이용하여 각 perDay의 이벤트 목록 조회
         List<ItineraryEvent> itineraryEvents = itineraryEventRepository.findByItineraryPerDayIn(itineraryPerDays);
 
+        // 5. 지역 정보 조회 (Region join 포함)
+        List<ItineraryRegion> regions = itineraryRegionRepository.findByItineraryIdWithRegion(itineraryId);
+        List<ItineraryRegionDTO> regionDTOs = regions.stream()
+                .map(ItineraryRegionDTO::from)
+                .toList();
+
+
         // 5. DTO 변환 후 반환
         return new ItineraryTotalReadResponseDTO(
-                ItineraryResponseDTO.from(collaborator),  // ✅ Collaborator를 기반으로 DTO 변환
+                ItineraryResponseDTO.from(collaborator),  // Collaborator를 기반으로 DTO 변환
                 itineraryPerDays.stream()
                         .map(ItineraryPerDayDTO::from)
-                        .toList(), // ✅ ItineraryPerDay -> ItineraryPerDaySimpleDTO 변환
+                        .toList(), // ItineraryPerDay -> ItineraryPerDaySimpleDTO 변환
                 itineraryEvents.stream()
                         .map(ItineraryEventSimpleDTO::from)
-                        .toList()  // ✅ ItineraryEvent -> ItineraryEventSimpleDTO 변환
+                        .toList()  //  ItineraryEvent -> ItineraryEventSimpleDTO 변환
+                ,regionDTOs
         );
     }
 

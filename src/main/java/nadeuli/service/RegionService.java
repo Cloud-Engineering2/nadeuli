@@ -124,6 +124,11 @@ public class RegionService {
         region.setImageUrl(newImageUrl);
         regionRepository.save(region);
 
+        if (IS_CACHING_ENABLED) {
+            regionImageRedisTemplate.delete(REGION_IMAGE_CACHE_KEY);
+            System.out.println("REDIS : region image 캐시 무효화 완료");
+        }
+
         return newImageUrl;
     }
 

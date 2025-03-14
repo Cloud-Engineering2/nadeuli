@@ -546,6 +546,10 @@ function generateItineraryJSON() {
     let placeholderName = $('#name-box').attr('placeholder');
     let itineraryName = nameInput !== '' ? nameInput : placeholderName;
 
+    console.log('val:', $('#name-box').val());
+    console.log('trimmed:', $('#name-box').val().trim());
+    console.log('placeholder:', $('#name-box').attr('placeholder'));
+
     // itineraryDTO 객체 생성
     const startDateStr = moment(selectedDates[0]).format("YYYY-MM-DD") + "T00:00:00";
     const itinerary = {
@@ -604,8 +608,11 @@ function itineraryCreateSubmit(){
         },
         success: function (response) {
             console.log("✅ 일정 저장 성공:", response);
-            toastr.success("일정이 성공적으로 저장되었습니다!");
-            travelModal.hide(); // 모달 닫기
+            if (response && response.itinerary && response.itinerary.id) {
+                window.location.href = `/itinerary/edit/${response.itinerary.id}`;
+            } else {
+                toastr.error("일정 저장에 성공했으나, id를 리턴하지 않았습니다. 내 일정에서 확인하세요.");
+            }
         },
         error: function (xhr, status, error) {
             console.error("❌ 일정 저장 실패:", error);

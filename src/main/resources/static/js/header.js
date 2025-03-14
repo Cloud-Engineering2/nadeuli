@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const isLoggedIn = true; // 로그인 여부
     const userName = "나들이 님";
     const userEmail = "nadeuli@nadeuli.store";
-    const userRole = "ROLE_ADMIN"; // 현재 사용자 역할
+    const userRole = "ROLE_MEMBER"; // 현재 사용자 역할
     const userRoleAdmin = "ROLE_ADMIN";
     const userRoleMember = "ROLE_MEMBER";
 
@@ -19,8 +19,8 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
         } else if (userRole === userRoleMember) {
             menuItems = `
-        <a href="#">일정 생성</a>
-        <a href="#">일정 확인</a>
+        <a href="/itinerary/create">일정 생성</a>
+        <a href="/itinerary/mylist">내 일정</a>
         <a href="#">내 정보</a>
       `;
         }

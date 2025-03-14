@@ -6,6 +6,57 @@
     src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
 }
 
+@font-face {
+    font-family: 'NotoSansKRVar';
+    src: url('../fonts/NotoSansKR-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+}
+
+
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: 'NotoSansKRVar', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+}
+
+body {
+    background: #FDFDFD;
+}
+
+/* 기본 스크롤바 스타일 */
+/* 공통 스타일 */
+body {
+    scrollbar-width: thin; /* Firefox용 얇은 스크롤바 */
+    scrollbar-color: #888 #ddd; /* thumb: 회색, track: 연한 회색 */
+}
+/* 모든 요소에 적용 */
+* {
+    /* 스크롤바 색상 설정: 엄지(thumb)와 트랙(track) */
+    scrollbar-color: #888 #f1f1f1;
+    /* 스크롤바 두께 설정: 'auto' 또는 'thin' */
+    scrollbar-width: thin;
+}
+
+/* WebKit 기반 브라우저를 위한 비표준 구현 */
+::-webkit-scrollbar {
+    width: 8px; /* 세로 스크롤바 너비 */
+    height: 8px; /* 가로 스크롤바 높이 */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+
+
 /* alert 창 */
 .nadeuli-alert {
     display: none;
@@ -214,4 +265,7 @@
     bottom: 5px;
     z-index: -1;
     /*z-index: 1000;*/
+}
+.footer-div{
+    user-select: none;
 }

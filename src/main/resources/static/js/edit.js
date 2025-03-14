@@ -2,6 +2,7 @@
 let itinerary = null;
 const perDayMap = new Map();
 const eventMap = new Map();
+let regions = null;
 const groupedByDay = {}; // 렌더링용 - perDay 별로 정렬된 event 리스트
 let eventPairs = [];
 let allMarkers = [];
@@ -63,7 +64,8 @@ function createData(data) {
 
     // 일정 정보 복사
     itinerary = {...data.itinerary};
-
+    regions = {...data.regions};
+    console.log(regions,"지역 리스트")
     // 일차별 일정 복사 및 초기화
     perDayMap.clear();
     data.itineraryPerDays.forEach(dayPerDay => {
@@ -1120,40 +1122,6 @@ function generateItineraryJson() {
     return JSON.stringify({itinerary: filteredItinerary, itineraryPerDays, itineraryEvents});
 }
 
-// function saveItinerary() {
-//     const $button = $(".save-button");
-//     // $button.prop("disabled", true).text("저장중...");
-//
-//     const jsonData = generateItineraryJson();
-//
-//     $.ajax({
-//         url: "http://localhost:8085/api/itinerary/update",
-//         method: "POST",
-//         contentType: "application/json",
-//         data: jsonData,
-//         success: function (response) {
-//             console.log("저장 성공:", response);
-//             if (response.createdMappings) {
-//                 response.createdMappings.forEach(mapping => {
-//                     const event = getEventById(mapping.hashId);
-//                     if (event) {
-//                         event.id = mapping.eventId; // 서버 DB ID 반영
-//                         console.log(`${mapping.hashId} <- ${mapping.eventId} 설정완료`)
-//                     }
-//                 });
-//             }
-//             alert("저장이 완료되었습니다!");
-//             isDirty = false;
-//         },
-//         error: function (xhr, status, error) {
-//             console.error("저장 실패:", error);
-//             alert("저장 중 오류가 발생했습니다.");
-//         },
-//         complete: function () {
-//             // $button.prop("disabled", false).text("저장하기");
-//         }
-//     });
-// }
 function saveItinerary() {
     const jsonData = generateItineraryJson();
 
@@ -1167,7 +1135,7 @@ function saveItinerary() {
     });
 
     $.ajax({
-        url: "http://localhost:8085/api/itinerary/update",
+        url: "/api/itinerary/update",
         method: "POST",
         contentType: "application/json",
         data: jsonData,

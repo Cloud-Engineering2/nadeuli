@@ -24,14 +24,14 @@
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/create.css">
 </head>
-<body>
+<body class="flex flex-col min-h-screen">
 <div th:replace="fragments/header :: headerFragment"></div>
 <div class="modal fade" id="travelModal" data-bs-backdrop="static" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content p-4">
             <div class="modal-header border-0">
                 <h2 class="modal-title text-center w-100 fw-light" id="modal-title">여행 지역을 선택해주세요</h2>
-                <button type="button" class="btn-close position-absolute" data-bs-dismiss="modal" aria-label="Close" style="top: 15px; right: 15px;"></button>
+<!--                <button type="button" class="btn-close position-absolute" data-bs-dismiss="modal" aria-label="Close" style="top: 15px; right: 15px;"></button>-->
             </div>
             <div class="modal-body text-center" id="modal-body">
                 <div id="step-container">
@@ -82,207 +82,11 @@
         </div>
     </div>
 </div>
-
-<script>
-
-    // 전역변수 선언 (호이스팅)
-    // let travelModal;
-    // let selectedDates = [];
-
-    // function createTimeSelectionUI(selectedDates, dayCounts) {
-    //     console.log("📌 [시간 UI 생성] 선택된 날짜들:", selectedDates);
-    //
-    //     // 1부터 dayCounts까지의 리스트 생성
-    //     let dayList = Array.from({ length: dayCounts }, (_, i) => i + 1);
-    //
-    //
-    //     let timeSelectionHTML = "";
-    //     dayList.forEach(index => {
-    //         timeSelectionHTML += `
-    //             <div class="time-container mb-3">
-    //                 <span class="date-label">${index}:</span>
-    //                 <input type="time" class="form-control time-input" id="start-${index}" value="09:00">
-    //                 <input type="time" class="form-control time-input" id="end-${index}" value="23:00">
-    //             </div>
-    //         `;
-    //     });
-    //
-    //     $('#time-selection-container').html(timeSelectionHTML);
-    //
-    // }
-
-
-    // $(document).ready(function () {
-    //     console.log("📅 캘린더 스크립트 로드됨");
-    //
-    //     travelModal = new bootstrap.Modal(document.getElementById("travelModal"));
-    //     const timeModalElement = document.getElementById("timeModal"); // ✅ HTML 요소 가져오기
-    //     travelModal.show();
-
-
-        //===============================
-        //  📅 캘린더 스크립트
-        //================================
-        // $('#date-range-container').dateRangePicker({
-        //     parentEl: "modal-body",
-        //     inline: true,
-        //     container: '#date-range-container',
-        //     alwaysOpen: true,
-        //     stickyMonths: true,
-        //     language: 'ko',
-        //     format: 'YYYY-MM-DD',
-        //     separator: ' ~ ',
-        //     startOfWeek: 'sunday',
-        //     showShortcuts: false,
-        //     customTopBar: ' ',
-        //     hoveringTooltip: false,
-        //     autoClose: true
-        // }).bind('datepicker-change', function (event, obj) {
-        //     let tempSelectedDates = [];
-        //     let start = moment(obj.date1);
-        //     let end = moment(obj.date2);
-        //
-        //     while (start <= end) {
-        //         tempSelectedDates.push(start.format('YYYY-MM-DD'));
-        //         start.add(1, 'days');
-        //     }
-        //
-        //     selectedDates = tempSelectedDates;
-        //     console.log("✅ 선택된 날짜:", selectedDates);
-        //
-        //     $('#selected-date')
-        //         .text(obj.value)
-        //         .css({ opacity: 0 })
-        //         .animate({ opacity: 1 }, 500);
-        // });
-
-    //     $('#confirm-dates-btn').click(function () {
-    //         console.log("📌 [버튼 클릭] '다음' 버튼 클릭됨");
-    //
-    //         if (selectedDates.length === 0) {
-    //             alert("날짜를 선택하세요.");
-    //             return;
-    //         }
-    //
-    //         console.log("✅ 선택된 날짜:", selectedDates);
-    //         createTimeSelectionUI(selectedDates, selectedDates.length);
-    //
-    //         travelModal.hide();
-    //
-    //         // ✅ Bootstrap 모달 인스턴스 생성 (여기서 한 번만 생성)
-    //         if (!timeModal) {
-    //             timeModal = new bootstrap.Modal(timeModalElement);
-    //         }
-    //         timeModal.show();
-    //     });
-    // });
-
-    //===============================
-    //  📅 시간설정 스크립트
-    //================================
-    // $(document).ready(function () {
-    //     console.log("⏰ 시간 설정 스크립트 로드됨");
-
-        // $('#apply-global-time').click(function () {
-        //     let globalStart = $('#start-global').val();
-        //     let globalEnd = $('#end-global').val();
-        //     console.log("📌 [전체 적용] 시작시간:", globalStart, "종료시간:", globalEnd);
-        //     // 1부터 dayCounts까지의 리스트 생성
-        //     let dayList = Array.from({ length: selectedDates.length }, (_, i) => i + 1);
-        //     dayList.forEach(index => {
-        //         $(`#start-${index}`).val(globalStart);
-        //         $(`#end-${index}`).val(globalEnd);
-        //     });
-        // });
-
-        // $('#confirm-time-btn').click(function () {
-        //     console.log("📌 [완료 버튼 클릭]");
-        //     const itineraryJSON = generateItineraryJSON();
-        //
-        //     // 중복 클릭 방지 (버튼 비활성화)
-        //     $('#confirm-time-btn').prop('disabled', true).text("저장 중...");
-        //
-        //     // Ajax 요청
-        //     $.ajax({
-        //         url: "/api/itinerary/create",
-        //         type: "POST",
-        //         contentType: "application/json",
-        //         data: JSON.stringify(itineraryJSON),
-        //         beforeSend: function () {
-        //             // 로딩 애니메이션 표시 (추가 가능)
-        //             $('#loading-spinner').show();
-        //         },
-        //         success: function (response) {
-        //             console.log("✅ 일정 저장 성공:", response);
-        //             alert("일정이 성공적으로 저장되었습니다!");
-        //             timeModal.hide();
-        //         },
-        //         error: function (xhr, status, error) {
-        //             console.error("❌ 일정 저장 실패:", error);
-        //             alert("일정 저장에 실패했습니다. 다시 시도해주세요.");
-        //         },
-        //         complete: function () {
-        //             // 요청 완료 후 버튼 활성화 및 로딩 애니메이션 숨기기
-        //             $('#confirm-time-btn').prop('disabled', false).text("완료");
-        //             $('#loading-spinner').hide();
-        //         }
-        //     });
-        // });
-
-        // $('#back-to-date-btn').click(function () {
-        //     console.log("📌 [뒤로가기 버튼 클릭]");
-        //     timeModal.hide();
-        //     travelModal.show()
-        // });
-    // });
-
-
-    function generateItineraryJSON() {
-        // 1. 선택된 날짜가 없는 경우 처리
-        if (!selectedDates || selectedDates.length === 0) {
-            alert("여행 날짜를 선택해주세요.");  // 경고 메시지 표시
-            return null;
-        }
-
-        // 2. itineraryDTO 객체 생성
-        const startDateStr = moment(selectedDates[0]).format("YYYY-MM-DD") + "T00:00:00";
-        const itinerary = {
-            itineraryName: "서울 여행",           // 여행 이름 (기본값 또는 사용자 입력값)
-            startDate: startDateStr,              // 첫 번째 여행 날짜 (시각 00:00:00 고정)
-            totalDays: selectedDates.length,      // 전체 여행 일수
-            transportationType: 1                 // 교통 수단 유형 (예: 1, 기본값)
-        };
-
-        // 3. ItineraryPerDays 배열 생성
-        const ItineraryPerDays = [
-            { dayCount: 0, startTime: "00:00:00", endTime: "00:00:00", dayOfWeek: 0 }, // 빈장소를 저장하기위한 배열
-            ...selectedDates.map((date, index) => ({
-                dayCount: index + 1,
-                startTime: $(`#start-${index+1}`).val() + ":00",
-                endTime: $(`#end-${index+1}`).val() + ":00",
-                dayOfWeek: moment(date).isoWeekday()
-            }))
-        ];
-
-
-        // 4. 최종 JSON 데이터 구성
-        const itineraryJSON = {
-            itinerary: itinerary,
-            itineraryPerDays: ItineraryPerDays
-        };
-
-        // JSON 결과를 콘솔에 출력 (가독성을 위해 들여쓰기 포함)
-        console.log(JSON.stringify(itineraryJSON, null, 2));
-
-        // JSON 데이터를 반환하여 다른 곳에서 활용 가능하도록 함
-        return itineraryJSON;
-    }
-</script>
-
-
+<main class="flex-grow">
+</main>
+<div th:replace="fragments/footer :: footerFragment"></div>
 
 <script src="/js/create.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
