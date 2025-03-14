@@ -9,7 +9,7 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 
 @EnableJpaAuditing
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "nadeuli")
 public class NadeuliApplication {
 
     public static void main(String[] args) {
