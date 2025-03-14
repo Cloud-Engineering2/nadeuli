@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/journal.css">
+  <title>기행문 보기</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+  <div class="left-space">
+    <div class="header">
+      <span id="date-time">2025-2-26 13:30</span>
+      <button onclick="toggleContentModal()">✏️</button>
+    </div>
+    <hr class="divider">
+    <div class="content" id="content">
+      <!-- Content가 있을 때 -->
+      <p>여기에 글 내용이 표시됩니다.</p>
+    </div>
+    <div id="noContentArea" style="display: none;">
+      <p>소중한 나들이 순간을 기록하세요.</p>
+      <button onclick="writeContent()">작성하기</button>
+    </div>
+  </div>
+
+  <div class="right-space">
+    <div class="image-container" id="image-container" onclick="uploadPhoto()">
+      <span class="plus" id="plus-icon">+</span>
+      <img id="image-preview" src="" style="display: none;">
+      <button class="edit-button" id="edit-photo-btn" style="display: none;" onclick="modifyPhoto(event)">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- 글 작성/수정 모달 -->
+<div class="modal" id="content-modal">
+  <h3>글 작성</h3>
+  <textarea id="content-input" rows="5" style="width: 100%;"></textarea>
+  <button onclick="saveContent()">저장</button>
+  <button onclick="deleteContent()">삭제</button>
+  <button onclick="toggleContentModal()">닫기</button>
+</div>
+
+<script>
+  const iid = 1;  // 실제 데이터 반영 필요
+  const ieid = 1;  // 실제 데이터 반영 필요
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const journalContent = getJournalContent(); // Assume this function returns the journal content
+    const contentElement = document.getElementById('content');
+    const noContentArea = document.getElementById('noContentArea');
+
+    if (journalContent) {
+      // Show content area and hide no content area
+      contentElement.style.display = 'block';
+      noContentArea.style.display = 'none';
+      document.querySelector('.content p').innerText = journalContent;
+    } else {
+      // Show no content area and hide content area
+      contentElement.style.display = 'none';
+      noContentArea.style.display = 'block';
+    }
+  });
+
+  function getJournalContent() {
+    // Simulate getting the journal content
+    // Return the content if available, otherwise return null
+    return "여기에 글 내용이 표시됩니다."; // Replace with actual logic to get the content
+  }
+
+  function toggleContentModal() {
+    document.getElementById('content-modal').classList.toggle('active');
+  }
+
+  function saveContent() {
+    const content = document.getElementById('content-input').value;
+    axios.post(`/api/itineraries/${iid}/events/${ieid}/content`, { content })
+            .then(response => {
+              document.getElementById('content').innerHTML = `<p>${response.data.content}</p>`;
+              toggleContentModal();
+            })
+            .catch(error => console.error(error));
+  }
+
+  function deleteContent() {
+    axios.delete(`/api/itineraries/${iid}/events/${ieid}/content`)
+            .then(() => {
+              document.getElementById('content').innerHTML = `<p>삭제된 글입니다.</p>`;
+              toggleContentModal();
+            })
+            .catch(error => console.error(error));
+  }
+
+  function uploadPhoto() {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.onchange = event => {
+      const file = event.target.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      axios.post(`/api/itineraries/${iid}/events/${ieid}/photo`, formData)
+              .then(response => {
+                document.getElementById("image-preview").src = response.data.imageUrl;
+                document.getElementById("image-preview").style.display = "block";
+                document.getElementById("plus-icon").style.display = "none";
+                document.getElementById("edit-photo-btn").style.display = "block";
+              })
+              .catch(error => console.error(error));
+    };
+    fileInput.click();
+  }
+
+  function modifyPhoto(event) {
+    event.stopPropagation();
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.onchange = event => {
+      const file = event.target.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      axios.put(`/api/itineraries/${iid}/events/${ieid}/photo`, formData)
+              .then(response => {
+                document.getElementById("image-preview").src = response.data.imageUrl;
+              })
+              .catch(error => console.error(error));
+    };
+    fileInput.click();
+  }
+
+  function deletePhoto() {
+    axios.delete(`/api/itineraries/${iid}/events/${ieid}/photo`)
+            .then(() => {
+              document.getElementById("image-preview").style.display = "none";
+              document.getElementById("plus-icon").style.display = "block";
+              document.getElementById("edit-photo-btn").style.display = "none";
+            })
+            .catch(error => console.error(error));
+  }
+</script>
+
+</body>
+</html>
