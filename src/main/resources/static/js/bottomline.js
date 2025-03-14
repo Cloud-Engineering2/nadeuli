@@ -485,7 +485,7 @@ function removeAndCreateExpense(kind) {
         // 공동 경비 정산
         const jointExpenseTitle = document.createElement("p");
         jointExpenseTitle.classList.add('dynamic-expense');
-        jointExpenseTitle.textContent = "공동 경비";
+        jointExpenseTitle.textContent = "경비 정산";
         // expensesContainer.appendChild(expenseTitle);
         jointExpenseContainer.appendChild(jointExpenseTitle);
 
@@ -608,7 +608,7 @@ function removeAndCreateExpense(kind) {
 
         const personalExpenseTitle = document.createElement("p");
         personalExpenseTitle.classList.add('dynamic-expense');
-        personalExpenseTitle.textContent = "개인 경비";
+        personalExpenseTitle.textContent = "여행자별 경비";
         // expensesContainer.appendChild(expenseTitle);
         personalExpenseContainer.appendChild(personalExpenseTitle);
 
@@ -660,7 +660,7 @@ function removeAndCreateExpense(kind) {
         // 공동 경비 정산
         const jointExpenseTitle = document.createElement("p");
         jointExpenseTitle.classList.add('dynamic-expense');
-        jointExpenseTitle.textContent = "공동 경비";
+        jointExpenseTitle.textContent = "경비 정산";
         // expensesContainer.appendChild(expenseTitle);
         jointExpenseContainer.appendChild(jointExpenseTitle);
 
@@ -765,7 +765,7 @@ function removeAndCreateExpense(kind) {
         // 개인 경비 총지출 출력
         const personalExpenseTitle = document.createElement("p");
         personalExpenseTitle.classList.add('dynamic-expense');
-        personalExpenseTitle.textContent = "개인 경비";
+        personalExpenseTitle.textContent = "여행자별 경비";
         // expensesContainer.appendChild(expenseTitle);
         personalExpenseContainer.appendChild(personalExpenseTitle);
 
