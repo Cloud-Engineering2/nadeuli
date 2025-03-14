@@ -205,7 +205,7 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                                 0 원
                                             </div>
                                             <!-- 경비 내역 추가 -->
-                                            <div class="expense-item-addition" id="expenseItemAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
+                                            <div class="expense-item-list-addition" id="expenseItemListAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
                                         </div>
                                         <div class="event-right">
                                             <button class="event-options-button">⋮</button>
@@ -221,13 +221,15 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                     `);
 
     // 현재 지출액
-    // getTotalExpenseByItineraryEvent(itinerary.id, event.id).then(totalExpense => {
-    //     // totalExpense 값이 받아지면 해당 div의 내용을 업데이트
-    //     itineraryEventDiv.find(".event-total-expense").html(`${totalExpense} 원`);
-    // }).catch(err => {
-    //     console.error("Error fetching total expense:", err);
-    //     itineraryEventDiv.find(".event-total-expense").html("0 원"); // 에러 발생 시 '0 원'으로 설정
-    // });
+    getTotalExpenseByItineraryEvent(itinerary.id, event.id).then(totalExpense => {
+        // totalExpense 값이 받아지면 해당 div의 내용을 업데이트
+        console.log("어디지?");
+        console.log("✅ Total Expense API 응답 값:", totalExpense);
+        itineraryEventDiv.find(".event-total-expense").html(`${totalExpense} 원`);
+    }).catch(err => {
+        console.error("Error fetching total expense:", err);
+        itineraryEventDiv.find(".event-total-expense").html("0 원"); // 에러 발생 시 '0 원'으로 설정
+    });
 
     return itineraryEventDiv;
 }
@@ -1166,7 +1168,7 @@ $(document).on("click", ".event-duration-cancel", function (event) {
 
 /************** 🧳 경비 & 작성 이벤트 핸들링 🧳 **************/
 //🎈 왼쪽 패널 - +경비 내역 추가 클릭 시 -> 오른쪽 패널에 경비 내역 로드
-$(document).on("click", ".expense-item-addition", function () {
+$(document).on("click", ".expense-item-list-addition", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
 
@@ -1230,7 +1232,7 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
     }
 }
 
-
+//🎈 오른쪽 패널 - 경비 내역 추가 폼
 // html : expense item 추가 폼
 function getExpenseItemForm(itineraryId, itineraryEventId) {
     return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
@@ -1250,30 +1252,9 @@ function getExpenseItemForm(itineraryId, itineraryEventId) {
 }
 
 
-// api 호출하여 json data 반환
-async function callApiAt(url, method, requestData) {
-    try {
-        const response = await fetch(url, {
-            method: method, // HTTP 메서드 (예: "POST", "GET")
-            headers: { "Content-Type": "application/json" },
-            body: method !== "GET" ? JSON.stringify(requestData) : null, // GET 메서드일 경우 body 없이 호출
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
-        }
-
-        const data = response.headers.get("Content-Length") === "0" ? null : await response.json();
-        return data;
-    } catch (error) {
-        console.error("에러 발생:", error);
-        throw error;
-    }
-}
 
 
-
-// 🏗️ Itinerary Event 별 현재 총 지출액 가져오기 (left)
+// Itinerary Event 별 현재 총 지출액 가져오기 (left)
 async function getTotalExpenseByItineraryEvent(itineraryId, eventId) {
     const response = await fetch(`/api/itineraries/${itineraryId}/events/${eventId}/adjustment`, {
         method: 'GET'
@@ -1285,8 +1266,10 @@ async function getTotalExpenseByItineraryEvent(itineraryId, eventId) {
     }
 
     const data = await response.json();  // 전체 응답 객체를 가져옵니다.
-    const currentExpense = data.currentExpense.toLocaleString();
-    return currentExpense;
+    console.log("여기부터");
+    console.log(data);
+    const totalExpense = data.totalExpense.toLocaleString();
+    return totalExpense;
 }
 
 
@@ -1314,8 +1297,6 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
     try {
         // adjustment 데이터 가져오기
         const adjustmentData = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/adjustment`, "GET", null);
-        console.log(adjustmentData);
-        console.log("제대로 오고 있는 중 ")
 
         const adjustmentInfo = $("#itineraryEventAdjustmentInfo");
         if (!adjustmentInfo.length) {
@@ -1360,8 +1341,6 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
         }
         eachExpensesTable += "</tbody></table>";
 
-        console.log("📌 HTML로 추가될 데이터:", adjustmentDetails, eachExpensesTable);
-
         // HTML 업데이트
         adjustmentInfo.html(`
         <h3>💰 정산 정보</h3>
@@ -1378,7 +1357,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
 }
 
 
-// + 버튼 클릭 시, expense item 추가
+//🎈 오른쪽 패널 - +버튼 클릭 시 -> 경비 내역(expense item, with whom) 추가
 $(document).on("click", ".expense-item-addition-button", function() {
     const iid = $(this).data("iid");   // itinerary ID
     const ieid = $(this).data("ieid"); // event ID
@@ -1395,9 +1374,6 @@ $(document).on("click", ".expense-item-addition-button", function() {
 
         const withWhomList = withWhom.split(",").map(name => name.trim()).filter(name => name.length > 0);
 
-        console.log(withWhomList); // ["GAYEON", "NAYEON"]
-
-
         // 유효성 검사
         if (!expenditure || !payer) {
             alert("금액과 지출자는 반드시 입력해야 합니다.");
@@ -1413,13 +1389,20 @@ $(document).on("click", ".expense-item-addition-button", function() {
         const withWhomData = {
             withWhomNames: withWhomList // WithWhomRequestDTO 키 값과 동일해야 함
         };
-        console.log("withWhom data 확인하는 부분 :");
-        console.log(withWhomData);
 
-        let expenseItemId = await addExpenseItem(iid, ieid, expenseItemRequestData);
-        console.log("expense Item Id: 여기에서 출력되면 이제 됨");
-        console.log(expenseItemId);
-        await addWithWhom(iid, expenseItemId, withWhomData);
+        try {
+            let expenseItemId = await addExpenseItem(iid, ieid, expenseItemRequestData);
+            await addWithWhom(iid, expenseItemId, withWhomData);
+
+            // 🎯 폼 입력값 초기화
+            $("#expenseItemCreationForm")[0].reset();
+
+            // 🎯 페이지 새로고침 (데이터 반영을 위해)
+            location.reload();
+        } catch (error) {
+            console.error("🚨 데이터 저장 중 오류 발생:", error);
+            alert("지출 항목을 추가하는 중 오류가 발생했습니다.");
+        }
     });
 });
 
@@ -1428,9 +1411,6 @@ async function addExpenseItem(iid, ieid, expenseItemRequestData) {
         const response = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, "POST", expenseItemRequestData);
 
         console.log("ExpenseItem " + expenseItemRequestData.content + ": " + expenseItemRequestData.expense + "(원) - 생성 완료");
-        // console.log("Expense Book Id", response.itineraryEventId);
-        // console.log("Expense Book ID:", response.expenseBookId);
-        // console.log("Traveler Name:", response.travelerDTO.travelerName);
         return response.id;
 
     } catch (error) {
@@ -1441,14 +1421,30 @@ async function addExpenseItem(iid, ieid, expenseItemRequestData) {
 
 async function addWithWhom(iid, emid, withWhomRequestData) {
     try {
-        console.log("withWhomRequestData 확인 부분 ");
-        console.log("WithWhom Data:", withWhomRequestData);
         const response = await callApiAt(`/api/itineraries/${iid}/expense/${emid}/withWhom`, "POST", withWhomRequestData);
-        console.log("WithWhom 응답 : ");
-        console.log(response);
 
     } catch (error) {
         console.error("Error loading expense data:", error);
     }
 }
 
+/************** 🧳 api 호출 함수 🧳 **************/
+async function callApiAt(url, method, requestData) {
+    try {
+        const response = await fetch(url, {
+            method: method, // HTTP 메서드 (예: "POST", "GET")
+            headers: { "Content-Type": "application/json" },
+            body: method !== "GET" ? JSON.stringify(requestData) : null, // GET 메서드일 경우 body 없이 호출
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
+        }
+
+        const data = response.headers.get("Content-Length") === "0" ? null : await response.json();
+        return data;
+    } catch (error) {
+        console.error("에러 발생:", error);
+        throw error;
+    }
+}
