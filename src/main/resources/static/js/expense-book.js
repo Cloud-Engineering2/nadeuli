@@ -1328,7 +1328,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
 
         // 개인별 adjustment 데이터를 테이블 형태로 변환
         let adjustmentDetails = "<table class='table table-bordered'>";
-        adjustmentDetails += "<thead><tr><th>이름</th><th>수금</th><th>지불</th></tr></thead><tbody>";
+        adjustmentDetails += "<thead><tr><th>이름</th><th>수금</th><th>송금</th></tr></thead><tbody>";
 
         for (const [name, details] of Object.entries(adjustment)) {
             const received = Object.entries(details.receivedMoney || {})
@@ -1353,7 +1353,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
         eachExpensesTable += "<thead><tr><th>이름</th><th>총 지출</th></tr></thead><tbody>";
 
         for (const [name, expense] of Object.entries(eachExpenses)) {
-            eachExpensesTable += `<tr>
+            eachExpensesTable += `<tr>  
             <td>${name}</td>
             <td>${expense.toLocaleString()} 원</td>
         </tr>`;
