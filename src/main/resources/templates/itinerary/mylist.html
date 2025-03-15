@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="/css/mylist.css">
 </head>
 <body>
-<div th:replace="fragments/header :: headerFragment"></div>
+<div th:replace="~{fragments/header :: headerFragment}"></div>
 <div class="container">
     <!-- 정렬 콤보박스 -->
     <div class="container-header">
@@ -113,8 +113,7 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footerFragment"></div>
-
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
 
 <script src="/js/mylist.js"></script>
 </body>
