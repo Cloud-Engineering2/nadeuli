@@ -12,6 +12,7 @@
  * 박한철    2025.02.26     일정리스트페이지(테스트용) 추가
  * 박한철    2025.02.26     캘린더선택페이지(테스트용) 추가 -> 삭제
  * 박한철    2025.03.11     테스트 페이지 정리
+ * 박한철    2025.03.15     템플릿 리턴 경로 수정 "/.../..." -> ".../..."
  * ========================================================
  */
 
@@ -37,12 +38,12 @@ public class ItineraryController {
     // ===========================
     @GetMapping("/create")
     public String showCreateItineraryPage() {
-        return "/itinerary/create";  // itinerary/create.html을 반환
+        return "itinerary/create";  // itinerary/create.html을 반환
     }
 
     @GetMapping("/mylist")
     public String showMyItineraryPage() {
-        return "/itinerary/mylist";  // itinerary/mylist.html을 반환
+        return "itinerary/mylist";  // itinerary/mylist.html을 반환
     }
 
     @GetMapping("/edit/{itineraryId}")
@@ -50,12 +51,12 @@ public class ItineraryController {
         model.addAttribute("googleApiKey", googleMapsApiKey);
 
 
-        return "/itinerary/edit";  // 정적 HTML 페이지 반환
+        return "itinerary/edit";  // 정적 HTML 페이지 반환
     }
 
     @GetMapping("/region")
     public String regionTestPage() {
-        return "/region-test";  // itinerary/edit.html을 반환
+        return "region-test";
     }
 
 }
