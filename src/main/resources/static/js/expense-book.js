@@ -1165,6 +1165,15 @@ $(document).on("click", ".event-duration-cancel", function (event) {
 $(document).on("click", ".expense-item-list-addition", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
+    // traveler 조회
+    let travelersResponse = callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
+    let travelers = [];
+    travelersResponse.then((data) => {
+        for (let t of data.travelers) { travelers.push(t.name); }
+    })
+    .catch((error) => {
+        console.error("에러 발생:", error);
+    });
 
     // expense-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
     fetch(`/itinerary/${iid}/events/${ieid}/expense-right`) // fetch("/expense-book/expense-right.html")
@@ -1172,30 +1181,19 @@ $(document).on("click", ".expense-item-list-addition", function () {
         .then(html => {
             $("#detailContainer").html(html);
             getExpenseBookForWritingByItineraryEvent(iid, ieid);
-            // let travelersResponse = callApiAt(`/api/itinerary/${iid}/travelers`, "POST", null);
-            // let travelers = travelersResponse.travelers.map(traveler => traveler.name);
+
             document.getElementById("expenseItemCreation").innerHTML = getExpenseItemForm(iid, ieid);
             setTimeout(() => {
                 var withWhom = document.querySelector('input[name=withWhom]');
                 var payer = document.querySelector('input[name=payer]');
-                var withWhomTag = new Tagify(withWhom);
-                var payerTag = new Tagify(payer);
-                // var payerTag = new Tagify(payer, {
-                //     // 단일 선택 모드로 설정
-                //     mode: 'select',
-                //     whitelist: travelers,  // 여기에 API 호출 결과로 받은 트래블러 이름들을 넣어줍니다.
-                //     maxTags: 1,     // 한 명만 선택 가능
-                // });
-                tag.on('add', function() {
-                    console.log(withWhomTag.value);
+                var withWhomTag = new Tagify(withWhom, {mode: 'input', whitelist: travelers, enforceWhitelist: true});
+                var payerTag = new Tagify(payer, {mode: 'input', whitelist: travelers, maxTags: 1, enforceWhitelist: true});
+                payerTag.on('add', function() {
                     console.log(payerTag.value);
-                    // console.log(tag);
-                    // console.log(tag.value);
-                    // console.log(tag.value[0]);
-                    // console.log(tag.value[0].value);
-                    // const a = document.getElementById("expenseItemCreationWithWhom");
-                    // console.log(a.value); // [{"value":"abc"},{"value":"def"}]
-                })
+                });
+                withWhomTag.on('add', function() {
+                    console.log(withWhomTag.value);
+                });
             }, 100);
 
         })

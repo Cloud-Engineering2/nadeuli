@@ -30,24 +30,6 @@
 <div th:replace="~{fragments/header}"></div>
 
 
-<h1>Tagify 데모</h1>
-<input name="with-whom-add" placeholder="함께한 사람을 추가해주세요">
-
-<script>
-    var input = document.querySelector('input[name=with-whom-add]')
-    var tagify = new Tagify(input);
-
-    // 태그가 추가되면 이벤트 발생
-    tagify.on('add', function() {
-        console.log("여기서 태그 발생");
-        console.log(tagify);
-        console.log(tagify.value);          // [ {value: '가', __isValid: true, __tagId: '7665e3a3-38d5-4e87-91af-e502133e845e'}, {value: '나', __isValid: true, __tagId: '788d0452-ae40-4f07-bfb1-ff59a18f477e'} ]
-        console.log(tagify.value[0]);       // {value: '가', __isValid: true, __tagId: '7665e3a3-38d5-4e87-91af-e502133e845e'}
-        console.log(tagify.value[0].value); // ga
-    });
-</script>
-
-
 
 <div class="container-fluid">
 
