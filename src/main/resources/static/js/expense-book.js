@@ -1188,11 +1188,28 @@ $(document).on("click", ".expense-item-list-addition", function () {
                 var payer = document.querySelector('input[name=payer]');
                 var withWhomTag = new Tagify(withWhom, {mode: 'input', whitelist: travelers, enforceWhitelist: true});
                 var payerTag = new Tagify(payer, {mode: 'input', whitelist: travelers, maxTags: 1, enforceWhitelist: true});
+
+                function compareAndRemoveTag() {
+                    const withWhomValue = withWhomTag.value.map(item => item.value);  // withWhomTag에 입력된 값
+                    const payerValue = payerTag.value.length > 0 ? payerTag.value[0].value : null;  // payerTag에 입력된 값
+
+                    if (withWhomValue.includes(payerValue)) {
+                        // 'remove' 이벤트 트리거로 withWhomTag에서 값 제거
+                        withWhomTag.removeTags(payerValue);
+                        console.log(`Removed: ${payerValue} from withWhomTag because it matches payerTag value`);
+                    }
+                }
                 payerTag.on('add', function() {
-                    console.log(payerTag.value);
+                    compareAndRemoveTag();
+                    console.log("PayerTag Value: ", payerTag.value);
                 });
                 withWhomTag.on('add', function() {
-                    console.log(withWhomTag.value);
+                    compareAndRemoveTag();
+                    console.log("WithWhomTag Value: ", withWhomTag.value);
+                });
+                payerTag.on('remove', function() {
+                    compareAndRemoveTag();
+                    console.log("PayerTag Value After Remove: ", payerTag.value);
                 });
             }, 100);
 
