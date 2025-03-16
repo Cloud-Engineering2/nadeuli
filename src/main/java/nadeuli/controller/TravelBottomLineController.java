@@ -12,6 +12,7 @@
  * ========================================================
  * 이홍비    2025.02.25     최초 작성 : TravelBottomLineController
  * 이홍비    2025.03.10     최종 결과물 페이지 조회 시 필요한 것 처리
+ * 이홍비    2025.03.16     showBottomlinePage : 반환 시 itinerary 앞 / 제거
  * ========================================================
  */
 
@@ -57,7 +58,7 @@ public class TravelBottomLineController {
         System.out.println("📌 최종 결과물 - 페이지 이동 : " + itineraryTotalReadResponseDTO.getItineraryEvents());
 
 
-        return "/itinerary/bottomline";
+        return "itinerary/bottomline";
     }
 
     @ResponseBody
