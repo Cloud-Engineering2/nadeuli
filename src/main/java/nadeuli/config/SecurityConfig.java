@@ -17,7 +17,7 @@ public class SecurityConfig {
                                                    JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/auth/unlink/**").permitAll()
                         .requestMatchers("/auth/refresh", "/auth/refresh/**").permitAll()
                         .requestMatchers("/auth/user/**").permitAll()
                         .requestMatchers("login","hello").permitAll()

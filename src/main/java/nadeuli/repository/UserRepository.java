@@ -24,5 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUserEmail(String email);
 
+    Optional<User> findFirstByOrderByLastLoginAtDesc();
+
+    Optional<User> findFirstByOrderByCreatedAtDesc();
 
 }

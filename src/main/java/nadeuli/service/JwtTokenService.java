@@ -30,7 +30,7 @@ public class JwtTokenService {
     public TokenResponse generateRefreshToken(String email) {
         String token = generateToken(email, REFRESH_TOKEN_EXPIRATION);
         LocalDateTime expiryAt = LocalDateTime.now().plusDays(7);
-        log.info("새로운 Refresh Token: {} | 만료 시간: {}", token, expiryAt); // 로그 추가
+        log.info("새로운 Refresh Token: {} | 만료 시간: {}", token, expiryAt);
         return new TokenResponse(token, expiryAt);
     }
 

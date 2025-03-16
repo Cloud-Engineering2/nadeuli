@@ -25,17 +25,20 @@ public class GoogleOidcUserService extends OidcUserService {
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) {
         OidcUser oidcUser = super.loadUser(userRequest);
-
         String provider = userRequest.getClientRegistration().getRegistrationId();
+
         if (!"google".equals(provider)) {
             log.warn("[GoogleOidcUserService] Unsupported provider '{}'", provider);
             return oidcUser;
         }
 
-        return processOidcUser(oidcUser, provider);
+        String googleAccessToken = userRequest.getAccessToken().getTokenValue();
+        log.info("[Google OAuth] Google Access Token: {}", googleAccessToken);
+
+        return processOidcUser(oidcUser, provider, googleAccessToken);
     }
 
-    private OidcUser processOidcUser(OidcUser oidcUser, String provider) {
+    private OidcUser processOidcUser(OidcUser oidcUser, String provider, String googleAccessToken) {
         Map<String, Object> attributes = oidcUser.getAttributes();
         String email = getSafeString(attributes, "email");
         String name = getSafeString(attributes, "name");
@@ -44,8 +47,8 @@ public class GoogleOidcUserService extends OidcUserService {
         log.info("[Google OIDC] Email: {}, Name: {}, Picture: {}", email, name, picture);
 
         User userEntity = userRepository.findByUserEmail(email)
-                .map(existing -> updateExistingUser(existing, name, picture))
-                .orElseGet(() -> createNewUser(email, name, picture));
+                .map(existing -> updateExistingUser(existing, name, picture, googleAccessToken))
+                .orElseGet(() -> createNewUser(email, name, picture, googleAccessToken));
 
         JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
         userEntity.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
@@ -68,15 +71,26 @@ public class GoogleOidcUserService extends OidcUserService {
         );
     }
 
+    private User updateExistingUser(User user, String name, String profileImage, String googleAccessToken) {
+        boolean tokenUpdated = !googleAccessToken.equals(user.getUserToken());
 
-    private User updateExistingUser(User user, String name, String profileImage) {
-        user.updateProfile(name, profileImage, "google", null, LocalDateTime.now());
+        if (tokenUpdated) {
+            log.info("Google Access Token 변경 감지! 기존 값: {}, 새 값: {}", user.getUserToken(), googleAccessToken);
+            user.updateProfile(name, profileImage, "google", googleAccessToken, LocalDateTime.now());
+
+            JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(user.getUserEmail());
+            user.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
+        } else {
+            log.info("기존 Google Access Token 유지: {}", googleAccessToken);
+            user.updateProfile(name, profileImage, "google", null, LocalDateTime.now());
+        }
+
         return user;
     }
 
-    private User createNewUser(String email, String name, String profileImage) {
+    private User createNewUser(String email, String name, String profileImage, String googleAccessToken) {
         JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
-        return User.createNewUser(email, name, profileImage, "google", null, LocalDateTime.now(), refreshTokenResponse.token, refreshTokenResponse.expiryAt);
+        return User.createNewUser(email, name, profileImage, "google", googleAccessToken, LocalDateTime.now(), refreshTokenResponse.token, refreshTokenResponse.expiryAt);
     }
 
     private String getSafeString(Map<String, Object> map, String key) {
