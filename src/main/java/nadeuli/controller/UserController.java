@@ -56,7 +56,7 @@ public class UserController {
         log.info("refreshToken: {}", refreshToken);
 
         if (refreshToken == null || refreshToken.isEmpty()) {
-            log.warn("refreshToken이 비어 있음! 쿠키가 전달되지 않음.");
+            log.warn("refreshToken이 비어 있음 쿠키가 전달되지 않음.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired Refresh Token");
         }
 
@@ -129,13 +129,22 @@ public class UserController {
     @GetMapping("/user/me")
     public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
         if (authentication == null) {
-            log.warn("인증 정보 없음");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            log.warn("인증 정보 없음, 최근 로그인한 사용자 조회");
+
+            User user = userRepository.findFirstByOrderByLastLoginAtDesc()
+                    .orElseGet(() -> userRepository.findFirstByOrderByCreatedAtDesc().orElse(null));
+
+            if (user == null) {
+                log.warn("사용자가 없음");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+
+            return ResponseEntity.ok(UserDTO.from(user));
         }
 
-        log.info("현재 SecurityContext Authentication: {}", authentication);
-
+        log.info("SecurityContext Authentication: {}", authentication);
         User user = null;
+
         if (authentication instanceof UsernamePasswordAuthenticationToken authToken) {
             Object principal = authToken.getPrincipal();
             if (principal instanceof CustomUserDetails) {
@@ -161,7 +170,7 @@ public class UserController {
         }
 
         if (user == null) {
-            log.warn("사용자 정보 없음");
+            log.warn("인증된 사용자 없음");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
@@ -172,14 +181,12 @@ public class UserController {
         if (attributes.containsKey("email")) {
             return attributes.get("email").toString();
         }
-
         if (attributes.containsKey("kakao_account")) {
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
             if (kakaoAccount.containsKey("email")) {
                 return kakaoAccount.get("email").toString();
             }
         }
-
         return null;
     }
 }

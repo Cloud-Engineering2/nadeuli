@@ -44,7 +44,7 @@ public class OAuthController {
             log.warn("[OAuthUnlink] 저장된 Access Token 없음 - 이메일: {}", email);
             return ResponseEntity.status(400).body(Map.of(
                     "success", false,
-                    "message", "저장된 Access Token이 없습니다. 다시 로그인 후 시도해주세요."
+                    "message", "OAuth Access Token이 없습니다. 다시 로그인 후 시도해주세요."
             ));
         }
 

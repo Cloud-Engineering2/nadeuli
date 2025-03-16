@@ -32,10 +32,13 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
             return oAuth2User;
         }
 
-        return processOAuthUser(oAuth2User, provider);
+        String kakaoAccessToken = userRequest.getAccessToken().getTokenValue();
+        log.info("[Kakao OAuth] 카카오 Access Token: {}", kakaoAccessToken);
+
+        return processOAuthUser(oAuth2User, provider, kakaoAccessToken);
     }
 
-    public OAuth2User processOAuthUser(OAuth2User oAuth2User, String provider) {
+    public OAuth2User processOAuthUser(OAuth2User oAuth2User, String provider, String kakaoAccessToken) {
         Map<String, Object> attributes = oAuth2User.getAttributes();
         String email = extractEmailFromAttributes(attributes);
         String name = extractUserNameFromAttributes(attributes);
@@ -44,20 +47,21 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
         log.info("[{} OAuth] Email: {}, Name: {}, ProfileImage: {}", provider, email, name, profileImage);
 
         User userEntity = userRepository.findByUserEmail(email)
-                .map(existing -> updateExistingUser(existing, name, profileImage))
-                .orElseGet(() -> createNewUser(email, name, profileImage));
+                .map(existing -> updateExistingUser(existing, name, profileImage, kakaoAccessToken))
+                .orElseGet(() -> createNewUser(email, name, profileImage, kakaoAccessToken));
 
         JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
         userEntity.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
         userRepository.save(userEntity);
 
-        String accessToken = jwtTokenService.generateAccessToken(email);
-
-        log.info("[{} OAuth] JWT Access Token 발급 완료: {}", provider, accessToken);
+        String jwtAccessToken = jwtTokenService.generateAccessToken(email);
+        log.info("[{} OAuth] JWT Access Token 발급 완료: {}", provider, jwtAccessToken);
         log.info("[{} OAuth] JWT Refresh Token 발급 완료: {}", provider, refreshTokenResponse.token);
 
+        log.info("[{} OAuth] 저장된 Kakao Access Token (user_token): {}", provider, userEntity.getUserToken());
+
         Map<String, Object> updatedAttributes = new HashMap<>(attributes);
-        updatedAttributes.put("accessToken", accessToken);
+        updatedAttributes.put("accessToken", jwtAccessToken);
         updatedAttributes.put("email", email);
 
         return new DefaultOAuth2User(
@@ -65,6 +69,17 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
                 updatedAttributes,
                 "email"
         );
+    }
+
+    private User updateExistingUser(User user, String name, String profileImage, String kakaoAccessToken) {
+        log.info("기존 사용자 정보 업데이트 - Email: {}, AccessToken 변경 여부: {}", user.getUserEmail(), !kakaoAccessToken.equals(user.getUserToken()));
+        user.updateProfile(name, profileImage, "kakao", kakaoAccessToken, LocalDateTime.now());
+        return user;
+    }
+
+    private User createNewUser(String email, String name, String profileImage, String kakaoAccessToken) {
+        JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
+        return User.createNewUser(email, name, profileImage, "kakao", kakaoAccessToken, LocalDateTime.now(), refreshTokenResponse.token, refreshTokenResponse.expiryAt);
     }
 
     private String extractEmailFromAttributes(Map<String, Object> attributes) {
@@ -77,7 +92,6 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
                 return kakaoAccount.get("email").toString();
             }
         }
-
         return null;
     }
 
@@ -101,16 +115,5 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
             }
         }
         return "";
-    }
-
-
-    private User updateExistingUser(User user, String name, String profileImage) {
-        user.updateProfile(name, profileImage, "kakao", null, LocalDateTime.now());
-        return user;
-    }
-
-    private User createNewUser(String email, String name, String profileImage) {
-        JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
-        return User.createNewUser(email, name, profileImage, "kakao", null, LocalDateTime.now(), refreshTokenResponse.token, refreshTokenResponse.expiryAt);
     }
 }
