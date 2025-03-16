@@ -1189,6 +1189,19 @@ $(document).on("click", ".expense-item-list-addition", function () {
                 var withWhomTag = new Tagify(withWhom, {mode: 'input', whitelist: travelers, enforceWhitelist: true});
                 var payerTag = new Tagify(payer, {mode: 'input', whitelist: travelers, maxTags: 1, enforceWhitelist: true});
 
+                // withWhomTag 값을 input 태그의 value로 설정하는 함수
+                function insertWithWhomTagToInputValue() {
+                    const withWhomValue = withWhomTag.value.map(item => item.value).join(', ');
+                    withWhom.value = withWhomValue;
+                    console.log("Updated withWhom input value: ", withWhom.value);
+                }
+
+                withWhomTag.on('add', function() {
+                    insertWithWhomTagToInputValue();
+                    console.log("WithWhomTag Value: ", withWhomTag.value);
+                });
+
+                // payer와 withWhom 값이 중복되지 않도록
                 function compareAndRemoveTag() {
                     const withWhomValue = withWhomTag.value.map(item => item.value);  // withWhomTag에 입력된 값
                     const payerValue = payerTag.value.length > 0 ? payerTag.value[0].value : null;  // payerTag에 입력된 값
@@ -1381,52 +1394,59 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
 
 
 //🎈 오른쪽 패널 - +버튼 클릭 시 -> 경비 내역(expense item, with whom) 추가
-$(document).on("click", ".expense-item-addition-button", function() {
+$(document).on("click", ".expense-item-addition-button", async function(event) {
+    event.preventDefault(); // 폼 제출 방지
+
     const iid = $(this).data("iid");   // itinerary ID
     const ieid = $(this).data("ieid"); // event ID
 
-    // 추가 버튼 -> 폼 제출
-    $("#expenseItemCreationForm").submit(async function (event) {
-        event.preventDefault(); // 기본 폼 제출 방지
+    // Request Data
+    const content = $("#expenseItemCreationContent").val() || null;
+    console.log(content);
+    const expenditure = $("#expenseItemCreationExpenditure").val();
+    console.log(expenditure);
 
-        // Request Data
-        const content = $("#expenseItemCreationContent").val() || null;
-        const expenditure = $("#expenseItemCreationExpenditure").val();
-        const payer = $("#expenseItemCreationPayer").val();
-        const withWhom = $("#expenseItemCreationWithWhom").val() || null;
+    // payer, withWhom 처리 부분은 그대로
+    const payerInput = document.querySelector("#expenseItemCreationPayer");
+    console.log(payerInput);
+    const payerTag = payerInput ? payerInput._tagify : null;
+    console.log(payerTag);
+    const payer = payerTag && payerTag.value.length > 0 ? payerTag.value[0].value : null;
+    console.log(payer);
 
-        const withWhomList = withWhom.split(",").map(name => name.trim()).filter(name => name.length > 0);
+    const withWhomInput = document.querySelector("#expenseItemCreationWithWhom");
+    const withWhomTag = withWhomInput ? withWhomInput._tagify : null;
+    const withWhomList = withWhomTag ? withWhomTag.value.map(item => item.value) : [];
 
-        // 유효성 검사
-        if (!expenditure || !payer) {
-            alert("금액과 지출자는 반드시 입력해야 합니다.");
-            return;
-        }
+    // 유효성 검사
+    if (!expenditure || !payer) {
+        alert("금액과 지출자는 반드시 입력해야 합니다.");
+        return;
+    }
 
-        const expenseItemRequestData = { // RequestBody -> ExpenseItemRequestDTO
-            content: content,
-            payer: payer,
-            expense: parseInt(expenditure)
-        };
+    const expenseItemRequestData = { // RequestBody -> ExpenseItemRequestDTO
+        content: content,
+        payer: payer,
+        expense: parseInt(expenditure)
+    };
 
-        const withWhomData = {
-            withWhomNames: withWhomList // WithWhomRequestDTO 키 값과 동일해야 함
-        };
+    const withWhomData = {
+        withWhomNames: withWhomList // WithWhomRequestDTO 키 값과 동일해야 함
+    };
 
-        try {
-            let expenseItemId = await addExpenseItem(iid, ieid, expenseItemRequestData);
-            await addWithWhom(iid, expenseItemId, withWhomData);
+    try {
+        let expenseItemId = await addExpenseItem(iid, ieid, expenseItemRequestData);
+        await addWithWhom(iid, expenseItemId, withWhomData);
 
-            // 🎯 폼 입력값 초기화
-            $("#expenseItemCreationForm")[0].reset();
+        // 🎯 폼 입력값 초기화
+        $("#expenseItemCreationForm")[0].reset();
 
-            // 🎯 페이지 새로고침 (데이터 반영을 위해)
-            location.reload();
-        } catch (error) {
-            console.error("🚨 데이터 저장 중 오류 발생:", error);
-            alert("지출 항목을 추가하는 중 오류가 발생했습니다.");
-        }
-    });
+        // 🎯 페이지 새로고침 (데이터 반영을 위해)
+        location.reload();
+    } catch (error) {
+        console.error("🚨 데이터 저장 중 오류 발생:", error);
+        alert("지출 항목을 추가하는 중 오류가 발생했습니다.");
+    }
 });
 
 async function addExpenseItem(iid, ieid, expenseItemRequestData) {
