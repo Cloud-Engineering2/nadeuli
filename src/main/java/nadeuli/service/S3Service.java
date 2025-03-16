@@ -20,6 +20,7 @@
  * 박한철    2025.03.10     S3 이미지 URL로 업로드 기능 추가
  * 이홍비    2025.03.10     google places 받은 사진 저장 경로 추가
  * 이홍비    2025.03.11     google places s3 저장 경로 변경 처리
+ * 이홍비    2025.03.16     파일 다운로드 시 원본 이름 추출 함수 수정
  * ========================================================
  */
 
@@ -204,7 +205,7 @@ public class S3Service {
 
         // 원본 파일 이름 추출
         String fileName = key.substring(key.lastIndexOf("/") + 1); // 마지막 '/' 기준으로 '/' 이후 것을 저장
-        fileName = fileName.substring(fileName.lastIndexOf("_") + 1); // 마지막 '_' 기준으로 '_' 이후 것을 저장
+        fileName = fileName.substring(fileName.indexOf("_") + 1); // 첫 '_' 기준으로 '_' 이후 것을 저장
 
         String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
 
