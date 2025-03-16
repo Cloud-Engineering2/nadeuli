@@ -1161,19 +1161,54 @@ $(document).on("click", ".event-duration-cancel", function (event) {
 
 
 /************** 🧳 경비 & 작성 이벤트 핸들링 🧳 **************/
+
+
 //🎈 왼쪽 패널 - +경비 내역 추가 클릭 시 -> 오른쪽 패널에 경비 내역 로드
 $(document).on("click", ".expense-item-list-addition", function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
+
+    // const element = document.getElementById("adjustmentHeaderTabInactive");
+    // element.setAttribute("data-iid", iid);  // data-iid 설정
+    // element.setAttribute("data-ieid", ieid); // data-ieid 설정
+
+    loadExpenseItemListAndAddition(iid, ieid);
+});
+
+//🎈 복붙 : 경비 탭 클릭 시 -> 오른쪽 패널에 경비 내역 로드
+// $(document).on("click", ".adjustment-header-tab-inactive", function() {
+//     const iid = $(this).data("iid");   // itinerary ID 가져오기
+//     const ieid = $(this).data("ieid"); // event ID 가져오기
+//
+//     oadExpenseItemListAndAddition(iid, ieid);
+//
+// });
+
+
+async function loadExpenseItemListAndAddition(iid, ieid) {
     // traveler 조회
     let travelersResponse = callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
     let travelers = [];
     travelersResponse.then((data) => {
         for (let t of data.travelers) { travelers.push(t.name); }
-    })
-    .catch((error) => {
-        console.error("에러 발생:", error);
-    });
+        })
+        .catch((error) => {
+            console.error("에러 발생:", error);
+        });
+
+    // const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
+    // const travelerData = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
+    // const adjustmentBasicInfoRemainedBudget = $("#adjustmentBasicInfoRemainedBudget");
+    // const adjustmentBasicInfoTraveler = $("#adjustmentBasicInfoTraveler");
+    // // 남은 예산
+    // const remainedBudget = totalAdjustmentData.totalBalance;
+    // // 함께하는 traveler
+    // const numberOfTravelers = travelerData.numberOfTravelers;
+    //
+    // // 남은 예산
+    // adjustmentBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
+    // // 함께하는 traveler
+    // adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
 
     // expense-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
     fetch(`/itinerary/${iid}/events/${ieid}/expense-right`) // fetch("/expense-book/expense-right.html")
@@ -1228,8 +1263,11 @@ $(document).on("click", ".expense-item-list-addition", function () {
 
         })
         .catch(error => console.error("Error loading expense-right.html:", error)
-    );
-});
+        );
+
+}
+
+
 
 // ItineraryEvent 별로 ExpenseItem들 조회
 async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
@@ -1333,59 +1371,101 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
     try {
         // adjustment 데이터 가져오기
         const adjustmentData = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/adjustment`, "GET", null);
+        const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
+        const travelerData = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
 
+        const individualAdjustmentList = $("#individualAdjustmentList");
+        const totalExpenditure = $("#totalExpenditure");
         const adjustmentInfo = $("#itineraryEventAdjustmentInfo");
+        const individualExpenditureList = $("#individualExpenditureList");
+        const adjustmentBasicInfoRemainedBudget = $("#adjustmentBasicInfoRemainedBudget");
+        const adjustmentBasicInfoTraveler = $("#adjustmentBasicInfoTraveler");
+
         if (!adjustmentInfo.length) {
             console.error("ItineraryEvent Adjustment Info element not found!");
             return;
         }
 
         // 데이터 추출
+            // 총 지출, 개인별 지출, 경비 정산
         const { totalExpense, eachExpenses, adjustment } = adjustmentData;
+            // 남은 예산
+        const remainedBudget = totalAdjustmentData.totalBalance;
+            // 함께하는 traveler
+        const numberOfTravelers = travelerData.numberOfTravelers;
 
-        // 개인별 adjustment 데이터를 테이블 형태로 변환
-        let adjustmentDetails = "<table class='table table-bordered'>";
-        adjustmentDetails += "<thead><tr><th>이름</th><th>수금</th><th>송금</th></tr></thead><tbody>";
+
+        // 렌더링
+
+            // 남은 예산
+        adjustmentBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
+            // 함께하는 traveler
+        adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
+            // 총 지출
+        let totalExpenditureDetails = `<p class="total-expenditure-money-align"><span class="total-expenditure-money-label">총 지출</span>    <span class="total-expenditure-money">${totalExpense} 원</span></p>`;
+        totalExpenditure.html(totalExpenditureDetails);
+
+            // 개인 지출
+        let individualExpenditureDetails = "";
+        for (const [name, expense] of Object.entries(eachExpenses)) {
+            individualExpenditureDetails += `<p class="individual-expenditure"><span class="individual-expenditure-name">@${name}</span><br><span class="individual-expenditure-label">지출</span> <span class="total-expenditure-money">${expense.toLocaleString()} 원</span></p>`;
+        }
+        individualExpenditureList.html(individualExpenditureDetails);
+
+            // 경비 정산
+        let individualAdjustmentDetails = "";
+
+// 제목행
+        individualAdjustmentDetails += `<tr>
+    <th>이름</th>
+    <th>수금</th>
+    <th>송금</th>
+</tr>`;
 
         for (const [name, details] of Object.entries(adjustment)) {
+            // 수금(receivedMoney) 항목 처리
             const received = Object.entries(details.receivedMoney || {})
-                .map(([from, amount]) => `${from} → ${amount.toLocaleString()}원 (received)`)
-                .join("<br>") || "-";
+                .map(([from, amount]) => `<p class="individual-received"><span class="individual-received-from">@${from}</span> <span class="individual-received-money">${amount.toLocaleString()} 원</span></p><br>`)
+                .join("") || "-";
 
+            // 송금(sendedMoney) 항목 처리
             const sended = Object.entries(details.sendedMoney || {})
-                .map(([to, amount]) => `${to} → ${amount.toLocaleString()}원 (sended)`)
-                .join("<br>") || "-";
+                .map(([to, amount]) => `<p class="individual-sended"><span class="individual-sended-to">@${to}</span> <span class="individual-sended-money">${amount.toLocaleString()} 원</span></p><br>`)
+                .join("") || "-";
 
-            adjustmentDetails += `<tr>
-                <td>${name}</td>
-                <td>${received}</td>
-                <td>${sended}</td>
-            </tr>`;
+            individualAdjustmentDetails += `<tr>
+        <td class="adjustment-subject">@${name}</td>
+        <br>
+        <td>${received}</td>
+        <td>${sended}</td>
+    </tr>`;
         }
-        adjustmentDetails += "</tbody></table>";
+
+        individualAdjustmentList.html(individualAdjustmentDetails);
 
 
-        // 💰 개인별 총 지출 테이블 추가
-        let eachExpensesTable = "<table class='table table-striped'>";
-        eachExpensesTable += "<thead><tr><th>이름</th><th>총 지출</th></tr></thead><tbody>";
 
-        for (const [name, expense] of Object.entries(eachExpenses)) {
-            eachExpensesTable += `<tr>  
-            <td>${name}</td>
-            <td>${expense.toLocaleString()} 원</td>
-        </tr>`;
-        }
-        eachExpensesTable += "</tbody></table>";
-
-        // HTML 업데이트
-        adjustmentInfo.html(`
-        <h3>💰 정산 정보</h3>
-        <p><strong>현재 총 지출:</strong> ${totalExpense.toLocaleString()} 원</p>
-        <h4>🧾 개인별 정산 내역</h4>
-        ${adjustmentDetails}
-        <h4>💸 개인별 총 지출</h4>
-        ${eachExpensesTable}
-    `);
+        //     // 💰 개인별 총 지출 테이블 추가
+    //     let eachExpensesTable = "<table class='table table-striped'>";
+    //     eachExpensesTable += "<thead><tr><th>이름</th><th>총 지출</th></tr></thead><tbody>";
+    //
+    //     for (const [name, expense] of Object.entries(eachExpenses)) {
+    //         eachExpensesTable += `<tr>
+    //         <td>${name}</td>
+    //         <td>${expense.toLocaleString()} 원</td>
+    //     </tr>`;
+    //     }
+    //     eachExpensesTable += "</tbody></table>";
+    //
+    //     // HTML 업데이트
+    //     adjustmentInfo.html(`
+    //     <h3>💰 정산 정보</h3>
+    //     <p><strong>현재 총 지출:</strong> ${totalExpense.toLocaleString()} 원</p>
+    //     <h4>🧾 개인별 정산 내역</h4>
+    //     ${adjustmentDetails}
+    //     <h4>💸 개인별 총 지출</h4>
+    //     ${eachExpensesTable}
+    // `);
 
     } catch (error) {
         console.error("Error loading expense data:", error);

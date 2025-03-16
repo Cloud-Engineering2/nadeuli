@@ -24,7 +24,50 @@
 </head>
 <body>
 
-<div class="itinerary-event-adjustment-info" id="itineraryEventAdjustmentInfo"></div>
+
+<div class="adjustment-header-background" id="adjustmentHeaderBackground">
+    <span class="adjustment-header-tab-active" id="adjustmentHeaderTabActive">정 산</span>
+    <span class="adjustment-header-tab-inactive" id="adjustmentHeaderTabInactive">경 비</span>
+
+    <div class="itinerary-event-adjustment-info" id="itineraryEventAdjustmentInfo">
+
+
+
+        <div class="adjustment-basic-info" id="adjustmentBasicInfo">
+            <!-- 남은 예산 -->
+            <span class="adjustment-basic-info-remained-budget" id="adjustmentBasicInfoRemainedBudget">남은 예산 : 100,000 원</span>
+            <!-- 함께하는 친구 -->
+            <span class="adjustment-basic-info-traveler" id="adjustmentBasicInfoTraveler">3 명의 친구와 함께하고 있습니다</span>
+        </div>
+
+        <div class="container-fluid part-container">
+            <!-- 지출 -->
+            <div class="col-md-3 expenditure-part" id="expenditurePart">
+                <h4 class="expenditure-part-title" id="expenditurePartTitle">지    출</h4>
+                <!-- 총 지출 -->
+                <div class="total-expenditure" id="totalExpenditure"></div>
+                <!-- 개별 지출 -->
+                <div class="individual-expenditure-list" id="individualExpenditureList"></div>
+            </div>
+
+            <!-- 세로선 -->
+    <!--        <div class="divider-line" id="dividerLine"> | </div>-->
+
+            <!-- 경비 정산 -->
+            <div class="col-md-6 adjustment-part" id="adjustmentPart">
+                <h4 class="adjustment-part-title" id="adjustmentPartTitle">경 비 정 산</h4>
+                <div class="individual-adjustment-list" id="individualAdjustmentList"></div>
+
+            </div>
+
+            <div class="col-md-3" >
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
 </body>
 </html>
 
