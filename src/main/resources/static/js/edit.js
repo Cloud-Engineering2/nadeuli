@@ -2,6 +2,7 @@
 let itinerary = null;
 const perDayMap = new Map();
 const eventMap = new Map();
+let regions = null;
 const groupedByDay = {}; // 렌더링용 - perDay 별로 정렬된 event 리스트
 let eventPairs = [];
 let allMarkers = [];
@@ -11,6 +12,15 @@ let infoWindow=null;
 let isDirty = false;
 let mapReady = false;
 let dataReady = false;
+let isPlacePageInitialLoad = false;
+let savedPlaceMarker = null;
+let selectedRegionLat = null;
+let selectedRegionLng = null;
+let selectedRegionRadius = null;
+let googleRegionLat = null;
+let googleRegionLng = null;
+let googleRegionRadius = null;
+
 
 // 모달 전역변수
 let currentModalStep = 1;
@@ -22,7 +32,7 @@ const nextButton = document.getElementById("next-btn");
 let travelModal;
 let selectedDates = [];
 let prevDayCount = null;
-
+let isMapPanelOpen = true;
 //디버깅용
 let isDEBUG = false;
 
@@ -43,6 +53,7 @@ $(document).ready(function () {
         dataType: "json",
         success: function (data) {
             createData(data);
+            initRegionSelect();
             renderItinerary();
             initDateRangePickerModal();
             initSidebarResize();
@@ -62,7 +73,8 @@ function createData(data) {
 
     // 일정 정보 복사
     itinerary = {...data.itinerary};
-
+    regions = [...data.regions];
+    console.log(regions,"지역 리스트")
     // 일차별 일정 복사 및 초기화
     perDayMap.clear();
     data.itineraryPerDays.forEach(dayPerDay => {
@@ -161,7 +173,11 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
     return $(`
                         <div class='event' data-id='${event.hashId}'>
                             <div class="event-wrapper">
-                                <div class="travel-info">${isSavedPlace ? "" : `이동 시간 ${event.movingMinute}분`}</div>
+                                <div class="travel-info input-inline">
+                                    ${isSavedPlace ? "" : `
+                                        이동 시간 <input type="number" class="travel-minute-input" value="${event.movingMinute}" min="0" step="5"> 분
+                                    `}
+                                </div>
                                 <div class="event-content">
                                     <div class="event-order">
                                         <div class="event-order-line top ${index === 0 ? "transparent" : ""}"></div>
@@ -298,10 +314,11 @@ function updateEventDisplay(dayId, startIndex) {
         }
 
         // ✅ 이동 시간 업데이트 (travel-info)
-        const travelInfo = eventElement.querySelector(".travel-info");
-        if (travelInfo) {
-            travelInfo.textContent = `이동 시간 ${event.movingMinuteFromPrevPlace ?? 0}분`;
+        const travelInput = eventElement.querySelector(".travel-minute-input");
+        if (travelInput) {
+            travelInput.value = event.movingMinuteFromPrevPlace ?? 0;
         }
+
 
         // ✅ 이벤트 시간 업데이트 (event-time)
         const eventTimeElement = eventElement.querySelector(".event-time");
@@ -426,7 +443,7 @@ function createSortableInstance(element) {
                 }
 
                 $(".travel-info").css("visibility", "visible");
-
+                clearSavedPlaceMarker();
                 markerState = extractDayId(toDayId);
                 renderMarkerByMarkerState();
                 isDirty = true;
@@ -1047,7 +1064,7 @@ nextButton.addEventListener("click", function () {
 
         if (!prevDayCount) {
             console.log("null ✅ 선택된 날짜:", prevDayCount, selectedDates.length);
-            prevDayCount = createTimeSelectionUI(selectedDates.length);
+            prevDayCount = initTimeSelectionUI(selectedDates.length);
         } else {
             console.log("renew ✅ 선택된 날짜:", prevDayCount, selectedDates.length);
             prevDayCount = renewTimeSelectionUI(prevDayCount, selectedDates.length);
@@ -1114,40 +1131,6 @@ function generateItineraryJson() {
     return JSON.stringify({itinerary: filteredItinerary, itineraryPerDays, itineraryEvents});
 }
 
-// function saveItinerary() {
-//     const $button = $(".save-button");
-//     // $button.prop("disabled", true).text("저장중...");
-//
-//     const jsonData = generateItineraryJson();
-//
-//     $.ajax({
-//         url: "http://localhost:8085/api/itinerary/update",
-//         method: "POST",
-//         contentType: "application/json",
-//         data: jsonData,
-//         success: function (response) {
-//             console.log("저장 성공:", response);
-//             if (response.createdMappings) {
-//                 response.createdMappings.forEach(mapping => {
-//                     const event = getEventById(mapping.hashId);
-//                     if (event) {
-//                         event.id = mapping.eventId; // 서버 DB ID 반영
-//                         console.log(`${mapping.hashId} <- ${mapping.eventId} 설정완료`)
-//                     }
-//                 });
-//             }
-//             alert("저장이 완료되었습니다!");
-//             isDirty = false;
-//         },
-//         error: function (xhr, status, error) {
-//             console.error("저장 실패:", error);
-//             alert("저장 중 오류가 발생했습니다.");
-//         },
-//         complete: function () {
-//             // $button.prop("disabled", false).text("저장하기");
-//         }
-//     });
-// }
 function saveItinerary() {
     const jsonData = generateItineraryJson();
 
@@ -1161,7 +1144,7 @@ function saveItinerary() {
     });
 
     $.ajax({
-        url: "http://localhost:8085/api/itinerary/update",
+        url: "/api/itinerary/update",
         method: "POST",
         contentType: "application/json",
         data: jsonData,
@@ -1428,6 +1411,20 @@ $(document).on("click", ".event-duration-cancel", function (event) {
 });
 
 
+// 인풋시간 변경시
+$(document).on("change", ".travel-minute-input", function () {
+    const newValue = parseInt($(this).val(), 10) || 0;
+    const eventElement = $(this).closest(".event");
+    const eventId = eventElement.data("id");
+    const eventData = getEventById(eventId);
+    if (!eventData) return;
+
+    eventData.movingMinuteFromPrevPlace = newValue;
+    isDirty = true;
+
+    updateEventDisplay(`day-${eventData.dayCount}`, 0); // 전체 시간 재계산
+});
+
 
 // 장소추가 관련 코드
 // =================================================================
@@ -1504,9 +1501,9 @@ function fetchRecommendedPlaces(pageSize = 10) {
     const searchQuery = activeSearchQuery; // ✅ 고정된 검색어만 서버로 보냄
 
     const requestData = {
-        userLng: 126.49,
-        userLat: 33.44,
-        radius: 100000,
+        userLng: selectedRegionLng ?? 126.49,
+        userLat: selectedRegionLat ?? 33.44,
+        radius: selectedRegionRadius ?? 100000,
         pageSize: pageSize,
         cursorScore: cursorScore,
         cursorId: cursorId,
@@ -1629,8 +1626,11 @@ function searchGooglePlaces() {
     let query = document.getElementById("google-place-search").value;
     if (!query) return;
 
-    let location = {lat: 33.4996, lng: 126.5312}; // 제주도 위도, 경도
-    let radius = 50000; // 반경 50km
+    let location = {
+        lat: googleRegionLat ?? 33.4996,
+        lng: googleRegionLng ?? 126.5312
+    };
+    let radius = googleRegionRadius ?? 50000;
 
     $.ajax({
         url: "/api/google-places/search",
@@ -1827,6 +1827,7 @@ function renderMarkerByMarkerState() {
 
         if ($dayColumn.hasClass('savedPlace')) return;
         const dayNumber = parseInt($dayColumn.data('day-number'));
+
         if(markerState !== 0 && markerState !== dayNumber)  return;
 
 
@@ -2008,9 +2009,15 @@ function clickMarker(marker){
 }
 
 function showPlaceModal(hashId, placeId = null) {
-
+    let placeData=null;
     console.log(hashId)
-    const placeData = getEventById(hashId).placeDTO;
+    if(hashId !== null){
+        placeData = getEventById(hashId).placeDTO;
+    }else{
+        placeData = placeMap.get(placeId);
+    }
+
+    if(placeData === null)
 
     console.log(placeData);
 
@@ -2027,8 +2034,8 @@ function showPlaceModal(hashId, placeId = null) {
     $('#placeModalHours').empty();
     try {
         const hours = JSON.parse(placeData.regularOpeningHours || '{}');
-        if (Array.isArray(hours.weekdayExplanations)) {
-            hours.weekdayExplanations.forEach(desc => {
+        if (Array.isArray(hours.weekdayDescriptions)) {
+            hours.weekdayDescriptions.forEach(desc => {
                 $('#placeModalHours').append(`<li>${desc}</li>`);
             });
         } else {
@@ -2060,7 +2067,7 @@ function clearPolylines() {
 function initMap() {
     console.log("initMap Execute");
     map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 37.5665, lng: 126.9780 },
+        center: { lat: googleRegionLat, lng: googleRegionLng },
         zoom: 13,
     });
 
@@ -2164,6 +2171,10 @@ $(document).on("click", ".place-toggle-button", function () {
     btn.toggleClass('active');
     console.log("PRESSED");
     if (btn.hasClass('active')) {
+        if(!isPlacePageInitialLoad){
+            fetchRecommendedPlaces();
+        }
+        isPlacePageInitialLoad = true;
         console.log("ON");
         $('.place-container').addClass('active');
         btn.text('완료');
@@ -2267,8 +2278,282 @@ function handleDirtyNavigation(targetUrl) {
 // 수정후 링크 이동시 경고 메세지 event 핸들러
 $("a[href]").click(function(e) {
     const href = $(this).attr("href");
-    if (!href || e.ctrlKey || e.metaKey) return;
+    const target = $(this).attr("target");
+
+    if (!href || e.ctrlKey || e.metaKey || target === "_blank") return;
+
     e.preventDefault();
     handleDirtyNavigation(href);
 });
 
+
+// event 더블클릭 시 지도 이동 & 마커 강조 & 장소 상세정보 보기
+// $(document).on("dblclick", ".event", function () {
+//     const eventId = $(this).data("id");
+//     const eventData = getEventById(eventId);
+//     if (!eventData || !eventData.placeDTO) return;
+//
+//     const eventDay = eventData.dayCount;
+//
+//     if(markerState !==0 && markerState !== eventDay && eventDay !== 0){
+//         markerState = eventDay
+//         renderMarkerByMarkerState();
+//     }
+//
+//     if (eventDay === 0) {
+//         renderSavedPlaceMarker();
+//     } else {
+//         clearSavedPlaceMarker();
+//         // ⭐ marker 찾아서 강조
+//         const marker = allMarkers.find(m => m.hashId === eventId);
+//         if (marker) {
+//             enlargeMarkerTemporarily(marker);
+//         }
+//         sideMap.panTo({ lat: eventData.placeDTO.latitude, lng: eventData.placeDTO.longitude });
+//     }
+//
+//     showPlaceModal(eventId);
+// });
+$(document).on("dblclick", ".event", function () {
+    const eventId = $(this).data("id");
+    const eventData = getEventById(eventId);
+    if (!eventData || !eventData.placeDTO) return;
+
+    const eventDay = eventData.dayCount;
+
+    if (eventDay !== 0) {
+        if (markerState !== 0 && markerState !== eventDay) {
+            markerState = eventDay;
+            renderMarkerByMarkerState();
+        }
+        clearSavedPlaceMarker();
+    } else {
+        renderSavedPlaceMarker();
+    }
+
+    if (!isMapPanelOpen) {
+        // 맵이 꺼져있으면 바로 모달 띄우기
+        showPlaceModal(eventId);
+    } else {
+        // 맵이 켜져있으면 마커 강조 + InfoWindow 열기
+        const marker = allMarkers.find(m => m.hashId === eventId);
+        if (marker) {
+            enlargeMarkerTemporarily(marker);
+
+            const content = `
+                <div style="max-width: 220px; overflow: hidden;">
+                    <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px;">
+                        ${eventData.placeDTO.placeName}
+                    </div>
+                    <div style="margin-bottom: 6px;">
+                        <img src="${eventData.placeDTO.imageUrl || '/default-placeholder.jpg'}" 
+                             alt="장소 이미지" 
+                             style="width: 200px; height: 100px; border-radius: 6px; object-fit: cover;">
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary w-100" 
+                            style="font-size: 13px; padding: 4px 8px;" 
+                            onclick="showPlaceModal('${eventId}')">
+                        세부 정보 보기
+                    </button>
+                </div>
+`;
+            infoWindow.setContent(content);
+            infoWindow.open(sideMap, marker);
+        }
+    }
+});
+
+
+
+function renderSavedPlaceMarker() {
+    clearSavedPlaceMarker(); // 기존 마커 제거
+
+    const container = document.getElementById("day-0");
+    if (!container) return;
+
+    const firstEventElement = container.querySelector('.event');
+    if (!firstEventElement) return;
+
+    const eventId = firstEventElement.getAttribute("data-id");
+    const event = getEventById(eventId);
+    if (!event || !event.placeDTO) return;
+
+    const { latitude, longitude } = event.placeDTO;
+
+    savedPlaceMarker = new google.maps.Marker({
+        hashId: event.hashId,
+        position: { lat: event.placeDTO.latitude, lng: event.placeDTO.longitude },
+        map: sideMap,
+        label: {
+            text: "P",
+            fontWeight: "600",
+            fontSize: "13px",
+            color: "#ffffff"
+        },
+        icon: {
+            path: `
+                            M 0,0 
+                            m -10,-20 
+                            a 10,10 0 1,0 20,0 
+                            a 10,10 0 1,0 -20,0 
+                            M 0,0 
+                            l -7,-10 
+                            l 14,0 
+                            z
+                        `,
+            fillColor: "#555",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 0.5,
+            scale: 1,
+            labelOrigin: new google.maps.Point(0, -20)
+        }
+    });
+
+    savedPlaceMarker.addListener("click", function () {
+        clickMarker(savedPlaceMarker);
+    });
+
+    // 지도 중심 이동
+    sideMap.panTo({ lat: latitude, lng: longitude });
+}
+
+function clearSavedPlaceMarker() {
+    if (savedPlaceMarker) {
+        savedPlaceMarker.setMap(null);
+        savedPlaceMarker = null;
+    }
+}
+
+function renderTempMarkerFromPlaceDTO(place) {
+    if (!place || !place.latitude || !place.longitude) return;
+
+    const tempMarker = new google.maps.Marker({
+        position: { lat: place.latitude, lng: place.longitude },
+        map: sideMap,
+        label: {
+            text: "P",
+            fontWeight: "600",
+            fontSize: "13px",
+            color: "#ffffff"
+        },
+        icon: {
+            path: `
+                M 0,0 
+                m -10,-20 
+                a 10,10 0 1,0 20,0 
+                a 10,10 0 1,0 -20,0 
+                M 0,0 
+                l -7,-10 
+                l 14,0 
+                z
+            `,
+            fillColor: "#666",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 0.5,
+            scale: 1,
+            labelOrigin: new google.maps.Point(0, -20)
+        }
+    });
+
+    // 기존 마커 제거
+    clearSavedPlaceMarker();
+    savedPlaceMarker = tempMarker;
+
+    tempMarker.addListener("click", function () {
+        showPlaceModal(null, place.id); // eventId가 없을 경우 placeId 넘겨서 처리
+    });
+
+    // 지도 중심 이동
+    sideMap.panTo({ lat: place.latitude, lng: place.longitude });
+}
+
+
+$(document).on("dblclick", ".list-item", function () {
+    const placeId = $(this).data("id");
+    const place = placeMap.get(placeId);
+    if (!place) return;
+
+    renderTempMarkerFromPlaceDTO(place);  // 마커 강조
+    showPlaceModal(null, placeId);        // 모달 출력 (eventId 없이 placeId로 처리)
+});
+
+
+$(document).on("click", ".list-item", function () {
+    const placeId = $(this).data("id");
+    const place = placeMap.get(placeId);
+    if (!place) return;
+
+    renderTempMarkerFromPlaceDTO(place);  // 마커 강조
+});
+
+$(document).on("click", ".toggle-map-button", function () {
+    const $mapPanel = $(".right-side-map");
+    const $resizeHandle = $("#resize-handle");
+    $mapPanel.toggleClass("hidden");
+    $resizeHandle.toggleClass("hidden");
+    $(this).toggleClass("on");
+    isMapPanelOpen = $(this).hasClass("on"); // 👉 상태 동기화
+    // 툴팁 변경
+    if ($(this).hasClass("on")) {
+        $(this).attr("title", "지도 숨기기");
+        const sidebarWidth = $("#sidebar").outerWidth();
+        $resizeHandle.css("left", sidebarWidth + "px");
+    } else {
+        $(this).attr("title", "지도 보기");
+    }
+});
+
+
+function initRegionSelect() {
+    const $nadeuliRegionSelect = $("#region-select");
+    const $googleRegionSelect = $("#google-region-select");
+
+    $nadeuliRegionSelect.empty();
+    $googleRegionSelect.empty();
+
+    if (!regions || !Array.isArray(regions) || regions.length <= 1) {
+        $nadeuliRegionSelect.addClass("d-none");
+        $googleRegionSelect.addClass("d-none");
+        return;
+    }
+
+    $nadeuliRegionSelect.removeClass("d-none");
+    $googleRegionSelect.removeClass("d-none");
+
+    regions.forEach(region => {
+        const option = `<option value="${region.regionId}" data-lat="${region.latitude}" data-lng="${region.longitude}" data-radius="${region.radius}">${region.regionName}</option>`;
+        $nadeuliRegionSelect.append(option);
+        $googleRegionSelect.append(option);
+    });
+}
+
+
+$("#region-select").on("change", function () {
+    const $selected = $(this).find("option:selected");
+    selectedRegionLat = parseFloat($selected.data("lat"));
+    selectedRegionLng = parseFloat($selected.data("lng"));
+    selectedRegionRadius = parseInt($selected.data("radius"));
+
+    resetRecommendationAndFetch();
+});
+
+
+$("#google-region-select").on("change", function () {
+    const $selected = $(this).find("option:selected");
+    googleRegionLat = parseFloat($selected.data("lat"));
+    googleRegionLng = parseFloat($selected.data("lng"));
+    googleRegionRadius = parseInt($selected.data("radius"));
+
+
+
+    if (map && googleRegionLat && googleRegionLng) {
+        map.setCenter({ lat: googleRegionLat, lng: googleRegionLng });
+        map.setZoom(13); // 필요 시 원하는 zoom 조정
+    }
+
+    if ($("#google-place-search").val().trim().length > 0) {
+        searchGooglePlaces();
+    }
+});

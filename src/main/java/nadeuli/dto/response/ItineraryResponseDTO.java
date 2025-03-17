@@ -24,12 +24,16 @@ import lombok.ToString;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
 import java.time.LocalDateTime;
+import java.util.List;
+import nadeuli.dto.ItineraryRegionDTO;
 
 @Getter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItineraryResponseDTO {private Long id;
+public class ItineraryResponseDTO {
+
+    private Long id;
     private String itineraryName;
     private LocalDateTime startDate;
     private int totalDays;  // 기존 endDate 제거 -> totalDays 추가
@@ -37,40 +41,80 @@ public class ItineraryResponseDTO {private Long id;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
     private String role;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isShared;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean hasGuest;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<ItineraryRegionDTO> regions;  // 지역 리스트 추가
 
     // entity -> response dto 변환 (READ: 내 일정 리스트 조회)
+    public static ItineraryResponseDTO from(Itinerary itinerary, String role, boolean isShared, boolean hasGuest, List<ItineraryRegionDTO> regions) {
+        return new ItineraryResponseDTO(
+                itinerary.getId(),
+                itinerary.getItineraryName(),
+                itinerary.getStartDate(),
+                itinerary.getTotalDays(),
+                itinerary.getTransportationType(),
+                itinerary.getCreatedDate(),
+                itinerary.getModifiedDate(),
+                role,
+                isShared,
+                hasGuest,
+                regions
+        );
+    }
+
+    // entity -> response dto 변환 (READ: 특정 일정 조회 - Events 포함)
+    public static ItineraryResponseDTO from(ItineraryCollaborator collaborator, List<ItineraryRegionDTO> regions) {
+        Itinerary itinerary = collaborator.getItinerary();
+        return new ItineraryResponseDTO(
+                itinerary.getId(),
+                itinerary.getItineraryName(),
+                itinerary.getStartDate(),
+                itinerary.getTotalDays(),
+                itinerary.getTransportationType(),
+                itinerary.getCreatedDate(),
+                itinerary.getModifiedDate(),
+                collaborator.getIcRole(),
+                null,
+                null,
+                regions
+        );
+    }
+
+    // 기존 from 유지 (기존 호환성 필요 시)
     public static ItineraryResponseDTO from(Itinerary itinerary, String role, boolean isShared, boolean hasGuest) {
         return new ItineraryResponseDTO(
                 itinerary.getId(),
                 itinerary.getItineraryName(),
                 itinerary.getStartDate(),
-                itinerary.getTotalDays(),  // totalDays 사용
-                itinerary.getTransportationType(), // transportationType 사용
+                itinerary.getTotalDays(),
+                itinerary.getTransportationType(),
                 itinerary.getCreatedDate(),
                 itinerary.getModifiedDate(),
                 role,
                 isShared,
-                hasGuest
+                hasGuest,
+                null
         );
     }
 
-    // entity -> response dto 변환 (READ: 특정 일정 조회 - Events 포함)
     public static ItineraryResponseDTO from(ItineraryCollaborator collaborator) {
         Itinerary itinerary = collaborator.getItinerary();
         return new ItineraryResponseDTO(
                 itinerary.getId(),
                 itinerary.getItineraryName(),
                 itinerary.getStartDate(),
-                itinerary.getTotalDays(),  // totalDays 사용
-                itinerary.getTransportationType(), // transportationType 사용
+                itinerary.getTotalDays(),
+                itinerary.getTransportationType(),
                 itinerary.getCreatedDate(),
                 itinerary.getModifiedDate(),
                 collaborator.getIcRole(),
+                null,
                 null,
                 null
         );

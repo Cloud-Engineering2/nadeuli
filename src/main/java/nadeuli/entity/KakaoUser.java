@@ -21,7 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users2")
 @Getter
 @NoArgsConstructor
 public class KakaoUser {

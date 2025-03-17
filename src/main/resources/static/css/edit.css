@@ -1,66 +1,16 @@
-@font-face {
-    font-family: 'NotoSansKRVar';
-    src: url('../fonts/NotoSansKR-VariableFont_wght.ttf') format('truetype');
-    font-weight: 100 900;
+.header-inner{
+    max-width: none !important;
 }
-
-
-html, body {
-    height: 100%;
-    margin: 0;
-    overflow: hidden; /* 스크롤 제거 */
-    font-family: 'NotoSansKRVar', sans-serif;
-    font-weight: 400;
-    font-size: 16px;
-}
-
-body {
-    background: #F3F3F3; /* 기존 배경색을 부드러운 White 계열로 변경 */
-}
-/*body {*/
-/*    overflow-x: hidden;*/
-/*}*/
-
-/* 기본 스크롤바 스타일 */
-/* 공통 스타일 */
-body {
-    scrollbar-width: thin; /* Firefox용 얇은 스크롤바 */
-    scrollbar-color: #888 #ddd; /* thumb: 회색, track: 연한 회색 */
-}
-/* 모든 요소에 적용 */
-* {
-    /* 스크롤바 색상 설정: 엄지(thumb)와 트랙(track) */
-    scrollbar-color: #888 #f1f1f1;
-    /* 스크롤바 두께 설정: 'auto' 또는 'thin' */
-    scrollbar-width: thin;
-}
-
-/* WebKit 기반 브라우저를 위한 비표준 구현 */
-::-webkit-scrollbar {
-    width: 8px; /* 세로 스크롤바 너비 */
-    height: 8px; /* 가로 스크롤바 높이 */
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: #888;
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-
-
 
 .container-fluid {
     display: flex;
-    height: calc(100vh - 60px); /* 헤더 높이 제외 */
-    padding : 0px;
+    height: calc(100vh - 50px); /* 헤더 높이 제외 */
+    padding : 0 0 3px 0;
+    margin-top : 50px;
 }
 /* 왼쪽 패널 */
 #sidebar {
-    background: #fdfdfd; /* 기존 배경을 Beige 계열로 변경 */
+    background: #E9DCBE; /* 기존 배경을 Beige 계열로 변경 */
     color: #343434; /* 텍스트를 Black 계열로 변경하여 가독성 향상 */
     flex-grow: 1;
     min-width: 300px;
@@ -162,9 +112,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /*background-color: #343434;*/
+    background-color: #343434;
     font-weight: bold;
-    color: #2f2f2f;
+    color: #f1f1f1;
     padding: 8px;
     /*border-bottom: 1px #e3e3e3 solid;*/
 }
@@ -182,6 +132,7 @@ body {
     display: flex;
     justify-content: space-between; /* 좌우 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
+    background-color: #efe9db;
     /*background: linear-gradient(88deg, #d5d3cf, #ffffff00); !* White와 Beige 그라디언트 적용 *!*/
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     width: 100%;
@@ -224,6 +175,28 @@ body {
     margin-left: auto; /* 버튼을 오른쪽 끝으로 이동 */
 }
 
+.toggle-map-button{
+    background: none;
+    border: none;
+    font-size: 25px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.toggle-map-button .on-icon {
+    display: none;
+}
+
+.toggle-map-button.on .on-icon {
+    display: inline-block;
+}
+.toggle-map-button.on .off-icon {
+    display: none;
+}
+
+
+
 .save-button{
     background: none;
     border: none;
@@ -252,9 +225,10 @@ body {
 
 .event-container {
     /*box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);*/
-    background: #f5f5f5;
+    background: #eee6d5;
     min-height: 70px;
-    border-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
     padding: 20px;
 }
 
@@ -280,7 +254,18 @@ body {
     width: 100%;
 }
 
-
+.input-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+}
+.travel-minute-input {
+    width: 51px;
+    height: 25px;
+    border: none;
+    text-align: right;
+}
 
 .event-content {
     display: flex;
@@ -556,6 +541,7 @@ body {
     user-select: none;
 }
 
+
 .modal-dialog {
     max-width: 750px; /* 모달이 달력을 포함할 만큼 충분히 넓게 설정 */
     user-select: none;
@@ -764,7 +750,6 @@ body {
 
 .place-container {
     margin: 5px 0 0 10px;
-    padding-bottom: 10px;
     width: 400px;
     min-width: 400px;
     min-height: 0;
@@ -807,16 +792,45 @@ body {
     position: relative;
     margin: 5px 0 5px 0;
 }
-.search-icon, .search-clear {
+.search-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
+    width: 60px;
     font-size: 16px;
     user-select: none;
     color: #666;
     cursor: pointer;
 }
+.search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    font-size: 16px;
+    user-select: none;
+    color: #878787;
+    cursor: pointer;
+}
+
+.search-select{
+    height: 100%;
+    width: 80px;
+    font-size: 0.85em;
+    border: none;
+    /*appearance: none;*/
+    outline: none;
+    cursor: pointer;
+}
+
+.search-select:focus {
+    outline: none;
+}
+
+.d-none {
+    display: none !important;
+}
+
 .search-input {
     flex-grow: 1;
     border: none;
@@ -1208,4 +1222,13 @@ body {
 
 .place-type[data-place-type="CONVENIENCE"] {
     color: #364350; /* 모던 그레이 (뉴트럴 톤) */
+}
+
+
+.right-side-map.hidden {
+    display: none !important;
+}
+
+.resize-handle.hidden{
+    display: none !important;
 }

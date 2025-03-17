@@ -184,7 +184,6 @@ function addMarker(place, order) {
 
         if (selectedMarker !== null) {
             const content = `
-<!--            <div style="text-align: center;">-->
             <div class="place-info">
                 <img src="${place.imageUrl}" style="width:80%; max-width:300px; margin-bottom:10px;" alt="">
                 <h2>${place.placeName}</h2>
