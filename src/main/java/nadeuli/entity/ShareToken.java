@@ -10,6 +10,7 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 박한철     2025.03.07    최초작성
+ * 박한철     2025.03.17    id -> sid로 수정
  *
  * ========================================================
  */
@@ -32,7 +33,7 @@ public class ShareToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "sid", nullable = false)
     private Long id;
 
     @Column(name = "uuid", nullable = false, length = 32, unique = true)
