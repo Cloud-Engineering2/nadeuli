@@ -36,7 +36,7 @@ public class User implements Serializable {
     @Column(name = "user_name", nullable = false, length = 255)
     private String userName;
 
-    @Column(name = "profile_image", columnDefinition = "TEXT")
+    @Column(name = "profile_image_url", columnDefinition = "TEXT")
     private String profileImage;
 
     @Enumerated(EnumType.STRING)
