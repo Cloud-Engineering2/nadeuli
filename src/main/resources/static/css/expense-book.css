@@ -985,10 +985,11 @@ body {
         justify-content: center; /* 가로 중앙 정렬 */
         align-items: center; /* 세로 중앙 정렬 */
         border-radius: 10px; /* 둥근 모서리 */
+        border-color: #ffffff;
         background-color: #8e8b82; /* 배경색 */
         margin-left: 15%; /* 왼쪽 여백 */
-        width: 15%; /* 너비 설정 */
-        height: 3%
+        width: 8%; /* 너비 설정 */
+        height: 2%
     }
 
     .plus-icon {
