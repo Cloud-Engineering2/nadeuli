@@ -1186,29 +1186,31 @@ $(document).on("click", ".expense-item-list-addition", function () {
 
 
 async function loadExpenseItemListAndAddition(iid, ieid) {
-    // traveler 조회
-    let travelersResponse = callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
     let travelers = [];
-    travelersResponse.then((data) => {
-        for (let t of data.travelers) { travelers.push(t.name); }
-        })
-        .catch((error) => {
-            console.error("에러 발생:", error);
-        });
+    try {
+        // 여행자 정보 가져오기
+        const travelersResponse = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
 
-    // const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
-    // const travelerData = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
-    // const adjustmentBasicInfoRemainedBudget = $("#adjustmentBasicInfoRemainedBudget");
-    // const adjustmentBasicInfoTraveler = $("#adjustmentBasicInfoTraveler");
-    // // 남은 예산
-    // const remainedBudget = totalAdjustmentData.totalBalance;
-    // // 함께하는 traveler
-    // const numberOfTravelers = travelerData.numberOfTravelers;
-    //
-    // // 남은 예산
-    // adjustmentBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
-    // // 함께하는 traveler
-    // adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
+        // API에서 받은 여행자 데이터로 travelers 배열 채우기
+        for (let t of travelersResponse.travelers) {
+            travelers.push(t.name);
+        }
+
+        // 여행자 정보 화면에 업데이트
+        const expenseBasicInfoTraveler = $("#expenseBasicInfoTraveler");
+        expenseBasicInfoTraveler.html(`${travelers.length} 명과 함께하고 있습니다`);
+        console.log(travelers.length);
+
+        // 남은 예산 정보 가져오기
+        const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
+        const remainedBudget = totalAdjustmentData.totalBalance;
+        const expenseBasicInfoRemainedBudget = $("#expenseBasicInfoRemainedBudget");
+        expenseBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
+        console.log(remainedBudget);
+
+    } catch (error) {
+        console.error("에러 발생:", error);
+    }
 
     // expense-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
     fetch(`/itinerary/${iid}/events/${ieid}/expense-right`) // fetch("/expense-book/expense-right.html")
@@ -1286,9 +1288,9 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
             expenseItems.map(expenseItem =>
                 `<div class="expense-item-box" id="expenseItemBox-${expenseItem.id}" style="display: flex;">
                     <div class="expense-item-content" id="expenseItemContent">${expenseItem.content}</div>
-                    <div class="expense-item-expenditure" id="expenseItemExpenditure">${expenseItem.expense}원</div>
-                    <div class="expense-item-payer" id="expenseItemPayer">${expenseItem.travelerDTO.travelerName}</div>
-                    <div class="expense-item-with-whom" id="expenseItemWithWhom-${expenseItem.id}"><small class="with-whom" data-emid="${expenseItem.id}">💡 함께한 사람: 로딩 중...</small></div>
+                    <div class="expense-item-expenditure" id="expenseItemExpenditure">${expenseItem.expense} 원</div>
+                    <div class="expense-item-payer" id="expenseItemPayer">@${expenseItem.travelerDTO.travelerName}</div>
+                    <div class="expense-item-with-whom" id="expenseItemWithWhom-${expenseItem.id}"><span class="with-whom" data-emid="${expenseItem.id}">💡 함께한 사람: 로딩 중...</span></div>
                 </div>`
             ).join("")
         );
@@ -1301,7 +1303,7 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
 
                 // 특정 expense 항목의 withWhom 데이터를 업데이트
                 $(`#expenseItemWithWhom-${expenseItem.id} .with-whom`).html(
-                    `${withWhomData.map(withWhom => withWhom.travelerDTO.travelerName).join(", ")}`
+                    `${withWhomData.map(withWhom => `@${withWhom.travelerDTO.travelerName}`).join(", ")}`
                 );
             } catch (whomError) {
                 console.error(`Error loading withWhom data for expense ${expenseItem.id}:`, whomError);
@@ -1318,10 +1320,10 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
 // html : expense item 추가 폼
 function getExpenseItemForm(itineraryId, itineraryEventId) {
     return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
-                <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" placeholder="지출 내용">
-                <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required placeholder="(원)">
-                <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required placeholder="지출한 사람">
-                <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom" placeholder="함께한 사람">
+                <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" placeholder="📝지출 내용">
+                <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required placeholder="💸(원)">
+                <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required placeholder="😄지출한 사람">
+                <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom" placeholder="👥함께한 사람">
                 <!-- Expense Item 추가 + 버튼 -->
                 <button type="submit" class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
                     <i class="fa-solid fa-plus plus-icon"></i>
