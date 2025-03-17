@@ -287,7 +287,9 @@ public class PlaceService {
             return CompletableFuture.completedFuture(resultDto);
 
         } catch (Exception e) {
+
             System.err.println("Kakao 응답 파싱 오류: " + e.getMessage());
+            e.printStackTrace();
             return CompletableFuture.completedFuture(new RouteResponseDto(-1, 0));
         }
     }

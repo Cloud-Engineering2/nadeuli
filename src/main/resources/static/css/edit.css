@@ -1,3 +1,7 @@
+.header-inner{
+    max-width: none !important;
+}
+
 .container-fluid {
     display: flex;
     height: calc(100vh - 50px); /* 헤더 높이 제외 */
@@ -6,7 +10,7 @@
 }
 /* 왼쪽 패널 */
 #sidebar {
-    background: #fdfdfd; /* 기존 배경을 Beige 계열로 변경 */
+    background: #E9DCBE; /* 기존 배경을 Beige 계열로 변경 */
     color: #343434; /* 텍스트를 Black 계열로 변경하여 가독성 향상 */
     flex-grow: 1;
     min-width: 300px;
@@ -108,9 +112,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /*background-color: #343434;*/
+    background-color: #343434;
     font-weight: bold;
-    color: #2f2f2f;
+    color: #f1f1f1;
     padding: 8px;
     /*border-bottom: 1px #e3e3e3 solid;*/
 }
@@ -128,6 +132,7 @@
     display: flex;
     justify-content: space-between; /* 좌우 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
+    background-color: #efe9db;
     /*background: linear-gradient(88deg, #d5d3cf, #ffffff00); !* White와 Beige 그라디언트 적용 *!*/
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     width: 100%;
@@ -220,9 +225,10 @@
 
 .event-container {
     /*box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);*/
-    background: #f5f5f5;
+    background: #eee6d5;
     min-height: 70px;
-    border-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
     padding: 20px;
 }
 
@@ -744,7 +750,6 @@
 
 .place-container {
     margin: 5px 0 0 10px;
-    padding-bottom: 10px;
     width: 400px;
     min-width: 400px;
     min-height: 0;
@@ -787,16 +792,45 @@
     position: relative;
     margin: 5px 0 5px 0;
 }
-.search-icon, .search-clear {
+.search-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
+    width: 60px;
     font-size: 16px;
     user-select: none;
     color: #666;
     cursor: pointer;
 }
+.search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    font-size: 16px;
+    user-select: none;
+    color: #878787;
+    cursor: pointer;
+}
+
+.search-select{
+    height: 100%;
+    width: 80px;
+    font-size: 0.85em;
+    border: none;
+    /*appearance: none;*/
+    outline: none;
+    cursor: pointer;
+}
+
+.search-select:focus {
+    outline: none;
+}
+
+.d-none {
+    display: none !important;
+}
+
 .search-input {
     flex-grow: 1;
     border: none;

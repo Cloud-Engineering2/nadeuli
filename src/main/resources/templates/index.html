@@ -3,179 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Google Maps 장소 검색</title>
-    <script>
-        let map;
-        let markers = [];
-        let debounceTimer;
-
-        // function requestPostGoogleMap() {
-        //     fetch('/api/place/search', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json'
-        //         },
-        //         body: JSON.stringify({
-        //             userId: '1234',
-        //             googlePlaceId: 'PLACE_ID',
-        //             placeName: '메이드 유의원'
-        //         })
-        //     })
-        //         .then(response => response.json())
-        //         .then(data => console.log('응답 데이터:', data))
-        //         .catch(error => console.error('에러 발생:', error));
-        // }
-
-
-        function loadGoogleMapsApi() {
-            fetch('/api/place/apikey')
-                .then(response => response.text())
-                .then(apiKey => {
-                    let script = document.createElement("script");
-                    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
-                    script.async = true;
-                    script.defer = true;
-                    document.head.appendChild(script);
-                })
-                .catch(error => console.error("API Key 가져오기 실패:", error));
-        }
-
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 37.5665, lng: 126.9780 },
-                zoom: 13
-            });
-        }
-
-        function searchPlaces() {
-            let input = document.getElementById("searchInput").value.trim();
-
-            if (input.length < 2) {
-                document.getElementById("results").innerHTML = "";
-                return;
-            }
-
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                fetch(`/api/place/autocomplete?input=${encodeURIComponent(input)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        let results = data.predictions;
-                        let list = document.getElementById("results");
-                        list.innerHTML = "";
-
-                        if (results.length === 0) {
-                            list.innerHTML = "<li>검색 결과가 없습니다.</li>";
-                            return;
-                        }
-
-                        results.forEach((place, index) => {
-                            let li = document.createElement("li");
-                            li.textContent = place.explanation;
-                            li.onclick = () => selectPlace(place.place_id, place.explanation);
-                            list.appendChild(li);
-                        });
-                    })
-                    .catch(error => console.error("Error:", error));
-            }, 300);
-        }
-
-        function selectPlace(placeId, placeName) {
-            fetch(`/api/place/place-details`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    placeId: placeId,
-                    mainText: placeName
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("📌 API 응답 데이터:", data);
-
-                    // ✅ 응답 데이터에서 lat, lng 가져오기
-                    if (!data.lat || !data.lng) {
-                        console.error("잘못된 장소 데이터:", data);
-                        return;
-                    }
-
-                    let location = { lat: data.lat, lng: data.lng };
-                    console.log("📍 지도 이동:", location);
-
-                    // ✅ 지도 중심 이동
-                    map.setCenter(location);
-                    map.setZoom(15);
-
-                    // ✅ 기존 마커 삭제
-                    markers.forEach(marker => marker.setMap(null));
-                    markers = [];
-
-                    // ✅ 새로운 마커 추가
-                    let marker = new google.maps.Marker({
-                        position: location,
-                        map: map
-                    });
-                    markers.push(marker);
-                })
-                .catch(error => console.error("Error:", error));
-        }
-
-        document.getElementById("searchInput").addEventListener("keyup", function(event) {
-            if (event.key === "Enter") {
-                let resultsList = document.getElementById("results").getElementsByTagName("li");
-
-                if (resultsList.length > 0) {
-                    resultsList[0].click();
-                }
-            }
-        });
-    </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        #map {
-            width: 100%;
-            height: 500px;
-            margin-top: 10px;
-        }
-        #searchContainer {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        #searchInput {
-            width: 300px;
-            padding: 8px;
-            font-size: 16px;
-        }
-        #results {
-            list-style: none;
-            padding: 0;
-            max-width: 320px;
-            background: white;
-            border: 1px solid #ccc;
-            position: absolute;
-            z-index: 10;
-        }
-        #results li {
-            padding: 8px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-        #results li:hover {
-            background: #f0f0f0;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/header-footer.css">
 </head>
-<body onload="loadGoogleMapsApi()">
-<div id="searchContainer">
-    <input id="searchInput" type="text" placeholder="장소 검색" oninput="searchPlaces()">
-    <button onclick="searchPlaces()">검색</button>
+<body>
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<div class="naduli-layout">
+    <div class="main-text-wrap">
+        <div class="main-text">
+            <span class="highlight">나</span>들이 가는 날 설레는 마음으로 짐을 챙기고,<br>
+            <span class="highlight">들</span>판을 걷고 맑은 공기를 마시며 경험한<br>
+            <span class="highlight">이</span> 눈부신 순간을 기록해요!
+        </div>
+    </div>
+    <div class="side-panel">
+        <div class="img-wrapper">
+
+        </div>
+        <div class="sub-header">여행 계획부터 결산까지 <strong>나들이</strong>와 함께</div>
+        <a href="#" class="plan-button">나들이 계획하기</a>
+    </div>
 </div>
-<ul id="results"></ul>
-<div id="map"></div>
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
 </body>
 </html>

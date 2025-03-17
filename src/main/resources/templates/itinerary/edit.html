@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-<!--    <script src="https://cdn.jsdelivr.net/npm/jquery-sortablejs@latest/jquery-sortable.js"></script>-->
     <!-- Moment.js & Date Range Picker -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
@@ -152,9 +151,10 @@
                             <div class="tab-pane active" id="nadeuli-search-tab">
                                 <div class="search-area">
                                     <div class="search-container">
-                                        <span class="search-icon" onclick="textSearchNadeuliPlaces()"><i class="bi bi-search"></i></span>
+                                        <select id="region-select" class="search-select d-none"></select>
                                         <input type="text" id="nadeuli-place-search" class="search-input" placeholder="나들이 장소 검색" autocomplete="off" onkeydown="handleNadeuliKeyPress(event)" />
                                         <span class="search-clear" onclick="clearNadeuliSearch()"><i class="bi bi-x"></i></span>
+                                        <span class="search-icon" onclick="textSearchNadeuliPlaces()"><i class="bi bi-search"></i></span>
                                     </div>
                                     <div class="filter-buttons">
                                         <button class="filter-button" data-filter="LANDMARK">명소</button>
@@ -174,9 +174,10 @@
                             <div class="tab-pane" id="google-search-tab">
                                 <div class="search-area">
                                     <div class="search-container">
-                                        <span class="search-icon" onclick="searchGooglePlaces()"><i class="bi bi-search"></i></span>
+                                        <select id="google-region-select" class="search-select d-none"></select>
                                         <input type="text" id="google-place-search" class="search-input" placeholder="Google 장소 검색" autocomplete="off" onkeydown="handleGoogleKeyPress(event)" />
                                         <span class="search-clear" onclick="clearGoogleSearch()"><i class="bi bi-x"></i></span>
+                                        <span class="search-icon" onclick="searchGooglePlaces()"><i class="bi bi-search"></i></span>
                                     </div>
                                     <div class="place-map-area-wrap">
                                         <div class="map-area">
