@@ -50,7 +50,6 @@ public class UserController {
     }
 
 
-
     @PostMapping("/refresh/access")
     public ResponseEntity<?> refreshAccessToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
         log.info("refreshToken: {}", refreshToken);
