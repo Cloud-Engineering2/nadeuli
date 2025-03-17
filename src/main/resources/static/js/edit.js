@@ -14,6 +14,14 @@ let mapReady = false;
 let dataReady = false;
 let isPlacePageInitialLoad = false;
 let savedPlaceMarker = null;
+let selectedRegionLat = null;
+let selectedRegionLng = null;
+let selectedRegionRadius = null;
+let googleRegionLat = null;
+let googleRegionLng = null;
+let googleRegionRadius = null;
+
+
 // 모달 전역변수
 let currentModalStep = 1;
 const modalTitle = document.getElementById("modal-title");
@@ -45,6 +53,7 @@ $(document).ready(function () {
         dataType: "json",
         success: function (data) {
             createData(data);
+            initRegionSelect();
             renderItinerary();
             initDateRangePickerModal();
             initSidebarResize();
@@ -64,7 +73,7 @@ function createData(data) {
 
     // 일정 정보 복사
     itinerary = {...data.itinerary};
-    regions = {...data.regions};
+    regions = [...data.regions];
     console.log(regions,"지역 리스트")
     // 일차별 일정 복사 및 초기화
     perDayMap.clear();
@@ -1492,9 +1501,9 @@ function fetchRecommendedPlaces(pageSize = 10) {
     const searchQuery = activeSearchQuery; // ✅ 고정된 검색어만 서버로 보냄
 
     const requestData = {
-        userLng: 126.49,
-        userLat: 33.44,
-        radius: 100000,
+        userLng: selectedRegionLng ?? 126.49,
+        userLat: selectedRegionLat ?? 33.44,
+        radius: selectedRegionRadius ?? 100000,
         pageSize: pageSize,
         cursorScore: cursorScore,
         cursorId: cursorId,
@@ -1617,8 +1626,11 @@ function searchGooglePlaces() {
     let query = document.getElementById("google-place-search").value;
     if (!query) return;
 
-    let location = {lat: 33.4996, lng: 126.5312}; // 제주도 위도, 경도
-    let radius = 50000; // 반경 50km
+    let location = {
+        lat: googleRegionLat ?? 33.4996,
+        lng: googleRegionLng ?? 126.5312
+    };
+    let radius = googleRegionRadius ?? 50000;
 
     $.ajax({
         url: "/api/google-places/search",
@@ -2055,7 +2067,7 @@ function clearPolylines() {
 function initMap() {
     console.log("initMap Execute");
     map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 37.5665, lng: 126.9780 },
+        center: { lat: googleRegionLat, lng: googleRegionLng },
         zoom: 13,
     });
 
@@ -2490,5 +2502,58 @@ $(document).on("click", ".toggle-map-button", function () {
         $resizeHandle.css("left", sidebarWidth + "px");
     } else {
         $(this).attr("title", "지도 보기");
+    }
+});
+
+
+function initRegionSelect() {
+    const $nadeuliRegionSelect = $("#region-select");
+    const $googleRegionSelect = $("#google-region-select");
+
+    $nadeuliRegionSelect.empty();
+    $googleRegionSelect.empty();
+
+    if (!regions || !Array.isArray(regions) || regions.length <= 1) {
+        $nadeuliRegionSelect.addClass("d-none");
+        $googleRegionSelect.addClass("d-none");
+        return;
+    }
+
+    $nadeuliRegionSelect.removeClass("d-none");
+    $googleRegionSelect.removeClass("d-none");
+
+    regions.forEach(region => {
+        const option = `<option value="${region.regionId}" data-lat="${region.latitude}" data-lng="${region.longitude}" data-radius="${region.radius}">${region.regionName}</option>`;
+        $nadeuliRegionSelect.append(option);
+        $googleRegionSelect.append(option);
+    });
+}
+
+
+$("#region-select").on("change", function () {
+    const $selected = $(this).find("option:selected");
+    selectedRegionLat = parseFloat($selected.data("lat"));
+    selectedRegionLng = parseFloat($selected.data("lng"));
+    selectedRegionRadius = parseInt($selected.data("radius"));
+
+    resetRecommendationAndFetch();
+});
+
+
+$("#google-region-select").on("change", function () {
+    const $selected = $(this).find("option:selected");
+    googleRegionLat = parseFloat($selected.data("lat"));
+    googleRegionLng = parseFloat($selected.data("lng"));
+    googleRegionRadius = parseInt($selected.data("radius"));
+
+
+
+    if (map && googleRegionLat && googleRegionLng) {
+        map.setCenter({ lat: googleRegionLat, lng: googleRegionLng });
+        map.setZoom(13); // 필요 시 원하는 zoom 조정
+    }
+
+    if ($("#google-place-search").val().trim().length > 0) {
+        searchGooglePlaces();
     }
 });

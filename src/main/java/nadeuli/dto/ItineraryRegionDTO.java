@@ -30,6 +30,7 @@ public class ItineraryRegionDTO {
     private String regionName;
     private Double latitude;
     private Double longitude;
+    private Double radius;
 
     // Entity → DTO 변환
     public static ItineraryRegionDTO from(ItineraryRegion entity) {
@@ -38,7 +39,8 @@ public class ItineraryRegionDTO {
                 entity.getRegion().getId(),
                 entity.getRegion().getName(),
                 entity.getRegion().getLatitude(),
-                entity.getRegion().getLongitude()
+                entity.getRegion().getLongitude(),
+                entity.getRegion().getRadius()
         );
     }
 }
