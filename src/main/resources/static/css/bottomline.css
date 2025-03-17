@@ -7,6 +7,11 @@
     src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
 }
 
+@font-face {
+    font-family: 'NotoSansKRVar';
+    src: url('../fonts/NotoSansKR-VariableFont_wght.ttf') format('truetype');
+}
+
 body {
     font-family: 'GriunNoltoTAENGGU';
     font-size: 1.2rem; /* 기존 : 17px*/
@@ -89,6 +94,7 @@ body {
     width: 50%;
     /*display: flex;*/
     flex-direction: column;
+    /*font-family: 'NotoSansKRVar';*/
 }
 
 .map-container, .expenses-container {
@@ -113,6 +119,7 @@ body {
 .expenses-container {
     display: flex; /* Flexbox 활성화 */
     flex-direction: row; /* 가로로 나열 */
+    font-size: 17px;
 }
 
 /* 스크롤바를 클릭하거나 드래그할 때 */
