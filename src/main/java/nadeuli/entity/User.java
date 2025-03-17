@@ -7,12 +7,16 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "unique_account", columnNames = {"user_email", "provider"})
+        }
+)
 public class User implements Serializable {
 
     @Serial
@@ -23,7 +27,7 @@ public class User implements Serializable {
     @Column(name = "uid")
     private Long id;
 
-    @Column(name = "user_email", nullable = false, unique = true)
+    @Column(name = "user_email", nullable = false)
     private String userEmail;
 
     @Column(name = "provider", nullable = false, length = 20)
@@ -53,7 +57,6 @@ public class User implements Serializable {
 
     @Column(name = "refresh_token_expiry_at", nullable = false)
     private LocalDateTime refreshTokenExpiryAt;
-
 
     public void updateRefreshToken(String refreshToken, LocalDateTime expiryAt) {
         this.refreshToken = refreshToken;
@@ -105,3 +108,4 @@ public class User implements Serializable {
         );
     }
 }
+
