@@ -38,7 +38,7 @@ public class ItineraryRegion {
     private Itinerary itinerary;
 
     @ManyToOne
-    @MapsId("rid") // 복합키의 일부(`rid`)를 매핑
+    @MapsId("regionId") // 복합키의 일부(`rid`)를 매핑
     @JoinColumn(name = "rid")
     private Region region;
 
