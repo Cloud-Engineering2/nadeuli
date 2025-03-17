@@ -24,22 +24,26 @@
 </head>
 <body>
 
-<div class="expense-background" id="expenseBackground">
-    <div class="expense-adjustment-tab" id="expenseAdjustmentTab">
-        <h4>경비 / 정산</h4>
-    </div>
+<div class="adjustment-header-background" id="adjustmentHeaderBackground">
+    <span class="adjustment-header-tab-active" id="adjustmentHeaderTabActive">경 비</span>
+    <span class="adjustment-header-tab-inactive" id="adjustmentHeaderTabInactive">경 비</span>
 
-    <div class="line-for-border-radius" id="LineForBorderRadius">
-        <!-- 해당 Itinerary Event의 기본 재정 정보 -->
-        <div class="basic-info">
-            <div class="col-md-6 basic-info-col-md-6">남은 예산 : 100,000원</div>
-            <div class="col-md-6 basic-info-col-md-6">3명의 친구와 함께 하고 있습니다</div>
+    <div class="itinerary-event-adjustment-info" id="itineraryEventAdjustmentInfo">
+
+
+
+        <div class="adjustment-basic-info" id="adjustmentBasicInfo">
+            <!-- 남은 예산 -->
+            <span class="adjustment-basic-info-remained-budget2" id="adjustmentBasicInfoRemainedBudget2">남은 예산 : 100,000 원</span>
+            <!-- 함께하는 친구 -->
+            <span class="adjustment-basic-info-traveler2" id="adjustmentBasicInfoTraveler2">3 명의 친구와 함께하고 있습니다</span>
         </div>
+
         <!-- Expense Item 조회 -->
         <div class="expense-item-container" id="expenseItemContainer">
             <!-- Expense Item 리스트 제목 -->
             <div class="expense-item-title" id="expenseItemTitle">
-                <div>CONTENT</div><div>EXPENDITURE</div><div>PAYER</div><div>withWHOM</div>
+                <div class="expense-item-content-title">CONTENT</div><div class="expense-item-expenditure-title">EXPENDITURE</div><div class="expense-item-payer-title">PAYER</div><div class="expense-item-with-whom-title">withWHOM</div>
             </div>
             <hr>
             <!-- Expense Item 리스트-->
@@ -47,17 +51,6 @@
             <!-- 경비 내역 추가 폼 -->
             <div class="expense-item-creation" id="expenseItemCreation"></div>
 
-
-
-            <!-- Expense Item 입력 모달 창 -->
-            <div class="expense-item-creation-modal" id="expenseItemCreationModal">
-                <div class="expense-item-creation-modal-content">
-                    <span class="expense-item-creation-modal-close">&times;</span>
-
-                    <!-- 폼 -->
-
-                </div>
-            </div>
 
         </div>
     </div>

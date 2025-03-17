@@ -96,6 +96,11 @@ public class ExpenseBookService {
             eachExpenses.put(payerName, payerExpense + adjustmentPayerCost);
 
             for (String with : withWhomNames) {
+
+                if (with.equals(payerName)) {   // payerName == with인 경우 skip
+                    continue;
+                }
+
                 Person withWhomPerson = persons.getOrDefault(with, new Person());
                 Long withWhomoExpense = eachExpenses.getOrDefault(with, 0L);
                 eachExpenses.put(with, withWhomoExpense + adjustmentRoundCost);
@@ -104,6 +109,7 @@ public class ExpenseBookService {
                 withWhomPerson.send(payerName, adjustmentRoundCost);
                 persons.put(with, withWhomPerson);
             }
+
 
             currentItineraryEventTotalExpense += expenseItem.getExpense();
         }
