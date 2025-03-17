@@ -13,6 +13,7 @@
  * 박한철    2025.02.26     캘린더선택페이지(테스트용) 추가 -> 삭제
  * 박한철    2025.03.11     테스트 페이지 정리
  * 박한철    2025.03.15     템플릿 리턴 경로 수정 "/.../..." -> ".../..."
+ * 박한철    2025.03.17     view 페이지 추가
  * ========================================================
  */
 
@@ -49,9 +50,13 @@ public class ItineraryController {
     @GetMapping("/edit/{itineraryId}")
     public String showEditPage(@PathVariable Long itineraryId, Model model) {
         model.addAttribute("googleApiKey", googleMapsApiKey);
-
-
         return "itinerary/edit";  // 정적 HTML 페이지 반환
+    }
+
+    @GetMapping("/view/{itineraryId}")
+    public String showViewPage(@PathVariable Long itineraryId, Model model) {
+        model.addAttribute("googleApiKey", googleMapsApiKey);
+        return "itinerary/view";  // 정적 HTML 페이지 반환
     }
 
     @GetMapping("/region")

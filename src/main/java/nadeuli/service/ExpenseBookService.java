@@ -14,6 +14,7 @@
  * 고민정    2025.03.11   1/n 정산 메서드 수정
  * 이홍비    2025.03.13   고민정 작성 ExpenseBookController - getFinalAdjustment() 내부 로직
  *                       Service 에 추가
+ * 박한철    2025.03.17   getEachTotalExpense 추가
  * ========================================================
  */
 
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.Person;
 import nadeuli.dto.response.AdjustmentResponseDTO;
+import nadeuli.dto.response.EventExpenseSummaryDTO;
+import nadeuli.dto.response.EventExpenseSummaryListDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
 import nadeuli.entity.*;
 import nadeuli.repository.*;
@@ -55,6 +58,28 @@ public class ExpenseBookService {
         return expenseBook.getId();
     }
 
+    public EventExpenseSummaryListDTO getEachTotalExpense(Long itineraryId) {
+        // 1. Itinerary → ExpenseBook 조회
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
+
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다."));
+
+        // 2. 그룹 합산 조회
+        List<Object[]> result = expenseItemRepository.findTotalExpenseByEventByExpenseBookId(expenseBook.getId());
+
+        // 3. DTO 변환
+        List<EventExpenseSummaryDTO> summaryList = result.stream()
+                .map(row -> new EventExpenseSummaryDTO(
+                        ((Number) row[0]).longValue(), // eventId
+                        ((Number) row[1]).longValue()  // totalExpense
+                ))
+                .collect(Collectors.toList());
+
+        // 4. 리스트 DTO로 감싸서 반환
+        return new EventExpenseSummaryListDTO(summaryList);
+    }
 
 
     // 1/n 정산
