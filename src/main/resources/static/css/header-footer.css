@@ -6,60 +6,25 @@
     src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
 }
 
-@font-face {
-    font-family: 'NotoSansKRVar';
-    src: url('../fonts/NotoSansKR-VariableFont_wght.ttf') format('truetype');
-    font-weight: 100 900;
+
+/* header */
+.header {
+    display: flex;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    border-bottom: 1.5px solid #8E8B82;
+
+    color: #343434;
+    background-color: #F3F3F3;
+    z-index: 1000;
+
 }
-
-
-html, body {
-    height: 100%;
-    margin: 0;
-    overflow: hidden;
-    font-family: 'NotoSansKRVar', sans-serif;
-    font-weight: 400;
-    font-size: 16px;
-}
-
-body {
-    background: #FDFDFD;
-}
-
-/* 기본 스크롤바 스타일 */
-/* 공통 스타일 */
-body {
-    scrollbar-width: thin; /* Firefox용 얇은 스크롤바 */
-    scrollbar-color: #888 #ddd; /* thumb: 회색, track: 연한 회색 */
-}
-/* 모든 요소에 적용 */
-* {
-    /* 스크롤바 색상 설정: 엄지(thumb)와 트랙(track) */
-    scrollbar-color: #888 #f1f1f1;
-    /* 스크롤바 두께 설정: 'auto' 또는 'thin' */
-    scrollbar-width: thin;
-}
-
-/* WebKit 기반 브라우저를 위한 비표준 구현 */
-::-webkit-scrollbar {
-    width: 8px; /* 세로 스크롤바 너비 */
-    height: 8px; /* 가로 스크롤바 높이 */
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: #888;
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-
-
-
-
-
 
 .header-inner {
     display: flex;
@@ -206,100 +171,4 @@ body {
 }
 .footer-div{
     user-select: none;
-}
-
-.naduli-layout {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 60px 40px;
-    gap: 40px;
-    flex-wrap: wrap;
-    background-color: #E9DCBE;
-    color: #343434;
-    margin-top: 50px;
-    height : calc(100vh - 150px);
-}
-
-
-
-
-.naduli-layout .main-text-wrap{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.naduli-layout .main-text-wrap,
-.naduli-layout .side-panel {
-    min-width: 300px;
-}
-
-.side-panel .img-wrapper {
-    background-color: black;
-    height: 250px;
-    width: 400px;
-}
-
-.naduli-layout .main-text-wrap {
-    user-select: none;
-    font-family: "GriunNoltoTAENGGU", sans-serif;
-    font-size: clamp(26px, 2.5vw, 32px); /* 반응형 글씨 크기 */
-    line-height: 1.8;
-    white-space: pre-line;
-}
-
-.naduli-layout .highlight {
-    font-weight: bold;
-    color: black;
-}
-
-.naduli-layout .side-panel {
-    user-select: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.naduli-layout .sub-header {
-    font-size: 16px;
-    color: #777;
-    margin-bottom: 20px;
-}
-
-.naduli-layout .plan-button {
-    cursor : pointer;
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: #444;
-    color: #fff;
-    font-size: 20px;
-    border-radius: 8px;
-    text-decoration: none;
-}
-
-.naduli-layout .plan-button:hover {
-    background-color: #222;
-}
-
-/* 반응형 레이아웃: 작은 화면일 때 column 전환 */
-@media (max-width: 768px) {
-    .naduli-layout {
-        flex-direction: row;
-        overflow-y: scroll;
-        height : calc(100vh - 50px);
-    }
-
-    .naduli-layout .main-text,
-    .naduli-layout .side-panel {
-        width: 100%;
-    }
-
-    .naduli-layout .side-panel {
-        margin-top: 20px;
-    }
-
-    .footer-div{
-        display: none;
-    }
 }
