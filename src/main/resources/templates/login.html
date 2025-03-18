@@ -3,16 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OAuth 로그인 선택</title>
+    <title>로그인</title>
+    <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body>
-<h2>로그인 선택</h2>
-<a href="/oauth2/authorization/google">
-    <button>Google 로그인</button>
-</a>
-<br><br>
-<a href="/oauth2/authorization/kakao">
-    <button>카카오 로그인</button>
-</a>
+<div class="login-container">
+    <h2>나들이</h2>
+    <img src="/images/logo.png" alt="로고" class="logo">
+    <p class="subtitle">여행의 계획부터 결산까지</p>
+    <p class="subtitle2">나들이와 함께</p>
+
+    <button class="login-btn">로그인</button>
+
+    <button class="kakao-btn" onclick="location.href='/oauth2/authorization/kakao'">
+        <img src="/images/kakao_logo.png" alt="카카오 아이콘">카카오 로그인
+    </button>
+
+    <button class="google-btn" onclick="location.href='/oauth2/authorization/google'">
+        <img src="/images/google_logo.png" alt="구글 아이콘">구글 로그인
+    </button>
+</div>
+
+<script>
+    async function fetchJwtToken() {
+        try {
+            const response = await fetch('/auth/oauth2/token', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('JWT 발급 실패');
+            }
+
+            const data = await response.json();
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+
+            console.log("✅ JWT 저장 완료!");
+            window.location.href = "/mypage"; // 로그인 후 마이페이지로 이동
+        } catch (error) {
+            console.error("🚨 JWT 가져오기 실패:", error);
+        }
+    }
+
+    window.onload = () => {
+        // ✅ 기존에 accessToken이 있으면 자동 이동 방지
+        if (!localStorage.getItem('accessToken')) {
+            console.log("🔄 로그인 필요, JWT 요청 안 함");
+            return;
+        }
+
+        console.log("✅ 로그인 상태 확인됨. JWT 요청 시도...");
+        fetchJwtToken(); // ✅ 로그인 상태일 때만 실행
+    };
+</script>
 </body>
 </html>
