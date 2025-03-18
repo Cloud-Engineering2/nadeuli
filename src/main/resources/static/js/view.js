@@ -213,21 +213,36 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
     const totalExpense = summaryMap.get(event.id) ?? 0;
     console.log("Event Object:", event.id, totalExpense);
     let expenseHtml = '';
-    if (totalExpense === 0) {
-        expenseHtml = `
+    // if (totalExpense === 0) {
+    //     expenseHtml = `
+    //         <div class="expense-item-list-addition" id="expenseItemListAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
+    //     `;
+    // } else {
+    //     const isProfit = totalExpense < 0;
+    //     const displayAmount = isProfit ? Math.abs(totalExpense).toLocaleString() : `- ${totalExpense.toLocaleString()}`;
+    //     const colorClass = isProfit ? "profit-expense" : "cost-expense";
+    //
+    //     expenseHtml = `
+    //         <div class="event-total-expense ${colorClass}" id="eventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
+    //             ${displayAmount} 원
+    //         </div>
+    //     `;
+    // }
+    ///////////////////////
+    expenseHtml = `
             <div class="expense-item-list-addition" id="expenseItemListAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
         `;
-    } else {
-        const isProfit = totalExpense < 0;
-        const displayAmount = isProfit ? Math.abs(totalExpense).toLocaleString() : `- ${totalExpense.toLocaleString()}`;
-        const colorClass = isProfit ? "profit-expense" : "cost-expense";
 
-        expenseHtml = `
-            <div class="event-total-expense ${colorClass}" id="eventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
-                ${displayAmount} 원
-            </div>
-        `;
-    }
+    const isProfit = totalExpense < 0;
+    const displayAmount = isProfit ? Math.abs(totalExpense).toLocaleString() : `- ${totalExpense.toLocaleString()}`;
+    const colorClass = isProfit ? "profit-expense" : "cost-expense";
+
+    expenseHtml += `
+        <div class="event-total-expense ${colorClass}" id="eventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
+            ${displayAmount} 원
+        </div>
+    `;
+    ///////////////////////
 
     return $(`
                         <div class='event' data-id='${event.hashId}'>

@@ -143,11 +143,19 @@
     gap: 3px;
     align-items: center;
 }
-.expense-item-creation-content, .expense-item-creation-withWhom {
+.expense-item-creation-content {
     border: 1px solid #8e8b82;
     padding: 2px;
     width: 250px;
     height: 40px;
+    margin-left: 3px;
+}
+
+.expense-item-creation-withWhom {
+    border: 1px solid #8e8b82;
+    padding: 2px;
+    width: 250px;
+    height: 120px;
     margin-left: 3px;
 }
 .expense-item-creation-expenditure, .expense-item-creation-payer {
