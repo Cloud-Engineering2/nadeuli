@@ -4,15 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OAuth 로그인 선택</title>
+    <link rel="stylesheet" href="/static/css/login.css">
 </head>
 <body>
+
 <h2>로그인 선택</h2>
 <a href="/oauth2/authorization/google">
-    <button>Google 로그인</button>
+    <button class="google-btn">Google 로그인</button>
 </a>
 <br><br>
 <a href="/oauth2/authorization/kakao">
-    <button>카카오 로그인</button>
+    <button class="kakao-btn">카카오 로그인</button>
 </a>
+
+<script src="/js/auth.js"></script>
+<script>
+    async function handleOAuthLogin() {
+        try {
+            const response = await fetch('/auth/oauth2/token', {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('OAuth 로그인 실패');
+
+            const data = await response.json();
+            saveTokens(data.accessToken, data.refreshToken);  // ✅ JWT 저장
+            window.location.href = "/mypage";
+        } catch (error) {
+            console.error("🚨 OAuth 로그인 실패:", error);
+            window.location.href = "/login?error=true";
+        }
+    }
+
+    window.onload = () => {
+        handleOAuthLogin();
+    };
+</script>
+
 </body>
 </html>

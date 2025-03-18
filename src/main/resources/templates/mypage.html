@@ -4,68 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>마이페이지</title>
-    <link rel="stylesheet" href="/static/css/auth.css">
+    <link rel="stylesheet" href="/static/css/mypage.css">
 </head>
 <body>
+
 <div class="mypage-container">
-    <img id="profileImage" src="/static/images/default_profile.png" alt="프로필 이미지" class="profile-img">
-    <h2 id="userName">홍길동</h2>
-    <p id="userEmail">example@example.com</p>
-    <button id="logout" class="logout-btn">로그아웃</button>
+    <label for="profileInput" id="profileLabel">
+        <img id="profileImage" src="/static/images/default_profile.png" alt="프로필 이미지" class="profile-img">
+        <input type="file" id="profileInput" accept="image/*" style="display: none;">
+    </label>
+    <button id="saveProfile" class="save-btn">저장</button>
+
+    <h2>Profile</h2>
+    <div class="profile-info">
+        <label>NAME</label>
+        <input type="text" id="userName" placeholder="이름 입력">
+        <label>EMAIL</label>
+        <input type="email" id="userEmail" readonly>
+    </div>
+
+    <a href="#" id="deleteAccount" class="delete-btn">회원탈퇴</a>
 </div>
 
-<script>
-    // ✅ 인증 체크: 비로그인 시 로그인 페이지로 이동
-    async function checkAuthAndRedirect() {
-        const accessToken = localStorage.getItem('accessToken');
-
-        if (!accessToken) {
-            console.warn("🚨 인증되지 않은 사용자! 로그인 페이지로 이동합니다.");
-            window.location.href = "/login";
-            return false;
-        }
-        return true;
-    }
-
-    // ✅ JWT 기반 사용자 정보 요청
-    async function getUserInfo() {
-        if (!(await checkAuthAndRedirect())) return;
-
-        try {
-            const response = await fetch('/auth/user/me', {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-            });
-
-            if (!response.ok) {
-                throw new Error('사용자 정보 불러오기 실패');
-            }
-
-            const data = await response.json();
-            document.getElementById('profileImage').src = data.profileUrl || '/static/images/default_profile.png';
-            document.getElementById('userName').innerText = data.name || '사용자 이름';
-            document.getElementById('userEmail').innerText = data.email || '이메일 정보 없음';
-
-            console.log("✅ 사용자 정보 불러오기 성공:", data);
-        } catch (error) {
-            console.error("🚨 사용자 정보 불러오기 실패:", error);
-            logout();
-        }
-    }
-
-    // ✅ 로그아웃 기능
-    function logout() {
-        localStorage.clear();
-        console.log("👋 로그아웃 완료");
-        window.location.href = "/login";
-    }
-
-    document.getElementById('logout').addEventListener('click', logout);
-
-    // ✅ 페이지 로드 시 사용자 정보 요청
-    window.onload = async () => {
-        await getUserInfo();
-    };
-</script>
+<script src="/js/auth.js"></script> <!-- ✅ JWT & 인증 관리 유지 -->
+<script src="/js/mypage.js"></script> <!-- ✅ 마이페이지 전용 기능 추가 -->
 </body>
 </html>

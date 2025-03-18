@@ -1,19 +1,3 @@
-/* User.java
- * User 엔티티
- * 작성자 : 박한철
- * 최초 작성 날짜 : 2025-02-25
- *
- * ========================================================
- * 프로그램 수정 / 보완 이력
- * ========================================================
- * 작업자        날짜        수정 / 보완 내용
- * ========================================================
- * 이홍비    2025.02.25     생성자 + static factory method 추가 // 컨버터 추가
- * 이홍비    2025.02.25     컨버터 위치 이동 => import 수정
- * 이홍비    2025.02.25     content, imageURL 저장 관련 함수 추가
- * ========================================================
- */
-
 package nadeuli.entity;
 
 import jakarta.persistence.*;
@@ -23,12 +7,16 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "unique_account", columnNames = {"user_email", "provider"})
+        }
+)
 public class User implements Serializable {
 
     @Serial
@@ -39,7 +27,7 @@ public class User implements Serializable {
     @Column(name = "uid")
     private Long id;
 
-    @Column(name = "user_email", nullable = false, unique = true)
+    @Column(name = "user_email", nullable = false)
     private String userEmail;
 
     @Column(name = "provider", nullable = false, length = 20)
@@ -48,7 +36,7 @@ public class User implements Serializable {
     @Column(name = "user_name", nullable = false, length = 255)
     private String userName;
 
-    @Column(name = "profile_image", columnDefinition = "TEXT")
+    @Column(name = "profile_image_url", columnDefinition = "TEXT")
     private String profileImage;
 
     @Enumerated(EnumType.STRING)
@@ -69,7 +57,6 @@ public class User implements Serializable {
 
     @Column(name = "refresh_token_expiry_at", nullable = false)
     private LocalDateTime refreshTokenExpiryAt;
-
 
     public void updateRefreshToken(String refreshToken, LocalDateTime expiryAt) {
         this.refreshToken = refreshToken;
@@ -119,5 +106,19 @@ public class User implements Serializable {
                 refreshToken,
                 refreshTokenExpiryAt
         );
+    }
+
+    /**
+     * 🔹 프로필 이미지 Getter
+     */
+    public String getProfileUrl() {
+        return this.profileImage;
+    }
+
+    /**
+     * 🔹 프로필 이미지 Setter
+     */
+    public void setProfileUrl(String profileUrl) {
+        this.profileImage = profileUrl;
     }
 }
