@@ -1,0 +1,90 @@
+/* mypage.css - 마이페이지 스타일 */
+
+/* 🔹 전체 페이지 스타일 */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5dc;
+    text-align: center;
+    padding: 20px;
+}
+
+/* 🔹 마이페이지 컨테이너 스타일 */
+.mypage-container {
+    background-color: #fff;
+    width: 350px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔹 프로필 이미지 스타일 */
+.profile-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+}
+
+/* 🔹 프로필 사진 변경 아이콘 */
+#profileLabel {
+    cursor: pointer;
+    position: relative;
+}
+
+#profileLabel::after {
+    content: '\270E'; /* ✎ 아이콘 */
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 18px;
+    background: #ddd;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+/* 🔹 프로필 정보 입력 스타일 */
+.profile-info {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.profile-info label {
+    display: block;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.profile-info input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* 🔹 저장 버튼 스타일 */
+.save-btn {
+    display: none;
+    margin-top: 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.save-btn:hover {
+    background-color: #45a049;
+}
+
+/* 🔹 회원탈퇴 버튼 스타일 */
+.delete-btn {
+    display: block;
+    margin-top: 20px;
+    color: red;
+    text-decoration: none;
+    font-weight: bold;
+}
