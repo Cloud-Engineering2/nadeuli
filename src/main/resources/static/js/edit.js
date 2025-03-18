@@ -253,7 +253,7 @@ function createNewDayColumn(perDayList) {
 
         // 🚀 새로운 Column 요소 생성
         let dayColumn = $(`
-            <div class='day-column'>
+            <div class='day-column' data-day-number='${dayCount}'>
                 <div class='day-header'>${dayCount}일차 (${startTime.substring(0, 5)})</div>
                 <div class='event-container' id='day-${dayCount}'></div>
             </div>
@@ -1843,6 +1843,7 @@ function renderMarkerByMarkerState() {
         // bounds에 포함시킬 좌표 계산
         eventIds.forEach(eventId => {
             const event = getEventById(eventId);
+            console.log("마커디버깅", event);
             if (event && event.placeDTO) {
                 bounds.extend({ lat: event.placeDTO.latitude, lng: event.placeDTO.longitude });
                 console.log("bounds.extend !");
