@@ -10,6 +10,7 @@
  * ========================================================
  * 박한철    2025.03.05     최초 작성
  * 박한철    2025.03.12     description -> explanation
+ * 박한철    2025.03.17     id -> rid로 수정, level -> region_level, name -> region_name
  * ========================================================
  */
 
@@ -30,10 +31,10 @@ public class Region {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "rid", nullable = false)
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 50)
+    @Column(name = "region_name", nullable = false, length = 50)
     private String name;
 
     @Column(name = "alias", length = 50)
@@ -43,7 +44,7 @@ public class Region {
     @JoinColumn(name = "parent_id")
     private Region parent;  // 부모 지역 (시도 -> NULL, 구군 -> 시도 ID)
 
-    @Column(name = "level", nullable = false)
+    @Column(name = "region_level", nullable = false)
     private int level; // 1: 시·도, 2: 시·군·구
 
     // 위도, 경도, 범위(radius)를 위한 컬럼 추가

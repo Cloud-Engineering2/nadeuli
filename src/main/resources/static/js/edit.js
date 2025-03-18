@@ -58,6 +58,7 @@ $(document).ready(function () {
             initDateRangePickerModal();
             initSidebarResize();
             dataReady = true;
+            tryGoogleMapMove();
             tryRenderMarkerAll();
         },
         error: function (xhr, status, error) {
@@ -1501,9 +1502,9 @@ function fetchRecommendedPlaces(pageSize = 10) {
     const searchQuery = activeSearchQuery; // ✅ 고정된 검색어만 서버로 보냄
 
     const requestData = {
-        userLng: selectedRegionLng ?? 126.49,
-        userLat: selectedRegionLat ?? 33.44,
-        radius: selectedRegionRadius ?? 100000,
+        userLng: selectedRegionLng,
+        userLat: selectedRegionLat,
+        radius: selectedRegionRadius,
         pageSize: pageSize,
         cursorScore: cursorScore,
         cursorId: cursorId,
@@ -1512,6 +1513,7 @@ function fetchRecommendedPlaces(pageSize = 10) {
         searchQuery: searchQuery
     };
 
+    console.log(requestData);
     $.ajax({
         url: "/api/place/recommend",
         type: "POST",
@@ -2067,7 +2069,7 @@ function clearPolylines() {
 function initMap() {
     console.log("initMap Execute");
     map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: googleRegionLat, lng: googleRegionLng },
+        center: { lat:  37.5665, lng: 126.9780 },
         zoom: 13,
     });
 
@@ -2081,7 +2083,15 @@ function initMap() {
 
     mapReady = true;
     tryRenderMarkerAll();
+    tryGoogleMapMove();
 }
+
+function tryGoogleMapMove() {
+    if (mapReady && dataReady) {
+        map.setCenter({ lat: googleRegionLat, lng: googleRegionLng });
+    }
+}
+
 
 // 데이터 fetch와 map 로딩이 끝났을때 마커 render를 작동
 function tryRenderMarkerAll() {
@@ -2513,21 +2523,42 @@ function initRegionSelect() {
     $nadeuliRegionSelect.empty();
     $googleRegionSelect.empty();
 
-    if (!regions || !Array.isArray(regions) || regions.length <= 1) {
-        $nadeuliRegionSelect.addClass("d-none");
-        $googleRegionSelect.addClass("d-none");
+    if (!regions || !Array.isArray(regions)){
         return;
     }
 
-    $nadeuliRegionSelect.removeClass("d-none");
-    $googleRegionSelect.removeClass("d-none");
+    if (regions.length <= 1) {
+        $nadeuliRegionSelect.addClass("d-none");
+        $googleRegionSelect.addClass("d-none");
+    } else{
+        $nadeuliRegionSelect.removeClass("d-none");
+        $googleRegionSelect.removeClass("d-none");
+    }
+    console.log("!!!!지역s", regions);
+
+
 
     regions.forEach(region => {
         const option = `<option value="${region.regionId}" data-lat="${region.latitude}" data-lng="${region.longitude}" data-radius="${region.radius}">${region.regionName}</option>`;
         $nadeuliRegionSelect.append(option);
         $googleRegionSelect.append(option);
     });
+
+    const defaultRegion = regions[0];
+    selectedRegionLat = parseFloat(defaultRegion.latitude);
+    selectedRegionLng = parseFloat(defaultRegion.longitude);
+    selectedRegionRadius = parseFloat(defaultRegion.radius);
+
+    googleRegionLat = parseFloat(defaultRegion.latitude);
+    googleRegionLng = parseFloat(defaultRegion.longitude);
+    googleRegionRadius = parseFloat(defaultRegion.radius);
+
+    console.log(selectedRegionLat,selectedRegionLng,selectedRegionRadius);
+    console.log(googleRegionLat,googleRegionLng,googleRegionRadius);
+    // 필요하면 초기 로딩 시 추천도 불러오도록
+    resetRecommendationAndFetch();
 }
+
 
 
 $("#region-select").on("change", function () {
@@ -2535,6 +2566,7 @@ $("#region-select").on("change", function () {
     selectedRegionLat = parseFloat($selected.data("lat"));
     selectedRegionLng = parseFloat($selected.data("lng"));
     selectedRegionRadius = parseInt($selected.data("radius"));
+    console.log("나들이 지역 선택 !! ");
 
     resetRecommendationAndFetch();
 });
@@ -2546,7 +2578,7 @@ $("#google-region-select").on("change", function () {
     googleRegionLng = parseFloat($selected.data("lng"));
     googleRegionRadius = parseInt($selected.data("radius"));
 
-
+    console.log("구글 지역 선택 !! ");
 
     if (map && googleRegionLat && googleRegionLng) {
         map.setCenter({ lat: googleRegionLat, lng: googleRegionLng });

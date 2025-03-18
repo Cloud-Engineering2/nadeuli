@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일정 드래그 앤 드롭</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <!-- Moment.js & Date Range Picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/view.css">
+    <link rel="stylesheet" href="/css/header-footer.css">
+    <style>
+
+
+    </style>
+
+</head>
+<body>
+
+<!-- 상단 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<!-- Modal -->
+<div id="placeModal" class="modal fade" tabindex="-1" aria-labelledby="placeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg p-4">
+
+            <div class="modal-header border-0">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0">
+                        <span id="placeModalName">성산 일출봉</span>
+                        <span class="text-primary fs-6 ms-2" id="placeModalType">명소</span>
+                    </h5>
+                    <div class="mt-1 small text-secondary">
+            <span class="me-2">
+              ❤️ <span id="placeModalRatingCount"></span>
+            </span>
+                        ⭐ <span id="placeModalRating"></span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <img id="placeModalImage" src="/default.jpg" class="img-fluid rounded mb-3 w-100" alt="장소 이미지">
+
+                <p id="placeModalExplanation" class="text-secondary">
+                </p>
+
+                <p class="mb-1">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <strong>주소 :</strong>
+                    <span id="placeModalAddress"></span>
+                    <a href="#" target="_blank" id="placeModalMapLink" class="ms-2 text-primary text-decoration-underline">지도</a>
+                </p>
+
+                <p class="mb-0">
+                    <i class="bi bi-clock-fill"></i>
+                    <strong>영업시간 :</strong>
+                </p>
+                <ul id="placeModalHours" class="mb-2 ps-4 small text-dark list-unstyled"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+
+        <!-- 왼쪽 패널 -->
+        <div id="sidebar" class="col-md-3">
+            <div class="schedule-header" id="scheduleHeader">
+                <div class="schedule-header-left">
+                    <div class="schedule-header-name">여행 제목</div>
+                    <div class="schedule-header-date">2025/03/02(화) ~ 2025/03/08(목)</div>
+                </div>
+                <div class="schedule-header-right">
+                    <button class="toggle-map-button on" title="지도 숨기기">
+                        <i class="bi bi-map-fill on-icon"></i>
+                        <i class="bi bi-map off-icon"></i>
+                    </button>
+                    <button class="save-button"><i class="fas fa-floppy-disk"></i></button>
+<!--                    <button class="event-options-button schedule"><i class="fas fa-cog"></i></button>-->
+<!--                    <div class="event-options hidden">-->
+<!--                        <button class="event-date-change">기간 및 시간 변경</button>-->
+<!--                        <button class="event-remove">일정표 삭제</button>-->
+<!--                    </div>️-->
+                </div>
+            </div>
+            <div class="tab-container">
+                <div class="tab-wrapper">
+
+                </div>
+            </div>
+            <div class="container-wrap">
+                <div class="schedule-container" id="scheduleContainer"></div>
+            </div>
+        </div>
+
+
+
+            <!-- 오른쪽 지도 사이드 박스 -->
+            <div class="right-side-map">
+                <div class="map-area">
+                    <div id="side-map"></div>
+                </div>
+            </div>
+
+</div>
+<script src="/js/view.js"></script>
+
+<script async th:src="@{'https://maps.googleapis.com/maps/api/js?libraries=places,visualization&key=' + ${googleApiKey} + '&v=weekly&callback=initMap'}">
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
