@@ -1807,6 +1807,8 @@ function registerPlace(button) {
                     }).then((res) => {
                         if (res.isConfirmed && place) {
                             placeToSavedPlace(place);
+                            isSearchTriggered = false;
+                            activeSearchQuery = "";
                             resetRecommendationAndFetch();
                         }
                     });
@@ -1822,6 +1824,9 @@ function registerPlace(button) {
                     }).then((res) => {
                         if (res.isConfirmed && place) {
                             placeToSavedPlace(place);
+                            isSearchTriggered = false;
+                            activeSearchQuery = "";
+                            resetRecommendationAndFetch();
                         }
                     });
                 }
