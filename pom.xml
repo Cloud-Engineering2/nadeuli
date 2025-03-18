@@ -154,6 +154,13 @@
             <artifactId>service</artifactId>
             <version>0.12.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.hashids</groupId>
+            <artifactId>hashids</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
     </dependencies>
 
     <build>
