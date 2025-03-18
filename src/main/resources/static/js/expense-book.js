@@ -198,11 +198,13 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                             </div>
                                             ${isSavedPlace ? "" : `<div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>`}
                                             <!-- 총 지출 --> 
-                                            <div class="event-total-expense" id="eventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
-                                                0 원
+                                            <div class="expense-wrap">
+                                                <div class="event-total-expense" id="eventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
+                                                    0 원
+                                                </div>
+                                                <!-- 경비 내역 추가 -->
+                                                <div class="expense-item-list-addition" id="expenseItemListAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
                                             </div>
-                                            <!-- 경비 내역 추가 -->
-                                            <div class="expense-item-list-addition" id="expenseItemListAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
                                         </div>
                                         <div class="event-right">
                                             <button class="event-options-button">⋮</button>

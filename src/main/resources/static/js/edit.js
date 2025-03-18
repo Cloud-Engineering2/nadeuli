@@ -253,7 +253,7 @@ function createNewDayColumn(perDayList) {
 
         // 🚀 새로운 Column 요소 생성
         let dayColumn = $(`
-            <div class='day-column'>
+            <div class='day-column' data-day-number='${dayCount}'>
                 <div class='day-header'>${dayCount}일차 (${startTime.substring(0, 5)})</div>
                 <div class='event-container' id='day-${dayCount}'></div>
             </div>
@@ -1843,6 +1843,7 @@ function renderMarkerByMarkerState() {
         // bounds에 포함시킬 좌표 계산
         eventIds.forEach(eventId => {
             const event = getEventById(eventId);
+            console.log("마커디버깅", event);
             if (event && event.placeDTO) {
                 bounds.extend({ lat: event.placeDTO.latitude, lng: event.placeDTO.longitude });
                 console.log("bounds.extend !");
@@ -1967,22 +1968,30 @@ function resetAllMarkersZIndex(markers, defaultZIndex = 1) {
 
 //마커 크기를 키우는 함수
 function enlargeMarkerTemporarily(marker, scaleFactor = 2, duration = 2000) {
-    const originalIcon = marker.getIcon();
-    const originalLabel = marker.getLabel();
+    // 최초 아이콘/라벨 정보 저장
+    if (!marker._originalIcon) {
+        marker._originalIcon = marker.getIcon();
+    }
+    if (!marker._originalLabel) {
+        marker._originalLabel = marker.getLabel();
+    }
 
-    // 기존 타이머 있으면 클리어
+    // 기존 타이머 클리어
     if (marker._resetTimerId) {
         clearTimeout(marker._resetTimerId);
         marker._resetTimerId = null;
     }
 
-    // 아이콘 확대
+    const originalIcon = marker._originalIcon;
+    const originalLabel = marker._originalLabel;
+
+    // 확대 아이콘
     const biggerIcon = {
         ...originalIcon,
         scale: (originalIcon.scale || 1) * scaleFactor
     };
 
-    // 라벨 확대
+    // 확대 라벨
     const fontSize = originalLabel?.fontSize || "13px";
     const newFontSize = (parseFloat(fontSize) * scaleFactor) + "px";
     const biggerLabel = {
@@ -1992,7 +2001,6 @@ function enlargeMarkerTemporarily(marker, scaleFactor = 2, duration = 2000) {
 
     marker.setIcon(biggerIcon);
     marker.setLabel(biggerLabel);
-
 
     // 복구 예약
     marker._resetTimerId = setTimeout(() => {

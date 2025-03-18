@@ -26,7 +26,7 @@ import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.Person;
 import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.EventExpenseSummaryDTO;
-import nadeuli.dto.response.EventExpenseSummaryListDTO;
+import nadeuli.dto.response.EventExpenseSummaryTotalResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
 import nadeuli.entity.*;
 import nadeuli.repository.*;
@@ -58,7 +58,7 @@ public class ExpenseBookService {
         return expenseBook.getId();
     }
 
-    public EventExpenseSummaryListDTO getEachTotalExpense(Long itineraryId) {
+    public EventExpenseSummaryTotalResponseDTO getEachTotalExpense(Long itineraryId) {
         // 1. Itinerary → ExpenseBook 조회
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
@@ -77,9 +77,13 @@ public class ExpenseBookService {
                 ))
                 .collect(Collectors.toList());
 
-        // 4. 리스트 DTO로 감싸서 반환
-        return new EventExpenseSummaryListDTO(summaryList);
+        // 4. 전체 합산 (ExpenseBook 정보 기반)
+        Long totalExpenses = expenseBook.getTotalExpenses(); // 예: sum(item.amount) 저장되어 있는 필드
+        Long totalBudget = expenseBook.getTotalBudget();   // 예: 사용자가 설정한 예산
+
+        return new EventExpenseSummaryTotalResponseDTO(summaryList, totalExpenses, totalBudget);
     }
+
 
 
     // 1/n 정산
