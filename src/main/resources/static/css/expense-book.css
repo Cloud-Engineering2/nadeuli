@@ -13,23 +13,171 @@
 
 /* 🎈 경비 내역 추가 (expense item 추가) */
 
-/* 💡 추가(plus) 버튼 클릭 애니메이션  */
+/* 💡 전체 배경 */
+.expense-header-background {
+    background-color: #e9dcbe;
+}
+
+/* 안내 탭 : 정산 */
+.expense-header-tab-active {
+    background-color: #ffffff;
+    color: #8e8b82;
+    font-size: 30px;
+    padding: 10px 15px;
+    display: inline-block;  /* 크기 조정을 위해 inline-block 사용 */
+    margin-top: 5px;
+    margin-left: 20px;  /* 왼쪽에서 떨어뜨리기 */
+    border-radius: 10px 10px 0 0; /* 왼쪽 위, 오른쪽 위 둥글게 */
+}
+
+/* 안내 탭 : 경비 */
+.expense-header-tab-inactive {
+    background-color: #8e8b82;
+    color: #e9dcbe;
+    font-size: 30px;
+    padding: 10px 15px;
+    display: inline-block;  /* 크기 조정을 위해 inline-block 사용 */
+    margin-left: 5px;  /* 왼쪽에서 떨어뜨리기 */
+    margin-top: 9px;
+    border-radius: 10px 10px 0 0; /* 왼쪽 위, 오른쪽 위 둥글게 */
+}
+
+/* 콘텐츠 배경 */
+.itinerary-event-expense-item-info {
+    background-color: #ffffff;
+    border-radius: 5px 5px 0 0;
+    padding-left: 20px;
+}
+
+
+/* 💡 배경 */
+.expense-item-container {
+    height: 100%;
+    background-color: white;
+}
+
+/* 콘텐츠 배경 */
+.itinerary-event-expense-item-info {
+    background-color: #ffffff;
+    border-radius: 5px 5px 0 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* 💡 기본 정보 */
+.expense-basic-info {
+    padding-top: 30px;
+    margin-bottom: 30px;
+}
+.expense-basic-info-traveler {
+    color: #8E8B82;
+    margin-left: 300px;
+}
+
+.expense-basic-info-remained-budget {
+    color: #8E8B82;
+    margin-right: 300px;
+}
+
+
+/* 입력 폼 : content */
+.expense-item-content {
+    border: 1px solid #E9DCBE;
+    padding: 2px;
+    width: 250px;
+    text-align: center; /* 글자 정렬 */
+}
+
+.expense-item-expenditure {
+    font-weight: bold;
+    padding: 2px;
+    margin-right: 0.3%;
+    width: 150px;
+    text-align: right; /* 글자 정렬 */
+}
+
+.expense-item-payer {
+    color: #8E8B82;
+    padding: 5px;
+    text-align: center; /* 글자 정렬 */
+    font-weight: bold;
+    width: 150px;
+    margin-right: 0.3%;
+}
+
+.expense-item-with-whom {
+    color: #8E8B82;
+    padding: 5px;
+    text-align: left; /* 글자 정렬 */
+    /*font-weight: bold;*/
+}
+
+/* expense item 조회 리스트 */
+.expense-item-list {
+    margin-bottom: 0.5%;
+}
+
+/* expense item 제목 */
+.expense-item-title {
+    display: flex;
+    margin-top: 20px;
+}
+.expense-item-content-title, .expense-item-with-whom-title {
+    width: 250px;
+    font-weight: bold;
+    color: #8E8B82;
+    text-align: center;
+}
+.expense-item-expenditure-title, .expense-item-payer-title {
+    width: 150px;
+    font-weight: bold;
+    color: #8E8B82;
+    text-align: center;
+}
+
+/* 입력 폼 : creation */
+.expense-item-creation-form {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+.expense-item-creation-content, .expense-item-creation-withWhom {
+    border: 1px solid #8e8b82;
+    padding: 2px;
+    width: 250px;
+    height: 40px;
+    margin-left: 3px;
+}
+.expense-item-creation-expenditure, .expense-item-creation-payer {
+    border: 1px solid #8e8b82;
+    padding: 2px;
+    width: 150px;
+    height: 40px;
+}
+
+/* 💡 폼 제출 버튼 */
+.expense-item-addition-button {
+    display: flex; /* Flexbox 레이아웃 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #8e8b82;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+/* 추가(plus) 버튼 클릭 애니메이션  */
 .expense-item-addition-button:active {
     transform: scale(0.97); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 눌린 효과를 주는 그림자 */
-
+    /*box-shadow: 0 1px 2px rgba(201, 178, 126, 0.3); !* 눌린 효과를 주는 그림자 *!*/
 }
-.expense-item-addition-button {
-    margin-top: 5px;
-}
-
-.expense-item-creation-content, .expense-item-content, .expense-item-content-title, .expense-item-creation-withWhom, .expense-item-with-whom, .expense-item-with-whom-title {
-    bolder: 1px solid #8e8b82;
-    width: 350px;
-}
-.expense-item-creation-expenditure, .expense-item-expenditure, .expense-item-expenditure-title, .expense-item-creation-payer, .expense-item-payer, .expense-item-payer-title {
-    bolder: 1px solid #8e8b82;
-    width: 150px;
+.plus-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 24px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
 }
 
 /* 🎈 정산 내역 조회 (adjustment 조회) */
@@ -71,6 +219,9 @@
 }
 
 /* 💡 기본 정보 */
+.adjustment-basic-info {
+    padding-top: 30px;
+}
 .adjustment-basic-info-traveler {
     color: #8E8B82;
     margin-left: 300px;
@@ -105,7 +256,7 @@
 }
 
 /* 💡 정산  */
- .adjustment-part-title {
+.adjustment-part-title {
     /*display: flex;*/
     /*justify-content: flex-start;*/
     border-bottom: 1px #8E8B82 solid ;
@@ -126,7 +277,12 @@
 }
 
 /* font : 지출 */
-.total-expenditure-money-label, .individual-expenditure-label {
+.total-expenditure-money-label {
+    font-size: 20px;
+    margin-right: 10px;
+    font-weight: bold;
+}
+.individual-expenditure-label {
     font-size: 20px;
     margin-right: 10px;
 }
@@ -184,12 +340,7 @@
     }
 
     /*************** expense item *************/
-    .expense-item-title{
-        display: flex;
-        /*padding: 10px;*/
-        /*justify-content: space-around; !* 여백을 균등하게 분배 *!*/
-        /*margin-right: 10%;*/
-    }
+
 
     .expense-item-list {
         overflow-y: auto; /* 내용이 넘칠 경우 스크롤이 생기도록 설정 */
@@ -201,25 +352,20 @@
     }
 
 
-    /*************** add button : expense item *************/
-    .expense-item-addition-button {
-        display: flex; /* Flexbox 레이아웃 */
-        justify-content: center; /* 가로 중앙 정렬 */
-        align-items: center; /* 세로 중앙 정렬 */
-        border-radius: 10px; /* 둥근 모서리 */
-        border-color: #ffffff;
-        background-color: #8e8b82; /* 배경색 */
-        margin-left: 15%; /* 왼쪽 여백 */
-        width: 8%; /* 너비 설정 */
-        height: 2%
-    }
+    /*!*************** add button : expense item *************!*/
+    /*.expense-item-addition-button {*/
+    /*    display: flex; !* Flexbox 레이아웃 *!*/
+    /*    justify-content: center; !* 가로 중앙 정렬 *!*/
+    /*    align-items: center; !* 세로 중앙 정렬 *!*/
+    /*    border-radius: 10px; !* 둥근 모서리 *!*/
+    /*    border-color: #ffffff;*/
+    /*    background-color: #8e8b82; !* 배경색 *!*/
+    /*    margin-left: 5%; !* 왼쪽 여백 *!*/
+    /*    width: 3%; !* 너비 설정 *!*/
+    /*}*/
 
-    .plus-icon {
-        color: white; /* 아이콘 색상 */
-        font-size: 24px; /* 아이콘 크기 */
-        padding: 10px 15px; /* 패딩 */
-        border-radius: 5px; /* 아이콘 둥근 모서리 */
-    }
+
+
 
 
 
