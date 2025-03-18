@@ -461,6 +461,7 @@ function createSortableInstance(element) {
             }
 
             (async () => {
+
                 await requestDistanceCalculationEventPairs();
 
                 if (updateStartIndexFrom !== null) {
@@ -475,6 +476,7 @@ function createSortableInstance(element) {
                 markerState = extractDayId(toDayId);
                 renderMarkerByMarkerState();
                 isDirty = true;
+
             })();
 
             if (toDayId !== 'day-0') {
@@ -799,6 +801,10 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
                 destinationLongitude: to.placeDTO.longitude,
             });
             validToEvents.push(to);
+        } else if(from === null && to){
+                to.movingDistanceFromPrevPlace = 0;
+                to.movingMinuteFromPrevPlace = 0;
+
         }
     });
 
@@ -1651,7 +1657,7 @@ function searchGooglePlaces() {
         lat: googleRegionLat ?? 33.4996,
         lng: googleRegionLng ?? 126.5312
     };
-    let radius = googleRegionRadius ?? 50000;
+    let radius = Math.min(googleRegionRadius ?? 50000, 50000);
 
     $.ajax({
         url: "/api/google-places/search",
@@ -1801,6 +1807,8 @@ function registerPlace(button) {
                     }).then((res) => {
                         if (res.isConfirmed && place) {
                             placeToSavedPlace(place);
+                            isSearchTriggered = false;
+                            activeSearchQuery = "";
                             resetRecommendationAndFetch();
                         }
                     });
@@ -1816,6 +1824,9 @@ function registerPlace(button) {
                     }).then((res) => {
                         if (res.isConfirmed && place) {
                             placeToSavedPlace(place);
+                            isSearchTriggered = false;
+                            activeSearchQuery = "";
+                            resetRecommendationAndFetch();
                         }
                     });
                 }
@@ -2361,34 +2372,8 @@ $("a[href]").click(function(e) {
 });
 
 
-// event 더블클릭 시 지도 이동 & 마커 강조 & 장소 상세정보 보기
-// $(document).on("dblclick", ".event", function () {
-//     const eventId = $(this).data("id");
-//     const eventData = getEventById(eventId);
-//     if (!eventData || !eventData.placeDTO) return;
-//
-//     const eventDay = eventData.dayCount;
-//
-//     if(markerState !==0 && markerState !== eventDay && eventDay !== 0){
-//         markerState = eventDay
-//         renderMarkerByMarkerState();
-//     }
-//
-//     if (eventDay === 0) {
-//         renderSavedPlaceMarker();
-//     } else {
-//         clearSavedPlaceMarker();
-//         // ⭐ marker 찾아서 강조
-//         const marker = allMarkers.find(m => m.hashId === eventId);
-//         if (marker) {
-//             enlargeMarkerTemporarily(marker);
-//         }
-//         sideMap.panTo({ lat: eventData.placeDTO.latitude, lng: eventData.placeDTO.longitude });
-//     }
-//
-//     showPlaceModal(eventId);
-// });
 $(document).on("dblclick", ".event", function () {
+
     const eventId = $(this).data("id");
     const eventData = getEventById(eventId);
     console.log(eventData);
@@ -2538,7 +2523,9 @@ function renderTempMarkerFromPlaceDTO(place) {
 }
 
 
-$(document).on("dblclick", ".list-item", function () {
+$(document).on("dblclick", ".list-item", function (evt) {
+    if ($(evt.target).closest('.add-button').length > 0) return;
+
     const placeId = $(this).data("id");
     const place = placeMap.get(placeId);
     if (!place) return;

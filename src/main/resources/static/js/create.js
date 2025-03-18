@@ -128,6 +128,7 @@ function flattenTree(tree) {
         });
     }
     traverse(tree);
+    result.sort((a, b) => a.fullName.localeCompare(b.fullName));
     return result;
 }
 
