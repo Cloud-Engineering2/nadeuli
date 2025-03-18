@@ -15,7 +15,11 @@ html, body {
     height : calc(100vh - 150px);
 }
 
-
+.main-text{
+    display: flex;
+    flex-direction: column;
+    gap: 70px;
+}
 
 
 .naduli-layout .main-text-wrap{
@@ -39,8 +43,9 @@ html, body {
     user-select: none;
     font-family: "GriunNoltoTAENGGU", sans-serif;
     font-size: clamp(26px, 2.5vw, 32px); /* 반응형 글씨 크기 */
-    line-height: 1.8;
+    line-height: 1;
     white-space: pre-line;
+    gap: 20px;
 }
 
 .naduli-layout .highlight {
