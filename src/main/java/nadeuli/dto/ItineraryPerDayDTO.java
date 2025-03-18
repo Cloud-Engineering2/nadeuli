@@ -36,7 +36,6 @@ public class ItineraryPerDayDTO {
     private ItineraryDTO itineraryDTO;
     private int dayCount;
     private LocalTime startTime;
-    private LocalTime endTime;
     private Integer dayOfWeek;
 
     // entity -> dto
@@ -46,18 +45,17 @@ public class ItineraryPerDayDTO {
                 ItineraryDTO.from(itineraryPerDay.getItinerary()),
                 itineraryPerDay.getDayCount(),
                 itineraryPerDay.getStartTime(),
-                itineraryPerDay.getEndTime(),
                 itineraryPerDay.getDayOfWeek()
         );
     }
 
     // dto -> entity
     public ItineraryPerDay toEntity() {
-        return new ItineraryPerDay(id, itineraryDTO.toEntity(), dayCount, startTime, endTime, dayOfWeek);
+        return new ItineraryPerDay(id, itineraryDTO.toEntity(), dayCount, startTime, dayOfWeek);
     }
 
     public ItineraryPerDay toEntity(Itinerary itinerary) {
-        return new ItineraryPerDay(id, itinerary, dayCount, startTime, endTime, dayOfWeek);
+        return new ItineraryPerDay(id, itinerary, dayCount, startTime, dayOfWeek);
     }
 
 }
