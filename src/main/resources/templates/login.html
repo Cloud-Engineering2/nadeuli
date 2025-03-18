@@ -3,44 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OAuth 로그인 선택</title>
-    <link rel="stylesheet" href="/static/css/login.css">
+    <title>로그인</title>
+    <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body>
+<div class="login-container">
+    <h2>나들이</h2>
+    <img src="/images/logo.png" alt="로고" class="logo">
+    <p class="subtitle">여행의 계획부터 결산까지</p>
+    <p class="subtitle2">나들이와 함께</p>
 
-<h2>로그인 선택</h2>
-<a href="/oauth2/authorization/google">
-    <button class="google-btn">Google 로그인</button>
-</a>
-<br><br>
-<a href="/oauth2/authorization/kakao">
-    <button class="kakao-btn">카카오 로그인</button>
-</a>
+    <button class="login-btn">로그인</button>
 
-<script src="/js/auth.js"></script>
+    <button class="kakao-btn" onclick="location.href='/oauth2/authorization/kakao'">
+        <img src="/images/kakao_logo.png" alt="카카오 아이콘">카카오 로그인
+    </button>
+
+    <button class="google-btn" onclick="location.href='/oauth2/authorization/google'">
+        <img src="/images/google_logo.png" alt="구글 아이콘">구글 로그인
+    </button>
+</div>
+
 <script>
-    async function handleOAuthLogin() {
+    async function fetchJwtToken() {
         try {
             const response = await fetch('/auth/oauth2/token', {
-                method: 'POST',
+                method: 'GET',
                 credentials: 'include'
             });
 
-            if (!response.ok) throw new Error('OAuth 로그인 실패');
+            if (!response.ok) {
+                throw new Error('JWT 발급 실패');
+            }
 
             const data = await response.json();
-            saveTokens(data.accessToken, data.refreshToken);  // ✅ JWT 저장
-            window.location.href = "/mypage";
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+
+            console.log("✅ JWT 저장 완료!");
+            window.location.href = "/mypage"; // 로그인 후 마이페이지로 이동
         } catch (error) {
-            console.error("🚨 OAuth 로그인 실패:", error);
-            window.location.href = "/login?error=true";
+            console.error("🚨 JWT 가져오기 실패:", error);
         }
     }
 
     window.onload = () => {
-        handleOAuthLogin();
+        // ✅ 기존에 accessToken이 있으면 자동 이동 방지
+        if (!localStorage.getItem('accessToken')) {
+            console.log("🔄 로그인 필요, JWT 요청 안 함");
+            return;
+        }
+
+        console.log("✅ 로그인 상태 확인됨. JWT 요청 시도...");
+        fetchJwtToken(); // ✅ 로그인 상태일 때만 실행
     };
 </script>
-
 </body>
 </html>

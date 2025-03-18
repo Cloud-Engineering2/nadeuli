@@ -1,5 +1,4 @@
-/* login.css - 로그인 페이지 스타일 */
-
+/* ✅ CloudFront URL 제거, 로컬 정적 리소스 사용 */
 @font-face {
     font-family: 'CustomFont';
     src: url('../fonts/Griun_NoltoTAENGGU-Rg.woff2') format('woff2'),
@@ -44,18 +43,34 @@ h2 {
     color: #8E8B82;
 }
 
+/* 🔹 로고 크기 수정 */
+.logo {
+    width: 200px;
+    height: auto;
+    display: block;
+    margin: 10px auto 15px;
+}
+
+/* 🔹 부제목 정렬 */
+.subtitle {
+    color: #8E8B82;
+    font-size: 22px;
+    margin-bottom: 5px;
+    line-height: 1.2;
+}
+
 /* 🔹 버튼 스타일 */
 button {
-    width: 60%;
-    height: 44px;
+    width: 80%;
+    height: 50px;
     border: 1px solid #8E8B82;
     border-radius: 50px;
     font-size: 19px;
-    font-weight: 400;
+    font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 10px auto;
+    margin: 15px auto;
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -70,7 +85,8 @@ button {
 /* 🔹 카카오 로그인 버튼 */
 .kakao-btn {
     background: #FFFF00;
-    color: #8E8B82;
+    color: #3c1e1e;
+    font-weight: bold;
     pointer-events: auto;
 }
 
@@ -80,4 +96,11 @@ button {
     color: #8E8B82;
     border: 1px solid #8E8B82;
     pointer-events: auto;
+}
+
+/* 🔹 버튼 내 아이콘 크기 */
+.kakao-btn img, .google-btn img {
+    width: 20px;
+    height: auto;
+    margin-right: 8px;
 }
