@@ -1322,14 +1322,40 @@ function getExpenseItemForm(itineraryId, itineraryEventId) {
     return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
                 <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" placeholder="📝지출 내용">
                 <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required placeholder="💸(원)">
-                <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required placeholder="😄지출한 사람">
-                <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom" placeholder="👥함께한 사람">
+                <input type="text" class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required placeholder="지불하는 사람">
+                <input type="text" class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom" placeholder="함께하는 사람">
                 <!-- Expense Item 추가 + 버튼 -->
                 <button type="submit" class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
                     <i class="fa-solid fa-plus plus-icon"></i>
                 </button>
             </form>`;
 }
+
+async function loadSelectingWithWhomOption(itineraryId) {
+    try {
+        // const iid = $("#expenseItemCreationWithWhom").data("iid");   // itinerary ID 가져오기
+        const travelerList = await callApiAt(`/api/itinerary/${itineraryId}/travelers`, "GET", null);
+        const travelerNameList = travelerList.travelers.map(t => t.name);
+
+        // Select 요소 가져오기
+        const withWhomSelect = document.getElementById("expenseItemCreationWithWhom");
+        withWhomSelect.innerHTML = "";
+
+        // travelerNameList를 옵션으로 추가
+        travelerNameList.forEach(travelerName => {
+            const option = document.createElement("option");
+            option.value = travelerName;
+            option.textContent = `@${travelerName}`;
+            withWhomSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("에러 발생:", error);
+    }
+
+
+
+}
+
 
 
 

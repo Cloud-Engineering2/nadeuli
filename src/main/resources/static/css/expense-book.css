@@ -443,7 +443,12 @@ body {
 }
 
 /* font : 지출 */
-.total-expenditure-money-label, .individual-expenditure-label {
+.total-expenditure-money-label {
+    font-size: 20px;
+    margin-right: 10px;
+    font-weight: bold;
+}
+.individual-expenditure-label {
     font-size: 20px;
     margin-right: 10px;
 }
