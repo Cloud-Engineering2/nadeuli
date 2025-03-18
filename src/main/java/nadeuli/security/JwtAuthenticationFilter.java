@@ -52,10 +52,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
+        // 1. Authorization 헤더에서 추출
         String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        if (bearerToken != null) {
+            log.debug("[extractToken] Authorization 헤더 존재: {}", bearerToken);
+            if (bearerToken.startsWith("Bearer ")) {
+                String token = bearerToken.substring(7);
+                log.debug("[extractToken] Authorization 헤더에서 토큰 추출: {}", token);
+                return token;
+            } else {
+                log.debug("[extractToken] Authorization 헤더가 Bearer 형식이 아님");
+            }
+        } else {
+            log.debug("[extractToken] Authorization 헤더 없음");
         }
+
+        // 2. accessToken 쿠키에서 추출
+        if (request.getCookies() != null) {
+            for (var cookie : request.getCookies()) {
+                log.debug("[extractToken] 쿠키: {} = {}", cookie.getName(), cookie.getValue());
+                if ("accessToken".equals(cookie.getName())) {
+                    log.debug("[extractToken] accessToken 쿠키에서 토큰 추출: {}", cookie.getValue());
+                    return cookie.getValue();
+                }
+            }
+        } else {
+            log.debug("[extractToken] 요청에 쿠키 없음");
+        }
+
+        log.debug("[extractToken] 토큰을 찾지 못함");
         return null;
     }
+
 }

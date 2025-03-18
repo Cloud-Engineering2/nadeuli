@@ -2,12 +2,27 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>로그인 성공</title>
+    <title>로그인 상태 확인</title>
 </head>
 <body>
-<h1>카카오 로그인 성공!</h1>
-<p>닉네임: <span th:text="${nickname}"></span></p>
-<p>이메일: <span th:text="${email}"></span></p>
-<img th:src="${profileImage}" alt="프로필 이미지">
+
+<h1 th:if="${loggedIn}">로그인 성공!</h1>
+<p th:if="${!loggedIn}">로그인이 필요합니다.</p>
+
+<div th:if="${loggedIn}">
+    <p>닉네임: <span th:text="${nickname}"></span></p>
+    <p>이메일: <span th:text="${email}"></span></p>
+    <img th:src="${profileImage}" alt="프로필 이미지" width="100"/>
+
+    <form th:action="@{/auth/logout}" method="post">
+        <button type="submit">로그아웃</button>
+    </form>
+</div>
+
+<div th:if="${!loggedIn}">
+    <a th:href="@{/oauth2/authorization/google}">구글 로그인</a>
+    <a th:href="@{/oauth2/authorization/kakao}">카카오 로그인</a>
+</div>
+
 </body>
 </html>
