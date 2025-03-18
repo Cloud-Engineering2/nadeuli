@@ -266,8 +266,12 @@ function getExpenseItemForm(itineraryId, itineraryEventId) {
     return `<form class="expense-item-creation-form" id="expenseItemCreationForm">
                 <input type="text" class="expense-item-creation-content" id="expenseItemCreationContent" name="content" placeholder="📝지출 내용">
                 <input type="number" class="expense-item-creation-expenditure" id="expenseItemCreationExpenditure" name="expenditure" required placeholder="💸(원)">
-                <select class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required> <!-- placeholder="😄지불한 사람"--></select>
-                <select class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom" multiple> <!--placeholder="👥함께한 사람" --></select>
+                <select class="expense-item-creation-payer" id="expenseItemCreationPayer" name="payer" required>
+                    <option value="" disabled selected>😄지불한 사람</option>
+                </select>
+                <select class="expense-item-creation-withWhom" id="expenseItemCreationWithWhom"  name="withWhom" multiple> 
+                    <option value="" disabled selected>👥함께한 사람</option>
+                </select>
                 <!-- Expense Item 추가 + 버튼 -->
                 <button type="button" class="expense-item-addition-button" id="expenseItemAdditionPlusButton" data-iid='${itineraryId}' data-ieid='${itineraryEventId}'>
                     <i class="fa-solid fa-plus plus-icon"></i>
@@ -312,7 +316,6 @@ async function createTravelerOption(itineraryId, selectElement, explainText=null
 //🎈 오른쪽 패널 - +버튼 클릭 시 -> 경비 내역(expense item, with whom) 추가
 $(document).off("click", ".expense-item-addition-button").on("click", ".expense-item-addition-button", async function(event) {
     event.preventDefault(); // 폼 제출 방지
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
     const iid = $(this).data("iid");   // itinerary ID
     const ieid = $(this).data("ieid"); // event ID
@@ -323,7 +326,6 @@ $(document).off("click", ".expense-item-addition-button").on("click", ".expense-
     const payer = $("#expenseItemCreationPayer").val();
     const withWhomValues = $("#expenseItemCreationWithWhom").val() || null;
     const withWhomList = [...new Set(withWhomValues)];
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@");
 
 
     // // 태그 - payer, withWhom 처리 부분은 그대로
@@ -353,9 +355,7 @@ $(document).off("click", ".expense-item-addition-button").on("click", ".expense-
 
     try {
         let expenseItemId = await addExpenseItem(iid, ieid, expenseItemRequestData);
-        console.log("#####################");
         await addWithWhom(iid, expenseItemId, withWhomData);
-        console.log("$$$$$$$$$$$$$$$$$$$$$$");
 
         // 🎯 폼 입력값 초기화
         $("#expenseItemCreationForm")[0].reset();
@@ -371,7 +371,6 @@ $(document).off("click", ".expense-item-addition-button").on("click", ".expense-
 async function addExpenseItem(iid, ieid, expenseItemRequestData) {
     try {
         const response = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, "POST", expenseItemRequestData);
-        console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%");
 
         console.log("ExpenseItem " + expenseItemRequestData.content + ": " + expenseItemRequestData.expense + "(원) - 생성 완료");
         return response.id;
@@ -385,12 +384,25 @@ async function addExpenseItem(iid, ieid, expenseItemRequestData) {
 async function addWithWhom(iid, emid, withWhomRequestData) {
     try {
         const response = await callApiAt(`/api/itineraries/${iid}/expense/${emid}/withWhom`, "POST", withWhomRequestData);
-        console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
     } catch (error) {
         console.error("Error loading expense data:", error);
     }
 }
+
+
+//🎈 오른쪽 패널 - '-'버튼 클릭 시 -> 경비 내역(expense item, with whom) 삭제
+$(document).off("click", ".expense-item-delete-button").on("click", ".expense-item-delete-button", async function(event) {
+    event.preventDefault(); // 폼 제출 방지
+
+    const iid = $(this).data("iid");   // itinerary ID
+    const ieid = $(this).data("ieid"); // event ID
+    const emid = $(this).data("emid"); // expense item ID
+
+    await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense/${emid}`, "DELETE", null);
+
+    location.reload();
+});
 
 
 // 🎈 ItineraryEvent 별로 ExpenseItem들 조회
@@ -413,6 +425,12 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
                     <div class="expense-item-expenditure" id="expenseItemExpenditure">${expenseItem.expense} 원</div>
                     <div class="expense-item-payer" id="expenseItemPayer">@${expenseItem.travelerDTO.travelerName}</div>
                     <div class="expense-item-with-whom" id="expenseItemWithWhom-${expenseItem.id}"><span class="with-whom" data-emid="${expenseItem.id}">💡 함께한 사람: 로딩 중...</span></div>
+                    <button type="button" class="expense-item-edit-button" id="expenseItemEditButton" data-iid="${iid}", data-ieid="${ieid}" data-emid="${expenseItem.id}">
+                        <i class="fa-solid fa-pen edit-icon"></i>
+                    </button>
+                    <button type="button" class="expense-item-delete-button" id="expenseItemDeleteButton" data-iid="${iid}", data-ieid="${ieid}" data-emid="${expenseItem.id}">
+                        <i class="fa fa-minus minus-icon"></i>
+                    </button>
                 </div>`
             ).join("")
         );

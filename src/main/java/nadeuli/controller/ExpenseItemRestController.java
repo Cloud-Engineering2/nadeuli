@@ -85,11 +85,11 @@ public class ExpenseItemRestController {
     }
 
     // 지출 내역 수정
-    @PutMapping("/{iid}/events/{ieid}/expense/{eiid}")
-    public ResponseEntity<ExpenseItemDTO> updateExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("eiid") Integer eiid, @RequestBody @Valid ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
+    @PutMapping("/{iid}/events/{ieid}/expense/{emid}")
+    public ResponseEntity<ExpenseItemDTO> updateExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("emid") Integer emid, @RequestBody @Valid ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
         // PathVariable
         Long itineraryId = Long.valueOf(iid);
-        Long expenseItemId = Long.valueOf(eiid);
+        Long expenseItemId = Long.valueOf(emid);
 
         ExpenseItemDTO expenseItemDTO = expenseItemService.updateExpenseItem(itineraryId, expenseItemId, expenseItemUpdateRequestDTO);
 
@@ -98,9 +98,9 @@ public class ExpenseItemRestController {
 
 
     // 지출 내역 삭제
-    @DeleteMapping("/{iid}/events/{ieid}/expense/{eiid}")
-    public ResponseEntity<Void> deleteExpense(@PathVariable Integer eiid) {
-        Long expenseItemId = Long.valueOf(eiid);
+    @DeleteMapping("/{iid}/events/{ieid}/expense/{emid}")
+    public ResponseEntity<Void> deleteExpense(@PathVariable Integer emid) {
+        Long expenseItemId = Long.valueOf(emid);
         expenseItemService.deleteExpenseItem(expenseItemId);
         return ResponseEntity.ok().build();
     }

@@ -136,6 +136,51 @@
     color: #8E8B82;
     text-align: center;
 }
+/* 💡 경비 아이템 수정 버튼 */
+.expense-item-edit-button {
+    display: flex; /* Flexbox 레이아웃 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+.expense-item-edit-button:active {
+    transform: scale(0.98); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
+    /*box-shadow: 0 1px 2px rgba(201, 178, 126, 0.3); !* 눌린 효과를 주는 그림자 *!*/
+}
+.edit-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
+}
+
+/* 💡 경비 아이템 삭제 버튼 */
+.expense-item-delete-button {
+    display: flex; /* Flexbox 레이아웃 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+/* 삭제 버튼 클릭 애니메이션  */
+.expense-item-delete-button:active {
+    transform: scale(0.98); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
+    /*box-shadow: 0 1px 2px rgba(201, 178, 126, 0.3); !* 눌린 효과를 주는 그림자 *!*/
+}
+
+.minus-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
+}
 
 /* 입력 폼 : creation */
 .expense-item-creation-form {
@@ -178,7 +223,7 @@
 }
 /* 추가(plus) 버튼 클릭 애니메이션  */
 .expense-item-addition-button:active {
-    transform: scale(0.97); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
+    transform: scale(0.98); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
     /*box-shadow: 0 1px 2px rgba(201, 178, 126, 0.3); !* 눌린 효과를 주는 그림자 *!*/
 }
 .plus-icon {
