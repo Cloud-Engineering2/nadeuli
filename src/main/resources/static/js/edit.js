@@ -266,9 +266,9 @@ function updateSavedPlaceUI(events) {
 // 새로운 DayColumn 생성
 function createNewDayColumn(perDayList) {
     perDayList.forEach(perDay => {
-        const {dayCount, startTime = "09:00:00", endTime = "21:00:00"} = perDay;
+        const {dayCount, startTime = "09:00:00"} = perDay;
 
-        console.log(`📅 새로운 day-column 생성: dayCount=${dayCount}, startTime=${startTime}, endTime=${endTime}`);
+        console.log(`📅 새로운 day-column 생성: dayCount=${dayCount}, startTime=${startTime}`);
 
         // 🚀 새로운 Column 요소 생성
         let dayColumn = $(`
@@ -929,19 +929,16 @@ function initTimeSelectionUI(dayCounts) {
     let timeSelectionHTML = "";
     dayList.forEach(index => {
         console.log(perDayMap);
-        // perDayMap에서 startTime과 endTime을 가져옴 (없을 경우 기본값 설정)
+        // perDayMap에서 startTime을 가져옴 (없을 경우 기본값 설정)
         let startTime = perDayMap.get(index)?.startTime || "09:00:00"; // 기본값 설정
-        let endTime = perDayMap.get(index)?.endTime || "23:00:00"; // 기본값 설정
 
         // HH:MM 포맷으로 변환 (TT:MM:SS → HH:MM)
         let formattedStartTime = startTime.substring(0, 5);
-        let formattedEndTime = endTime.substring(0, 5);
 
         timeSelectionHTML += `
             <div class="time-container mb-3">
                 <span class="date-label">${index}일차</span>
                 <input type="time" class="form-control time-input" id="start-${index}" value="${formattedStartTime}">
-                <input type="time" class="form-control time-input" id="end-${index}" value="${formattedEndTime}">
                 <button id="apply-global-time" class="btn btn-secondary" style="visibility: hidden;">전체 적용</button>
             </div>
         `;
@@ -970,7 +967,6 @@ function renewTimeSelectionUI(prevDayCounts, dayCounts) {
                 <div class="time-container mb-3">
                     <span class="date-label">${i}일차</span>
                     <input type="time" class="form-control time-input" id="start-${i}" value="09:00">
-                    <input type="time" class="form-control time-input" id="end-${i}" value="23:00">
                     <button id="apply-global-time" class="btn btn-secondary" style="visibility: hidden;">전체 적용</button>
                 </div>
             `;
@@ -999,13 +995,11 @@ function dateChangeSubmit() {
         const dayMoment = moment(date);
         let dayId = index + 1;
         let newStartTime = $(`#start-${dayId}`).val() + ":00";
-        let newEndTime = $(`#end-${dayId}`).val() + ":00";
 
 
         let tempPerDay = {
             dayCount: dayId,
             startTime: newStartTime,
-            endTime: newEndTime,
             dayOfWeek: dayMoment.isoWeekday()  // 요일 번호 (월=1, ... , 일=7)
         };
 
@@ -1251,13 +1245,11 @@ $(".save-button").click(saveItinerary);
 
 $('#apply-global-time').click(function () {
     let globalStart = $('#start-global').val();
-    let globalEnd = $('#end-global').val();
-    console.log("📌 [전체 적용] 시작시간:", globalStart, "종료시간:", globalEnd);
+    console.log("📌 [전체 적용] 시작시간:", globalStart);
     // 1부터 dayCounts까지의 리스트 생성
     let dayList = Array.from({length: selectedDates.length}, (_, i) => i + 1);
     dayList.forEach(index => {
         $(`#start-${index}`).val(globalStart);
-        $(`#end-${index}`).val(globalEnd);
     });
 });
 
