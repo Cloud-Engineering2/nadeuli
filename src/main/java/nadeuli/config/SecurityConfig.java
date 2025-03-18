@@ -15,7 +15,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
-
 @Slf4j
 @Configuration
 @EnableWebSecurity
@@ -41,11 +40,12 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Login(oauth -> oauth
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/mypage", true)
-                        .failureUrl("/login?error=true").permitAll()
+                        .loginPage("/login") // 커스텀 로그인 페이지 경로
+                        .successHandler(customOAuth2SuccessHandler) // 로그인 성공 핸들러
+//                        .defaultSuccessUrl("/mypage", true) // (선택) 기본 리다이렉트 경로
+//                        .failureUrl("/login?error=true") // 실패 시 리다이렉트
                 )
-                .logout(logout -> logout.logoutUrl("/logout").permitAll())
+//                .logout(logout -> logout.logoutUrl("/logout").permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable());
 
@@ -65,4 +65,3 @@ public class SecurityConfig {
         return source;
     }
 }
-

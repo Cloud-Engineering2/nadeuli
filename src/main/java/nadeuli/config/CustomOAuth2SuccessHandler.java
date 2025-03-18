@@ -57,7 +57,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
         // 쿠키 저장 완료 후 메인으로 리디렉션
-        response.sendRedirect("/hello");
+        response.sendRedirect("/mypage");
         } catch (Exception e) {
             log.error("[OAuth2SuccessHandler] 오류 발생: {}", e.getMessage(), e);
             response.sendRedirect("/login?error=true"); // fallback 처리

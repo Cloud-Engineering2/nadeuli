@@ -1,7 +1,4 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    await getUserInfo(); // ✅ 사용자 정보 불러오기
-
-    // ✅ 프로필 이미지 변경 이벤트 (사진 클릭)
+document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("profileInput").addEventListener("change", saveProfileImage);
 });
 
@@ -11,7 +8,6 @@ async function getUserInfo() {
         const response = await fetch("/auth/user/me", {
             method: "GET",
             credentials: "include",
-            headers: { "Authorization": `Bearer ${getCookie("accessToken")}` }
         });
 
         if (!response.ok) throw new Error("사용자 정보 불러오기 실패");
@@ -45,7 +41,6 @@ async function saveProfileImage(event) {
             method: "POST",
             body: formData,
             credentials: "include",
-            headers: { "Authorization": `Bearer ${getCookie("accessToken")}` }
         });
 
         if (!response.ok) throw new Error("프로필 이미지 업로드 실패");
@@ -54,11 +49,4 @@ async function saveProfileImage(event) {
     } catch (error) {
         console.error("🚨 프로필 이미지 업로드 실패:", error);
     }
-}
-
-// ✅ 쿠키에서 JWT 가져오기
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
 }

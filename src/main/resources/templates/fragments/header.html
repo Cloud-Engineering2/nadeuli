@@ -12,5 +12,15 @@
         </div>
     </div>
 
+    <script th:inline="javascript">
+        const isLoggedIn = /*[[${loggedIn}]]*/ false;
+        const userName = /*[['${nickname}']]*/ "손님";
+        const userEmail = /*[['${email}']]*/ "";
+        console.log(isLoggedIn);
+        const userRole = /*[['${userRole}']]*/ "";
+        const userRoleAdmin = "ROLE_ADMIN";
+        const userRoleMember = "ROLE_MEMBER";
+    </script>
+
     <script src="/js/header.js"></script>
 </div>
