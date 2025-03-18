@@ -1657,7 +1657,7 @@ function searchGooglePlaces() {
         lat: googleRegionLat ?? 33.4996,
         lng: googleRegionLng ?? 126.5312
     };
-    let radius = googleRegionRadius ?? 50000;
+    let radius = Math.min(googleRegionRadius ?? 50000, 50000);
 
     $.ajax({
         url: "/api/google-places/search",
