@@ -1,90 +1,108 @@
-/* mypage.css - 마이페이지 스타일 */
+/* ✅ 커스텀 폰트 설정 */
+@font-face {
+    font-family: 'CustomFont';
+    src: url('/fonts/Griun_NoltoTAENGGU-Rg.woff2') format('woff2'),
+    url('/fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
 
-/* 🔹 전체 페이지 스타일 */
+/* ✅ 기본 스타일 */
+* {
+    font-family: 'CustomFont', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ✅ 전체 페이지 배경 */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5dc;
+    background-color: #E9DCBE; /* 베이지 */
     text-align: center;
     padding: 20px;
 }
 
-/* 🔹 마이페이지 컨테이너 스타일 */
+/* ✅ 마이페이지 컨테이너 */
 .mypage-container {
-    background-color: #fff;
-    width: 350px;
+    background-color: transparent;
+    width: 400px;
     margin: 0 auto;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* 🔹 프로필 이미지 스타일 */
-.profile-img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
-    margin: 0 auto;
-}
-
-/* 🔹 프로필 사진 변경 아이콘 */
-#profileLabel {
-    cursor: pointer;
+    padding: 30px;
     position: relative;
 }
 
-#profileLabel::after {
-    content: '\270E'; /* ✎ 아이콘 */
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    font-size: 18px;
-    background: #ddd;
-    padding: 5px;
-    border-radius: 50%;
+/* ✅ 프로필 제목 및 회원탈퇴 버튼 */
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
-/* 🔹 프로필 정보 입력 스타일 */
+/* ✅ 프로필 제목 (입체감 추가) */
+.profile-title {
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #8E8B82; /* 진한 회색 */
+    color: white;
+    padding: 7px 20px;
+    border-radius: 10px;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* ✅ 회원탈퇴 버튼 */
+.delete-btn {
+    background: #8E8B82;
+    color: white;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    opacity: 0.5; /* 불투명 */
+    border: none;
+    cursor: pointer;
+}
+
+/* ✅ 프로필 이미지 */
+.profile-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 20px auto;
+    cursor: pointer; /* 클릭 가능 */
+}
+
+/* ✅ 프로필 정보 */
 .profile-info {
     margin-top: 20px;
     text-align: left;
 }
 
-.profile-info label {
-    display: block;
+/* ✅ 정보 행 */
+.info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* ✅ 라벨 */
+.info-label {
+    font-size: 14px;
     font-weight: bold;
-    margin-top: 10px;
-}
-
-.profile-info input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-/* 🔹 저장 버튼 스타일 */
-.save-btn {
-    display: none;
-    margin-top: 15px;
-    background-color: #4CAF50;
+    background-color: #8E8B82; /* 진한 회색 */
     color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
+    padding: 5px 10px;
     border-radius: 5px;
 }
 
-.save-btn:hover {
-    background-color: #45a049;
-}
-
-/* 🔹 회원탈퇴 버튼 스타일 */
-.delete-btn {
-    display: block;
-    margin-top: 20px;
-    color: red;
-    text-decoration: none;
-    font-weight: bold;
+/* ✅ 입력 필드 */
+.profile-info input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #8E8B82;
+    border-radius: 5px;
+    background: #F3F3F3;
+    text-align: center;
 }
