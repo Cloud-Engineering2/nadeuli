@@ -89,11 +89,21 @@
     /*overflow-x: auto; !* ✅ 가로 스크롤 지원 *!*/
     /*min-width: 800px; !* ✅ 최소 가로 길이 유지 *!*/
 }
+.day-header-right{
+    cursor: pointer;
+}
 
 .savedPlace {
     margin-left: 5px;
     width: 250px !important;
     min-width: 250px  !important;/* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
+}
+.savedPlace .day-header-left{
+    flex: 1;
+}
+
+.savedPlace .place-toggle-button{
+    margin-right: 3px;
 }
 
 .savedPlace .event-order{
@@ -108,6 +118,9 @@
     width: 30px;
     min-width: 300px; /* ✅ 각 일정 칼럼 최소 가로 길이 유지 */
 }
+
+
+
 .day-header {
     display: flex;
     align-items: center;
@@ -174,6 +187,16 @@
 .schedule-header-right {
     margin-left: auto; /* 버튼을 오른쪽 끝으로 이동 */
 }
+
+.marker-total-button{
+    background: none;
+    border: none;
+    font-size: 25px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
 
 .toggle-map-button{
     background: none;
