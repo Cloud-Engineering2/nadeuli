@@ -139,10 +139,29 @@ function renderItinerary() {
         const startTime = perDayMap.get(dayNumber)?.startTime?.substring(0, 5) || "00:00";
         console.log(dayKey);
         // 📌 0일차는 장소 보관함으로 설정
+        const dayHeaderHtml =
+            dayNumber === 0
+                ? `
+            <div class='day-header'>
+                <div class='day-header-left'>
+                    장소보관함
+                </div>
+                <div class="place-toggle-button">+ 장소 추가</div>
+            </div>`
+                : `
+            <div class='day-header'>
+                <div class='day-header-left'>
+                    ${dayKey}일차 (${startTime})
+                </div>
+                <div class='day-header-right' title="${dayKey}차 마커보기">
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+            </div>
+        `;
+
         const dayColumn = $(`
             <div class='day-column ${dayNumber === 0 ? "savedPlace" : ""}' data-day-number='${dayNumber}'>
-                <div class='day-header'>${dayNumber === 0 ? `장소보관함 <div class="place-toggle-button">+ 장소 추가</div> ` : `${dayKey}` + `일차 (${startTime})`}
-                </div>
+                ${dayHeaderHtml}
                 <div class='event-container' id='day-${dayNumber}'></div>
             </div>
         `);
@@ -253,11 +272,19 @@ function createNewDayColumn(perDayList) {
 
         // 🚀 새로운 Column 요소 생성
         let dayColumn = $(`
-            <div class='day-column' data-day-number='${dayCount}'>
-                <div class='day-header'>${dayCount}일차 (${startTime.substring(0, 5)})</div>
-                <div class='event-container' id='day-${dayCount}'></div>
-            </div>
-        `);
+                <div class='day-column' data-day-number='${dayCount}'>
+                    <div class='day-header'>
+                        <div class='day-header-left'>
+                            ${dayCount}일차 (${startTime.substring(0, 5)})
+                        </div>
+                        <div class='day-header-right' title='${dayCount}차 마커보기'>
+                            <i class='bi bi-geo-alt'></i>
+                        </div>
+                    </div>
+                    <div class='event-container' id='day-${dayCount}'></div>
+                </div>
+            `);
+
 
         // 🚀 `schedule-container`에 추가
         $("#scheduleContainer").append(dayColumn);
@@ -1732,45 +1759,84 @@ function selectGooglePlace(location) {
     map.setCenter(location);
     map.setZoom(15);
 }
-
-// 구글 Place -> 나들이서버 장소 추가
 function registerPlace(button) {
     let listItem = button.closest(".google-result-item");
-    let placeId = listItem.getAttribute("data-id"); // data-id에서 placeId 가져오기
-    let name = listItem.querySelector(".google-result-title").innerText;
-    let address = listItem.querySelector(".google-result-address").innerText;
+    let placeId = listItem.getAttribute("data-id");
 
     if (!placeId) {
-        alert("❌ Place ID가 없습니다. 다시 시도해주세요.");
+        Swal.fire({
+            icon: "error",
+            title: "Place ID 없음",
+            text: "❌ Place ID가 없습니다. 다시 시도해주세요.",
+        });
         return;
     }
 
-    // 1️⃣ 사용자 확인
-    if (!confirm(`${name} 장소를 등록하시겠습니까?`)) {
-        return;
-    }
+    Swal.fire({
+        title: `이 장소를 등록하시겠습니까?`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "네, 등록합니다",
+        cancelButtonText: "취소"
+    }).then((result) => {
+        if (!result.isConfirmed) return;
 
-    // 2️⃣ 장소 등록 API 호출
-    $.ajax({
-        url: "/api/place/register",
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify({
-            placeId: placeId, // Google Place ID로 등록
-        }),
-        success: function (response) {
-            // 3️⃣ 성공 처리
-            if (response.status === 201) {
-                alert(`✅ 장소가 성공적으로 등록되었습니다: ${name}`);
-            } else if (response.status === 200) {
-                alert(`⚠ 이미 등록된 장소입니다: ${name}`);
+        Swal.fire({
+            title: "등록 요청 중...",
+            html: "잠시만 기다려주세요...",
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
             }
-        },
-        error: function (error) {
-            // 4️⃣ 실패 처리
-            console.error("🚨 장소 등록 실패:", error);
-            alert("❌ 장소 등록에 실패했습니다. 다시 시도해주세요.");
-        }
+        });
+
+        $.ajax({
+            url: "/api/place/register",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ placeId: placeId }),
+            success: function (response) {
+                const place = response.place; // 백엔드에서 내려준 PlaceDTO
+
+                if (response.status === 201) {
+                    Swal.fire({
+                        title: `✅ 장소 등록 완료`,
+                        text: `장소가 성공적으로 등록되었습니다.`,
+                        icon: "success",
+                        showCancelButton: true,
+                        confirmButtonText: "보관함에 추가",
+                        cancelButtonText: "닫기"
+                    }).then((res) => {
+                        if (res.isConfirmed && place) {
+                            placeToSavedPlace(place);
+                            resetRecommendationAndFetch();
+                        }
+                    });
+
+                } else if (response.status === 200) {
+                    Swal.fire({
+                        title: `⚠ 이미 등록된 장소입니다`,
+                        text: `보관함에 추가하시겠습니까?`,
+                        icon: "info",
+                        showCancelButton: true,
+                        confirmButtonText: "보관함에 추가",
+                        cancelButtonText: "닫기"
+                    }).then((res) => {
+                        if (res.isConfirmed && place) {
+                            placeToSavedPlace(place);
+                        }
+                    });
+                }
+            },
+            error: function (error) {
+                console.error("🚨 장소 등록 실패:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "❌ 등록 실패",
+                    text: "장소 등록에 실패했습니다. 다시 시도해주세요.",
+                });
+            }
+        });
     });
 }
 
@@ -2179,7 +2245,7 @@ $(document).ready(function() {
 });
 
 
-$(document).on("click", ".schedule-header-left", function () {
+$(document).on("click", ".marker-total-button", function () {
     markerState=0;
     renderMarkerByMarkerState();
 });
@@ -2206,7 +2272,8 @@ $(document).on("click", ".place-toggle-button", function () {
 
 $(document).on("click", ".add-button", function () {
     const placeId = $(this).closest(".list-item").data("id"); // 부모에서 id 가져옴
-    placeToSavedPlace(placeId);
+    const place = placeMap.get(placeId);
+    placeToSavedPlace(place);
 
     this.classList.remove("clicked");
     void this.offsetWidth;
@@ -2217,7 +2284,7 @@ $(document).on("click", ".add-button", function () {
     }, 2000); // 애니메이션 시간에 맞춰 제거
 });
 
-$(document).on('click', '.day-header', function () {
+$(document).on('click', '.day-header-right', function () {
     const $header = $(this);
     const $dayColumn = $header.closest('.day-column');
 
@@ -2233,10 +2300,7 @@ $(document).on('click', '.day-header', function () {
 
 
 
-function placeToSavedPlace(placeId) {
-    console.log(placeMap);
-    console.log(placeId);
-    const place = placeMap.get(placeId); // placeId로 해당 객체 가져오기
+function placeToSavedPlace(place) {
 
     if (!place) {
         console.warn("해당 placeId에 대한 place가 없습니다:", placeId);
@@ -2245,7 +2309,7 @@ function placeToSavedPlace(placeId) {
 
     const event = {
         dayCount: 0,
-        placeDTO: place,
+        placeDTO: { ...place },
         stayMinute: 60,
         startMinuteSinceStartDay: 0,
         endMinuteSinceStartDay: 0,
@@ -2335,6 +2399,7 @@ $("a[href]").click(function(e) {
 $(document).on("dblclick", ".event", function () {
     const eventId = $(this).data("id");
     const eventData = getEventById(eventId);
+    console.log(eventData);
     if (!eventData || !eventData.placeDTO) return;
 
     const eventDay = eventData.dayCount;
@@ -2346,7 +2411,7 @@ $(document).on("dblclick", ".event", function () {
         }
         clearSavedPlaceMarker();
     } else {
-        renderSavedPlaceMarker();
+        renderSavedPlaceMarker(eventData);
     }
 
     if (!isMapPanelOpen) {
@@ -2383,17 +2448,10 @@ $(document).on("dblclick", ".event", function () {
 
 
 
-function renderSavedPlaceMarker() {
+function renderSavedPlaceMarker(eventData) {
     clearSavedPlaceMarker(); // 기존 마커 제거
 
-    const container = document.getElementById("day-0");
-    if (!container) return;
-
-    const firstEventElement = container.querySelector('.event');
-    if (!firstEventElement) return;
-
-    const eventId = firstEventElement.getAttribute("data-id");
-    const event = getEventById(eventId);
+    const event = eventData;
     if (!event || !event.placeDTO) return;
 
     const { latitude, longitude } = event.placeDTO;
