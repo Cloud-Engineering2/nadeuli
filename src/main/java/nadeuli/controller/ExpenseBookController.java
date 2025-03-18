@@ -19,7 +19,8 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.response.AdjustmentResponseDTO;
-import nadeuli.dto.response.EventExpenseSummaryListDTO;
+import nadeuli.dto.response.EventExpenseSummaryDTO;
+import nadeuli.dto.response.EventExpenseSummaryTotalResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
 import nadeuli.service.ExpenseBookService;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +37,8 @@ public class ExpenseBookController {
     private final ExpenseBookService expenseBookService;
 
     @GetMapping("/{iid}/expense-summary")
-    public ResponseEntity<EventExpenseSummaryListDTO> getEventExpenseSummary(@PathVariable("iid") Long iid) {
-        EventExpenseSummaryListDTO response = expenseBookService.getEachTotalExpense(iid);
+    public ResponseEntity<EventExpenseSummaryTotalResponseDTO> getEventExpenseSummary(@PathVariable("iid") Long iid) {
+        EventExpenseSummaryTotalResponseDTO response = expenseBookService.getEachTotalExpense(iid);
         return ResponseEntity.ok(response);
     }
 

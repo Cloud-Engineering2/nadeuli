@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/view.css">
+    <link rel="stylesheet" href="/css/expense-book.css">
     <link rel="stylesheet" href="/css/header-footer.css">
     <style>
 
@@ -80,14 +81,17 @@
                 <div class="schedule-header-left">
                     <div class="schedule-header-name">여행 제목</div>
                     <div class="schedule-header-date">2025/03/02(화) ~ 2025/03/08(목)</div>
+                    <div class="total-budget-expense-wrap">
+
+                    </div>
                 </div>
                 <div class="schedule-header-right">
                     <button class="toggle-map-button on" title="지도 숨기기">
                         <i class="bi bi-map-fill on-icon"></i>
                         <i class="bi bi-map off-icon"></i>
                     </button>
-                    <button class="save-button"><i class="fas fa-floppy-disk"></i></button>
-<!--                    <button class="event-options-button schedule"><i class="fas fa-cog"></i></button>-->
+                    <button class="refresh-button"><i class="fas fa-arrows-rotate"></i></button>
+                    <!--                    <button class="event-options-button schedule"><i class="fas fa-cog"></i></button>-->
 <!--                    <div class="event-options hidden">-->
 <!--                        <button class="event-date-change">기간 및 시간 변경</button>-->
 <!--                        <button class="event-remove">일정표 삭제</button>-->
@@ -107,15 +111,21 @@
 
 
             <!-- 오른쪽 지도 사이드 박스 -->
-            <div class="right-side-map">
-                <div class="map-area">
-                    <div id="side-map"></div>
+            <div class="right-side-wrap">
+                <div class="right-side-map">
+                    <div class="map-area">
+                        <div id="side-map"></div>
+                    </div>
+                </div>
+                <div class="right-side-expense">
+                    <div id="detailContainer">
+
+                    </div>
                 </div>
             </div>
-
 </div>
 <script src="/js/view.js"></script>
-
+<script src="/js/expense-book.js"></script>
 <script async th:src="@{'https://maps.googleapis.com/maps/api/js?libraries=places,visualization&key=' + ${googleApiKey} + '&v=weekly&callback=initMap'}">
 </script>
 

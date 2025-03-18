@@ -14,7 +14,9 @@ let mapReady = false;
 let dataReady = false;
 let isPlacePageInitialLoad = false;
 let savedPlaceMarker = null;
-
+let summaryMap = new Map();
+let totalBudget = null;
+let totalExpense = null;
 
 // 모달 전역변수
 let travelModal;
@@ -32,7 +34,7 @@ let itineraryId = null;
 
 $(document).ready(function () {
     let pathSegments = window.location.pathname.split('/');
-    let itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
+    itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
 
 
     $.ajax({
@@ -40,11 +42,33 @@ $(document).ready(function () {
         method: "GET",
         dataType: "json",
         success: function (data) {
-            createData(data);
-            renderItinerary();
-            // initSidebarResize();
-            dataReady = true;
-            tryRenderMarkerAll();
+            itineraryData = data; // 전역 변수 저장
+            createData(data);     // 필요한 사전 작업
+
+            // 두 번째 AJAX: expense summary 호출
+            $.ajax({
+                url: `/api/itineraries/${itineraryId}/expense-summary`,
+                method: "GET",
+                dataType: "json",
+                success: function (expenseSummary) {
+                    // 전역 변수에 저장
+
+                    expenseSummary.summaries.forEach(item => {
+                        summaryMap.set(item.eventId, item.totalExpense);
+                    });
+                    totalBudget = expenseSummary.totalBudget;
+                    totalExpense = expenseSummary.totalExpenses;
+
+                    console.log(summaryMap);
+                    // 이후 렌더링 실행
+                    renderItinerary();
+                    dataReady = true;
+                    tryRenderMarkerAll();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching expense summary:", error);
+                }
+            });
         },
         error: function (xhr, status, error) {
             console.error("Error fetching itinerary:", error);
@@ -80,8 +104,8 @@ function createData(data) {
         editedEvent.stayMinute = editedEvent.endMinuteSinceStartDay - editedEvent.startMinuteSinceStartDay;
 
         let eventHashId = addEvent(editedEvent); // 이벤트 추가 후 ID 생성
-
         groupedByDay[dayKey].push({
+            id: editedEvent.id,
             hashId: eventHashId,
             placeDTO: event.placeDTO,
             startMinute: baseStartMinutes + editedEvent.startMinuteSinceStartDay,
@@ -103,6 +127,9 @@ function createData(data) {
 
 //일정 UI 요소 생성
 function renderItinerary() {
+
+    renderTotalBudgetExpenseSummary();
+
     // 🏷일정 제목 설정
     $(".schedule-header-name").text(itinerary.itineraryName);
 
@@ -153,9 +180,54 @@ function renderItinerary() {
     updateTabs();
 }
 
+
+function renderTotalBudgetExpenseSummary() {
+    const $wrap = $('.total-budget-expense-wrap');
+    $wrap.empty();
+
+    // 예산 출력
+    const budgetHtml = `
+        <div class="total-budget">예산: ${totalBudget.toLocaleString()} 원</div>
+    `;
+
+    // 지출/수익 계산
+    let expenseHtml = '';
+    if (totalExpense === 0) {
+        expenseHtml = `<div class="total-expense">지출: 0 원</div>`;
+    } else {
+        const isProfit = totalExpense < 0;
+        const displayAmount = isProfit ? `+ ${Math.abs(totalExpense).toLocaleString()}` : `- ${totalExpense.toLocaleString()}`;
+        const colorClass = isProfit ? "profit-expense" : "cost-expense";
+
+        expenseHtml = `<div class="total-expense ${colorClass}">지출: ${displayAmount} 원</div>`;
+    }
+
+    $wrap.append(budgetHtml);
+    $wrap.append(expenseHtml);
+}
+
 // 이벤트 요소 생성 함수 (장소 보관함 & 일반 이벤트 공통 사용)
 function createEventElement(event, index = null, totalEvents = null, isSavedPlace = false) {
-    console.log("Event Object:", event);
+
+
+    const totalExpense = summaryMap.get(event.id) ?? 0;
+    console.log("Event Object:", event.id, totalExpense);
+    let expenseHtml = '';
+    if (totalExpense === 0) {
+        expenseHtml = `
+            <div class="expense-item-list-addition" id="expenseItemListAddition" data-iid='${itinerary.id}' data-ieid='${event.id}'>+ 경비 내역 추가</div>
+        `;
+    } else {
+        const isProfit = totalExpense < 0;
+        const displayAmount = isProfit ? Math.abs(totalExpense).toLocaleString() : `- ${totalExpense.toLocaleString()}`;
+        const colorClass = isProfit ? "profit-expense" : "cost-expense";
+
+        expenseHtml = `
+            <div class="event-total-expense ${colorClass}" id="eventTotalExpense" data-iid='${itinerary.id}' data-ieid='${event.id}'>
+                ${displayAmount} 원
+            </div>
+        `;
+    }
 
     return $(`
                         <div class='event' data-id='${event.hashId}'>
@@ -181,8 +253,11 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                         <div class="event-left">
                                             ${isSavedPlace ? "" : `<div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>`}
                                             <div class='event-title'>${event.placeDTO.placeName}</div>
+                                            <div class='event-place-type' data-place-type='${event.placeDTO.placeType}'>${getKoreanLabel(event.placeDTO.placeType)}</div>
                                             <div class="event-under-content">
-                                                                   <div class='event-place-type' data-place-type='${event.placeDTO.placeType}'>${getKoreanLabel(event.placeDTO.placeType)}</div>
+                                               <div class="expense-wrap">
+                                                    ${expenseHtml}
+                                               </div>
                                             </div>
                                         </div>
                                         <div class="event-right">
@@ -195,6 +270,61 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                     `);
 }
 
+function refreshExpenseSummary() {
+    $.ajax({
+        url: `/api/itineraries/${itineraryId}/expense-summary`,
+        method: "GET",
+        dataType: "json",
+        success: function (expenseSummary) {
+            summaries = expenseSummary.summaries;
+            totalBudget = expenseSummary.totalBudget;
+            totalExpense = expenseSummary.totalExpenses;
+            summaryMap = new Map(summaries.map(item => [item.eventId, item.totalExpense]));
+
+            renderTotalBudgetExpenseSummary();
+            // 모든 day-column 순회하면서 각 event의 비용 표시 갱신
+            $('.day-column').each(function () {
+                const $dayColumn = $(this);
+                if ($dayColumn.hasClass('savedPlace')) return;
+
+                $dayColumn.find('.event').each(function () {
+                    const $event = $(this);
+                    const hashId = $event.data('id');
+                    const event = getEventById(hashId);
+                    const eventId = event?.id;
+
+                    const total = summaryMap.get(eventId) ?? 0;
+                    const $wrap = $event.find('.expense-wrap');
+                    $wrap.empty(); // 기존 내용 제거
+
+                    if (total === 0) {
+                        $wrap.append(`
+                            <div class="expense-item-list-addition" id="expenseItemListAddition" data-iid='${itineraryId}' data-ieid='${eventId}'>+ 경비 내역 추가</div>
+                        `);
+                    } else {
+                        const isProfit = total < 0;
+                        const displayAmount = isProfit ? Math.abs(total).toLocaleString() : `- ${total.toLocaleString()}`;
+                        const colorClass = isProfit ? "profit-expense" : "cost-expense";
+
+                        $wrap.append(`
+                            <div class="event-total-expense ${colorClass}" id="eventTotalExpense" data-iid='${itineraryId}' data-ieid='${eventId}'>
+                                ${displayAmount} 원
+                            </div>
+                        `);
+                    }
+                });
+            });
+
+            console.log("💰 Expense summary refreshed.");
+        },
+        error: function (xhr, status, error) {
+            console.error("Error refreshing expense summary:", error);
+        }
+    });
+}
+
+
+
 
 function formatDistance(distanceInMeters) {
     if (distanceInMeters >= 1000) {
@@ -205,156 +335,6 @@ function formatDistance(distanceInMeters) {
 }
 
 
-//일정 드래그 & 드롭 활성화
-function initializeSortable() {
-    $(".event-container").each(function () {
-        createSortableInstance(this);
-    });
-}
-
-
-// 새로운 DayColumn 생성
-function createNewDayColumn(perDayList) {
-    perDayList.forEach(perDay => {
-        const {dayCount, startTime = "09:00:00", endTime = "21:00:00"} = perDay;
-
-        console.log(`📅 새로운 day-column 생성: dayCount=${dayCount}, startTime=${startTime}, endTime=${endTime}`);
-
-        // 🚀 새로운 Column 요소 생성
-        let dayColumn = $(`
-            <div class='day-column'>
-                <div class='day-header'>${dayCount}일차 (${startTime.substring(0, 5)})</div>
-                <div class='event-container' id='day-${dayCount}'></div>
-            </div>
-        `);
-
-        // 🚀 `schedule-container`에 추가
-        $("#scheduleContainer").append(dayColumn);
-
-        // 🚀 새로운 day-column에 `Sortable` 적용
-        initializeSortableForColumn(`#day-${dayCount}`);
-
-        console.log(`✅ ${dayCount}일차 Column 추가 및 Sortable 등록 완료`);
-    });
-}
-
-// 순서 및 이동시간을 업데이트하는 함수
-function updateEventDisplay(dayId, startIndex) {
-    console.log('updateEventDisplay 호출 !');
-    const container = document.getElementById(dayId);
-    console.log('updateEventDisplay 체크완료 ', container);
-    if (!container) return;
-    const dayHeader = container.parentElement.querySelector('.day-header');
-
-
-    const dayCount = parseInt(dayId.match(/\d+$/)[0]); // day-숫자 → 숫자 추출
-
-    dayHeader.textContent = `${dayCount}일차 (${perDayMap.get(dayCount)?.startTime.substring(0, 5)})`;
-
-    const items = container.children;
-    let order = startIndex + 1; // 새로운 순서값 설정
-
-    // 초기 시간을 가져옴 (해당 dayCount의 startTime)
-    let baseStartTime = timeToMinutes(perDayMap.get(dayCount)?.startTime || "00:00:00");
-
-    // 이전 이벤트의 종료 시간 가져오기 (이동시간 반영)
-    let prevEndMinute = 0; // startIndex가 0일 경우 기본값 설정
-    if (startIndex > 0) {
-        const prevEventElement = items[startIndex - 1];
-        const prevEventId = prevEventElement.getAttribute("data-id");
-        const prevEvent = getEventById(prevEventId);
-
-        if (prevEvent) {
-            prevEndMinute = prevEvent.startMinuteSinceStartDay + prevEvent.stayMinute;
-        }
-    }
-
-    // ✅ 이벤트 업데이트 루프
-    for (let i = startIndex; i < items.length; i++) {
-        const eventElement = items[i];
-        const eventId = eventElement.getAttribute("data-id");
-        const event = getEventById(eventId);
-
-        if (!event) continue;
-
-        // ✅ 순서 업데이트 (event-order-circle)
-        const orderCircle = eventElement.querySelector(".event-order-circle");
-        if (orderCircle) {
-            orderCircle.textContent = order;
-        }
-
-        // ✅ 이동 시간 업데이트 (travel-info)
-        const travelInput = eventElement.querySelector(".travel-minute-input");
-        if (travelInput) {
-            travelInput.value = event.movingMinuteFromPrevPlace ?? 0;
-        }
-
-
-        // ✅ 이벤트 시간 업데이트 (event-time)
-        const eventTimeElement = eventElement.querySelector(".event-time");
-        if (eventTimeElement) {
-            let startMinute = prevEndMinute + (event.movingMinuteFromPrevPlace ?? 0); // 이동 시간 반영
-            let endMinute = startMinute + event.stayMinute; // 머무는 시간 추가
-
-            // 저장되는 값은 baseStartTime을 제외한 상대 값
-            event.startMinuteSinceStartDay = startMinute;
-            event.endMinuteSinceStartDay = endMinute;
-
-            // UI에 표시할 값은 baseStartTime을 더한 절대 시간
-            eventTimeElement.textContent = `${formatTime(startMinute + baseStartTime)} ~ ${formatTime(endMinute + baseStartTime)}`;
-
-            // 다음 이벤트의 시작 시간 업데이트
-            prevEndMinute = endMinute;
-        }
-
-        // ✅ 최신 이벤트 데이터 업데이트
-        eventMap.set(eventId, event);
-
-        order++; // 다음 순서 증가
-    }
-}
-
-// element 에 Sortable 안전하게 추가
-function initializeSortableForColumn(selector) {
-    const element = document.querySelector(selector);
-    if (!element) {
-        console.warn(`⚠️ Sortable 적용 실패: ${selector} 찾을 수 없음`);
-        return;
-    }
-    createSortableInstance(element);
-}
-
-// element 에 Sortable 추가
-function createSortableInstance(element) {
-    return new Sortable(element, {
-        group: "shared",
-        animation: 200,
-        ghostClass: "sortable-ghost",
-        dragClass: "sortable-drag",
-        handle: ".event-content",
-        filter: ".js-remove",
-        preventOnFilter: false,
-        onStart: function (evt) {
-            $(".travel-info").css("visibility", "hidden");
-        },
-        onAdd: function (evt) {
-
-            let newItem = $(evt.item);
-            let eventId = newItem.data("id");
-            let event = getEventById(eventId);
-
-            let isPlaceSaved = evt.to.id === 'day-0';
-            console.log(createEventElement);
-            let eventElement = createEventElement(event, null, null, isPlaceSaved);
-            newItem.replaceWith(eventElement);
-
-            console.log("ON ADD !");
-        },
-        onEnd: function (evt) {
-        }
-
-    });
-}
 
 //day-? 에서 ? 추출
 function extractDayId(toDayId) {
@@ -461,44 +441,7 @@ function formatTime(minutes) {
 //  🎭 이벤트 핸들링
 //------------------------------------------
 
-/*$(".save-button").click(saveItinerary);*/
-
-// $('#apply-global-time').click(function () {
-//     let globalStart = $('#start-global').val();
-//     let globalEnd = $('#end-global').val();
-//     console.log("📌 [전체 적용] 시작시간:", globalStart, "종료시간:", globalEnd);
-//     // 1부터 dayCounts까지의 리스트 생성
-//     let dayList = Array.from({length: selectedDates.length}, (_, i) => i + 1);
-//     dayList.forEach(index => {
-//         $(`#start-${index}`).val(globalStart);
-//         $(`#end-${index}`).val(globalEnd);
-//     });
-// });
-
-$(document).on("click", ".event-date-change", function () {
-    setDateRangePickerDate();
-    initTimeSelectionUI(prevDayCount);
-    travelModal.show();
-});
-// event 메뉴 열기
-$(document).on("click", ".event-options-button", function (event) {
-    event.stopPropagation(); // 클릭 이벤트 전파 방지
-    let menu = $(this).siblings(".event-options");
-
-    // 다른 열린 메뉴 닫기
-    $(".event-options").not(menu).addClass("hidden");
-
-    // 현재 메뉴 토글
-    menu.toggleClass("hidden");
-});
-// 다른 곳을 클릭하면 메뉴 닫기
-$(document).on("click", function () {
-    $(".event-options").addClass("hidden");
-});
-// 메뉴 내부 클릭 시 닫히지 않도록 처리
-$(document).on("click", ".event-options", function (event) {
-    event.stopPropagation();
-});
+$(".refresh-button").click(refreshExpenseSummary);
 
 
 
@@ -704,22 +647,30 @@ function resetAllMarkersZIndex(markers, defaultZIndex = 1) {
 
 //마커 크기를 키우는 함수
 function enlargeMarkerTemporarily(marker, scaleFactor = 2, duration = 2000) {
-    const originalIcon = marker.getIcon();
-    const originalLabel = marker.getLabel();
+    // 최초 아이콘/라벨 정보 저장
+    if (!marker._originalIcon) {
+        marker._originalIcon = marker.getIcon();
+    }
+    if (!marker._originalLabel) {
+        marker._originalLabel = marker.getLabel();
+    }
 
-    // 기존 타이머 있으면 클리어
+    // 기존 타이머 클리어
     if (marker._resetTimerId) {
         clearTimeout(marker._resetTimerId);
         marker._resetTimerId = null;
     }
 
-    // 아이콘 확대
+    const originalIcon = marker._originalIcon;
+    const originalLabel = marker._originalLabel;
+
+    // 확대 아이콘
     const biggerIcon = {
         ...originalIcon,
         scale: (originalIcon.scale || 1) * scaleFactor
     };
 
-    // 라벨 확대
+    // 확대 라벨
     const fontSize = originalLabel?.fontSize || "13px";
     const newFontSize = (parseFloat(fontSize) * scaleFactor) + "px";
     const biggerLabel = {
@@ -729,7 +680,6 @@ function enlargeMarkerTemporarily(marker, scaleFactor = 2, duration = 2000) {
 
     marker.setIcon(biggerIcon);
     marker.setLabel(biggerLabel);
-
 
     // 복구 예약
     marker._resetTimerId = setTimeout(() => {
@@ -852,37 +802,37 @@ $(document).on('click', '.day-header', function () {
 
 
 
-// 수정후 브라우저 뒤로가기,나가기, 새로고침시 경고 메세지
-window.addEventListener("beforeunload", function (e) {
-    if (isDirty) {
-        e.preventDefault();  // 크롬 기준 필요
-        e.returnValue = '저장되지 않은 변경 사항이 있습니다. 정말 페이지를 나가시겠습니까?';
-    }
-});
-
-// 수정후 링크 이동시 경고 메세지
-function handleDirtyNavigation(targetUrl) {
-    if (!isDirty) {
-        window.location.href = targetUrl;
-        return;
-    }
-
-    Swal.fire({
-        title: '저장되지 않은 변경사항이 있습니다.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: '나가기',
-        cancelButtonText: '취소',
-        reverseButtons: true,
-        customClass: {
-            title: 'swal2-sm-title'
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = targetUrl;
-        }
-    });
-}
+// // 수정후 브라우저 뒤로가기,나가기, 새로고침시 경고 메세지
+// window.addEventListener("beforeunload", function (e) {
+//     if (isDirty) {
+//         e.preventDefault();  // 크롬 기준 필요
+//         e.returnValue = '저장되지 않은 변경 사항이 있습니다. 정말 페이지를 나가시겠습니까?';
+//     }
+// });
+//
+// // 수정후 링크 이동시 경고 메세지
+// function handleDirtyNavigation(targetUrl) {
+//     if (!isDirty) {
+//         window.location.href = targetUrl;
+//         return;
+//     }
+//
+//     Swal.fire({
+//         title: '저장되지 않은 변경사항이 있습니다.',
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonText: '나가기',
+//         cancelButtonText: '취소',
+//         reverseButtons: true,
+//         customClass: {
+//             title: 'swal2-sm-title'
+//         }
+//     }).then((result) => {
+//         if (result.isConfirmed) {
+//             window.location.href = targetUrl;
+//         }
+//     });
+// }
 
 
 // 수정후 링크 이동시 경고 메세지 event 핸들러
@@ -1072,16 +1022,18 @@ $(document).on("click", ".list-item", function () {
 
 $(document).on("click", ".toggle-map-button", function () {
     const $mapPanel = $(".right-side-map");
-    const $resizeHandle = $("#resize-handle");
+    const $expensePanel = $(".right-side-expense");
+    // const $resizeHandle = $("#resize-handle");
     $mapPanel.toggleClass("hidden");
-    $resizeHandle.toggleClass("hidden");
+    $expensePanel.toggleClass("expand");
+    // $resizeHandle.toggleClass("hidden");
     $(this).toggleClass("on");
     isMapPanelOpen = $(this).hasClass("on"); // 👉 상태 동기화
     // 툴팁 변경
     if ($(this).hasClass("on")) {
         $(this).attr("title", "지도 숨기기");
-        const sidebarWidth = $("#sidebar").outerWidth();
-        $resizeHandle.css("left", sidebarWidth + "px");
+        // const sidebarWidth = $("#sidebar").outerWidth();
+        // $resizeHandle.css("left", sidebarWidth + "px");
     } else {
         $(this).attr("title", "지도 보기");
     }
