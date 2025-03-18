@@ -801,6 +801,10 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
                 destinationLongitude: to.placeDTO.longitude,
             });
             validToEvents.push(to);
+        } else if(from === null && to){
+                to.movingDistanceFromPrevPlace = 0;
+                to.movingMinuteFromPrevPlace = 0;
+
         }
     });
 
