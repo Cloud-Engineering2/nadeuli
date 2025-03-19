@@ -88,16 +88,16 @@
     padding: 2px;
     width: 250px;
     text-align: center; /* 글자 정렬 */
+    margin-right: 90px;
 }
 
 .expense-item-expenditure {
     font-weight: bold;
     padding: 2px;
-    margin-right: 0.3%;
     width: 150px;
     text-align: right; /* 글자 정렬 */
     height: 35px;
-
+    margin-right: 110px;
 }
 
 .expense-item-payer {
@@ -106,7 +106,7 @@
     text-align: center; /* 글자 정렬 */
     font-weight: bold;
     width: 150px;
-    margin-right: 0.3%;
+    margin-right: 110px;
 }
 
 .expense-item-with-whom {
@@ -114,7 +114,7 @@
     padding: 5px;
     text-align: left; /* 글자 정렬 */
     width: 245px;
-    margin-right: 20px;
+    margin-right: 100px;
     /*font-weight: bold;*/
 }
 
@@ -133,12 +133,14 @@
     font-weight: bold;
     color: #8E8B82;
     text-align: center;
+    margin-right: 100px;
 }
 .expense-item-expenditure-title, .expense-item-payer-title {
     width: 150px;
     font-weight: bold;
     color: #8E8B82;
     text-align: center;
+    margin-right: 100px;
 }
 /* 💡 경비 아이템 수정 버튼 */
 .expense-item-edit-button {
@@ -170,7 +172,8 @@
     text-align: center; /* 글자 정렬 */
     font-weight: bold;
     width: 150px;
-    margin-right: 0.4%;
+    margin-right: 100px;
+    margin-left: 110px;
 }
 
 .expense-item-with-whom-replace {
@@ -178,7 +181,9 @@
     padding: 5px;
     text-align: left; /* 글자 정렬 */
     width: 245px;
-    margin-right: 12px;
+    margin-right: 97px;
+    margin-left: 2px;
+
 }
 
 .expense-item-confirm-button {
@@ -237,6 +242,7 @@
     width: 250px;
     height: 40px;
     margin-left: 3px;
+    margin-right: 100px;
 }
 
 .expense-item-creation-withWhom {
@@ -245,13 +251,14 @@
     width: 250px;
     height: 120px;
     margin-left: 3px;
-    margin-right: 8px;
+    margin-right: 95px;
 }
 .expense-item-creation-expenditure, .expense-item-creation-payer {
     border: 1px solid #8e8b82;
     padding: 2px;
     width: 150px;
     height: 40px;
+    margin-right: 100px;
 }
 
 /* 💡 폼 제출 버튼 */
