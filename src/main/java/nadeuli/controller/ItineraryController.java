@@ -20,18 +20,23 @@
 package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import nadeuli.security.CustomUserDetails;
+import nadeuli.service.ItineraryCollaboratorService;
 import nadeuli.service.ItineraryService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Controller
 @RequestMapping("/itinerary")
 @RequiredArgsConstructor
 public class ItineraryController {
 
-    private final ItineraryService itineraryService;
+    private final ItineraryCollaboratorService collaboratorService;
     @Value("${google.api.key}")
     private String googleMapsApiKey;
     // ===========================
@@ -48,20 +53,28 @@ public class ItineraryController {
     }
 
     @GetMapping("/edit/{itineraryId}")
-    public String showEditPage(@PathVariable Long itineraryId, Model model) {
+    public String showEditPage(@PathVariable Long itineraryId, Model model,  @AuthenticationPrincipal CustomUserDetails userDetails) {
         model.addAttribute("googleApiKey", googleMapsApiKey);
+
+        Long userId = userDetails.getUser().getId();
+
+        // 수정 권한 체크 (일정 파트 = isExpensePart=false)
+        collaboratorService.checkEditPermission(userId, itineraryId, false);
+
         return "itinerary/edit";  // 정적 HTML 페이지 반환
     }
 
     @GetMapping("/view/{itineraryId}")
-    public String showViewPage(@PathVariable Long itineraryId, Model model) {
+    public String showViewPage(@PathVariable Long itineraryId, Model model,  @AuthenticationPrincipal CustomUserDetails userDetails) {
         model.addAttribute("googleApiKey", googleMapsApiKey);
+
+        Long userId = userDetails.getUser().getId();
+
+        // 읽기 권한 체크
+        collaboratorService.checkViewPermission(userId, itineraryId);
+
         return "itinerary/view";  // 정적 HTML 페이지 반환
     }
 
-    @GetMapping("/region")
-    public String regionTestPage() {
-        return "region-test";
-    }
 
 }
