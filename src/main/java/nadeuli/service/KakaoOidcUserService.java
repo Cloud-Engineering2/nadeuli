@@ -22,6 +22,7 @@ package nadeuli.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.entity.User;
+import nadeuli.entity.constant.UserRole;
 import nadeuli.repository.UserRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
