@@ -342,6 +342,10 @@ $(document).off("click", ".expense-item-addition-button").on("click", ".expense-
         alert("금액과 지출자는 반드시 입력해야 합니다.");
         return;
     }
+    if (withWhomList.includes(payer)) {
+        alert("Payer는 함께 계산할 수 없습니다!");
+        return;
+    }
 
     const expenseItemRequestData = { // RequestBody -> ExpenseItemRequestDTO
         content: content,
@@ -492,6 +496,12 @@ $(document).off("click", ".expense-item-confirm-button").on("click", ".expense-i
         alert("금액과 지출자는 반드시 입력해야 합니다.");
         return;
     }
+    if (withWhomList.includes(payer)) {
+        alert("Payer는 함께 계산할 수 없습니다!");
+        return;
+    }
+
+
 
     const expenseItemRequestData = {
         content: content,
