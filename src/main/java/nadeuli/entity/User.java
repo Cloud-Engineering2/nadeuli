@@ -13,6 +13,7 @@
  * 이홍비    2025.02.25     content, imageURL 저장 관련 함수 추가
  * 김대환    2025.03.14     implements Serializable 추가
  * 이홍비    2025.03.19     UserRole => @Converter 추가
+ * 김대환    2025.03.19     UserRold => Service 에서 Role_User 생성시 기본값 지정
  * ========================================================
  */
 
@@ -59,6 +60,7 @@ public class User implements Serializable {
     @Column(name = "profile_image_url", columnDefinition = "TEXT")
     private String profileImage;
 
+    @Setter
     @Convert(converter = UserRoleAttributeConverter.class)
     @Column(name = "user_role", nullable = false, length = 20)
     private UserRole userRole;
