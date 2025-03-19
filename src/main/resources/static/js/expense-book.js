@@ -290,7 +290,7 @@ async function createTravelerOption(itineraryId, selectElement, explainText=null
         select.innerHTML = "";
         if (explainText) {
             const placeholder = document.createElement("option");
-            placeholder.id = "expenseItemCreationSelectDefaultValue";
+            // placeholder.id = "expenseItemCreationSelectDefaultValue";
             placeholder.value = "";
             placeholder.selected = true;
             placeholder.disabled = false;
@@ -300,7 +300,7 @@ async function createTravelerOption(itineraryId, selectElement, explainText=null
         // option
         travelerNameList.forEach(travelerName => {
             const traveler = document.createElement("option");
-            traveler.id = `expenseItemCreationSelectDefaultValue-${travelerName}`;
+            // traveler.id = `expenseItemCreationSelectValue-${travelerName}`;
             traveler.value = travelerName;
             traveler.textContent = `@${travelerName}`;
             select.appendChild(traveler);
@@ -391,7 +391,7 @@ async function addWithWhom(iid, emid, withWhomRequestData) {
 }
 
 
-//🎈 오른쪽 패널 - '-'버튼 클릭 시 -> 경비 내역(expense item, with whom) 삭제
+//💡 오른쪽 패널 - '-'버튼 클릭 시 -> 경비 내역(expense item, with whom) 삭제
 $(document).off("click", ".expense-item-delete-button").on("click", ".expense-item-delete-button", async function(event) {
     event.preventDefault(); // 폼 제출 방지
 
@@ -402,6 +402,70 @@ $(document).off("click", ".expense-item-delete-button").on("click", ".expense-it
     await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense/${emid}`, "DELETE", null);
 
     location.reload();
+});
+
+//💡 오른쪽 패널 - 연필 버튼 클릭 시 -> 경비 내역(expense item, with whom) 삭제
+$(document).off("click", ".expense-item-edit-button").on("click", ".expense-item-edit-button", async function(event) {
+    event.preventDefault(); // 폼 제출 방지
+
+    const iid = $(this).data("iid");   // itinerary ID
+    const ieid = $(this).data("ieid"); // event ID
+    const emid = $(this).data("emid"); // expense item ID
+
+    // 기존 값 가져오기
+    const expenseItemBox = document.getElementById(`expenseItemBox-${emid}`);
+
+    const expenseItemContent = expenseItemBox.querySelector(".expense-item-content");
+    // const content = expenseItemContent.textContent;
+    const expenseItemExpenditure = expenseItemBox.querySelector(".expense-item-expenditure");
+    // const expenditure = parseInt(expenseItemExpenditure.textContent);
+    const expenseItemPayer = expenseItemBox.querySelector(".expense-item-payer");
+    const payer = expenseItemPayer.textContent.replace("@", ""); // "@" 제거
+    const expenseItemWithWhom = expenseItemBox.querySelector(".expense-item-with-whom span");
+    const withWhom = expenseItemWithWhom.textContent.replace("💡 함께한 사람: ", "").split(", ").map(name => name.replace("@", ""));
+
+    // 수정 시 변경
+    expenseItemContent.setAttribute("contenteditable", "true");
+    expenseItemContent.setAttribute("style", "height: 35px;");
+    expenseItemExpenditure.setAttribute("contenteditable", "true");
+    expenseItemExpenditure.setAttribute("style", "height: 35px;");
+    expenseItemExpenditure.setAttribute("style", "margin-right: 10px;");
+
+    // select로 변경
+    const payerSelect = document.createElement("select");
+    payerSelect.setAttribute("class", "expense-item-payer-replace");
+    payerSelect.setAttribute("id", `expenseItemPayerReplace-${emid}`);
+    payerSelect.setAttribute("style", "height: 35px;");
+    expenseItemPayer.parentNode.replaceChild(payerSelect, expenseItemPayer);
+
+    const withWhomSelect = document.createElement("select");
+    withWhomSelect.setAttribute("class", "expense-item-with-whom-replace");
+    withWhomSelect.setAttribute("id", `expenseItemWithWhomReplace-${emid}`);
+    withWhomSelect.setAttribute("multiple", "");
+    payerSelect.parentNode.replaceChild(withWhomSelect, expenseItemWithWhom.parentNode);
+
+    // 수정 버튼과 확인 버튼
+    expenseItemBox.querySelector(".expense-item-edit-button").setAttribute("style", "display: none");
+    expenseItemBox.querySelector(".expense-item-confirm-button").setAttribute("style", "display: flex");
+
+    // payer와 withWhom 목록 나열
+    // setTimeout(async () => {
+    const newExpenseItemPayer = expenseItemBox.querySelector(".expense-item-payer-replace");
+    console.log(newExpenseItemPayer);    // <select class="expense-item-payer" id="expenseItemPayerReplace-25" style="height: 35px;"></select>
+    const newExpenseItemWithWhom = expenseItemBox.querySelector(".expense-item-with-whom-replace");
+    console.log(newExpenseItemWithWhom);   // <select class="expense-item-with-whom" id="expenseItemWithWhomReplace-25" multiple=""></select>
+
+    await createTravelerOption(iid, `expenseItemPayerReplace-${emid}`, null); //`@${payer}`);
+    await createTravelerOption(iid, `expenseItemWithWhomReplace-${emid}`, null); // withWhom.map(name => `@${name}`).join(", "));
+    newExpenseItemPayer.querySelector(`option[value="${payer}"]`).selected=true;
+    for (const option of newExpenseItemWithWhom.options) {
+        if (withWhom.includes(option.value)) {
+            option.selected = true;
+        }
+    }
+
+
+    // }, 1000);
 });
 
 
@@ -427,6 +491,9 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
                     <div class="expense-item-with-whom" id="expenseItemWithWhom-${expenseItem.id}"><span class="with-whom" data-emid="${expenseItem.id}">💡 함께한 사람: 로딩 중...</span></div>
                     <button type="button" class="expense-item-edit-button" id="expenseItemEditButton" data-iid="${iid}", data-ieid="${ieid}" data-emid="${expenseItem.id}">
                         <i class="fa-solid fa-pen edit-icon"></i>
+                    </button>
+                    <button type="button" class="expense-item-confirm-button" id="expenseItemConfirmButton" data-iid="${iid}", data-ieid="${ieid}" data-emid="${expenseItem.id}">
+                        <i class="fa-solid fa-check confirm-icon"></i> <!-- 체크 아이콘 -->
                     </button>
                     <button type="button" class="expense-item-delete-button" id="expenseItemDeleteButton" data-iid="${iid}", data-ieid="${ieid}" data-emid="${expenseItem.id}">
                         <i class="fa fa-minus minus-icon"></i>

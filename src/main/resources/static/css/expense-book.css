@@ -96,6 +96,8 @@
     margin-right: 0.3%;
     width: 150px;
     text-align: right; /* 글자 정렬 */
+    height: 35px;
+
 }
 
 .expense-item-payer {
@@ -111,6 +113,8 @@
     color: #8E8B82;
     padding: 5px;
     text-align: left; /* 글자 정렬 */
+    width: 245px;
+    margin-right: 20px;
     /*font-weight: bold;*/
 }
 
@@ -152,6 +156,45 @@
     /*box-shadow: 0 1px 2px rgba(201, 178, 126, 0.3); !* 눌린 효과를 주는 그림자 *!*/
 }
 .edit-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
+}
+
+/* 💡 수정 폼 */
+
+.expense-item-payer-replace {
+    color: #8E8B82;
+    padding: 5px;
+    text-align: center; /* 글자 정렬 */
+    font-weight: bold;
+    width: 150px;
+    margin-right: 0.4%;
+}
+
+.expense-item-with-whom-replace {
+    color: #8E8B82;
+    padding: 5px;
+    text-align: left; /* 글자 정렬 */
+    width: 245px;
+    margin-right: 12px;
+}
+
+.expense-item-confirm-button {
+    display: none;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+.expense-item-confirm-button:active {
+    transform: scale(0.98);
+}
+.confirm-icon {
     color: white; /* 아이콘 색상 */
     font-size: 15px; /* 아이콘 크기 */
     padding: 10px 15px; /* 패딩 */
@@ -202,6 +245,7 @@
     width: 250px;
     height: 120px;
     margin-left: 3px;
+    margin-right: 8px;
 }
 .expense-item-creation-expenditure, .expense-item-creation-payer {
     border: 1px solid #8e8b82;
