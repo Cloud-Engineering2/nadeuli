@@ -404,7 +404,7 @@ $(document).off("click", ".expense-item-delete-button").on("click", ".expense-it
     location.reload();
 });
 
-//💡 오른쪽 패널 - 연필 버튼 클릭 시 -> 경비 내역(expense item, with whom) 삭제
+//💡 오른쪽 패널 - 연필 버튼 클릭 시 -> 경비 내역(expense item, with whom) 수정
 $(document).off("click", ".expense-item-edit-button").on("click", ".expense-item-edit-button", async function(event) {
     event.preventDefault(); // 폼 제출 방지
 
@@ -466,6 +466,56 @@ $(document).off("click", ".expense-item-edit-button").on("click", ".expense-item
 
 
     // }, 1000);
+});
+
+
+//💡 오른쪽 패널 - 체크 버튼 클릭 시 -> 경비 내역(expense item, with whom) 수정 폼 전송
+$(document).off("click", ".expense-item-confirm-button").on("click", ".expense-item-confirm-button", async function(event) {
+    event.preventDefault(); // 폼 제출 방지
+
+    const iid = $(this).data("iid");   // itinerary ID
+    const ieid = $(this).data("ieid"); // event ID
+    const emid = $(this).data("emid"); // expense item ID
+
+
+    // 수정된 값 가져오기
+    const expenseItemBox = document.getElementById(`expenseItemBox-${emid}`);
+
+    const content = expenseItemBox.querySelector(".expense-item-content").textContent.trim();
+    const expenditure = parseInt(expenseItemBox.querySelector(".expense-item-expenditure").textContent.trim());
+    const payer = expenseItemBox.querySelector(".expense-item-payer-replace").value;
+    const withWhomSelect = expenseItemBox.querySelector(".expense-item-with-whom-replace");
+    const withWhomList = [...withWhomSelect.selectedOptions].map(option => option.value);
+
+    // 유효성 검사
+    if (!expenditure || !payer) {
+        alert("금액과 지출자는 반드시 입력해야 합니다.");
+        return;
+    }
+
+    const expenseItemRequestData = {
+        content: content,
+        payer: payer,
+        expense: expenditure
+    };
+
+    const withWhomData = {
+        withWhomNames: withWhomList
+    };
+
+    try {
+        await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense/${emid}`, "PUT", expenseItemRequestData); // updateExpenseItem(iid, ieid, emid, expenseItemRequestData);
+        await callApiAt(`/api/itineraries/${iid}/expense/${emid}/withWhom`, "DELETE", null); // 절대 경로(맨 앞에 / 붙이기)
+        await callApiAt(`/api/itineraries/${iid}/expense/${emid}/withWhom`, "POST", withWhomData);
+
+        // 🎯 페이지 새로고침 (데이터 반영을 위해)
+        location.reload();
+    } catch (error) {
+        console.error("🚨 데이터 수정 중 오류 발생:", error);
+        alert("지출 항목을 수정하는 중 오류가 발생했습니다.");
+    }
+
+
 });
 
 
