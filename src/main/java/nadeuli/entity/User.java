@@ -1,7 +1,27 @@
+/* User.java
+ * User 엔티티
+ * 작성자 : 박한철
+ * 최초 작성 날짜 : 2025-02-25
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자        날짜        수정 / 보완 내용
+ * ========================================================
+ * 이홍비    2025.02.25     생성자 + static factory method 추가 // 컨버터 추가
+ * 이홍비    2025.02.25     컨버터 위치 이동 => import 수정
+ * 이홍비    2025.02.25     content, imageURL 저장 관련 함수 추가
+ * 김대환    2025.03.14     implements Serializable 추가
+ * 이홍비    2025.03.19     UserRole => @Converter 추가
+ * ========================================================
+ */
+
+
 package nadeuli.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import nadeuli.common.util.UserRoleAttributeConverter;
 import nadeuli.entity.constant.UserRole;
 import java.io.Serial;
 import java.io.Serializable;
@@ -39,7 +59,7 @@ public class User implements Serializable {
     @Column(name = "profile_image_url", columnDefinition = "TEXT")
     private String profileImage;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = UserRoleAttributeConverter.class)
     @Column(name = "user_role", nullable = false, length = 20)
     private UserRole userRole;
 

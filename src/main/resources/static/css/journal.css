@@ -73,6 +73,9 @@ body {
     padding: 10px;
 
     width: calc(100% - 20px); /* 패딩 및 마진을 고려한 너비 설정 */
+
+    max-width: 50%; /* 부모 요소를 벗어나지 않도록 */
+
 }
 
 .content {
@@ -274,4 +277,9 @@ body {
 }
 
 
-
+#has-content {
+    word-wrap: break-word; /* 긴 단어를 줄바꿈 */
+    overflow-wrap: break-word; /* 추가적인 줄바꿈 보장 */
+    white-space: pre-wrap; /* 줄바꿈과 공백 유지 */
+    max-width: 100%; /* 부모 요소를 벗어나지 않도록 */
+}
