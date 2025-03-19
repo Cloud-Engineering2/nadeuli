@@ -1202,7 +1202,7 @@ function saveItinerary() {
             }).then((result) => {
                 if (result.isConfirmed) {
                     // ✅ 일정 보기 페이지로 이동
-                    window.location.href = `/itinerary/view/${itinerary.itineraryId}`; // 실제 view URL로 수정
+                    window.location.href = `/itinerary/view/${itinerary.id}`; // 실제 view URL로 수정
                 }
                 // ❌ 취소 선택 → 아무 것도 안 함 (계속 수정)
             });
@@ -1791,6 +1791,9 @@ function registerPlace(button) {
         $.ajax({
             url: "/api/place/register",
             type: "POST",
+            xhrFields: {
+                withCredentials: true
+            },
             contentType: "application/json",
             data: JSON.stringify({ placeId: placeId }),
             success: function (response) {

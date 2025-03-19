@@ -1,0 +1,174 @@
+/* 📌 폰트 설정 */
+
+/*@font-face {*/
+/*    font-family: 'CustomFont';*/
+/*    src: url('../fonts/Griun_NoltoTAENGGU-Rg.woff2') format('woff2'),*/
+/*    url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');*/
+/*    font-weight: normal;*/
+/*    font-style: normal;*/
+/*}*/
+
+/*!* 🔹 모든 텍스트 요소에 'CustomFont' 적용 *!*/
+/** {*/
+/*    font-family: 'CustomFont' !important; !* 기본 글꼴 제거 *!*/
+/*    font-weight: normal;*/
+/*}*/
+
+/* 🔹 배경 및 레이아웃 */
+/*body {*/
+/*    background-color: #F8F9FA;*/
+/*    text-align: center;*/
+/*    margin: 0;*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*    align-items: center;*/
+/*    height: 100vh;*/
+/*}*/
+
+body {
+    background-color: #E9DCBE !important;
+}
+
+.container {
+    margin-top: 50px;
+    height: calc(100vh - 150px);
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 🔹 로그인 컨테이너 */
+.login-container {
+    user-select: none;
+    width: 420px;
+    max-width: 420px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-top: 5px; /* 🔹 상단 여백 줄이기 */
+
+}
+
+/* 🔹 제목 크기 키우기 */
+.login-container h2 {
+    font-family: "GriunNoltoTAENGGU", sans-serif;
+    font-size: 42px;
+    font-weight: bold;
+    margin-top: 0px;
+    margin-bottom: 15px;
+    color: #8E8B82;
+}
+
+/* 🔹 로고 */
+.login-container .logo {
+    max-width: 60%;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+/* 🔹 부제목 간격 조정 */
+.login-container .subtitle {
+
+    color: #8E8B82;
+    font-family: "GriunNoltoTAENGGU", sans-serif;
+    font-size: 22px;
+    margin-bottom: 0px;  /* ✅ 여백 완전히 제거 */
+    line-height: 0.5; /* ✅ 줄간격 최소화 */
+}
+
+.login-container .subtitle2 {
+    color: #8E8B82;
+    font-family: "GriunNoltoTAENGGU", sans-serif;
+    font-size: 22px;
+    margin-bottom: 20px;  /* ✅ 로그인 버튼과의 간격 증가 */
+    line-height: 1.0; /* ✅ 줄간격 최소화 */
+}
+
+
+/* 🔹 버튼 스타일 */
+.login-container button {
+    width: 60%;
+    height: 44px;
+    border: 1px solid #8E8B82;
+    border-radius: 50px;
+    font-size: 19px;
+    letter-spacing: 1px;
+    font-weight: 400;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* 🔹 [변경] 로그인 버튼 (클릭 방지) */
+.login-container .login-btn {
+    background: #8E8B82;
+    color: white;
+    letter-spacing: 1.2px;
+    cursor: default; /* 🔹 커서 기본값 */
+    pointer-events: none; /* 🔹 클릭 방지 */
+}
+
+.btn-style {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+/* 🔹 카카오 로그인 */
+.login-container .kakao-btn {
+    background: #FFFF00;
+    color: #8E8B82;
+    border: 1px solid #8E8B82;
+    letter-spacing: 1.2px;
+    pointer-events: auto;
+}
+
+/* 🔹 구글 로그인 */
+.login-container .google-btn {
+    background: #FFFFFF;
+    color: #8E8B82;
+    border: 1px solid #8E8B82;
+    letter-spacing: 1.2px;
+    pointer-events: auto;
+}
+
+.login-container .kakao-btn:hover {
+    background: #f7e600; /* 조금 더 진한 노란색 */
+    color: #343434; /* 더 눈에 띄는 텍스트 색상 */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.login-container .google-btn:hover {
+    background: #f0f0f0; /* 약간의 회색 배경 */
+    border-color: #343434; /* 테두리 강조 */
+    color: #343434; /* 글자 색상 강조 */
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* 🔹 버튼 내 아이콘 크기 */
+.login-container .kakao-btn img, .google-btn img {
+    width: 18px;
+    height: auto;
+    margin-right: 8px;
+}
+
+/* 🔹 프로필 이미지 */
+.login-container .profile-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+}

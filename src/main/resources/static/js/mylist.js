@@ -1,6 +1,5 @@
 let itineraryMap = new Map();
 let currentPage = 0; // 현재 페이지
-const userId = 1;  // 실제 로그인한 사용자 ID
 let sortBy = sessionStorage.getItem("sortBy") || "createdDate";
 let direction = sessionStorage.getItem("direction") || "DESC";
 let prevMenuOwner = null;
@@ -81,7 +80,6 @@ function fetchItineraryData(reset) {
             url: `/api/itinerary/mylist`,
             type: "GET",
             data: {
-                userId: userId,
                 page: currentPage,
                 size: 12,
                 sortBy: sortBy,
@@ -584,6 +582,9 @@ function updateModalUI() {
         $.ajax({
             url: `/api/share/token?itineraryId=${itineraryStatus.id}`,
             type: "GET",
+            xhrFields: {
+                withCredentials: true  // 쿠키에 있는 JWT를 전송
+            },
             success: function (token) {
                 $("#shareLink").val(`${window.location.origin}/join/${token}`);
             },
@@ -619,6 +620,7 @@ function removeGuestMine(iid) {
     $.ajax({
         url: `/api/share/remove-mine?itineraryId=${iid}`,
         type: "DELETE",
+
         success: function () {
             alert("GUEST가 삭제되었습니다.");
 
@@ -635,6 +637,7 @@ function removeGuest(targetUserId) {
     $.ajax({
         url: `/api/share/remove?itineraryId=${itineraryStatus.id}&targetUserId=${targetUserId}`,
         type: "DELETE",
+
         success: function () {
             alert("GUEST가 삭제되었습니다.");
             fetchItineraryStatus(itineraryStatus.id, true, function (status) {
@@ -652,6 +655,7 @@ $("#generateLinkBtn").click(function () {
     $.ajax({
         url: `/api/share/create?itineraryId=${itineraryStatus.id}`,
         type: "POST",
+
         success: function (token) {
             itineraryStatus.isShared = true;
             updateModalUI();
@@ -670,6 +674,7 @@ $("#disableShareBtn").click(function () {
     $.ajax({
         url: `/api/share/delete?itineraryId=${itineraryStatus.id}`,
         type: "DELETE",
+
         success: function () {
             itineraryStatus.isShared = false;
             updateModalUI();

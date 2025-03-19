@@ -1,20 +1,117 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>일정 공유</title>
+    <title>일정 초대장</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/join-invitation.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/header-footer.css}">
 </head>
-<body class="container">
-<h1 class="mt-4" th:text="${itinerary.getItineraryName()}">일정 제목</h1>
-<p><strong>시작일:</strong> <span th:text="${itinerary.startDate}"></span></p>
+<body>
+<div class="naduli-layout">
+    <div class="main-text-wrap">
+        <div class="main-text">
+            <div class="text-line"><span class="highlight">나</span>들이 가는 날 설레는 마음으로 짐을 챙기고,</div>
+            <div class="text-line"><span class="highlight">들</span>판을 걷고 맑은 공기를 마시며 경험한</div>
+            <div class="text-line"><span class="highlight">이</span> 눈부신 순간을 기록해요!</div>
+        </div>
+    </div>
+    <div class="invitation-card">
+        <a href="/">
+            <div class="invite-logo-wrap">
+                <img src="/images/pic-icon/logo-letter-x.png" alt="나들이" width="50px" height="50px">
+                <h1>나들이</h1>
+            </div>
+        </a>
+        <div class="invite-content">
+            <h2 class="invite-content-title" th:text="${itinerary.itinerary.itineraryName}">일정 제목</h2>
 
-<div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
-<div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+            <p class="invite-content-start-date"><strong>여행 시작일:</strong>
+                <span th:text="${#temporals.format(itinerary.itinerary.startDate, 'yyyy년 MM월 dd일')}">2025년 03월 20일</span>
+            </p>
+            <p class="invite-content-totalDays"><strong>총 여행일수:</strong>
+                <span th:text="${itinerary.itinerary.totalDays}">3</span>일
+            </p>
+            <p class="invite-content-owner"><strong>일정 생성자:</strong>
+                <span th:text="${itinerary.ownerName}">홍길동</span>
+            </p>
+        </div>
+        <div class="invite-bottom">
+            <div id="join-message-area" class="mt-3"></div>
+            <div class="btn-wrap">
+                <button id="join-btn" class="btn btn-outline-secondary px-4 py-2 mt-2">일정 참여하기</button>
+                <div id="view-itinerary-btn-area"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
 
-<form th:action="@{/join/{token}(token=${token})}" method="post">
-    <button type="submit" class="btn btn-primary">일정 참여하기</button>
-</form>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const $joinBtn = $('#join-btn');
+        const $messageArea = $('#join-message-area');
+
+        // 현재 URL에서 마지막 path 부분을 shareToken 으로 추출 (/share/invite/abc123 구조라고 가정)
+        const pathParts = window.location.pathname.split('/');
+        const shareToken = pathParts[pathParts.length - 1];  // abc123
+
+        $joinBtn.on('click', function () {
+            if ($joinBtn.prop('disabled')) return;
+
+            $joinBtn.prop('disabled', true).text('참여 요청 중...');
+
+            $.ajax({
+                url: '/api/share/join',
+                method: 'POST',
+                data: { shareToken: shareToken },
+                    success: function (res) {
+                        showMessage('success', res.message);
+                        $joinBtn.text('참여 완료');
+
+                        // 👉 일정 보기 버튼 생성
+                        if (res.itineraryId) {
+                            const viewUrl = '/itinerary/view/' + res.itineraryId;
+                            $('#view-itinerary-btn-area').html(`
+                                <a href="${viewUrl}" class="btn btn-primary px-4 py-2 mt-2">일정 보기</a>
+                            `);
+                        }
+                    },
+                error: function (xhr) {
+                    if (xhr.status === 401) {
+                        const currentUrl = window.location.href;
+                        window.location.href = '/login?redirect=' + encodeURIComponent(currentUrl);
+                    } else {
+                        const message = xhr.responseJSON?.message || '참여에 실패했습니다.';
+                        showMessage('danger', message);
+                        $joinBtn.prop('disabled', false).text('일정 참여하기');
+
+                        // ✅ 버튼 영역 처리
+                        const $btnArea = $('#view-itinerary-btn-area');
+                        $btnArea.empty();
+
+                        if (message === '이미 일정에 참여 중입니다.') {
+                            $btnArea.html(`
+                                <a href="/itinerary/mylist" class="btn btn-outline-primary px-4 py-2 mt-2">내 일정 보기</a>
+                            `);
+                        }
+                    }
+                }
+            });
+        });
+
+        function showMessage(type, message) {
+            $messageArea.html(
+                `<div class="alert alert-${type}" role="alert">${message}</div>`
+            );
+        }
+    });
+</script>
+
+
+
 </body>
 </html>
+

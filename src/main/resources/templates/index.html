@@ -31,7 +31,10 @@
 
         </div>
         <div class="sub-header">여행 계획부터 결산까지 <strong>나들이</strong>와 함께</div>
-        <a href="#" class="plan-button">나들이 계획하기</a>
+        <a th:href="${loggedIn} ? '/itinerary/create' : '/login?redirect=/itinerary/create'" class="plan-button">
+            나들이 계획하기
+        </a>
+
     </div>
 </div>
 <div th:replace="~{fragments/footer :: footerFragment}"></div>

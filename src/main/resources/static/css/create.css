@@ -1,8 +1,26 @@
+.container{
+    width: 100%;
+    height: calc(100vh - 150px);
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+}
+
+.custom-modal-container{
+    margin-top: 50px;
+    width:800px;
+    max-width: 800px;
+}
+
 .modal-dialog {
     max-width: 750px; /* 모달이 달력을 포함할 만큼 충분히 넓게 설정 */
     user-select: none;
 }
-
+.modal {
+    z-index : 20000;
+}
 
 .modal-content {
     height: auto;
@@ -204,6 +222,7 @@
     z-index: 1;
 }
 .time-container {
+    margin-top: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
