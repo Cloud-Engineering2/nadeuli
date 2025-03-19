@@ -12,6 +12,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 김대환, 국경민   2025.03.19     최초 작성 - Google OIDC 인증 및 JWT 토큰 발급 로직 구현
+ * 김대환 2025.03.19 User_Role 기본값 지정
  * ========================================================
  */
 package nadeuli.service;
@@ -62,9 +63,13 @@ public class GoogleOidcUserService extends OidcUserService {
 
         log.info("[Google OIDC] Email: {}, Name: {}, Picture: {}", email, name, picture);
 
-        User userEntity = userRepository.findByUserEmail(email)
+       User userEntity = userRepository.findByUserEmail(email)
                 .map(existing -> updateExistingUser(existing, name, picture, googleAccessToken))
-                .orElseGet(() -> createNewUser(email, name, picture, googleAccessToken));
+                .orElseGet(() -> {
+                    User newUser = createNewUser(email, name, picture, googleAccessToken);
+                    newUser.setUserRole(UserRole.MEMBER);
+                    return newUser;
+                });
 
         JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
         userEntity.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
