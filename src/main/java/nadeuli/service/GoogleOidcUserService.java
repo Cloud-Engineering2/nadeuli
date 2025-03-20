@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import nadeuli.entity.User;
 import nadeuli.entity.constant.UserRole;
 import nadeuli.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
@@ -93,18 +94,29 @@ public class GoogleOidcUserService extends OidcUserService {
         );
     }
 
+    @Value("${cloudfront.url}")
+    private String cloudFrontUrl;
+
     private User updateExistingUser(User user, String name, String profileImage, String googleAccessToken) {
         boolean tokenUpdated = !googleAccessToken.equals(user.getUserToken());
 
+        String currentProfileImage = user.getProfileImage();
+
+        boolean isUserProfileFromS3 = (currentProfileImage != null && currentProfileImage.startsWith(cloudFrontUrl));
+
+        String updatedName = user.getUserName();
+
+        String updatedProfileImage = isUserProfileFromS3 ? currentProfileImage : profileImage;
+
         if (tokenUpdated) {
             log.info("Google Access Token 변경 감지! 기존 값: {}, 새 값: {}", user.getUserToken(), googleAccessToken);
-            user.updateProfile(name, profileImage, "google", googleAccessToken, LocalDateTime.now());
+            user.updateProfile(updatedName, updatedProfileImage, "google", googleAccessToken, LocalDateTime.now());
 
             JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(user.getUserEmail());
             user.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
         } else {
             log.info("기존 Google Access Token 유지: {}", googleAccessToken);
-            user.updateProfile(name, profileImage, "google", null, LocalDateTime.now());
+            user.updateProfile(updatedName, updatedProfileImage, "google", null, LocalDateTime.now());
         }
 
         return user;

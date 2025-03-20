@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import nadeuli.entity.User;
 import nadeuli.entity.constant.UserRole;
 import nadeuli.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
@@ -96,9 +97,23 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
         );
     }
 
+    @Value("${cloudfront.url}")
+    private String cloudFrontUrl;
+
     private User updateExistingUser(User user, String name, String profileImage, String kakaoAccessToken) {
-        log.info("기존 사용자 정보 업데이트 - Email: {}, AccessToken 변경 여부: {}", user.getUserEmail(), !kakaoAccessToken.equals(user.getUserToken()));
-        user.updateProfile(name, profileImage, "kakao", kakaoAccessToken, LocalDateTime.now());
+        log.info("기존 사용자 정보 업데이트 - Email: {}, AccessToken 변경 여부: {}",
+                user.getUserEmail(),
+                !kakaoAccessToken.equals(user.getUserToken()));
+
+        String currentProfileImage = user.getProfileImage();
+
+        boolean isUserProfileFromS3 = (currentProfileImage != null && currentProfileImage.startsWith(cloudFrontUrl));
+
+        String updatedName = user.getUserName();
+
+        String updatedProfileImage = isUserProfileFromS3 ? currentProfileImage : profileImage;
+
+        user.updateProfile(updatedName, updatedProfileImage, "kakao", kakaoAccessToken, LocalDateTime.now());
         return user;
     }
 
