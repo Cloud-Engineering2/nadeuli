@@ -58,7 +58,7 @@ public class ItineraryController {
 
         Long userId = userDetails.getUser().getId();
 
-        // 수정 권한 체크 (일정 파트 = isExpensePart=false)
+        // 일정 수정 권한 체크 (일정 파트 = isExpensePart=false)
         collaboratorService.checkEditPermission(userId, itineraryId, false);
 
         return "itinerary/edit";  // 정적 HTML 페이지 반환
@@ -70,7 +70,7 @@ public class ItineraryController {
 
         Long userId = userDetails.getUser().getId();
 
-        // 읽기 권한 체크
+        // 일정 읽기 권한 체크
         collaboratorService.checkViewPermission(userId, itineraryId);
 
         return "itinerary/view";  // 정적 HTML 페이지 반환

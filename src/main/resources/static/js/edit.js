@@ -34,8 +34,9 @@ let travelModal;
 let selectedDates = [];
 let prevDayCount = null;
 let isMapPanelOpen = true;
-//디버깅용
-let isDEBUG = false;
+
+// 기간변경시 예전일정이면 알림창 띄우기 체크변수
+let oldTripConfirmed = false;
 
 // path에서 가져온 iid
 let itineraryId = null;
@@ -1173,33 +1174,59 @@ nextButton.addEventListener("click", function () {
             return;
         }
 
-        if (!prevDayCount) {
-            console.log("null ✅ 선택된 날짜:", prevDayCount, selectedDates.length);
-            prevDayCount = initTimeSelectionUI(selectedDates.length);
+        const today = new Date().toISOString().slice(0, 10);
+        const lastSelectedDate = selectedDates[selectedDates.length - 1];
+
+        if (lastSelectedDate < today && !oldTripConfirmed) {
+            Swal.fire({
+                title: '예전 여정을 작성하시는건가요?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '네',
+                cancelButtonText: '아니요'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log("✅ [Swal] 네 선택 → 다음 단계로 진행");
+                    oldTripConfirmed = true;
+                    proceedToNextStep();
+                } else {
+                    console.log("❌ [Swal] 아니오 선택 → 다음 단계로 안 넘어감");
+                    // 그냥 아무것도 하지 않음
+                }
+            });
         } else {
-            console.log("renew ✅ 선택된 날짜:", prevDayCount, selectedDates.length);
-            prevDayCount = renewTimeSelectionUI(prevDayCount, selectedDates.length);
+            proceedToNextStep(); // 조건 충족 시 바로 다음 단계로 이동
         }
-        // 여행 기간 → 여행 시간으로 변경
-        stepDateSelection.style.opacity = "0";
-        stepDateSelection.style.zIndex = "1";
-        stepDateSelection.style.visibility = "hidden";
-
-
-        stepTimeSelection.style.zIndex = "2";
-        stepTimeSelection.style.visibility = "visible";
-        stepTimeSelection.style.opacity = "1";
-
-
-        modalTitle.textContent = "시작 및 종료 시간을 설정해주세요";
-        backButton.style.visibility = "visible";
-        currentModalStep = 2;
     } else {
         dateChangeSubmit();
         console.log("✅ 여행 시간 설정 완료");
         travelModal.hide();
     }
 });
+
+// 다음 단계로 넘어가기
+function proceedToNextStep() {
+    if (!prevDayCount) {
+        console.log("null ✅ 선택된 날짜:", prevDayCount, selectedDates.length);
+        prevDayCount = initTimeSelectionUI(selectedDates.length);
+    } else {
+        console.log("renew ✅ 선택된 날짜:", prevDayCount, selectedDates.length);
+        prevDayCount = renewTimeSelectionUI(prevDayCount, selectedDates.length);
+    }
+
+    // 여행 기간 → 여행 시간으로 변경
+    stepDateSelection.style.opacity = "0";
+    stepDateSelection.style.zIndex = "1";
+    stepDateSelection.style.visibility = "hidden";
+
+    stepTimeSelection.style.zIndex = "2";
+    stepTimeSelection.style.visibility = "visible";
+    stepTimeSelection.style.opacity = "1";
+
+    modalTitle.textContent = "시작 및 종료 시간을 설정해주세요";
+    backButton.style.visibility = "visible";
+    currentModalStep = 2;
+}
 backButton.addEventListener("click", function () {
     if (currentModalStep === 2) {
         stepTimeSelection.style.opacity = "0";
