@@ -671,7 +671,8 @@
 }
 
 .date-picker-wrapper .month-wrapper table .day.real-today {
-    background-color: #00ff59;
+    background-color: white;
+    border: 1px dashed black;
     border-radius: 30px;
 }
 
@@ -1297,4 +1298,12 @@
     pointer-events: none;
     opacity: 0.6;
     user-select: none;
+}
+
+.modal {
+    z-index: 20000;
+}
+
+.swal2-container {
+    z-index: 21000 !important;
 }
