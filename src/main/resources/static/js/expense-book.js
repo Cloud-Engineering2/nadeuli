@@ -591,9 +591,18 @@ $(document).on("click", ".event-total-expense", function () {
 
     // adjustment-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
     fetch(`/itinerary/${iid}/events/${ieid}/adjustment-right`)
-        .then(response => response.text())
+        .then(response => {
+            // response.text()
+            if (!response.ok) throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
+            return response.text();
+        })
         .then(html => {
             $("#detailContainer").html(html);
+
+            if ($("#itineraryEventAdjustmentInfo").length === 0) {
+                console.error("❌ itineraryEventAdjustmentInfo 요소를 찾을 수 없습니다.");
+                return;
+            }
             getAdjustmentByItineraryEvent(iid, ieid);
         })
         .catch(error => console.error("Error loading adjustment-right.html:", error));

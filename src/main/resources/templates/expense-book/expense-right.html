@@ -31,12 +31,7 @@
 
     <div class="itinerary-event-expense-item-info" id="itineraryEventExpenseItemInfo">
 
-        <div class="expense-basic-info" id="expenseBasicInfoIn">
-            <!-- 남은 예산 -->
-            <span class="expense-basic-info-remained-budget" id="expenseBasicInfoRemainedBudget">남은 예산 : 100,000 원</span>
-            <!-- 함께하는 친구 -->
-            <span class="expense-basic-info-traveler" id="expenseBasicInfoTraveler">3 명의 친구와 함께하고 있습니다</span>
-        </div>
+        <div th:replace="expense-book/expense-book-basic-info :: budget-and-traveler-info"></div>
 
         <!-- Expense Item 조회 -->
         <div class="expense-item-container" id="expenseItemContainer">

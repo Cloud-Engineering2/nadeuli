@@ -416,140 +416,45 @@
 
     /********************************** 🧳 오른쪽 패널 🧳 **********************************/
     /* 🎈 오른쪽 패널 */
-    #right {
-        background-color: #e9dcbe;
-        width: 100%;
-        height: 100%;
-    }
+#right {
+    background-color: #e9dcbe;
+    width: 100%;
+    height: 100%;
+}
 
-    /* 🎈 지도 영역 */
-    .detail-container {
-        margin-left: 5px;
-        padding-left: 5px;
-    }
+/* 🎈 지도 영역 */
+.detail-container {
+    margin-left: 5px;
+    padding-left: 5px;
+}
 
-    .expense-background {
-        display: flex; /* 플렉스 레이아웃으로 자식 요소들을 정렬 */
-        flex-direction: column; /* 세로로 배치 */
-        height: 100vh; /* 화면 전체 높이로 설정 */
-        position: relative;
-        background-color: #ffffff;
-    }
+.expense-background {
+    display: flex; /* 플렉스 레이아웃으로 자식 요소들을 정렬 */
+    flex-direction: column; /* 세로로 배치 */
+    height: 100vh; /* 화면 전체 높이로 설정 */
+    position: relative;
+    background-color: #ffffff;
+}
 
-    .expense-adjustment-tab {
-        background-color: #00ff59;
-        height: 80px;
-    }
-
-
-    .line-for-border-radius {
-        padding-left: 5px;
-        height: 100%;
-        background-color: #ffffff;
-        border-top-left-radius: 10px; /* 왼쪽 상단 모서리 둥글게 */
-        border-top-right-radius: 10px; /* 오른쪽 상단 모서리 둥글게 */
-    }
-
-    .basic-info {
-        /*display: flex;*/
-    }
-
-    .basic-info-col-md-6 {
-        color: #8e8b82;
-        margin-bottom: 15px;
-    }
+.expense-adjustment-tab {
+    background-color: #00ff59;
+    height: 80px;
+}
 
 
+.line-for-border-radius {
+    padding-left: 5px;
+    height: 100%;
+    background-color: #ffffff;
+    border-top-left-radius: 10px; /* 왼쪽 상단 모서리 둥글게 */
+    border-top-right-radius: 10px; /* 오른쪽 상단 모서리 둥글게 */
+}
 
+.basic-info {
+    /*display: flex;*/
+}
 
-
-
-
-
-
-
-/*************** expense item 생성 *************/
-/* 모달 배경 */
-/*.expense-item-creation-modal {*/
-/*    display: none; !* 기본적으로 숨김 *!*/
-/*    position: fixed;*/
-/*    z-index: 1; !* 모달이 다른 내용 위에 나타나도록 설정 *!*/
-/*    left: 0;*/
-/*    top: 0;*/
-/*    width: 100%;*/
-/*    height: 100%;*/
-/*    background-color: rgba(0, 0, 0, 0.4); !* 반투명 배경 *!*/
-/*}*/
-
-/*!* 모달 내용 *!*/
-/*.expense-item-creation-modal-content {*/
-/*    background-color: #fff;*/
-/*    margin: 15% auto;*/
-/*    padding: 20px;*/
-/*    border: 1px solid #888;*/
-/*    width: 50%;*/
-/*    border-radius: 8px;*/
-/*}*/
-
-/*!* 닫기 버튼 *!*/
-/*.expense-item-creation-modal-close {*/
-/*    color: #aaa;*/
-/*    font-size: 28px;*/
-/*    font-weight: bold;*/
-/*    float: right;*/
-/*    cursor: pointer;*/
-/*}*/
-
-/*!* 닫기 버튼 hover 효과 *!*/
-/*.expense-item-creation-modal-close:hover,*/
-/*.expense-item-creation-modal-close:focus {*/
-/*    color: black;*/
-/*    text-decoration: none;*/
-/*}*/
-
-/*!* 각 입력 필드 *!*/
-/*.expense-item-creation-content,*/
-/*.expense-item-creation-expenditure,*/
-/*.expense-item-creation-payer,*/
-/*.expense-item-creation-withWhom {*/
-/*    width: 100%;*/
-/*    padding: 10px;*/
-/*    margin: 10px 0;*/
-/*    border-radius: 5px;*/
-/*    border: 1px solid #ccc;*/
-/*}*/
-
-/*!* 버튼 그룹 *!*/
-/*.expense-item-creation-button-group {*/
-/*    display: flex;*/
-/*    justify-content: space-between;*/
-/*    margin-top: 20px;*/
-/*}*/
-
-/*!* 버튼 스타일 *!*/
-/*.expense-item-creation-button,*/
-/*.expense-item-creation-button-close {*/
-/*    padding: 10px 20px;*/
-/*    font-size: 16px;*/
-/*    border-radius: 5px;*/
-/*    cursor: pointer;*/
-/*}*/
-
-/*.expense-item-creation-button {*/
-/*    background-color: #4CAF50; !* 추가 버튼은 초록색 *!*/
-/*    color: white;*/
-/*    border: none;*/
-/*}*/
-
-/*.expense-item-creation-button-close {*/
-/*    background-color: #f44336; !* 닫기 버튼은 빨간색 *!*/
-/*    color: white;*/
-/*    border: none;*/
-/*}*/
-
-/*.expense-item-creation-button:hover,*/
-/*.expense-item-creation-button-close:hover {*/
-/*    opacity: 0.8;*/
-/*}*/
-
-
+.basic-info-col-md-6 {
+    color: #8e8b82;
+    margin-bottom: 15px;
+}
