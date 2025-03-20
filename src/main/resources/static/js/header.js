@@ -1,3 +1,21 @@
+/* header.js
+ * nadeuli Service - 여행
+ * header.html 에서 사용할 js 함수 정리
+ * 작성자 : 박한철
+ * 최종 수정 날짜 : 2025.03.14
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자        날짜        수정 / 보완 내용
+ * ========================================================
+ * 박한철    2025.03.14     header.html 에 있던 script 를 header.js 로 분리
+ *                         일정 생성, 내 일정 링크 설정
+ * 박한철    2025.03.19     로그인 확인 / 로그아웃 처리
+ * 이홍비    2025.03.20     글자 수정
+ * ========================================================
+ */
+
 const userRoleAdmin = "ADMIN";
 const userRoleMember = "MEMBER";
 
@@ -27,18 +45,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function showLoggedInUI() {
     const header = document.getElementById("right-header");
-    console.log("로그인상태입니다.");
+    console.log("로그인 상태입니다.");
     let menuItems = "";
 
     if (userRole === userRoleAdmin) {
-        console.log("어드민상태입니다.");
+        console.log("관리자입니다.");
         menuItems = `
         <a href="#">지역 관리</a>
         <a href="#">일정 관리</a>
         <a href="#">회원 관리</a>
       `;
     } else if (userRole === userRoleMember) {
-        console.log("멤버상태입니다.");
+        console.log("회원입니다.");
         menuItems = `
         <a href="/itinerary/create">일정 생성</a>
         <a href="/itinerary/mylist">내 일정</a>
@@ -114,7 +132,7 @@ function toggleBalloon(isHovered) {
 }
 
 function showLoggedOutUI() {
-    console.log("비로그인상태입니다.");
+    console.log("비로그인 상태입니다.");
     const header = document.getElementById("right-header");
     header.innerHTML = '<a href="/login" class="main-header-login-link">로그인</a>';
 }
