@@ -10,9 +10,11 @@
  * ========================================================
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
- * 박한철      2025.03.19     최초 작성 : REST 전용 예외 처리 및 Controller 대상 명시
+ * 박한철    2025.03.19     최초 작성 : REST 전용 예외 처리 및 Controller 대상 명시
+ * 이홍비    2025.03.20     JournalRestController, TravelBottomLineRestController 추가
  * ========================================================
  */
+
 package nadeuli.exception;
 
 import nadeuli.controller.*;
@@ -31,7 +33,7 @@ import java.util.NoSuchElementException;
         GoogleMapPageController.class,
         IndexController.class,
         ItineraryRestController.class,
-        JournalController.class,
+        JournalRestController.class,
         KakaoMapController.class,
         KakaoOAuthController.class,
         KakaoOAuthUnlinkController.class,
@@ -40,7 +42,7 @@ import java.util.NoSuchElementException;
         PlaceController.class,
         RegionRestController.class,
         ShareRestController.class,
-        TravelBottomLineController.class,
+        TravelBottomLineRestController.class,
         TravelerController.class,
         UserController.class,
         WithWhomController.class

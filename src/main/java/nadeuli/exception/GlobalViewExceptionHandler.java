@@ -9,10 +9,11 @@
  * ========================================================
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
- * 이홍비      2025.02.25     최초 작성 : GlobalExceptionHandler
- * 이홍비      2025.03.03     AmazonS3Exception 및 UnsupportedEncodingException 처리 추가
- * 이홍비      2025.03.06     예외 발생 시 error 페이지로 이동 처리 추가
- * 박한철      2025.03.19     GlobalViewExceptionHandler로 클래스명 변경 및 Controller 명시
+ * 이홍비    2025.02.25     최초 작성 : GlobalExceptionHandler
+ * 이홍비    2025.03.03     AmazonS3Exception 및 UnsupportedEncodingException 처리 추가
+ * 이홍비    2025.03.06     예외 발생 시 error 페이지로 이동 처리 추가
+ * 박한철    2025.03.19     GlobalViewExceptionHandler로 클래스명 변경 및 Controller 명시
+ * 이홍비    2025.03.20     JournalController, TravelBottomLineController 추가
  * ========================================================
  */
 
@@ -30,7 +31,15 @@ import org.springframework.web.servlet.ModelAndView;
 import java.io.UnsupportedEncodingException;
 import java.util.NoSuchElementException;
 
-@ControllerAdvice(assignableTypes = {ShareController.class, ExpenseItemController.class,LoginController.class,ItineraryController.class, AdminController.class})
+@ControllerAdvice(assignableTypes = {
+        ShareController.class,
+        ExpenseItemController.class,
+        LoginController.class,
+        ItineraryController.class,
+        AdminController.class,
+        JournalController.class,
+        TravelBottomLineController.class
+})
 public class GlobalViewExceptionHandler {
 
     // 찾을 수 없을 때
