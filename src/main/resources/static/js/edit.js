@@ -2,6 +2,7 @@
 let itinerary = null;
 const perDayMap = new Map();
 const eventMap = new Map();
+const dayOfWeekMap = new Map();
 let regions = null;
 const groupedByDay = {}; // 렌더링용 - perDay 별로 정렬된 event 리스트
 let eventPairs = [];
@@ -98,9 +99,12 @@ function createData(data) {
 
         groupedByDay[dayKey].push({
             hashId: eventHashId,
+            dayCount : event.dayCount,
             placeDTO: event.placeDTO,
+            startMinuteSinceStartDay: editedEvent.startMinuteSinceStartDay,
+            endMinuteSinceStartDay: editedEvent.endMinuteSinceStartDay,
             startMinute: baseStartMinutes + editedEvent.startMinuteSinceStartDay,
-            endMinute: baseStartMinutes + editedEvent.endMinuteSinceStartDay,
+            endMinute:baseStartMinutes + editedEvent.endMinuteSinceStartDay,
             movingMinute: event.movingMinuteFromPrevPlace
         });
     });
@@ -109,6 +113,8 @@ function createData(data) {
     Object.keys(groupedByDay).forEach(dayKey => {
         groupedByDay[dayKey].sort((a, b) => a.startMinute - b.startMinute);
     });
+
+    precomputeDayOfWeekMap();
 }
 
 // 🏗️ ui 요소 관리
@@ -189,7 +195,7 @@ function renderItinerary() {
 // 이벤트 요소 생성 함수 (장소 보관함 & 일반 이벤트 공통 사용)
 function createEventElement(event, index = null, totalEvents = null, isSavedPlace = false) {
     console.log("Event Object:", event);
-
+    const withinOpeningHours = isWithinOpeningHours(event);
     return $(`
                         <div class='event' data-id='${event.hashId}'>
                             <div class="event-wrapper">
@@ -221,7 +227,7 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                             </div>
                                             <div class="event-under-content">
                                                                    <div class='event-place-type' data-place-type='${event.placeDTO.placeType}'>${getKoreanLabel(event.placeDTO.placeType)}</div>
-                                            ${isSavedPlace ? "" : `<div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)}</div>`}
+                                            ${isSavedPlace ? "" : `<div class='event-time-wrap ${withinOpeningHours ? "" : "warn"}'><div class='event-time'>${formatTime(event.startMinute)} ~ ${formatTime(event.endMinute)} </div><i class="fas fa-triangle-exclamation warning-icon"></i><span class="opening-hours-warning">비영업시간</span></div>`}
                                             </div>
                                         </div>
                                         <div class="event-right">
@@ -307,7 +313,14 @@ function updateEventDisplay(dayId, startIndex) {
 
     const dayCount = parseInt(dayId.match(/\d+$/)[0]); // day-숫자 → 숫자 추출
 
-    dayHeader.textContent = `${dayCount}일차 (${perDayMap.get(dayCount)?.startTime.substring(0, 5)})`;
+    dayHeader.innerHTML = `
+    <div class='day-header-left'>
+        ${dayCount}일차 (${perDayMap.get(dayCount)?.startTime.substring(0, 5)})
+    </div>
+    <div class='day-header-right' title="${dayCount}차 마커보기">
+        <i class="bi bi-geo-alt"></i>
+    </div>
+`;
 
     const items = container.children;
     let order = startIndex + 1; // 새로운 순서값 설정
@@ -332,7 +345,7 @@ function updateEventDisplay(dayId, startIndex) {
         const eventElement = items[i];
         const eventId = eventElement.getAttribute("data-id");
         const event = getEventById(eventId);
-
+        console.log(event);
         if (!event) continue;
 
         // ✅ 순서 업데이트 (event-order-circle)
@@ -360,6 +373,16 @@ function updateEventDisplay(dayId, startIndex) {
 
             // UI에 표시할 값은 baseStartTime을 더한 절대 시간
             eventTimeElement.textContent = `${formatTime(startMinute + baseStartTime)} ~ ${formatTime(endMinute + baseStartTime)}`;
+
+            // ✅ [추가] 영업시간 벗어난 경우 경고 표시
+            const timeWrapEl = eventElement.querySelector(".event-time-wrap");
+            if (timeWrapEl) {
+                if (!isWithinOpeningHours(event)) {
+                    timeWrapEl.classList.add("warn");
+                } else {
+                    timeWrapEl.classList.remove("warn");
+                }
+            }
 
             // 다음 이벤트의 시작 시간 업데이트
             prevEndMinute = endMinute;
@@ -390,7 +413,7 @@ function createSortableInstance(element) {
         ghostClass: "sortable-ghost",
         dragClass: "sortable-drag",
         handle: ".event-content",
-        filter: ".js-remove",
+        filter: ".js-remove .event-right",
         preventOnFilter: false,
         onStart: function (evt) {
             $(".travel-info").css("visibility", "hidden");
@@ -423,6 +446,9 @@ function createSortableInstance(element) {
 
             eventPairs.length = 0;
 
+            if (toDayId !== 'day-0' && newIndex === 0){
+                resetStayMinuteIfFirstEventIsLodging(toDayId);
+            }
 
             if (toDayId === fromDayId) {
                 console.log(`- 같은 리스트(${toDayId})에서 이동`);
@@ -769,6 +795,33 @@ function findEventPairByDayIdAndIndex(dayId, index1, index2) {
     return [null,null];
 }
 
+function resetStayMinuteIfFirstEventIsLodging(dayId) {
+    const container = document.getElementById(dayId);
+    if (!container) return;
+
+    const firstItem = container.children[0];
+    if (!firstItem) return;
+
+    const firstEventId = firstItem.getAttribute("data-id");
+    if (!firstEventId) return;
+
+    const firstEvent = getEventById(firstEventId);
+    if (!firstEvent) return;
+
+    const isLodging = firstEvent.placeDTO?.placeType === 'LODGING';
+    const isStayMinuteModified = firstEvent.isStayMinuteModified === true;
+
+    if (isLodging) {
+        if (typeof firstEvent.isStayMinuteModified !== 'undefined' && isStayMinuteModified) {
+            console.log(`⏱️ stayMinute이 수정된 상태이므로 변경하지 않음. eventId=${firstEventId}`);
+        } else {
+            console.log(`🛏️ 첫 번째 이벤트가 LODGING이며 stayMinute을 0으로 초기화합니다. eventId=${firstEventId}`);
+            firstEvent.stayMinute = 0;
+        }
+    }
+}
+
+
 
 // 거리 계산 요청 (element 이동시)
 async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
@@ -1071,6 +1124,7 @@ function dateChangeSubmit() {
 
         }
     }
+    precomputeDayOfWeekMap();
     isDirty = true;
     console.log("Updated perDayMap:", perDayMap);
 }
@@ -1152,7 +1206,8 @@ function generateItineraryJson() {
         ...event,
         pid: event.placeDTO.id, // placeDTO.id를 pid로 변경
         placeDTO: undefined, // placeDTO 제거
-        stayMinute: undefined // stayMinute 제거
+        stayMinute: undefined, // stayMinute
+        isStayMinuteModified : undefined
     }));
 
     // 🏁 최종 JSON 반환
@@ -1401,6 +1456,7 @@ $(document).on("click", ".event-duration-save", function (event) {
 
     // ⏳ 값 저장
     eventData.stayMinute = totalMinutes;
+    eventData.isStayMinuteModified = true;
     isDirty = true;
     // 📌 UI 업데이트
     updateEventDisplay(`day-${eventData.dayCount}`, 0);
@@ -1895,7 +1951,7 @@ function renderMarkerByMarkerState() {
 
     const bounds = new google.maps.LatLngBounds();
 
-
+    let isEmpty = true;
     $('.day-column').each(function () {
         const $dayColumn = $(this);
 
@@ -1914,6 +1970,7 @@ function renderMarkerByMarkerState() {
         console.log(eventIds);
         // bounds에 포함시킬 좌표 계산
         eventIds.forEach(eventId => {
+            isEmpty=false;
             const event = getEventById(eventId);
             console.log("마커디버깅", event);
             if (event && event.placeDTO) {
@@ -1925,7 +1982,36 @@ function renderMarkerByMarkerState() {
         if(markerState !== 0 && markerState === dayNumber) return false;
     });
 
-    console.log(bounds);
+    if (isEmpty) {
+        const defaultRegion = regions[0];
+        selectedRegionLat = parseFloat(defaultRegion.latitude);
+        selectedRegionLng = parseFloat(defaultRegion.longitude);
+        selectedRegionRadius = parseFloat(defaultRegion.radius); // meters
+
+        // 너무 넓지 않게 보기 좋은 값으로 보정 (lat/lng offset 계산)
+        // 1도 ≈ 111km, 간단히 0.01도 ≈ 1.1km 로 생각
+        const approxDegreePerKm = 0.009; // 대략 1km ≈ 0.009도
+        const km = selectedRegionRadius / 1000;
+
+        const latOffset = km * approxDegreePerKm;
+        const lngOffset = km * approxDegreePerKm;
+
+        // 좌상단
+        const northWest = {
+            lat: selectedRegionLat + latOffset,
+            lng: selectedRegionLng - lngOffset
+        };
+        // 우하단
+        const southEast = {
+            lat: selectedRegionLat - latOffset,
+            lng: selectedRegionLng + lngOffset
+        };
+
+        bounds.extend(northWest);
+        bounds.extend(southEast);
+    }
+
+
 
     // 마지막에 한 번만 지도 중심과 줌 조정
     if (!bounds.isEmpty()) {
@@ -2375,7 +2461,15 @@ $("a[href]").click(function(e) {
 });
 
 
-$(document).on("dblclick", ".event", function () {
+$(document).on("dblclick", ".event", function (e) {
+
+    if (
+        $(e.target).hasClass("event-options-button") ||
+        $(e.target).closest(".event-options-button").length > 0 ||
+        $(e.target).closest(".event-duration-input-container").length > 0
+    ) {
+        return;
+    }
 
     const eventId = $(this).data("id");
     const eventData = getEventById(eventId);
@@ -2637,3 +2731,98 @@ $("#google-region-select").on("change", function () {
         searchGooglePlaces();
     }
 });
+
+function isWithinOpeningHours(event) {
+    const place = event.placeDTO;
+    const dayCount = event.dayCount;
+    const openingJson = place?.regularOpeningHours;
+    const placeName = place?.placeName || '(이름 없음)';
+
+    if (!openingJson || openingJson === "{}") {
+        console.log(`[영업시간 체크][${placeName}] regularOpeningHours 없음 → 통과`);
+        return true;
+    }
+
+    try {
+        const openingHours = JSON.parse(openingJson);
+        const periods = openingHours?.periods;
+        if (!Array.isArray(periods)) {
+            console.log(`[영업시간 체크][${placeName}] periods가 배열이 아님 → 통과`);
+            return true;
+        }
+
+        const isAlwaysOpen =
+            periods.length === 1 &&
+            periods[0].open.day === 0 &&
+            periods[0].open.hour === 0 &&
+            periods[0].open.minute === 0 &&
+            !periods[0].close;
+
+        if (isAlwaysOpen) {
+            console.log(`[영업시간 체크][${placeName}] 전체 요일 공통: open=00:00 && close 없음 → 24시간 영업 간주 → 통과`);
+            return true;
+        }
+
+
+
+
+        const dayOfWeek = dayOfWeekMap.get(dayCount);
+        if (dayOfWeek === undefined) {
+            console.log(`[영업시간 체크][${placeName}] dayOfWeek 계산 실패(dayCount: ${dayCount}) → 통과`);
+            return true;
+        }
+
+        const matchingPeriods = periods.filter(p => p.open.day === dayOfWeek);
+
+        // ✅ 그 다음 matchingPeriods가 아예 없으면 실패 처리
+        if (matchingPeriods.length === 0) {
+            console.warn(`[영업시간 체크][${placeName}] 해당 요일(${dayOfWeek})의 영업시간 없음 → 실패`);
+            return false;
+        }
+
+        const baseStartMinutes = timeToMinutes(perDayMap.get(dayCount)?.startTime || "00:00:00");
+        const eventStart = baseStartMinutes + event.startMinuteSinceStartDay;
+        const eventEnd = baseStartMinutes + event.endMinuteSinceStartDay;
+
+        console.log(`[영업시간 체크][${placeName}] 요일: ${dayOfWeek}, 일정 시간: ${formatTime(eventStart)} ~ ${formatTime(eventEnd)}`);
+
+        const isWithin = matchingPeriods.some((period, idx) => {
+            const openTime = period.open.hour * 60 + period.open.minute;
+            let closeTime;
+
+            if (period.close) {
+                closeTime = period.close.hour * 60 + period.close.minute;
+            } else {
+                closeTime = 1440;
+                console.log(` → [타임${idx + 1}] close 없음 → 24시간 처리`);
+            }
+
+            const match = eventStart >= openTime && eventEnd <= closeTime;
+            console.log(` → [타임${idx + 1}] ${formatTime(openTime)} ~ ${formatTime(closeTime)} : ${match ? '✅포함됨' : '❌불포함'}`);
+            return match;
+        });
+
+        if (!isWithin) {
+            console.warn(`[영업시간 체크][${placeName}] 모든 영업시간 범위에 포함되지 않음 → 실패`);
+        }
+
+        return isWithin;
+
+    } catch (e) {
+        console.error(`[영업시간 체크][${placeName}] JSON 파싱 에러 → 통과`, e);
+        return true;
+    }
+}
+
+
+
+function precomputeDayOfWeekMap() {
+    dayOfWeekMap.clear();
+    const startDate = new Date(itinerary.startDate);
+    for (let dayCount = 1; dayCount <= itinerary.totalDays; dayCount++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(currentDate.getDate() + (dayCount - 1));
+        const dayOfWeek = currentDate.getDay(); // 0:일~6:토
+        dayOfWeekMap.set(dayCount, dayOfWeek);
+    }
+}
