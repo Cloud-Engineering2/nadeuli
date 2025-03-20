@@ -11,6 +11,7 @@
  * 국경민      03-04       사용자 조회 및 삭제 메서드
  * 국경민      03-04       db 토큰사용 제거
  * 국경민      03-07       비활성 사용자 및 Refresh Token 만료 사용자 조회 추가
+ * 박한철      03-20       Email과 Provider를 동시에 검증하도록
  * ========================================================
  */
 
@@ -31,4 +32,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findFirstByOrderByCreatedAtDesc();
 
+    Optional<User> findByUserEmailAndProvider(String userEmail, String provider);
 }

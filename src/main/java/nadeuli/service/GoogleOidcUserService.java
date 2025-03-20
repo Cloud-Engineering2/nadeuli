@@ -64,7 +64,7 @@ public class GoogleOidcUserService extends OidcUserService {
 
         log.info("[Google OIDC] Email: {}, Name: {}, Picture: {}", email, name, picture);
 
-       User userEntity = userRepository.findByUserEmail(email)
+       User userEntity = userRepository.findByUserEmailAndProvider(email, provider)
                 .map(existing -> updateExistingUser(existing, name, picture, googleAccessToken))
                 .orElseGet(() -> {
                     User newUser = createNewUser(email, name, picture, googleAccessToken);
