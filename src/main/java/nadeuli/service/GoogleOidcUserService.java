@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
@@ -44,7 +45,7 @@ public class GoogleOidcUserService extends OidcUserService {
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) {
         OidcUser oidcUser = super.loadUser(userRequest);
-        String provider = userRequest.getClientRegistration().getRegistrationId();
+        String provider = userRequest.getClientRegistration().getRegistrationId().toLowerCase(Locale.ROOT);
 
         if (!"google".equals(provider)) {
             log.warn("[GoogleOidcUserService] Unsupported provider '{}'", provider);
@@ -52,10 +53,11 @@ public class GoogleOidcUserService extends OidcUserService {
         }
 
         String googleAccessToken = userRequest.getAccessToken().getTokenValue();
-        log.info("[Google OAuth] Google Access Token: {}", googleAccessToken);
+        log.debug("[Google OAuth] Google Access Token: {}", googleAccessToken);
 
         return processOidcUser(oidcUser, provider, googleAccessToken);
     }
+
 
     private OidcUser processOidcUser(OidcUser oidcUser, String provider, String googleAccessToken) {
         Map<String, Object> attributes = oidcUser.getAttributes();
@@ -63,9 +65,9 @@ public class GoogleOidcUserService extends OidcUserService {
         String name = getSafeString(attributes, "name");
         String picture = getSafeString(attributes, "picture");
 
-        log.info("[Google OIDC] Email: {}, Name: {}, Picture: {}", email, name, picture);
+        log.debug("[Google OIDC] Email: {}, Name: {}, Picture: {}", email, name, picture);
 
-       User userEntity = userRepository.findByUserEmailAndProvider(email, provider)
+        User userEntity = userRepository.findByUserEmailAndProvider(email, provider)
                 .map(existing -> updateExistingUser(existing, name, picture, googleAccessToken))
                 .orElseGet(() -> {
                     User newUser = createNewUser(email, name, picture, googleAccessToken);
@@ -73,18 +75,10 @@ public class GoogleOidcUserService extends OidcUserService {
                     return newUser;
                 });
 
+        // ✅ RefreshToken만 발급 및 DB 저장
         JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
         userEntity.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
         userRepository.save(userEntity);
-
-        String accessToken = jwtTokenService.generateAccessToken(email);
-
-        log.info("[Google OIDC] JWT Access Token 발급 완료: {}", accessToken);
-        log.info("[Google OIDC] JWT Refresh Token 발급 완료: {}", refreshTokenResponse.token);
-
-        Map<String, Object> updatedAttributes = new HashMap<>(attributes);
-        updatedAttributes.put("accessToken", accessToken);
-        updatedAttributes.put("email", email);
 
         return new DefaultOidcUser(
                 oidcUser.getAuthorities(),
