@@ -1,9 +1,8 @@
-/* 📌 폰트 설정 */
+/* 📌 폰트 설정*/
 
 /*@font-face {*/
 /*    font-family: 'CustomFont';*/
-/*    src: url('../fonts/Griun_NoltoTAENGGU-Rg.woff2') format('woff2'),*/
-/*    url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');*/
+/*    src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');*/
 /*    font-weight: normal;*/
 /*    font-style: normal;*/
 /*}*/
@@ -30,7 +29,7 @@ body {
 }
 
 .container {
-    margin-top: 50px;
+    margin-top: 80px;
     height: calc(100vh - 150px);
     display:flex;
     align-items: center;
@@ -106,14 +105,14 @@ body {
     transition: all 0.3s ease;
 }
 
-/* 🔹 [변경] 로그인 버튼 (클릭 방지) */
-.login-container .login-btn {
-    background: #8E8B82;
-    color: white;
-    letter-spacing: 1.2px;
-    cursor: default; /* 🔹 커서 기본값 */
-    pointer-events: none; /* 🔹 클릭 방지 */
-}
+/*!* 🔹 [변경] 로그인 버튼 (클릭 방지) *!*/
+/*.login-container .login-btn {*/
+/*    background: #8E8B82;*/
+/*    color: white;*/
+/*    letter-spacing: 1.2px;*/
+/*    cursor: default; !* 🔹 커서 기본값 *!*/
+/*    pointer-events: none; !* 🔹 클릭 방지 *!*/
+/*}*/
 
 .btn-style {
     display: inline-block;
@@ -159,9 +158,11 @@ body {
 
 /* 🔹 버튼 내 아이콘 크기 */
 .login-container .kakao-btn img, .google-btn img {
-    width: 18px;
+    width: 20px;
     height: auto;
-    margin-right: 8px;
+    margin-right: 10px;
+    vertical-align: middle; /* ✅ 텍스트와 아이콘을 같은 높이로 맞춤 */
+    display: inline-block;
 }
 
 /* 🔹 프로필 이미지 */
