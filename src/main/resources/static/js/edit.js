@@ -173,11 +173,25 @@ function renderItinerary() {
         `);
 
         groupedByDay[dayKey].forEach((event, index) => {
+            const isSavedPlace = dayKey === '0';
+            const eventElement = createEventElement(event, index, groupedByDay[dayKey].length, isSavedPlace);
 
-            const eventElement = createEventElement(event, index, groupedByDay[dayKey].length, dayNumber === 0);
-            if (dayKey === '0') {
+            // 장소보관함은 시간 제거
+            if (isSavedPlace) {
                 eventElement.find('.event-time').detach();
             }
+
+            // ✅ 마지막 이벤트가 숙소 && 첫 이벤트가 아닐 때: "시작시간 ~" 처리
+            const isLastEvent = index === groupedByDay[dayKey].length - 1;
+            if (!isSavedPlace && isLastEvent && groupedByDay[dayKey].length > 1 && event.placeDTO.placeType === 'LODGING') {
+                const eventTimeElement = eventElement.find(".event-time");
+                if (eventTimeElement.length > 0) {
+                    const baseStartTime = perDayMap.get(parseInt(dayKey))?.startMinute || 0;
+                    const startMinute = event.startMinuteSinceStartDay;
+                    eventTimeElement.text(`${formatTime(startMinute + baseStartTime)} ~`);
+                }
+            }
+
             dayColumn.find('.event-container').append(eventElement);
         });
 
@@ -393,6 +407,21 @@ function updateEventDisplay(dayId, startIndex) {
 
         order++; // 다음 순서 증가
     }
+
+    if (items.length > 1) {
+        const lastEventElement = items[items.length - 1];
+        const lastEventId = lastEventElement.getAttribute("data-id");
+        const lastEvent = getEventById(lastEventId);
+
+        if (lastEvent?.placeDTO.placeType === 'LODGING') {
+            const lastEventTimeElement = lastEventElement.querySelector(".event-time");
+            if (lastEventTimeElement) {
+                const startMinute = lastEvent.startMinuteSinceStartDay;
+                lastEventTimeElement.textContent = `${formatTime(startMinute + baseStartTime)} ~`;
+            }
+        }
+    }
+
 }
 
 // element 에 Sortable 안전하게 추가
