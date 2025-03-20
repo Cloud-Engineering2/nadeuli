@@ -187,6 +187,8 @@
     text-align: left; /* 글자 정렬 */
     width: 245px;
     margin-right: 57px;
+    height: 70px;
+    overflow-y: auto;
 }
 
 .expense-item-confirm-button {
