@@ -32,6 +32,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -46,7 +47,7 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        String provider = userRequest.getClientRegistration().getRegistrationId();
+        String provider = userRequest.getClientRegistration().getRegistrationId().toLowerCase(Locale.ROOT);
 
         if (!"kakao".equals(provider)) {
             log.warn("[KakaoOidcUserService] Unsupported provider '{}'", provider);
