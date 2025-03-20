@@ -15,6 +15,7 @@
  * ========================================================
  * 국경민, 김대환   2025.03.19     최초 작성 - Kakao OAuth 로그인 처리 및 JWT 토큰 발급 로직 구현
  * 김대환 2025.03.19 User_Role 기본값 지정
+ * 박한철          2025.03.20       Email과 Provider를 동시에 검증하도록 수정
  * ========================================================
  */
 package nadeuli.service;
@@ -66,7 +67,7 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
 
         log.info("[{} OAuth] Email: {}, Name: {}, ProfileImage: {}", provider, email, name, profileImage);
 
-        User userEntity = userRepository.findByUserEmail(email)
+        User userEntity = userRepository.findByUserEmailAndProvider(email, provider)
                 .map(existing -> updateExistingUser(existing, name, profileImage, kakaoAccessToken))
                 .orElseGet(() -> {
                     User newUser = createNewUser(email, name, profileImage, kakaoAccessToken);
