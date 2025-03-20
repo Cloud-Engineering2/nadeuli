@@ -50,3 +50,19 @@ async function saveProfileImage(event) {
         console.error("🚨 프로필 이미지 업로드 실패:", error);
     }
 }
+
+function unlink(email) {
+    if (confirm("회원탈퇴 하시겠습니까?")) {
+
+    fetch("/auth/unlink/"+email, {
+        method: "DELETE",
+        credentials: "include"
+    }).then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("회원탈퇴 완료되었습니다");
+                location.href = "/"; // 또는 메인 페이지로
+            }
+        });
+     }
+}
