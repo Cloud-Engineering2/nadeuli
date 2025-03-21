@@ -1,4 +1,5 @@
 /************* 🧳 전역 변수 선언 🧳 *************/
+let eventElementForTab = null;
 
 // 여행 기간 및 여행 시간 설정 완료시 호출 함수
 function dateChangeSubmit() {
@@ -95,6 +96,32 @@ function dateChangeSubmit() {
 }
 
 
+
+
+/************** 🧳 경비 & 정산 안내 탭 🧳 **************/
+
+/* 🎈 정산 탭 클릭했을 때 */
+$(document).on("click", "#adjustmentTab", async function () {
+
+    const itineraryId = eventElementForTab.data("iid");
+    const eventId = eventElementForTab.data("ieid");
+
+
+    // 페이지 로드
+    await loadAdjustmentPage(itineraryId, eventId);
+});
+
+/* 🎈 경비 탭 클릭했을 때 */
+$(document).on("click", "#expenditureTab", async function () {
+
+    const itineraryId = eventElementForTab.data("iid");
+    const eventId = eventElementForTab.data("ieid");
+
+    await loadExpensePage(itineraryId, eventId);
+});
+
+
+
 /************** 🧳 경비 & 작성 이벤트 핸들링 🧳 **************/
 
 //🎈 왼쪽 패널 - +경비 내역 추가 클릭 시 -> 오른쪽 패널에 경비 내역 로드
@@ -102,15 +129,13 @@ $(document).on("click", ".expense-item-list-addition", async function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
 
-    // const element = document.getElementById("adjustmentHeaderTabInactive");
-    // element.setAttribute("data-iid", iid);  // data-iid 설정
-    // element.setAttribute("data-ieid", ieid); // data-ieid 설정
+    eventElementForTab = $(this);
 
-    await loadExpenseItemListAndAddition(iid, ieid);
+    await loadExpensePage(iid, ieid);
 });
 
 
-async function loadExpenseItemListAndAddition(iid, ieid) {
+async function loadExpensePage(iid, ieid) {
     let travelers = [];
     try {
         // 여행자 정보 가져오기
@@ -147,6 +172,10 @@ async function loadExpenseItemListAndAddition(iid, ieid) {
             const payerOptions = await createTravelerOption(iid, "expenseItemCreationPayer", "😄지불한 사람");
             // await waitForTagifyToLoad();
             // createTag(iid);
+
+            // "정산" 탭을 비활성화(css), "경비" 탭을 활성화(css)
+            document.getElementById("adjustmentTab").setAttribute("style", "background-color: #8e8b82; color: #e9dcbe;");
+            document.getElementById("expenditureTab").setAttribute("style", "background-color: #ffffff; color: #8e8b82;");
         })
         .catch(error => console.error("Error loading expense-right.html:", error)
         );
@@ -154,110 +183,110 @@ async function loadExpenseItemListAndAddition(iid, ieid) {
 }
 
 // Tagify - tag 생성
-async function createTag(itineraryId) {
-    // input 요소 가져오기
-    let payer = document.querySelector('input[name=payer]');
-    let withWhom = document.querySelector('input[name=withWhom]');
-
-    if (!payer || !withWhom) {
-        console.error("Input elements not found.");
-        return;
-    }
-
-    // traveler 조회
-    const travelerList = await callApiAt(`/api/itinerary/${itineraryId}/travelers`, "GET", null);
-    const travelers = travelerList.travelers.map(t => t.name);
-
-    // dropdown 메뉴
-    let payerDropdown = { classname: "payer-dropdown-menu", closeOnSelect: false };
-    let withWhomDropdown = { classname: "withWhom-dropdown-menu", closeOnSelect: false };
-
-
-    // 태그 생성
-    var payerTag = new Tagify(payer, {mode: 'input', whitelist: travelers, maxTags: 1, enforceWhitelist: true});
-    var withWhomTag = new Tagify(withWhom, {mode: 'input', whitelist: travelers, enforceWhitelist: true});
-
-    // 태그 추가 이벤트 처리
-    payerTag.on('add', function() {
-        console.log("PayerTag Value: ", payerTag.value);
-    });
-
-    withWhomTag.on('add', function() {
-        console.log("WithWhomTag Value: ", withWhomTag.value);
-    });
-
-    // payer와 withWhom 값이 중복되지 않도록 처리하는 부분 (필요에 따라 활성화)
-    payerTag.on('add', function() {
-        compareAndRemoveTag(payerTag, withWhomTag);
-    });
-
-    withWhomTag.on('add', function() {
-        compareAndRemoveTag(payerTag, withWhomTag);
-    });
-
-    // payer와 withWhom 값이 중복되면 한쪽에서 제거하는 함수
-    function compareAndRemoveTag(payerTag, withWhomTag) {
-        const withWhomValue = withWhomTag.value.map(item => item.value);
-        const payerValue = payerTag.value.length > 0 ? payerTag.value[0].value : null;
-
-        if (withWhomValue.includes(payerValue)) {
-            // 'remove' 이벤트 트리거로 withWhomTag에서 값 제거
-            withWhomTag.removeTags(payerValue);
-            console.log(`Removed: ${payerValue} from withWhomTag because it matches payerTag value`);
-        }
-    }
-
-
-
-    // // withWhomTag 값을 input 태그의 value로 설정하는 함수
-    // function insertWithWhomTagToInputValue() {
-    //     const withWhomValue = withWhomTag.value.map(item => item.value).join(', ');
-    //     withWhom.value = withWhomValue;
-    //     console.log("Updated withWhom input value: ", withWhom.value);
-    // }
-    //
-    // withWhomTag.on('add', function() {
-    //     // insertWithWhomTagToInputValue();
-    //     console.log("WithWhomTag Value: ", withWhomTag.value);
-    // });
-    //
-    // // payer와 withWhom 값이 중복되지 않도록
-    // function compareAndRemoveTag() {
-    //     const withWhomValue = withWhomTag.value.map(item => item.value);  // withWhomTag에 입력된 값
-    //     const payerValue = payerTag.value.length > 0 ? payerTag.value[0].value : null;  // payerTag에 입력된 값
-    //
-    //     if (withWhomValue.includes(payerValue)) {
-    //         // 'remove' 이벤트 트리거로 withWhomTag에서 값 제거
-    //         withWhomTag.removeTags(payerValue);
-    //         console.log(`Removed: ${payerValue} from withWhomTag because it matches payerTag value`);
-    //     }
-    // }
-    // payerTag.on('add', function() {
-    //     // compareAndRemoveTag();
-    //     console.log("PayerTag Value: ", payerTag.value);
-    // });
-    // withWhomTag.on('add', function() {
-    //     compareAndRemoveTag();
-    //     console.log("WithWhomTag Value: ", withWhomTag.value);
-    // });
-    // payerTag.on('remove', function() {
-    //     compareAndRemoveTag();
-    //     console.log("PayerTag Value After Remove: ", payerTag.value);
-    // });
-
-}
+// async function createTag(itineraryId) {
+//     // input 요소 가져오기
+//     let payer = document.querySelector('input[name=payer]');
+//     let withWhom = document.querySelector('input[name=withWhom]');
+//
+//     if (!payer || !withWhom) {
+//         console.error("Input elements not found.");
+//         return;
+//     }
+//
+//     // traveler 조회
+//     const travelerList = await callApiAt(`/api/itinerary/${itineraryId}/travelers`, "GET", null);
+//     const travelers = travelerList.travelers.map(t => t.name);
+//
+//     // dropdown 메뉴
+//     let payerDropdown = { classname: "payer-dropdown-menu", closeOnSelect: false };
+//     let withWhomDropdown = { classname: "withWhom-dropdown-menu", closeOnSelect: false };
+//
+//
+//     // 태그 생성
+//     var payerTag = new Tagify(payer, {mode: 'input', whitelist: travelers, maxTags: 1, enforceWhitelist: true});
+//     var withWhomTag = new Tagify(withWhom, {mode: 'input', whitelist: travelers, enforceWhitelist: true});
+//
+//     // 태그 추가 이벤트 처리
+//     payerTag.on('add', function() {
+//         console.log("PayerTag Value: ", payerTag.value);
+//     });
+//
+//     withWhomTag.on('add', function() {
+//         console.log("WithWhomTag Value: ", withWhomTag.value);
+//     });
+//
+//     // payer와 withWhom 값이 중복되지 않도록 처리하는 부분 (필요에 따라 활성화)
+//     payerTag.on('add', function() {
+//         compareAndRemoveTag(payerTag, withWhomTag);
+//     });
+//
+//     withWhomTag.on('add', function() {
+//         compareAndRemoveTag(payerTag, withWhomTag);
+//     });
+//
+//     // payer와 withWhom 값이 중복되면 한쪽에서 제거하는 함수
+//     function compareAndRemoveTag(payerTag, withWhomTag) {
+//         const withWhomValue = withWhomTag.value.map(item => item.value);
+//         const payerValue = payerTag.value.length > 0 ? payerTag.value[0].value : null;
+//
+//         if (withWhomValue.includes(payerValue)) {
+//             // 'remove' 이벤트 트리거로 withWhomTag에서 값 제거
+//             withWhomTag.removeTags(payerValue);
+//             console.log(`Removed: ${payerValue} from withWhomTag because it matches payerTag value`);
+//         }
+//     }
+//
+//
+//
+//     // // withWhomTag 값을 input 태그의 value로 설정하는 함수
+//     // function insertWithWhomTagToInputValue() {
+//     //     const withWhomValue = withWhomTag.value.map(item => item.value).join(', ');
+//     //     withWhom.value = withWhomValue;
+//     //     console.log("Updated withWhom input value: ", withWhom.value);
+//     // }
+//     //
+//     // withWhomTag.on('add', function() {
+//     //     // insertWithWhomTagToInputValue();
+//     //     console.log("WithWhomTag Value: ", withWhomTag.value);
+//     // });
+//     //
+//     // // payer와 withWhom 값이 중복되지 않도록
+//     // function compareAndRemoveTag() {
+//     //     const withWhomValue = withWhomTag.value.map(item => item.value);  // withWhomTag에 입력된 값
+//     //     const payerValue = payerTag.value.length > 0 ? payerTag.value[0].value : null;  // payerTag에 입력된 값
+//     //
+//     //     if (withWhomValue.includes(payerValue)) {
+//     //         // 'remove' 이벤트 트리거로 withWhomTag에서 값 제거
+//     //         withWhomTag.removeTags(payerValue);
+//     //         console.log(`Removed: ${payerValue} from withWhomTag because it matches payerTag value`);
+//     //     }
+//     // }
+//     // payerTag.on('add', function() {
+//     //     // compareAndRemoveTag();
+//     //     console.log("PayerTag Value: ", payerTag.value);
+//     // });
+//     // withWhomTag.on('add', function() {
+//     //     compareAndRemoveTag();
+//     //     console.log("WithWhomTag Value: ", withWhomTag.value);
+//     // });
+//     // payerTag.on('remove', function() {
+//     //     compareAndRemoveTag();
+//     //     console.log("PayerTag Value After Remove: ", payerTag.value);
+//     // });
+//
+// }
 // Tagify 로드가 완료될 때까지 기다리는 함수
-function waitForTagifyToLoad() {
-    return new Promise((resolve) => {
-        let checkTagifyLoaded = setInterval(() => {
-            if (typeof Tagify !== "undefined") {
-                clearInterval(checkTagifyLoaded);
-                console.log("✅ Tagify 로드 완료!");
-                resolve();
-            }
-        }, 100);  // 100ms마다 Tagify가 로드되었는지 확인
-    });
-}
+// function waitForTagifyToLoad() {
+//     return new Promise((resolve) => {
+//         let checkTagifyLoaded = setInterval(() => {
+//             if (typeof Tagify !== "undefined") {
+//                 clearInterval(checkTagifyLoaded);
+//                 console.log("✅ Tagify 로드 완료!");
+//                 resolve();
+//             }
+//         }, 100);  // 100ms마다 Tagify가 로드되었는지 확인
+//     });
+// }
 
 
 //🎈 오른쪽 패널 - 경비 내역 추가 폼
@@ -455,9 +484,7 @@ $(document).off("click", ".expense-item-edit-button").on("click", ".expense-item
     // payer와 withWhom 목록 나열
     // setTimeout(async () => {
     const newExpenseItemPayer = expenseItemBox.querySelector(".expense-item-payer-replace");
-    console.log(newExpenseItemPayer);    // <select class="expense-item-payer" id="expenseItemPayerReplace-25" style="height: 35px;"></select>
     const newExpenseItemWithWhom = expenseItemBox.querySelector(".expense-item-with-whom-replace");
-    console.log(newExpenseItemWithWhom);   // <select class="expense-item-with-whom" id="expenseItemWithWhomReplace-25" multiple=""></select>
 
     await createTravelerOption(iid, `expenseItemPayerReplace-${emid}`, null); //`@${payer}`);
     await createTravelerOption(iid, `expenseItemWithWhomReplace-${emid}`, null); // withWhom.map(name => `@${name}`).join(", "));
@@ -536,18 +563,20 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
         const expenseItems = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, "GET", null);
         const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
         const travelerData = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
+        const placeData = await callApiAt(`/api/itinerary/${iid}/events/${ieid}`, "GET", null);
 
-        const adjustmentBasicInfoRemainedBudget = $("#adjustmentBasicInfoRemainedBudget");
+        const adjustmentBasicInfoPlace = $("#adjustmentBasicInfoPlace");
         const adjustmentBasicInfoTraveler = $("#adjustmentBasicInfoTraveler");
             // 값 가져오기
         // 남은 예산
         const remainedBudget = totalAdjustmentData.totalBalance;
         // 함께하는 traveler
         const numberOfTravelers = travelerData.numberOfTravelers;
+        const placeName = placeData.placeDTO.placeName;
 
             // 렌더링
-        // 남은 예산
-        adjustmentBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
+        // 장소
+        adjustmentBasicInfoPlace.html(`현재 위치 : ${placeName}`);
         // 함께하는 traveler
         adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
 
@@ -601,12 +630,17 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
 
 
 // 🎈왼쪽 패널 - 현재 총 지출액 클릭 : Itinerary Event 별 정산 정보 오른쪽 패널에 로드
-$(document).on("click", ".event-total-expense", function () {
+$(document).on("click", ".event-total-expense", async function () {
     const iid = $(this).data("iid");   // itinerary ID 가져오기
     const ieid = $(this).data("ieid"); // event ID 가져오기
+    eventElementForTab = $(this);
 
+    await loadAdjustmentPage(iid, ieid);
+});
+
+async function loadAdjustmentPage(itineraryId, itineraryEventId) {
     // adjustment-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
-    fetch(`/itinerary/${iid}/events/${ieid}/adjustment-right`)
+    fetch(`/itinerary/${itineraryId}/events/${itineraryEventId}/adjustment-right`)
         .then(response => {
             // response.text()
             if (!response.ok) throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
@@ -614,17 +648,17 @@ $(document).on("click", ".event-total-expense", function () {
         })
         .then(html => {
             $("#detailContainer").html(html);
-
+            // "정산" 탭을 활성화(css), "경비" 탭을 비활성화(css)
+            document.getElementById("adjustmentTab").setAttribute("style", "background-color: #ffffff; color: #8e8b82;");
+            document.getElementById("expenditureTab").setAttribute("style", "background-color: #8e8b82; color: #e9dcbe;");
             if ($("#itineraryEventAdjustmentInfo").length === 0) {
                 console.error("❌ itineraryEventAdjustmentInfo 요소를 찾을 수 없습니다.");
                 return;
             }
-            getAdjustmentByItineraryEvent(iid, ieid);
+            getAdjustmentByItineraryEvent(itineraryId, itineraryEventId);
         })
         .catch(error => console.error("Error loading adjustment-right.html:", error));
-
-});
-
+}
 
 
 // 💡 itinerary Event 별 정산 정보 조회
@@ -634,12 +668,13 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
         const adjustmentData = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/adjustment`, "GET", null);
         const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
         const travelerData = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
+        const placeData = await callApiAt(`/api/itinerary/${iid}/events/${ieid}`, "GET", null);
 
         const individualAdjustmentList = $("#individualAdjustmentList");
         const totalExpenditure = $("#totalExpenditure");
         const adjustmentInfo = $("#itineraryEventAdjustmentInfo");
         const individualExpenditureList = $("#individualExpenditureList");
-        const adjustmentBasicInfoRemainedBudget = $("#adjustmentBasicInfoRemainedBudget");
+        const adjustmentBasicInfoPlace = $("#adjustmentBasicInfoPlace");
         const adjustmentBasicInfoTraveler = $("#adjustmentBasicInfoTraveler");
 
         if (!adjustmentInfo.length) {
@@ -654,11 +689,12 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
         const remainedBudget = totalAdjustmentData.totalBalance;
             // 함께하는 traveler
         const numberOfTravelers = travelerData.numberOfTravelers;
+        const placeName = placeData.placeDTO.placeName;
 
 
+        // 장소
+        adjustmentBasicInfoPlace.html(`현재 위치 : ${placeName}`);
         // 지출 렌더링
-            // 남은 예산
-        adjustmentBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
             // 함께하는 traveler
         adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
             // 총 지출

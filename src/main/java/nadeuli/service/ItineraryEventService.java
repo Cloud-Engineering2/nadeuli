@@ -9,12 +9,12 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 고민정   2025.03.12    Itineraray id로 조회하는 메서드 추가
- *
  * ========================================================
  */
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
+import nadeuli.dto.ItineraryEventDTO;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryEvent;
 import nadeuli.entity.ItineraryPerDay;
@@ -43,6 +43,16 @@ public class ItineraryEventService {
 
         return itineraryEventList;
     }
+
+    public ItineraryEventDTO retrieveItineraryEvent(Long itineraryEventId) {
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(itineraryEventId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ItineraryEvent가 존재하지 않습니다"));
+        return ItineraryEventDTO.from(itineraryEvent);
+
+
+    }
+
+
 
 
 }

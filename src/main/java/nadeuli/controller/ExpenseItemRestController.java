@@ -99,7 +99,7 @@ public class ExpenseItemRestController {
 
     // 지출 내역 삭제
     @DeleteMapping("/{iid}/events/{ieid}/expense/{emid}")
-    public ResponseEntity<Void> deleteExpense(@PathVariable Integer emid) {
+    public ResponseEntity<Void> deleteExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("emid") Integer emid) {
         Long expenseItemId = Long.valueOf(emid);
         expenseItemService.deleteExpenseItem(expenseItemId);
         return ResponseEntity.ok().build();

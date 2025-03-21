@@ -386,4 +386,5 @@ public class PlaceService {
         return typesNode.isArray() ? typesNode.findValuesAsText("text") : List.of();
     }
 
+
 }

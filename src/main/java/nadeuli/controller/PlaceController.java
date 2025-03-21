@@ -1,13 +1,13 @@
 package nadeuli.controller;
 
+import lombok.RequiredArgsConstructor;
 import nadeuli.dto.PlaceRequest;
 import nadeuli.dto.request.PlaceListResponseDto;
 import nadeuli.dto.request.PlaceRecommendRequestDto;
 import nadeuli.dto.request.RouteRequestDto;
-import nadeuli.dto.response.PlaceResponseDto;
 import nadeuli.dto.response.RouteResponseDto;
+import nadeuli.service.ItineraryEventService;
 import nadeuli.service.PlaceCacheService;
-import lombok.RequiredArgsConstructor;
 import nadeuli.service.PlaceService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +24,7 @@ public class PlaceController {
 
     private final PlaceCacheService placeCacheService;
     private final PlaceService placeService;
+    private final ItineraryEventService itineraryEventService;
 
 
     @PostMapping("/search")
@@ -82,6 +83,7 @@ public class PlaceController {
                 request.getSearchQuery()
         );
     }
+
 
 
 }

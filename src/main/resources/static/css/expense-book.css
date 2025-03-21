@@ -10,7 +10,7 @@
 
 /********************************** 🧳 오른쪽 패널 🧳 **********************************/
 /* 🎈 안내 탭 */
-/* 안내 탭 : 정산 탭 */
+/* 안내 탭 : 경비 탭 (expense-tab) */
 .adjustment-tab {
     background-color: #ffffff;
     color: #8e8b82;
@@ -21,17 +21,24 @@
     margin-left: 20px;  /* 왼쪽에서 떨어뜨리기 */
     border-radius: 10px 10px 0 0; /* 왼쪽 위, 오른쪽 위 둥글게 */
 }
+.adjustment-tab:focus {
+    cursor: grab;
+}
 
-/* 안내 탭 : 경비 탭 */
-.expenditure-tab {
+/* 안내 탭 : 정산 탭(adjustment-tab)  */
+ .expenditure-tab{
     background-color: #8e8b82;
     color: #e9dcbe;
     font-size: 30px;
     padding: 10px 15px;
     display: inline-block;  /* 크기 조정을 위해 inline-block 사용 */
-    margin-left: 5px;  /* 왼쪽에서 떨어뜨리기 */
+    margin-left: 1px;  /* 왼쪽에서 떨어뜨리기 */
     margin-top: 9px;
     border-radius: 10px 10px 0 0; /* 왼쪽 위, 오른쪽 위 둥글게 */
+}
+
+.expenditure-tab:focus {
+    cursor: grab;
 }
 
 
@@ -70,9 +77,9 @@
 }
 .adjustment-basic-info-traveler {
     color: #8E8B82;
-    margin-left: 500px;
+    margin-left: 400px;
 }
-.adjustment-basic-info-remained-budget {
+.adjustment-basic-info-place {
     color: #8E8B82;
     margin-right: 500px;
     margin-left: 20px;
@@ -162,7 +169,6 @@
 }
 .expense-item-edit-button:active {
     transform: scale(0.98); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
-    /*box-shadow: 0 1px 2px rgba(201, 178, 126, 0.3); !* 눌린 효과를 주는 그림자 *!*/
 }
 .edit-icon {
     color: white; /* 아이콘 색상 */
@@ -227,7 +233,6 @@
 /* 삭제 버튼 클릭 애니메이션  */
 .expense-item-delete-button:active {
     transform: scale(0.98); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
-    /*box-shadow: 0 1px 2px rgba(201, 178, 126, 0.3); !* 눌린 효과를 주는 그림자 *!*/
 }
 
 .minus-icon {
@@ -317,9 +322,7 @@
 }
 
 .part-container {
-    display: flex;              /* Flexbox를 사용하여 자식 요소들을 수평으로 배치 */
-    /*justify-content: space-between; !* 요소들 사이의 간격을 임의로 조정 *!*/
-    /*gap: 30px;*/
+    display: flex;
 }
 
 
