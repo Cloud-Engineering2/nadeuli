@@ -1,5 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // 프로필 이미지 업로드 이벤트 연결
     document.getElementById("profileInput").addEventListener("change", saveProfileImage);
+
+    // 드롭다운 메뉴 토글
+    const dropdownBtn = document.getElementById("profileDropdownBtn");
+    const dropdownMenu = document.getElementById("profileDropdown");
+
+    dropdownBtn.addEventListener("click", () => {
+        dropdownMenu.style.display = dropdownMenu.style.display === "block" ? "none" : "block";
+    });
+
+    // 사용자 정보 자동 로딩
+    getUserInfo();
 });
 
 // ✅ 사용자 정보 불러오기 (자동 입력)
@@ -15,14 +27,14 @@ async function getUserInfo() {
         const data = await response.json();
 
         // ✅ 프로필 이미지 로드
-        document.getElementById("profileImage").src = data.profileImage && data.profileImage.trim() !== ""
-            ? data.profileImage
-            : "/images/default_profile.png";
+        document.getElementById("profileImage").src =
+            data.profileImage && data.profileImage.trim() !== ""
+                ? data.profileImage
+                : "/images/default_profile.png";
 
         // ✅ 사용자 정보 자동 입력
         document.getElementById("userName").value = data.userName || "이름 없음";
         document.getElementById("userEmail").value = data.userEmail || "이메일 없음";
-
     } catch (error) {
         console.error("🚨 사용자 정보 불러오기 오류:", error);
     }
@@ -51,6 +63,17 @@ async function saveProfileImage(event) {
     }
 }
 
+// ✅ 사진 변경 버튼 → 업로드 input 열기
+function triggerFileUpload() {
+    document.getElementById("profileInput").click();
+}
+
+// ✅ 사진 저장
+function downloadProfileImage() {
+    window.location.href = "/auth/user/profile/download"; // 백엔드에서 해당 경로로 파일 다운로드 응답 필요
+}
+
+// ✅ 회원 탈퇴
 function unlink() {
     if (!confirm("정말로 회원 탈퇴하시겠습니까?")) {
         return;

@@ -38,7 +38,7 @@ body {
 .mypage-container {
     background: #ffffff;
     width: 420px;
-    height: 420px;
+    height: 450px; /* 🔹 높이를 약간 조정 */
     margin: 0 auto;
     padding: 30px;
     position: relative;
@@ -55,17 +55,18 @@ body {
     margin-bottom: 15px;
 }
 
-/* ✅ 프로필 제목 (입체감 추가) */
+/* ✅ 프로필 제목 (드롭다운 버튼으로 변경) */
 .mypage-container .profile-title {
     font-size: 20px;
     font-weight: 590;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
-    background-color: #8E8B82; /* 진한 회색 */
+    background-color: #8E8B82;
     color: white;
     padding: 9px 25px;
     border-radius: 10px;
     box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
     margin-left: 10px;
+    cursor: pointer; /* 🔹 클릭 가능하도록 변경 */
 }
 
 /* ✅ 회원탈퇴 버튼 */
@@ -75,18 +76,19 @@ body {
     font-size: 14px;
     padding: 5px 10px;
     border-radius: 5px;
-    opacity: 0.5; /* 불투명 */
+    opacity: 0.5;
     border: none;
     cursor: pointer;
     margin-right: 10px;
-    transition: color 0.3s ease; /* 색상 변화 부드럽게 */
+    transition: color 0.3s ease; /* 🔹 색상 변화 부드럽게 */
 }
-/* ✅ 마우스를 올렸을 때 글씨색 변경 */
+
+/* ✅ 마우스를 올렸을 때 회원탈퇴 버튼 스타일 변경 */
 .mypage-container .delete-btn:hover {
-    color: #8E8B82; /* 마우스를 올리면 글씨색 변경 */
-    background: white; /* 배경색을 하얀색으로 */
-    border: 1px solid #8E8B82; /* 테두리 추가 */
-    opacity: 1; /* 불투명도 완전하게 */
+    color: #8E8B82;
+    background: white;
+    border: 1px solid #8E8B82;
+    opacity: 1;
 }
 
 /* ✅ 프로필 이미지 */
@@ -96,9 +98,8 @@ body {
     border-radius: 50%;
     object-fit: cover;
     display: block;
-    margin: 10px auto;
-    cursor: pointer; /* 클릭 가능 */
-    margin-top: 30px;
+    margin: 20px auto;
+    cursor: pointer; /* 🔹 클릭 가능 */
 }
 
 /* ✅ 프로필 정보 */
@@ -116,7 +117,7 @@ body {
     width: 95%;
     display: flex;
     align-items: center;
-    margin-bottom: 8px; /* ✅ 각 행 사이 간격 줄이기 */
+    margin-bottom: 8px;
     justify-content: flex-start;
     margin-left: 10px;
     margin-right: 10px;
@@ -125,22 +126,22 @@ body {
 /* ✅ 라벨과 입력 필드의 높이를 동일하게 설정 */
 .mypage-container .info-label,
 .mypage-container .profile-info input {
-    height: 36px; /* ✅ 높이를 동일하게 맞춤 */
+    height: 36px;
     font-size: 18px;
     display: flex;
-    align-items: center; /* ✅ 내부 텍스트 정렬 */
+    align-items: center;
 }
 
 /* ✅ 라벨 스타일 */
 .mypage-container .info-label {
-    width: 100px; /* ✅ 라벨 너비 */
+    width: 100px;
     font-weight: 590;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
     background-color: #8E8B82;
     color: white;
     border-radius: 5px;
     flex-shrink: 0;
-    justify-content: center; /* ✅ 라벨 텍스트 중앙 정렬 */
+    justify-content: center;
 }
 
 /* ✅ 입력 필드 스타일 */
@@ -150,34 +151,56 @@ body {
     border-radius: 5px;
     border: 1px solid #8E8B82;
     background: #F3F3F3;
-    padding: 0; /* ✅ 불필요한 내부 여백 제거 */
-    height: 36px; /* ✅ 높이를 라벨과 동일하게 */
+    padding: 0;
+    height: 36px;
     font-size: 16px;
     font-weight: 590;
     margin-left: 10px;
 }
 
-/* ✅ 라벨과 입력 필드 간 간격 추가 */
+/* ✅ 입력 필드와 라벨 간 간격 추가 */
 .mypage-container .profile-info input {
     margin-left: 12px;
 }
 
 /* ✅ 입력 필드와 버튼 사이 간격 조정 */
 .info-row + .info-row {
-    margin-top: 10px; /* ✅ 간격 최소화 */
+    margin-top: 10px;
 }
 
 /* ✅ 이름과 이메일 필드 간 간격 추가 */
 .info-row {
-    margin-bottom: 12px; /* ✅ 행 간 간격 추가 */
+    margin-bottom: 12px;
 }
 
 /* ✅ 입력 필드 사이 간격 추가 */
 .info-row + .info-row {
-    margin-top: 15px; /* ✅ 행 사이 추가 여백 */
+    margin-top: 15px;
 }
 
-/* ✅ 입력 필드와 라벨 간 간격 추가 */
-.mypage-container .profile-info input {
-    margin-left: 12px; /* ✅ 라벨과 입력 필드 사이 간격 */
+/* ✅ 드롭다운 메뉴 추가 */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 50px;
+    left: 10px;
+    background: white;
+    border: 1px solid #8E8B82;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 100;
+}
+
+.dropdown-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+    background: #E9DCBE;
 }
