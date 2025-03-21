@@ -13,6 +13,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 국경민, 김대환   2025.03.19     최초 작성 - OAuth 로그아웃 및 계정 연동 해제 처리 구현
+ * 국경민          2025.03.20     회원 탈퇴 시 uid 기반으로 변경
  * ========================================================
  */
 
@@ -27,6 +28,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 
 import java.util.Map;
 import java.util.Optional;
@@ -95,52 +99,74 @@ public ResponseEntity<Map<String, Object>> logout(
 
 
 
-    @DeleteMapping("/unlink/{email}")
-    public ResponseEntity<Map<String, Object>> unlinkUser(@PathVariable String email) {
+    @DeleteMapping("/unlink")
+    public ResponseEntity<Map<String, Object>> unlinkUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("[OAuthUnlink] 요청 거부 - 로그인되지 않은 사용자");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "success", false,
+                    "message", "로그인이 필요합니다."
+            ));
+        }
+
+        // 1️⃣ SecurityContextHolder에서 현재 로그인된 사용자의 이메일 가져오기
+        String email = authentication.getName(); // 현재 사용자의 이메일
+
+        // 2️⃣ 이메일을 기반으로 User 엔티티 조회
         Optional<User> userOptional = userRepository.findByUserEmail(email);
         if (userOptional.isEmpty()) {
-            log.warn("[OAuthUnlink] 사용자를 찾을 수 없음: {}", email);
+            log.warn("[OAuthUnlink] 사용자 찾기 실패 - email: {}", email);
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "해당 이메일의 사용자를 찾을 수 없습니다."
+                    "message", "사용자를 찾을 수 없습니다."
             ));
         }
 
         User user = userOptional.get();
+        Long id = user.getId(); // UID 가져오기
         String provider = user.getProvider();
         String accessToken = user.getUserToken();
 
+        log.info("[OAuthUnlink] 회원 탈퇴 요청 - UID: {}, Email: {}", id, email);
+
         if (accessToken == null || accessToken.isEmpty()) {
-            log.warn("[OAuthUnlink] 저장된 Access Token 없음 - 이메일: {}", email);
+            log.warn("[OAuthUnlink] 저장된 Access Token 없음 - UID: {}, provider: {}", id, provider);
             return ResponseEntity.status(400).body(Map.of(
                     "success", false,
                     "message", "OAuth Access Token이 없습니다. 다시 로그인 후 시도해주세요."
             ));
         }
 
+        // 3️⃣ OAuth 계정 해제 요청
         boolean unlinkSuccess = switch (provider.toLowerCase()) {
             case "kakao" -> unlinkKakaoUser(accessToken);
             case "google" -> unlinkGoogleUser(accessToken);
             default -> {
-                log.error("[OAuthUnlink] 지원되지 않는 OAuth 제공자: {}", provider);
+                log.error("[OAuthUnlink] 지원되지 않는 OAuth 제공자 - UID: {}, provider: {}", id, provider);
                 yield false;
             }
         };
 
         if (!unlinkSuccess) {
+            log.error("[OAuthUnlink] OAuth 계정 해제 실패 - UID: {}, provider: {}", id, provider);
             return ResponseEntity.status(500).body(Map.of(
                     "success", false,
                     "message", "OAuth 계정 해제 실패"
             ));
         }
+
+        // 4️⃣ 사용자 삭제
         userRepository.delete(user);
-        log.info("[{}] OAuth 계정 해제 및 사용자 삭제 완료 - Email: {}", provider, email);
+        log.info("[OAuthUnlink] OAuth 계정 해제 및 사용자 삭제 완료 - UID: {}, provider: {}", id, provider);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "OAuth 계정 해제 및 사용자 삭제 완료"
+                "message", provider + " 계정 해제 및 사용자 삭제 완료"
         ));
     }
+
 
     private boolean unlinkKakaoUser(String accessToken) {
         try {

@@ -51,18 +51,27 @@ async function saveProfileImage(event) {
     }
 }
 
-function unlink(email) {
-    if (confirm("회원탈퇴 하시겠습니까?")) {
+function unlink() {
+    if (!confirm("정말로 회원 탈퇴하시겠습니까?")) {
+        return;
+    }
 
-    fetch("/auth/unlink/"+email, {
+    fetch("/auth/unlink", {
         method: "DELETE",
         credentials: "include"
-    }).then(res => res.json())
+    })
+        .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert("회원탈퇴 완료되었습니다");
-                location.href = "/"; // 또는 메인 페이지로
+                alert("회원 탈퇴 완료되었습니다.");
+                fetch("/auth/logout", { method: "POST", credentials: "include" })
+                    .finally(() => location.href = "/");
+            } else {
+                alert("회원 탈퇴 실패: " + data.message);
             }
+        })
+        .catch(error => {
+            console.error("회원 탈퇴 중 오류 발생:", error);
+            alert("회원 탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.");
         });
-     }
 }
