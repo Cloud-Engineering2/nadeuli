@@ -18,6 +18,7 @@
  *                         style.whiteSpace = "pre"; 추가 => 내어 쓰기 느낌
  * 이홍비    2025.03.17     경비 정산, 여행자별 정산 글자 가운데 정렬
  *                         ~님 => @~ 변경 (+ 그에 따른 부수적인 것 변경)
+ * 이홍비    2025.03.20     방문지 마커 - n일 차 고려, 중복 처리
  * ========================================================
  */
 
@@ -33,8 +34,14 @@ let selectedMarker = null;
 let selectedPlace = null;
 let infowindow;
 
+let markerMap;
+let pathMap;
+
+let centerLatLng;
+
 let itineraryTotalRead;
-let ieidList = [];
+let itineraryMap; // itinerary_per_day - dayCount
+let ieidList = []; // 방문지 관련 id
 
 let travler;
 
@@ -43,6 +50,8 @@ let partialSettlement; // 방문지 선택 o - 방문지별 정산
 let journal; // 방문지 선택 o - 기행문
 let expense; //
 
+// 지도 마커 그룹별 색상
+const groupColors = ["#343434", "#fd7a2b", "#16c35d", "#00b2ff", "#9b59b6", "#c63db8", "#cc3434", "#462ad3"];
 
 
 // 시간 출력 형태 -
@@ -65,10 +74,16 @@ async function fetchBottomLine(iid) {
     travler = itineraryTotalRead.travelerList;
     finalSettlement = itineraryTotalRead.finalSettlement;
 
+    itineraryMap = new Map();
+    markerMap = new Map();
+    pathMap = new Map();
+    addSortItineraryDayEvent();
+
     console.log("fetchBottomLine - itineraryTotalRead : ", itineraryTotalRead); // 데이터 확인
     console.log("Itinerary Total : ", itineraryTotalRead.itineraryTotal);
     console.log("Traveler List : ", itineraryTotalRead.travelerList);
     console.log("Final Settlement : ", itineraryTotalRead.finalSettlement);
+    console.log("itineraryMap : ", itineraryMap);
     // console.log("Expense Book : ", itineraryTotalRead.expenseBook);
 
     noChoice();
@@ -80,7 +95,7 @@ async function fetchBottomLine(iid) {
     //     })
     //     .catch(error => console.error("Error saving content:", error));
 
-    initMap();
+    initMapVer2();
 
     // updateContentView();
     // updatePhotoView();
@@ -101,9 +116,10 @@ window.onload = function() {
     console.log("iid : ", iid);
     // console.log("ieid : ", ieid);
 
-    fetchBottomLine(iid);
-};
+    // fetchBottomLine(iid);
+    ensureGoogleMapsLoaded(() => fetchBottomLine(iid));
 
+};
 
 // 지도 관련
 
@@ -113,17 +129,193 @@ function loadGoogleMapsApi() {
         .then(response => response.text())
         .then(apiKey => {
             let script = document.createElement("script");
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMapVer2`;
             script.async = true;
             script.defer = true;
             document.head.appendChild(script);
-            initMap();
+            initMapVer2();
         })
         .catch(error => console.error("API Key 가져오기 실패:", error));
 }
 
+// Google Maps API가 로드될 때까지 대기하는 함수
+function ensureGoogleMapsLoaded(callback) {
+    if (window.google && window.google.maps) {
+        callback();
+    } else {
+        console.log("Google Maps API 로드 대기 중...");
+        setTimeout(() => ensureGoogleMapsLoaded(callback), 100);
+    }
+}
+
+
+// Ver2 - 마커 변경, 장소 관련 순서 설정
+
+function addSortItineraryDayEvent() {
+    let ipdids = new Map(); // 임시로 쓸 애
+
+    // itineraryEvents - event 에서 dayCount 추출 => 그에 해당하는 event 저장
+    itineraryTotalRead.itineraryTotal.itineraryEvents.forEach(event => {
+        if (!itineraryMap.has(event.dayCount)) {
+            // [ipdid, []] 형태 설정
+            itineraryMap.set(event.dayCount, []);
+            markerMap.set(event.dayCount, []);
+            pathMap.set(event.dayCount, []);
+            ipdids.set(event.dayCount, []);
+        }
+
+        // [ipdid, [event List]]
+        ipdids.get(event.dayCount).push(event);
+    });
+
+    //console.log("addSortItineraryDayEvent - ipdids : ", ipdids);
+
+    // event - endMinuteSinceStartDay 기준 오름차순 정렬
+    // => event.id 를 itineraryMap 에 삽입 - [ipdid, [event.id list]]
+    let count = 0;
+    let latitudeAvg = 0;
+    let longitudeAvg = 0;
+    ipdids.forEach((events, ipdid) => {
+        events.sort((a, b) => a.endMinuteSinceStartDay - b.endMinuteSinceStartDay);
+
+        //console.log("addSortItineraryDayEvent - events.sort : ", events);
+
+        let index = 1;
+        events.forEach(event => {
+            //console.log("forEach - event.id : ", event.id);
+            addMarkerVer2(ipdid, event.placeDTO, index, groupColors[ipdid]);
+            itineraryMap.get(ipdid).push(event.id);
+            latitudeAvg += event.placeDTO.latitude;
+            longitudeAvg += event.placeDTO.longitude;
+            index += 1;
+
+            count++;
+        });
+
+        // console.log("count : ", count, "latitude : ", latitudeAvg, "longitude : ", longitudeAvg, "itineraryMap.get(ipdid) : ", itineraryMap.get(ipdid));
+    });
+
+    // 지도 초기화 시 중심 좌표 계산
+    latitudeAvg = latitudeAvg / count;
+    longitudeAvg = longitudeAvg / count;
+    centerLatLng = { lat: latitudeAvg, lng: longitudeAvg };
+    console.log("count : ", count, "latitude: ", latitudeAvg, "longitude: ", longitudeAvg, "centerLatLng: ", centerLatLng);
+}
+
+
+function initMapVer2() {
+    if (!itineraryTotalRead || !itineraryTotalRead.itineraryTotal || !itineraryTotalRead.itineraryTotal.itineraryEvents.length) {
+        console.error("🚨 방문지 데이터가 없습니다.");
+        return;
+    }
+
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 37.5665, lng: 126.9780 }, // 기본 서울 중심
+        // center: centerLatLng,
+        zoom: 10
+    });
+
+    console.log("itineraryTotalRead.itineraryTotal.itineraryEvents : " + itineraryTotalRead.itineraryTotal.itineraryEvents);
+
+    infowindow = new google.maps.InfoWindow(); // 정보 창 초기화
+
+    map.setCenter(centerLatLng);
+    console.log("📌 지도 중심 위치:", centerLatLng);
+
+    noChoice();
+}
+
+
+function addMarkerVer2(dayNum, place, order, color) {
+    const marker = new google.maps.Marker({
+        position: { lat: place.latitude, lng: place.longitude },
+        map: map,
+        title: place.placeName,
+        label: {
+            text: order.toString(), // 순서 숫자
+            color: "black",         // 라벨 텍스트 색상
+            fontSize: "14px",       // 라벨 텍스트 크기
+            fontWeight: "bold"      // 라벨 텍스트 굵기
+        },
+        // icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // 기본 파란색 마커
+        icon: getMarkerIconVer2(color)
+    });
+
+    // marker.addListener("click", () => toggleMarker(marker));
+    marker.addListener("click", () => {
+        toggleMarker(marker);
+
+        if (selectedMarker !== null) {
+            const content = `
+            <div class="place-info">
+                <img src="${place.imageUrl}" style="width:80%; max-width:300px; margin-bottom:10px;" alt="">
+                <h2>${place.placeName}</h2>
+                <p>${place.address}</p>
+            </div>
+        `;
+            infowindow.setContent(content);
+            infowindow.open(map, marker);
+        }
+    });
+
+    markerMap.get(dayNum).push(marker);
+    console.log("markerMap.get(dayNum).push(marker) : ", markerMap.get(dayNum));
+
+    // 경로 좌표 추가
+    pathMap.get(dayNum).push({ lat: place.latitude, lng: place.longitude });
+
+    // 경로를 지도에 그리기
+    const path = new google.maps.Polyline({
+        path: pathMap.get(dayNum),
+        geodesic: true,
+        strokeColor: "#FF0000",
+        strokeOpacity: 0,
+        icons: [{
+            icon: {
+                path: 'M 0,-1 0,1',
+                strokeOpacity: 1,
+                scale: 4,
+                strokeColor: color
+            },
+            offset: '0',
+            repeat: '20px'
+        }]
+        // strokeWeight: 2
+    });
+    path.setMap(map);
+
+    console.log("path.setMap(map) : ", path, " map : ", map);
+
+}
+
+function getMarkerIconVer2(color) {
+    return {
+        path: `
+                            M 0,0 
+                            m -10,-20 
+                            a 10,10 0 1,0 20,0 
+                            a 10,10 0 1,0 -20,0 
+                            M 0,0 
+                            l -7,-10 
+                            l 14,0 
+                            z
+                        `,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: "#ffffff",
+        strokeWeight: 0.5,
+        scale: 1,
+        labelOrigin: new google.maps.Point(0, -20)
+    }
+}
+
+
+
+
+
+// Ver1
 // 맵 초기화
-function initMap() {
+function initMapVer1() {
     if (!itineraryTotalRead || !itineraryTotalRead.itineraryTotal || !itineraryTotalRead.itineraryTotal.itineraryEvents.length) {
         console.error("🚨 방문지 데이터가 없습니다.");
         return;
@@ -154,10 +346,11 @@ function initMap() {
     });
     console.log("markerList : ", markerList);
 
-
     let avgLatitude = latitude / itineraryEventList.length;
     let avgLongitude = longitude / itineraryEventList.length;
     let centerLatLng = { lat: avgLatitude, lng: avgLongitude };
+
+
 
     map.setCenter(centerLatLng);
     console.log("📌 지도 중심 위치:", centerLatLng);
@@ -289,15 +482,34 @@ function toggleMarker(marker) {
 }
 
 function getMarkerIcon(color) {
+    // return {
+    //     path: google.maps.SymbolPath.CIRCLE, // 둥근 마커
+    //     scale: 12, // 마커 크기
+    //     fillColor: color, // 내부 색상
+    //     fillOpacity: 1, // 색상 투명도
+    //     strokeColor: "white", // 테두리 색상
+    //     strokeWeight: 2, // 테두리 두께
+    //     labelOrigin: { x: 0, y: 0 } // 라벨의 중심 위치 설정
+    // };
+
     return {
-        path: google.maps.SymbolPath.CIRCLE, // 둥근 마커
-        scale: 12, // 마커 크기
-        fillColor: color, // 내부 색상
-        fillOpacity: 1, // 색상 투명도
-        strokeColor: "white", // 테두리 색상
-        strokeWeight: 2, // 테두리 두께
-        labelOrigin: { x: 0, y: 0 } // 라벨의 중심 위치 설정
-    };
+        path: `
+                            M 0,0 
+                            m -10,-20 
+                            a 10,10 0 1,0 20,0 
+                            a 10,10 0 1,0 -20,0 
+                            M 0,0 
+                            l -7,-10 
+                            l 14,0 
+                            z
+                        `,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: "#ffffff",
+        strokeWeight: 0.5,
+        scale: 1,
+        labelOrigin: new google.maps.Point(0, -20)
+    }
 }
 
 
@@ -321,7 +533,7 @@ function noChoice() {
     datetime.style.display = "none";
 
     // 기행문 - 사진 로고 출력
-    document.getElementById("journal-image").src = "/pic-icon/logo-letter-o.png";
+    document.getElementById("journal-image").src = "/images/pic-icon/logo-letter-o.png";
 
     // 기행문 - 출력 내용 변경
     // document.getElementById("journal-no-choice").display = "block";
@@ -402,7 +614,7 @@ function hasChoice(index) {
         datetime.textContent = null;
         datetime.style.display = "none";
 
-        journalImage.src = "/pic-icon/logo-letter-o.png";
+        journalImage.src = "/images/pic-icon/logo-letter-o.png";
         journalContent.innerText = "기억이 옅어지기 전에 소중한 순간을 남겨 주세요!";
         journalContent.style.textAlign = "center";
         goToJournal.style.display = "block";
@@ -429,7 +641,7 @@ function hasChoice(index) {
             // journalNoContent.style.display = "block";
         }
         else if ((journal.imageUrl === null) && (journal.content !== null)) {
-            journalImage.src = "/pic-icon/logo-letter-o.png";
+            journalImage.src = "/images/pic-icon/logo-letter-o.png";
             journalContent.innerText = journal.content;
             journalContent.style.textAlign = "left";
             goToJournal.style.display = "none";
