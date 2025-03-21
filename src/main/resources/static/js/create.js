@@ -15,6 +15,8 @@ let treeData = null;
 let regionMap = new Map();
 let locations = null;
 
+let oldTripConfirmed = false;
+
 toastr.options = {
     "closeButton": false,
     "debug": false,
@@ -128,6 +130,7 @@ function flattenTree(tree) {
         });
     }
     traverse(tree);
+    result.sort((a, b) => a.fullName.localeCompare(b.fullName));
     return result;
 }
 
@@ -371,7 +374,6 @@ $(document).ready(function () {
             currentModalStep = 2;
 
         } else if (currentModalStep === 2) {
-            // Step 2 → Step 3 (날짜 → 시간)
             console.log("📌 Step 2 → Step 3: 날짜 선택 완료");
 
             if (selectedDates.length === 0) {
@@ -382,23 +384,28 @@ $(document).ready(function () {
                 return;
             }
 
-            if (!prevDayCount) {
-                prevDayCount = initTimeSelectionUI(selectedDates.length);
-            } else {
-                prevDayCount = renewTimeSelectionUI(prevDayCount, selectedDates.length);
+            const today = new Date().toISOString().slice(0, 10);
+            const lastSelectedDate = selectedDates[selectedDates.length - 1];
+
+            if (lastSelectedDate < today && !oldTripConfirmed) {
+                Swal.fire({
+                    title: '예전 여정을 작성하시는건가요?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '네',
+                    cancelButtonText: '아니요'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        oldTripConfirmed = true;
+                        proceedToStep3();
+                    } else {
+                        // 아무것도 하지 않음 (그냥 다음 단계 안감)
+                    }
+                });
+                return; // 🔥 Swal 응답 기다리기 위해 일단 여기서 return!
             }
 
-            stepDateSelection.style.opacity = "0";
-            stepDateSelection.style.zIndex = "1";
-            stepDateSelection.style.visibility = "hidden";
-
-            stepTimeSelection.style.zIndex = "2";
-            stepTimeSelection.style.visibility = "visible";
-            stepTimeSelection.style.opacity = "1";
-
-            modalTitle.textContent = "시작 및 종료 시간을 설정해주세요";
-            currentModalStep = 3;
-            nextButton.textContent = "완료";
+            proceedToStep3(); // 조건 안걸릴 땐 바로 이동
         } else {
             // Step 3 → 완료 (모달 닫기)
             console.log("✅ 여행 시간 설정 완료");
@@ -407,6 +414,25 @@ $(document).ready(function () {
         }
     });
 
+    function proceedToStep3() {
+        if (!prevDayCount) {
+            prevDayCount = initTimeSelectionUI(selectedDates.length);
+        } else {
+            prevDayCount = renewTimeSelectionUI(prevDayCount, selectedDates.length);
+        }
+
+        stepDateSelection.style.opacity = "0";
+        stepDateSelection.style.zIndex = "1";
+        stepDateSelection.style.visibility = "hidden";
+
+        stepTimeSelection.style.zIndex = "2";
+        stepTimeSelection.style.visibility = "visible";
+        stepTimeSelection.style.opacity = "1";
+
+        modalTitle.textContent = "시작 시간을 설정해주세요";
+        currentModalStep = 3;
+        nextButton.textContent = "완료";
+    }
     backButton.addEventListener("click", function () {
         if (currentModalStep === 2) {
             // Step 2 → Step 1 (날짜 → 지역)
@@ -486,19 +512,16 @@ function initTimeSelectionUI(dayCounts) {
 
     let timeSelectionHTML = "";
     dayList.forEach(index => {
-        // perDayMap에서 startTime과 endTime을 가져옴 (없을 경우 기본값 설정)
+        // perDayMap에서 startTime을 가져옴 (없을 경우 기본값 설정)
         let startTime = "09:00:00"; // 기본값 설정
-        let endTime = "23:00:00"; // 기본값 설정
 
         // HH:MM 포맷으로 변환 (TT:MM:SS → HH:MM)
         let formattedStartTime = startTime.substring(0, 5);
-        let formattedEndTime = endTime.substring(0, 5);
 
         timeSelectionHTML += `
             <div class="time-container mb-3">
                 <span class="date-label">${index}일차</span>
                 <input type="time" class="form-control time-input" id="start-${index}" value="${formattedStartTime}">
-                <input type="time" class="form-control time-input" id="end-${index}" value="${formattedEndTime}">
                 <button id="apply-global-time" class="btn btn-secondary" style="visibility: hidden;">전체 적용</button>
             </div>
         `;
@@ -527,7 +550,6 @@ function renewTimeSelectionUI(prevDayCounts, dayCounts) {
                 <div class="time-container mb-3">
                     <span class="date-label">${i}일차</span>
                     <input type="time" class="form-control time-input" id="start-${i}" value="09:00">
-                    <input type="time" class="form-control time-input" id="end-${i}" value="23:00">
                     <button id="apply-global-time" class="btn btn-secondary" style="visibility: hidden;">전체 적용</button>
                 </div>
             `;
@@ -561,11 +583,10 @@ function generateItineraryJSON() {
 
     // ItineraryPerDays 배열 생성
     const ItineraryPerDays = [
-        { dayCount: 0, startTime: "00:00:00", endTime: "00:00:00", dayOfWeek: 0 }, // 기본 첫 항목
+        { dayCount: 0, startTime: "00:00:00", dayOfWeek: 0 }, // 기본 첫 항목
         ...selectedDates.map((date, index) => ({
             dayCount: index + 1,
             startTime: $(`#start-${index + 1}`).val() + ":00",
-            endTime: $(`#end-${index + 1}`).val() + ":00",
             dayOfWeek: moment(date).isoWeekday()
         }))
     ];
@@ -632,3 +653,12 @@ function itineraryCreateSubmit(){
 }
 
 
+$('#apply-global-time').click(function () {
+    let globalStart = $('#start-global').val();
+    console.log("📌 [전체 적용] 시작시간:", globalStart);
+    // 1부터 dayCounts까지의 리스트 생성
+    let dayList = Array.from({length: selectedDates.length}, (_, i) => i + 1);
+    dayList.forEach(index => {
+        $(`#start-${index}`).val(globalStart);
+    });
+});

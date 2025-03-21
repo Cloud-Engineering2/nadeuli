@@ -17,17 +17,41 @@ package nadeuli.service;
 import lombok.RequiredArgsConstructor;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
+import nadeuli.entity.constant.CollaboratorRole;
 import nadeuli.repository.ExpenseBookRepository;
 import nadeuli.repository.ItineraryCollaboratorRepository;
 import nadeuli.repository.ItineraryRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ItineraryCollaboratorService {
+
     private final ItineraryCollaboratorRepository itineraryCollaboratorRepository;
-    private final ItineraryRepository itineraryRepository;
-    private final ExpenseBookRepository expenseBookRepository;
+
+    public CollaboratorRole getUserRole(Long userId, Long itineraryId) {
+        return itineraryCollaboratorRepository.findByUserIdAndItineraryId(userId, itineraryId)
+                .map(collaborator -> CollaboratorRole.from(collaborator.getIcRole()))
+                .orElseThrow(() -> new AccessDeniedException("해당 일정에 접근 권한이 없습니다."));
+    }
+
+    //일정파트는 ROLE_OWNER만 가능하므로 일정파트인지 Expense파트인지에 따라 추가 검사가 이루어짐
+    public void checkEditPermission(Long userId, Long itineraryId, boolean isExpensePart) {
+        CollaboratorRole role = getUserRole(userId, itineraryId);
+
+        // 일정 파트 수정은 OWNER만 가능
+        if (!isExpensePart && role != CollaboratorRole.ROLE_OWNER) {
+            throw new AccessDeniedException("일정 수정은 OWNER만 가능합니다.");
+        }
+    }
+
+    //일정파트용 메서드 오버로딩
+    public void checkViewPermission(Long userId, Long itineraryId) {
+        getUserRole(userId, itineraryId); // OWNER/GUEST 둘 다 VIEW 가능
+    }
+
+
 
     public String getOwner(Itinerary itinerary) {
 

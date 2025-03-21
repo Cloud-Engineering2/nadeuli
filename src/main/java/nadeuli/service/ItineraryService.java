@@ -248,7 +248,7 @@ public class ItineraryService {
             } else {
                 // 신규 데이터 추가
                 updatedDays.add(ItineraryPerDay.of(
-                        itinerary, dto.getDayCount(), dto.getStartTime(), dto.getEndTime(), dto.getDayOfWeek()
+                        itinerary, dto.getDayCount(), dto.getStartTime(), dto.getDayOfWeek()
                 ));
             }
         }

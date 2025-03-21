@@ -13,7 +13,6 @@
  * ========================================================
  */
 
-
 package nadeuli.dto;
 
 import lombok.AllArgsConstructor;
@@ -22,6 +21,9 @@ import lombok.NoArgsConstructor;
 import nadeuli.entity.User;
 import nadeuli.entity.constant.UserRole;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,37 +31,54 @@ public class UserDTO {
 
     private Long id;
     private String userEmail;
-    private String userToken;
     private String userName;
+    private String profileImage;
     private String provider;
     private UserRole userRole;
+    private String userToken;
+    private String lastLoginAt;
+    private String createdAt;
+    private String refreshToken;
+    private String refreshTokenExpiryAt;
 
-
-    // static factory method - UserDTO 객체 생성
-    public static UserDTO of(String userEmail, String userName, String provider) {
-        return UserDTO.of(userEmail, userName, provider);
-    }
-
-    // static factory method - UserDTO 객체 생성
-    public static UserDTO of(Long id, String userEmail, String userToken, String userName, String provider, UserRole userRole) {
-        return new UserDTO(id, userEmail, userToken, userName, provider, userRole);
-    }
-
-    // entity -> dto
     public static UserDTO from(User user) {
         return new UserDTO(
                 user.getId(),
                 user.getUserEmail(),
-                user.getUserToken(),
                 user.getUserName(),
+                user.getProfileImage(),
                 user.getProvider(),
-                user.getUserRole()
+                user.getUserRole(),
+                user.getUserToken(),
+                formatDateTime(user.getLastLoginAt()),
+                formatDateTime(user.getCreatedAt()),
+                user.getRefreshToken(),
+                formatDateTime(user.getRefreshTokenExpiryAt())
         );
     }
 
-    // dto => entity
     public User toEntity() {
-        return User.of(userEmail, userName, provider);
+        return User.of(
+                this.id,
+                this.userEmail,
+                this.provider,
+                this.userName,
+                this.profileImage,
+                this.userRole,
+                this.userToken,
+                parseDateTime(this.lastLoginAt),
+                parseDateTime(this.createdAt),
+                this.refreshToken,
+                parseDateTime(this.refreshTokenExpiryAt)
+        );
     }
 
+    private static String formatDateTime(LocalDateTime dateTime) {
+        return (dateTime != null) ? dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
+    }
+
+    private static LocalDateTime parseDateTime(String dateTimeStr) {
+        return (dateTimeStr != null && !dateTimeStr.isEmpty()) ?
+                LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null;
+    }
 }

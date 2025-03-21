@@ -17,6 +17,7 @@ package nadeuli.repository;
 import nadeuli.dto.response.CollaboratorResponse;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
+import nadeuli.entity.constant.CollaboratorRole;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,4 +40,6 @@ public interface ItineraryCollaboratorRepository extends JpaRepository<Itinerary
     @EntityGraph(attributePaths = {"user"})
     @Query("SELECT ic FROM ItineraryCollaborator ic WHERE ic.itinerary.id = :itineraryId")
     List<ItineraryCollaborator> findCollaboratorsByItineraryId(@Param("itineraryId") Long itineraryId);
+
+    Optional<ItineraryCollaborator> findByItinerary_IdAndIcRole(Long itineraryId, String icRole);
 }

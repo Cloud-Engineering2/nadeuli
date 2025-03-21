@@ -1,16 +1,49 @@
 <div th:fragment="headerFragment">
-    <div class="header">
-        <div class="header-inner">
-            <div class="left-header">
-                <a href="/" style="cursor: pointer;">
-                    <img src="/pic-icon/logo-letter-x.png" alt="나들이" width="50px" height="50px"/>
-                </a>
-                <a href="/" style="cursor: pointer; text-decoration: none; text-align: center; color:#8E8B82;">나들이</a>
-            </div>
+    <div class="main-header-wrap">
+        <div class="header">
+            <div class="header-inner">
+                <div class="left-header">
+                    <a href="/">
+                        <img src="/images/pic-icon/logo-letter-x.png" alt="나들이" />
+                    </a>
+                    <a href="/">나들이</a>
+                </div>
+                <div class="right-header" id="right-header">
 
-            <div class="right-header" id="right-header"></div>
+                </div>
+            </div>
         </div>
     </div>
+
+
+
+    <div id="user-info"
+         th:attr="data-logged-in=${loggedIn},
+                  data-username=${userName},
+                  data-email=${userEmail},
+                  data-profile-image=${profileImage},
+                  data-role=${roleName}">
+    </div>
+
+    <script>
+        // JavaScript로 데이터 가져오기
+        const userInfo = document.getElementById('user-info');
+        const isLoggedIn = userInfo.getAttribute('data-logged-in') === 'true'; // boolean으로 변환
+        const userName = userInfo.getAttribute('data-username');
+        const userEmail = userInfo.getAttribute('data-email');
+        const profileImage = userInfo.getAttribute('data-profile-image');
+        const userRole = userInfo.getAttribute('data-role');
+
+        // 콘솔에서 확인
+        console.log('Logged In:', isLoggedIn);
+        console.log('User Name:', userName);
+        console.log('User Email:', userEmail);
+        console.log('Profile Image:', profileImage);
+        console.log('Role:', userRole);
+    </script>
+
+
+
 
     <script src="/js/header.js"></script>
 </div>

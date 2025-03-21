@@ -837,15 +837,15 @@ $(document).on('click', '.day-header', function () {
 
 
 // 수정후 링크 이동시 경고 메세지 event 핸들러
-$("a[href]").click(function(e) {
-    const href = $(this).attr("href");
-    const target = $(this).attr("target");
-
-    if (!href || e.ctrlKey || e.metaKey || target === "_blank") return;
-
-    e.preventDefault();
-    handleDirtyNavigation(href);
-});
+// $("a[href]").click(function(e) {
+//     const href = $(this).attr("href");
+//     const target = $(this).attr("target");
+//
+//     if (!href || e.ctrlKey || e.metaKey || target === "_blank") return;
+//
+//     e.preventDefault();
+//     handleDirtyNavigation(href);
+// });
 
 $(document).on("dblclick", ".event", function () {
     const eventId = $(this).data("id");

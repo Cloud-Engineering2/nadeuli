@@ -33,6 +33,11 @@ public enum UserRole {
         this.userRole = userRole;
     }
 
+    @Override
+    public String toString() {
+        return userRole;
+    }
+
     public static UserRole getInstance(String userRole) { // userRole 의 값을 문자열로 찾는 함수
 
         return Arrays.stream(UserRole.values()) // UserRole 값 -> 배열 -> 스트림

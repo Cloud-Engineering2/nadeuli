@@ -6,9 +6,7 @@
     src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
 }
 
-
-/* header */
-.header {
+.main-header-wrap .header {
     display: flex;
     position: fixed;
     align-items: center;
@@ -17,26 +15,25 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 50px;
-    border-bottom: 1.5px solid #8E8B82;
+    height: 49px;
+    border-bottom: 1px solid #8E8B82;
 
     color: #343434;
     background-color: #F3F3F3;
-    z-index: 1000;
-
+    z-index: 10000;
 }
 
+/*.main-header-wrap .header-inner {*/
 .header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
     user-select: none;
     width: 100%;
-    max-width: 1800px; /* 추후 결정 */
-
+    max-width: 1800px;
 }
 
-/*.left-header .logo {*/
+/*.main-header-wrap .left-header {*/
 .left-header {
     display: flex;
     align-items: center;
@@ -48,9 +45,29 @@
     font-size: 30px;
     color: #8E8B82;
     text-decoration: none;
-    margin-left: 30px; /* 로고 왼쪽 마진 */
+    margin-left: 30px;
 }
 
+/*.main-header-wrap .a-logo{*/
+.a-logo{
+    height: 49px;
+}
+
+/*.main-header-wrap .left-header a {*/
+.left-header a {
+    text-decoration: none;
+    color: #8E8B82;
+    font-size: 30px;
+}
+
+/*.main-header-wrap .left-header img {*/
+.left-header img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+/*.main-header-wrap .right-header {*/
 .right-header {
     display: flex;
     align-items: center;
@@ -60,48 +77,43 @@
     margin-right: 30px;
 
     font-family: "GriunNoltoTAENGGU", sans-serif;
-    font-size: 22px;
+    font-size: 18px;
     color: #8E8B82;
 
-    position: relative; /* dropdown이 right-header에 상대적으로 위치하도록 */
-    /*display: inline-block;*/
+    position: relative;
 }
 
+/* 드롭다운 스타일 */
+/*.main-header-wrap .dropdown {*/
 .dropdown {
     position: absolute;
-    top: 55px; /* balloon 밑에 위치하도록 조정 (풍선 아이콘의 높이에 맞춰) */
-    right: 0; /* right-header 영역과 일치하도록 */
+    top: 55px;
+    right: 0;
     width: 180px;
     background: #f3f3f3;
     border: 1px solid #f3f3f3;
-    border-radius: 0.5rem; /* 테두리 모서리를 둥글게 */
+    border-radius: 0.5rem;
     display: none;
     flex-direction: column;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 10; /* 드롭다운을 우선순위로 표시 */
+    z-index: 10;
     cursor: pointer;
-    pointer-events: auto; /* 드롭다운에서 마우스 이벤트 활성화 */
-
-    /*padding: 20px; !* 패딩 추가 *!*/
-    /*padding-top: 15px;*/
-    margin-top: 10px; /* 드롭다운과 풍선 사이 여유 공간 추가 */
-
-    /*visibility: hidden; !* 처음에는 보이지 않도록 설정 *!*/
-    /*opacity: 0; !* 투명도를 0으로 설정 *!*/
-    /*transition: visibility 0s 0.3s, opacity 0.3s ease; !* 부드럽게 나타나고 사라지게 설정 *!*/
-    /*pointer-events: none;  !* 숨겨진 상태에서는 클릭을 받지 않음 *!*/
+    pointer-events: auto;
+    margin-top: 10px;
 }
 
+/*.main-header-wrap .dropdown::before {*/
 .dropdown::before {
     content: "";
     position: absolute;
-    top: -30px;  /* 풍선과 겹치는 부분 */
+    top: -30px;
     left: 0;
     width: 100%;
-    height: 30px; /* 마우스 인식 영역 확장 */
-    background: transparent; /* 눈에는 안 보이지만 영역만 확장 */
+    height: 30px;
+    background: transparent;
 }
 
+/*.main-header-wrap .dropdown a {*/
 .dropdown a {
     padding: 10px;
     text-decoration: none;
@@ -110,39 +122,95 @@
     display: block;
 }
 
+/*.main-header-wrap .dropdown hr {*/
 .dropdown hr {
     margin: 0;
     color: #343434;
-    /*border: 0.1rem solid #343434;*/
-    /*height: 1px;*/
+
+    border: 0;
+    border-top: 0.05rem solid;
+    opacity: 0.7;
 }
 
-/* 드롭다운을 보여줄 때 */
-/*.right-header:hover .dropdown,*/
-/*.right-header .dropdown:hover {*/
-/*    visibility: visible;*/
-/*    opacity: 1;*/
-/*    pointer-events: auto;  !* 보여지면 클릭 가능하게 *!*/
-/*    transition: opacity 0.3s ease, visibility 0s;*/
+/*.dropdown hr {*/
+/*    border: 0;*/
+/*    border-top: 0.05rem solid;*/
+/*    opacity: 0.7;*/
 /*}*/
-.dropdown:hover .dropdown .dropdown a:hover {
-    display: block;
+
+/*.main-header-wrap .dropdown a:hover {*/
+.dropdown a:hover {
+    background-color: #e2e2e2;
 }
 
+/* balloon */
+/*.main-header-wrap .balloon {*/
 .balloon {
     cursor: pointer;
     position: relative;
-    /*display: inline-block;*/
     padding: 5px;
 }
 
-/* 기본 색상 */
-#balloon-icon-default path {
+/* 기본 아이콘 색상 */
+/*.main-header-wrap #balloon-icon-default path,*/
+/*.main-header-wrap #balloon-icon-filled path {*/
+#balloon-icon-default path, #balloon-icon-filled path {
     fill: #343434;
 }
 
-#balloon-icon-filled path {
-    fill: #343434;
+/* 사용자 이름 */
+/*.main-header-wrap .main-header-user-name {*/
+.main-header-user-name {
+    padding-top: 12px;
+    color: #343434;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/*.main-header-wrap .main-header-user-email {*/
+.main-header-user-email {
+    padding-bottom: 12px;
+    font-size: 15px;
+    color: #8E8B82;
+    text-align: center;
+}
+
+/* 로그아웃 버튼 */
+/*.main-header-wrap .logout-btn {*/
+.logout-btn {
+    background: none;
+    border: none;
+    padding: 10px;
+    text-decoration: none;
+    text-align: center;
+    color: #343434;
+    display: block;
+    width: 100%; /* 메뉴처럼 넓이 맞추기 */
+    font-size: 18px;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/*.main-header-wrap .logout-btn:hover {*/
+.logout-btn:hover {
+    background-color: #e2e2e2;
+}
+
+/* 로그인 링크 */
+/*.main-header-wrap .main-header-login-link {*/
+.main-header-login-link {
+    text-decoration: none;
+    color: #8E8B82;
+    font-size: 25px;
+    font-family: "GriunNoltoTAENGGU", sans-serif;
+    padding: 5px 10px;
+    transition: color 0.2s ease;
+}
+
+/*.main-header-wrap .main-header-login-link:hover {*/
+.main-header-login-link:hover {
+    color: #6f6d64;
 }
 
 
@@ -172,3 +240,4 @@
 .footer-div{
     user-select: none;
 }
+

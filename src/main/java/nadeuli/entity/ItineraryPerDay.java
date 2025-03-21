@@ -44,17 +44,13 @@ public class ItineraryPerDay extends BaseTimeEntity {
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
-    @Column(name = "end_time", nullable = false)
-    private LocalTime endTime;
-
     @Column(name = "day_of_week")
     private Integer dayOfWeek;
 
-    public ItineraryPerDay(Itinerary itinerary, int dayCount, LocalTime startTime, LocalTime endTime, Integer dayOfWeek) {
+    public ItineraryPerDay(Itinerary itinerary, int dayCount, LocalTime startTime, Integer dayOfWeek) {
         this.itinerary = itinerary;
         this.dayCount = dayCount;
         this.startTime = startTime;
-        this.endTime = endTime;
         this.dayOfWeek = dayOfWeek;
     }
 
@@ -62,11 +58,10 @@ public class ItineraryPerDay extends BaseTimeEntity {
     public void updateFromDto(ItineraryPerDayDTO dto) {
         this.dayCount = dto.getDayCount();
         this.startTime = dto.getStartTime();
-        this.endTime = dto.getEndTime();
         this.dayOfWeek = dto.getDayOfWeek();
     }
 
-    public static ItineraryPerDay of(Itinerary itinerary, int dayCount, LocalTime startTime, LocalTime endTime, Integer dayOfWeek) {
-        return new ItineraryPerDay(itinerary, dayCount, startTime, endTime, dayOfWeek);
+    public static ItineraryPerDay of(Itinerary itinerary, int dayCount, LocalTime startTime, Integer dayOfWeek) {
+        return new ItineraryPerDay(itinerary, dayCount, startTime, dayOfWeek);
     }
 }

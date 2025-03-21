@@ -18,8 +18,11 @@ package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
+import nadeuli.dto.response.ItineraryWithOwnerDTO;
 import nadeuli.repository.ItineraryRepository;
+import nadeuli.security.CustomUserDetails;
 import nadeuli.service.ShareService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,9 +42,10 @@ public class ShareController {
     @GetMapping("/{token}")
     public String shareJoinPage(@PathVariable String token, Model model) {
         try {
-            ItineraryDTO itineraryDTO = shareService.getItineraryFromToken(token);
+            ItineraryWithOwnerDTO itineraryDTO = shareService.getItineraryFromToken(token);
 
             model.addAttribute("itinerary", itineraryDTO);
+
             model.addAttribute("token", token);
             return "join";  // Thymeleaf 템플릿 (join.html) 반환
         } catch (IllegalArgumentException e) {
@@ -51,17 +55,17 @@ public class ShareController {
         }
     }
 
-    @PostMapping("/{token}")
-    public String shareJoin(@PathVariable String token, RedirectAttributes redirectAttributes) {
-        Long userId = 2L; // 세션 대신 임시 ID
-
-        try {
-            String message = shareService.joinItinerary(token, userId);
-            redirectAttributes.addFlashAttribute("successMessage", message);
-            return "redirect:/join/" + token;  // 성공 후 다시 일정 페이지로 이동
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/join/" + token;
-        }
-    }
+//    @PostMapping("/{token}")
+//    public String shareJoin(@PathVariable String token, RedirectAttributes redirectAttributes,  @AuthenticationPrincipal CustomUserDetails userDetails) {
+//        Long userId = userDetails.getUser().getId();
+//
+//        try {
+//            String message = shareService.joinItinerary(token, userId);
+//            redirectAttributes.addFlashAttribute("successMessage", message);
+//            return "redirect:/join/" + token;  // 성공 후 다시 일정 페이지로 이동
+//        } catch (IllegalArgumentException e) {
+//            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+//            return "redirect:/join/" + token;
+//        }
+//    }
 }

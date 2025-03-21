@@ -20,10 +20,13 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ItineraryDTO;
 import nadeuli.dto.response.CollaboratorResponse;
 import nadeuli.dto.response.ItineraryStatusResponse;
+import nadeuli.dto.response.ItineraryWithOwnerDTO;
+import nadeuli.dto.response.JoinItineraryResponseDto;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
 import nadeuli.entity.ShareToken;
 import nadeuli.entity.User;
+import nadeuli.entity.constant.CollaboratorRole;
 import nadeuli.repository.ItineraryCollaboratorRepository;
 import nadeuli.repository.ItineraryRepository;
 import nadeuli.repository.ShareTokenRepository;
@@ -124,7 +127,7 @@ public class ShareService {
     /**
      * 공유 링크를 통해 Collaborator 등록 (ROLE_GUEST)
      */
-    public String joinItinerary(String shareToken, Long userId) {
+    public JoinItineraryResponseDto joinItinerary(String shareToken, Long userId) {
         // 1️⃣ 공유 토큰 검증
         String[] parts = shareToken.split("-");
         if (parts.length != 2) {
@@ -159,7 +162,7 @@ public class ShareService {
         ItineraryCollaborator collaborator = new ItineraryCollaborator(null, user, itinerary, "ROLE_GUEST");
         itineraryCollaboratorRepository.save(collaborator);
 
-        return "일정에 성공적으로 참여하였습니다.";
+        return new JoinItineraryResponseDto("일정에 성공적으로 참여하였습니다.", itineraryId);
     }
     /**
      * 일정에서 특정 사용자를 Collaborator에서 제거 (OWNER만 가능)
@@ -232,7 +235,7 @@ public class ShareService {
     /**
      * 토큰으로 Itinerary 간단 정보 조회
      */
-    public ItineraryDTO getItineraryFromToken(String shareToken) {
+    public ItineraryWithOwnerDTO getItineraryFromToken(String shareToken) {
         String[] parts = shareToken.split("-");
         if (parts.length != 2) {
             throw new IllegalArgumentException("잘못된 공유 링크입니다.");
@@ -252,7 +255,14 @@ public class ShareService {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
 
-        return ItineraryDTO.from(itinerary);
+        ItineraryCollaborator ownerCollaborator = itineraryCollaboratorRepository
+                .findByItinerary_IdAndIcRole(itineraryId, String.valueOf(CollaboratorRole.ROLE_OWNER))
+                .orElseThrow(() -> new IllegalStateException("해당 일정의 소유자를 찾을 수 없습니다."));
+
+        String ownerName = ownerCollaborator.getUser().getUserName();
+        ItineraryDTO itineraryDTO = ItineraryDTO.from(itinerary);
+
+        return ItineraryWithOwnerDTO.of(itineraryDTO, ownerName);
     }
 
 
