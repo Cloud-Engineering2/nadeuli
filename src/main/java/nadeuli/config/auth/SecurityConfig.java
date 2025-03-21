@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/share/join").permitAll()
                         .requestMatchers("/api/place/register").permitAll()
                         .requestMatchers("/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
+                        .requestMatchers("/travel/**","/travel").permitAll()
                         // ✅ 정적 리소스 허용 (CSS, JS, 이미지, 폰트)
                         .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**").permitAll()
                         .anyRequest().authenticated()

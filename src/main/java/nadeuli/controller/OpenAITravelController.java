@@ -30,17 +30,10 @@ public class OpenAITravelController {
 
     private final OpenAITravelService travelService;
 
-    @GetMapping
-    public ResponseEntity<OpenAITravelResponse> getRecommendedRoute(@RequestParam String route) {
-        OpenAITravelRequest request = new OpenAITravelRequest();
-        request.setRoute(route);
-        OpenAITravelResponse response = travelService.recommendRoute(request);
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping
     public ResponseEntity<OpenAITravelResponse> postRecommendedRoute(@RequestBody OpenAITravelRequest request) {
         OpenAITravelResponse response = travelService.recommendRoute(request);
         return ResponseEntity.ok(response);
     }
 }
+

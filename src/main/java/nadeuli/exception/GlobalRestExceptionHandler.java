@@ -33,8 +33,6 @@ import java.util.NoSuchElementException;
         ItineraryRestController.class,
         JournalController.class,
         KakaoMapController.class,
-        KakaoOAuthController.class,
-        KakaoOAuthUnlinkController.class,
         OAuthController.class,
         OpenAITravelController.class,
         PlaceController.class,
