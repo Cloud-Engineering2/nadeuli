@@ -26,8 +26,10 @@
 <body>
 
 <div class="expense-header-background" id="expenseHeaderBackground">
-    <span class="expense-header-tab-active" id="expenseHeaderTabActive">경 비</span>
-    <span class="expense-header-tab-inactive" id="expenseHeaderTabInactive">정 산</span>
+<!--    <span class="expense-header-tab-active" id="expenseHeaderTabActive">경 비</span>-->
+<!--    <span class="expense-header-tab-inactive" id="expenseHeaderTabInactive">정 산</span>-->
+
+    <div th:replace="expense-book/adjustment-expense-tab :: tab-container"></div>
 
     <div class="itinerary-event-expense-item-info" id="itineraryEventExpenseItemInfo">
 

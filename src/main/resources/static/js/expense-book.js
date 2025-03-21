@@ -534,6 +534,22 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
     try {
         // expenseItem 데이터 가져오기
         const expenseItems = await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense`, "GET", null);
+        const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
+        const travelerData = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
+
+        const adjustmentBasicInfoRemainedBudget = $("#adjustmentBasicInfoRemainedBudget");
+        const adjustmentBasicInfoTraveler = $("#adjustmentBasicInfoTraveler");
+            // 값 가져오기
+        // 남은 예산
+        const remainedBudget = totalAdjustmentData.totalBalance;
+        // 함께하는 traveler
+        const numberOfTravelers = travelerData.numberOfTravelers;
+
+            // 렌더링
+        // 남은 예산
+        adjustmentBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
+        // 함께하는 traveler
+        adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
 
         const expenseItemList = $("#expenseItemList");
         if (!expenseItemList.length) {
@@ -640,8 +656,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
         const numberOfTravelers = travelerData.numberOfTravelers;
 
 
-        // 렌더링
-
+        // 지출 렌더링
             // 남은 예산
         adjustmentBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
             // 함께하는 traveler
@@ -653,64 +668,58 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
             // 개인 지출
         let individualExpenditureDetails = "";
         for (const [name, expense] of Object.entries(eachExpenses)) {
-            individualExpenditureDetails += `<p class="individual-expenditure"><span class="individual-expenditure-name">@${name}</span><br><span class="individual-expenditure-label">지출</span> <span class="total-expenditure-money">${expense.toLocaleString()} 원</span></p>`;
+            individualExpenditureDetails += `<p class="individual-expenditure"><span class="individual-expenditure-label">@${name}</span><br><!--<span class="individual-expenditure-label">지출</span>--> <span class="total-expenditure-money">${expense.toLocaleString()} 원</span></p>`;
         }
         individualExpenditureList.html(individualExpenditureDetails);
 
-            // 경비 정산
+        // 정산 렌더링
         let individualAdjustmentDetails = "";
 
-// 제목행
-        individualAdjustmentDetails += `<tr>
-    <th>이름</th>
-    <th>수금</th>
-    <th>송금</th>
-</tr>`;
-
+        // 표
         for (const [name, details] of Object.entries(adjustment)) {
             // 수금(receivedMoney) 항목 처리
-            const received = Object.entries(details.receivedMoney || {})
-                .map(([from, amount]) => `<p class="individual-received"><span class="individual-received-from">@${from}</span> <span class="individual-received-money">${amount.toLocaleString()} 원</span></p><br>`)
-                .join("") || "-";
+            const receivedData = Object.entries(details.receivedMoney || {});
+            const receivedRows = receivedData
+                .map(([from, amount], index) => `
+                    <div class="adjustment-received-row">
+                        ${index === 0 ? '<div class="adjustment-received-label">수금</div>' : '<div class="adjustment-received-label"></div>'} <!-- 첫 번째만 "수금" 표시 -->
+                        <div class="adjustment-received"><span class="adjustment-received-from">@${from}</span> <span class="adjustment-received-amount">${amount.toLocaleString()} 원</span></div>
+                    </div>
+        `)
+        .join("") || `
+                    <div class="adjustment-received-row">
+                        <div class="adjustment-received-label">수금</div>
+                        <div class="adjustment-received-amount">-</div>
+                    </div>
+                    `;
 
             // 송금(sendedMoney) 항목 처리
-            const sended = Object.entries(details.sendedMoney || {})
-                .map(([to, amount]) => `<p class="individual-sended"><span class="individual-sended-to">@${to}</span> <span class="individual-sended-money">${amount.toLocaleString()} 원</span></p><br>`)
-                .join("") || "-";
+        const sendedData = Object.entries(details.sendedMoney || {});
+        const sendedRows = sendedData
+            .map(([to, amount], index) => `
+                    <div class="adjustment-send-row">
+                        ${index === 0 ? '<div class="adjustment-send-label">송금</div>' : '<div class="adjustment-send-label"></div>'} <!-- 첫 번째만 "송금" 표시 -->
+                        <div class="adjustment-send"><span class="adjustment-send-to">@${to}</span> <span class="adjustment-send-amount">${amount.toLocaleString()} 원</span></div>
+                    </div>
+                    `)
+                .join("") || `
+        <div class="adjustment-send-row">
+            <div class="adjustment-send-label">송금</div>
+            <div class="adjustment-send-amount">-</div>
+        </div>
+    `;
 
-            individualAdjustmentDetails += `<tr>
-        <td class="adjustment-subject">@${name}</td>
-        <br>
-        <td>${received}</td>
-        <td>${sended}</td>
-    </tr>`;
+            // 전체 구조
+            individualAdjustmentDetails += `
+    <div class="adjustment-container">
+        <div class="adjustment-subject">@${name}</div>
+        ${sendedRows}
+        ${receivedRows}
+    </div>
+`;
         }
-
         individualAdjustmentList.html(individualAdjustmentDetails);
 
-
-
-        //     // 💰 개인별 총 지출 테이블 추가
-    //     let eachExpensesTable = "<table class='table table-striped'>";
-    //     eachExpensesTable += "<thead><tr><th>이름</th><th>총 지출</th></tr></thead><tbody>";
-    //
-    //     for (const [name, expense] of Object.entries(eachExpenses)) {
-    //         eachExpensesTable += `<tr>
-    //         <td>${name}</td>
-    //         <td>${expense.toLocaleString()} 원</td>
-    //     </tr>`;
-    //     }
-    //     eachExpensesTable += "</tbody></table>";
-    //
-    //     // HTML 업데이트
-    //     adjustmentInfo.html(`
-    //     <h3>💰 정산 정보</h3>
-    //     <p><strong>현재 총 지출:</strong> ${totalExpense.toLocaleString()} 원</p>
-    //     <h4>🧾 개인별 정산 내역</h4>
-    //     ${adjustmentDetails}
-    //     <h4>💸 개인별 총 지출</h4>
-    //     ${eachExpensesTable}
-    // `);
 
     } catch (error) {
         console.error("Error loading expense data:", error);

@@ -9,17 +9,9 @@
 }
 
 /********************************** 🧳 오른쪽 패널 🧳 **********************************/
-
-
-/* 🎈 경비 내역 추가 (expense item 추가) */
-
-/* 💡 전체 배경 */
-.expense-header-background {
-    background-color: #e9dcbe;
-}
-
-/* 안내 탭 : 정산 */
-.expense-header-tab-active {
+/* 🎈 안내 탭 */
+/* 안내 탭 : 정산 탭 */
+.adjustment-tab {
     background-color: #ffffff;
     color: #8e8b82;
     font-size: 30px;
@@ -30,8 +22,8 @@
     border-radius: 10px 10px 0 0; /* 왼쪽 위, 오른쪽 위 둥글게 */
 }
 
-/* 안내 탭 : 경비 */
-.expense-header-tab-inactive {
+/* 안내 탭 : 경비 탭 */
+.expenditure-tab {
     background-color: #8e8b82;
     color: #e9dcbe;
     font-size: 30px;
@@ -42,6 +34,12 @@
     border-radius: 10px 10px 0 0; /* 왼쪽 위, 오른쪽 위 둥글게 */
 }
 
+
+/* 🎈 경비 내역 추가 (expense item 추가) */
+/* 💡 전체 배경 */
+.expense-header-background {
+    background-color: #e9dcbe;
+}
 /* 콘텐츠 배경 */
 .itinerary-event-expense-item-info {
     background-color: #ffffff;
@@ -67,29 +65,33 @@
 }
 
 /* 💡 기본 정보 */
-.expense-basic-info {
-    padding-top: 30px;
-    margin-bottom: 30px;
+.adjustment-basic-info {
+    padding-top: 10px;
 }
-.expense-basic-info-traveler {
+.adjustment-basic-info-traveler {
     color: #8E8B82;
-    margin-left: 300px;
+    margin-left: 500px;
+}
+.adjustment-basic-info-remained-budget {
+    color: #8E8B82;
+    margin-right: 500px;
+    margin-left: 20px;
 }
 
-.expense-basic-info-remained-budget {
-    color: #8E8B82;
-    margin-right: 300px;
-}
 
 /* 💡 스크롤 바 */
 .expense-item-list {
-    height: 220px;
+    height: 350px;
     overflow-y: auto;  /* 세로 스크롤 추가 */
     padding: 10px;
     border: 1px solid #ddd;
 }
 
+
 /* 입력 폼 : content */
+.expense-item-box {
+    margin-bottom: 15px;
+}
 .expense-item-content {
     border: 1px solid #E9DCBE;
     padding: 2px;
@@ -258,7 +260,7 @@
     padding: 2px;
     width: 250px;
     height: 70px;
-    margin-right: 50px;
+    margin-right: 53px;
     overflow-y: auto;
 }
 .expense-item-creation-expenditure {
@@ -302,33 +304,9 @@
 
 /* 🎈 정산 내역 조회 (adjustment 조회) */
 
-/* 전체 배경 */
+/* 💡 전체 배경 */
 .adjustment-header-background {
     background-color: #e9dcbe;
-}
-
-/* 안내 탭 : 정산 */
-.adjustment-header-tab-active {
-    background-color: #ffffff;
-    color: #8e8b82;
-    font-size: 30px;
-    padding: 10px 15px;
-    display: inline-block;  /* 크기 조정을 위해 inline-block 사용 */
-    margin-top: 5px;
-    margin-left: 20px;  /* 왼쪽에서 떨어뜨리기 */
-    border-radius: 10px 10px 0 0; /* 왼쪽 위, 오른쪽 위 둥글게 */
-}
-
-/* 안내 탭 : 경비 */
-.adjustment-header-tab-inactive {
-    background-color: #8e8b82;
-    color: #e9dcbe;
-    font-size: 30px;
-    padding: 10px 15px;
-    display: inline-block;  /* 크기 조정을 위해 inline-block 사용 */
-    margin-left: 5px;  /* 왼쪽에서 떨어뜨리기 */
-    margin-top: 9px;
-    border-radius: 10px 10px 0 0; /* 왼쪽 위, 오른쪽 위 둥글게 */
 }
 
 /* 콘텐츠 배경 */
@@ -338,59 +316,37 @@
     padding-left: 20px;
 }
 
-/* 💡 기본 정보 */
-.adjustment-basic-info {
-    padding-top: 30px;
-}
-.adjustment-basic-info-traveler {
-    color: #8E8B82;
-    margin-left: 300px;
-}
-
-.adjustment-basic-info-remained-budget {
-    color: #8E8B82;
-    margin-right: 300px;
+.part-container {
+    display: flex;              /* Flexbox를 사용하여 자식 요소들을 수평으로 배치 */
+    /*justify-content: space-between; !* 요소들 사이의 간격을 임의로 조정 *!*/
+    /*gap: 30px;*/
 }
 
 
-/* 💡 총 지출 */
+
+/* 💡 지출  */
+
+/* 아이콘 + "지출", (타이틀 컨테이너) */
+.expenditure-part {
+    padding: 10px;
+}
+/* 아이콘 + "지출", (타이틀) */
+.expenditure-part-title {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 20px;
+    border-bottom: 1px #8E8B82 solid ;
+}
+/* 총 지출 */
 .total-expenditure-money-align, .individual-expenditure {
     display: flex;
 }
-.total-expenditure-money, .total-expenditure-money {
+.total-expenditure-money {
     margin-left: auto;
 }
 
-
-.part-container {
-    display: flex;              /* Flexbox를 사용하여 자식 요소들을 수평으로 배치 */
-    justify-content: space-between; /* 요소들 사이의 간격을 임의로 조정 */
-    gap: 10px;
-}
-
-/* 💡 지출  */
-.expenditure-part-title {
-    /*display: flex;*/
-    /*justify-content: flex-start;*/
-    border-bottom: 1px #8E8B82 solid ;
-}
-
-/* 💡 정산  */
-.adjustment-part-title {
-    /*display: flex;*/
-    /*justify-content: flex-start;*/
-    border-bottom: 1px #8E8B82 solid ;
-}
-
-
-.expenditure-part, .adjustment-part {
-    flex: 0 1 48%;  /* 각 div 태그의 너비를 48%로 설정하여 간격을 줄임 (조정 가능) */
-    padding: 10px;
-}
-
-
-/* font : 이름 */
-.adjustment-subject, .individual-sended-to, .individual-received-from, .individual-expenditure-name {
+/* 개인 지출 */
+.individual-expenditure-label {
     color: #8E8B82;
     font-size: 20px;
     font-weight: bold;
@@ -401,60 +357,143 @@
     font-size: 20px;
     margin-right: 10px;
     font-weight: bold;
-}
-.individual-expenditure-label {
-    font-size: 20px;
-    margin-right: 10px;
+    border-bottom: 1px #9c9c9c solid ;
 }
 
+
+
 /* font : 돈  */
-.total-expenditure-money, .individual-expenditure-money, .individual-sended-money, .individual-received-money {
+.total-expenditure-money, .individual-expenditure-money {
     font-size: 20px;
     font-weight: bold;
 }
 
 
-    /********************************** 🧳 오른쪽 패널 🧳 **********************************/
-    /* 🎈 오른쪽 패널 */
+/* 💡 총 지출 스크롤 */
+.expense-scroll {
+    padding: 20px;
+    height: 300px;
+    overflow-y: auto;
+}
+
+/* 💡 정산  */
+/* 아이콘 + "경비정산" (타이틀 컨테이너) */
+.adjustment-part {
+    padding: 10px;
+}
+
+/* 아이콘 + "경비정산" (타이틀) */
+.adjustment-part-title {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 20px;
+    border-bottom: 1px #8E8B82 solid ;
+}
+/* 정산 스크롤 */
+.adjustment-scroll {
+    padding: 20px;
+    height: 400px;
+    overflow-y: auto;
+}
+
+/* 정산 표 디자인 */
+.adjustment-container {
+
+}
+
+.adjustment-subject {
+    margin-bottom: 20px;
+    color: white;
+    background-color: #8E8B82;
+    border-radius: 8px;
+    padding: 5px;
+    margin-top: 3px;
+    font-size: 20px;
+}
+
+
+.adjustment-received-row {
+    display: flex;
+    /*justify-content: space-between;*/
+    padding: 8px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.adjustment-received-label {
+    flex: 1;
+    font-weight: bold;
+}
+.adjustment-received {
+
+}
+.adjustment-received-from {
+    flex: 2;
+    color: #8E8B82;
+    font-size: 20px;
+    background-color: #E9DCBE;
+    border-radius: 7px;
+    padding: 5px;
+}
+.adjustment-received-amount {
+    flex: 2;
+    font-weight: bold;
+    text-align: right;
+    margin-left: auto;
+}
+
+.adjustment-send-row {
+    display: flex;
+    /*justify-content: space-between;*/
+    padding: 8px 0;
+    border-bottom: 1px solid #ccc;
+}
+.adjustment-send-label {
+    flex: 1;
+    font-weight: bold;
+}
+.adjustment-send {
+
+}
+.adjustment-send-to {
+    color: #8E8B82;
+    font-size: 20px;
+    background-color: #E9DCBE;
+    border-radius: 7px;
+    padding: 5px;
+}
+.adjustment-send-amount {
+    text-align: right;
+    margin-left: auto;
+    font-weight: bold;
+}
+
+
+
+
+
+
+
+
+/********************************** 🧳 오른쪽 패널 🧳 **********************************/
+/* 🎈 오른쪽 패널 */
 #right {
-    background-color: #e9dcbe;
-    width: 100%;
-    height: 100%;
+background-color: #e9dcbe;
+width: 100%;
+height: 100%;
 }
 
 /* 🎈 지도 영역 */
 .detail-container {
-    margin-left: 5px;
-    padding-left: 5px;
+margin-left: 5px;
+padding-left: 5px;
 }
 
 .expense-background {
-    display: flex; /* 플렉스 레이아웃으로 자식 요소들을 정렬 */
-    flex-direction: column; /* 세로로 배치 */
-    height: 100vh; /* 화면 전체 높이로 설정 */
-    position: relative;
-    background-color: #ffffff;
-}
-
-.expense-adjustment-tab {
-    background-color: #00ff59;
-    height: 80px;
+display: flex; /* 플렉스 레이아웃으로 자식 요소들을 정렬 */
+flex-direction: column; /* 세로로 배치 */
+height: 100vh; /* 화면 전체 높이로 설정 */
+position: relative;
+background-color: #ffffff;
 }
 
 
-.line-for-border-radius {
-    padding-left: 5px;
-    height: 100%;
-    background-color: #ffffff;
-    border-top-left-radius: 10px; /* 왼쪽 상단 모서리 둥글게 */
-    border-top-right-radius: 10px; /* 오른쪽 상단 모서리 둥글게 */
-}
-
-.basic-info {
-    /*display: flex;*/
-}
-
-.basic-info-col-md-6 {
-    color: #8e8b82;
-    margin-bottom: 15px;
-}

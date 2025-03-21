@@ -26,8 +26,13 @@
 
 
 <div class="adjustment-header-background" id="adjustmentHeaderBackground">
-    <span class="adjustment-header-tab-active" id="adjustmentHeaderTabActive">정 산</span>
-    <span class="adjustment-header-tab-inactive" id="adjustmentHeaderTabInactive">경 비</span>
+<!--    <div class="adjustment-expense-tab-container">-->
+<!--        <span class="adjustment-header-tab-active" id="adjustmentHeaderTabActive">정 산</span>-->
+<!--        <span class="adjustment-header-tab-inactive" id="adjustmentHeaderTabInactive">경 비</span>-->
+<!--    </div>-->
+
+    <div th:replace="expense-book/adjustment-expense-tab :: tab-container"></div>
+
 
     <div class="itinerary-event-adjustment-info" id="itineraryEventAdjustmentInfo">
 
@@ -36,22 +41,22 @@
 
         <div class="container-fluid part-container">
             <!-- 지출 -->
-            <div class="col-md-3 expenditure-part" id="expenditurePart">
-                <h4 class="expenditure-part-title" id="expenditurePartTitle">지    출</h4>
-                <!-- 총 지출 -->
-                <div class="total-expenditure" id="totalExpenditure"></div>
-                <!-- 개별 지출 -->
-                <div class="individual-expenditure-list" id="individualExpenditureList"></div>
+            <div class="col-md-6 expenditure-part" id="expenditurePart">
+                <h4 class="expenditure-part-title" id="expenditurePartTitle"><i class="fa-solid fa-wallet"></i>&nbsp;&nbsp; 지    출</h4>
+                <div class="expense-scroll">
+                    <!-- 총 지출 -->
+                    <div class="total-expenditure" id="totalExpenditure"></div>
+                    <!-- 개별 지출 -->
+                    <div class="individual-expenditure-list" id="individualExpenditureList"></div>
+                </div>
             </div>
-
-            <!-- 세로선 -->
-    <!--        <div class="divider-line" id="dividerLine"> | </div>-->
 
             <!-- 경비 정산 -->
             <div class="col-md-6 adjustment-part" id="adjustmentPart">
-                <h4 class="adjustment-part-title" id="adjustmentPartTitle">경 비 정 산</h4>
-                <div class="individual-adjustment-list" id="individualAdjustmentList"></div>
-
+                <h4 class="adjustment-part-title" id="adjustmentPartTitle"><i class="fa-solid fa-book"></i>&nbsp;&nbsp; 경 비 정 산</h4>
+                <div class="adjustment-scroll">
+                    <div class="individual-adjustment-list" id="individualAdjustmentList"></div>
+                </div>
             </div>
 
             <div class="col-md-3" >
