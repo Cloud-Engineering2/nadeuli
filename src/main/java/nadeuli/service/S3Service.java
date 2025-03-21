@@ -217,4 +217,22 @@ public class S3Service {
 
     }
 
+    /**
+     * ✅ 프로필 사진 업로드 (기존 사진 삭제 후 업로드)
+     */
+    public String uploadProfileImage(MultipartFile file, String currentProfileUrl) {
+        System.out.println("🔥 프로필 사진 업로드 실행!");
+
+        // 기존 S3 프로필 사진 삭제 (카카오/구글 기본 프로필은 삭제 안 함)
+        if (currentProfileUrl != null && currentProfileUrl.contains("s3")) {
+            deleteFile(currentProfileUrl);
+        }
+
+        return uploadFile(file, PhotoType.PROFILE);
+    }
+
 }
+
+
+
+

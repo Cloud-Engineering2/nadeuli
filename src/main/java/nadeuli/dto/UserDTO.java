@@ -41,6 +41,13 @@ public class UserDTO {
     private String refreshToken;
     private String refreshTokenExpiryAt;
 
+    // 새로운 생성자 추가 (프로필용)
+    public UserDTO(String userName, String userEmail, String profileImage) {
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.profileImage = profileImage;
+    }
+
     public static UserDTO from(User user) {
         return new UserDTO(
                 user.getId(),
