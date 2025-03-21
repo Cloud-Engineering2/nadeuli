@@ -19,6 +19,7 @@
  * 이홍비    2025.03.06     GetMapping 쪽 함수 이름 정리 + 내부 정리
  * 이홍비    2025.03.20     Controller 와 RestController 분리 : exception handler
  *                         로그인 인증 관련 처리
+ * 박한철    2025.03.22     getJournalList 추가로 인한 컨트롤러단 맵핑주소범위 축소 + 기존함수로 이동
  * ========================================================
  */
 
@@ -26,6 +27,7 @@ package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.JournalDTO;
+import nadeuli.dto.JournalSimpleDTO;
 import nadeuli.security.CustomUserDetails;
 import nadeuli.service.ItineraryCollaboratorService;
 import nadeuli.service.JournalService;
@@ -36,9 +38,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/itineraries/{iid}/events/{ieid}")
+@RequestMapping("/api/itineraries/{iid}")
 public class JournalRestController {
     private final JournalService journalService;
     private final S3Service s3Service;
@@ -54,8 +58,26 @@ public class JournalRestController {
     * 3-3. 사진 다운로드
     * */
 
+
+    // 기행문 전체 리스트 조회 (Itinerary 기준)
+    @GetMapping("/journals")
+    public ResponseEntity<List<JournalSimpleDTO>> getJournalList(@PathVariable("iid") Long iid,
+                                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        // 1. 접근 권한 확인
+        itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid);
+
+        // 2. 전체 Journal 리스트 가져오기
+        List<JournalSimpleDTO> journalList = journalService.getJournalsByItineraryId(iid);
+
+        // 3. 응답
+        return ResponseEntity.ok(journalList);
+    }
+
+
+
     // 기행문 조회 (열람)
-    @GetMapping("/journal")
+    @GetMapping("/events/{ieid}/journal")
     public ResponseEntity<JournalDTO> getJournalDTO(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
@@ -75,7 +97,7 @@ public class JournalRestController {
     }
 
     // 사진 다운로드
-    @GetMapping("/photo/download")
+    @GetMapping("/events/{ieid}/photo/download")
     public ResponseEntity<Resource> downloadPhoto(@PathVariable("iid") long iid, @PathVariable("ieid") long ieid, @AuthenticationPrincipal CustomUserDetails userDetails) throws Exception {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
@@ -88,7 +110,7 @@ public class JournalRestController {
     }
 
     // 사진 등록
-    @PostMapping("/photo")
+    @PostMapping("/events/{ieid}/photo")
     public ResponseEntity<JournalDTO> uploadPhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("file") MultipartFile file, @AuthenticationPrincipal CustomUserDetails userDetails) {
         // Front : FormData() 에 file 추가하여 post
 
@@ -102,7 +124,7 @@ public class JournalRestController {
     }
 
     // 사진 수정
-    @PutMapping("/photo")
+    @PutMapping("/events/{ieid}/photo")
     public ResponseEntity<JournalDTO> modifiedPhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @RequestParam("file") MultipartFile file, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
@@ -115,7 +137,7 @@ public class JournalRestController {
     }
 
     // 사진 삭제
-    @DeleteMapping("/photo")
+    @DeleteMapping("/events/{ieid}/photo")
     public ResponseEntity<JournalDTO> deletePhoto(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
@@ -128,7 +150,7 @@ public class JournalRestController {
     }
 
     // 글 작성
-    @PostMapping("/content")
+    @PostMapping("/events/{ieid}/content")
     public ResponseEntity<JournalDTO> writeContent(@PathVariable Long iid, @PathVariable Long ieid, @RequestParam("content") String content, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
@@ -141,7 +163,7 @@ public class JournalRestController {
     }
 
     // 글 수정
-    @PutMapping("/content")
+    @PutMapping("/events/{ieid}/content")
     public ResponseEntity<JournalDTO> modifiedContent(@PathVariable Long iid, @PathVariable Long ieid, @RequestParam("content") String content, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
@@ -154,7 +176,7 @@ public class JournalRestController {
     }
 
     // 글 삭제
-    @DeleteMapping("/content")
+    @DeleteMapping("/events/{ieid}/content")
     public ResponseEntity<JournalDTO> deleteContent(@PathVariable Long iid, @PathVariable Long ieid, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
