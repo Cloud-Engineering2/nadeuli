@@ -123,6 +123,9 @@ body {
     text-decoration: none;
     color: black;
     font-weight: bold;
+    width: 132px;
+    margin-right: 3px;
+    margin-left: 3px;
 }
 
 /* 🔹 카카오 로그인 */
@@ -163,6 +166,7 @@ body {
     margin-right: 10px;
     vertical-align: middle; /* ✅ 텍스트와 아이콘을 같은 높이로 맞춤 */
     display: inline-block;
+
 }
 
 /* 🔹 프로필 이미지 */

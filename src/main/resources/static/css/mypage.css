@@ -1,11 +1,35 @@
+@font-face {
+    font-family: 'GriunNoltoTAENGGU';
+    src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* ✅ 페이지 전체 폰트 적용 */
+body, button, input, textarea {
+    font-family: 'GriunNoltoTAENGGU', sans-serif !important;
+}
+
+/* ✅ 버튼에도 폰트 강제 적용 */
+button {
+    font-family: 'GriunNoltoTAENGGU', sans-serif !important;
+}
+
+/* ✅ 입력 필드에도 폰트 강제 적용 */
+input {
+    font-family: 'GriunNoltoTAENGGU', sans-serif !important;
+}
+
 /* ✅ 전체 페이지 배경 */
 body {
     background-color: #E9DCBE !important;
 }
-.container{
-    margin-top: 50px;
+
+/* ✅ 컨테이너 설정 */
+.container {
+    margin-top: 70px;
     height: calc(100vh - 150px);
-    display:flex;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
@@ -14,10 +38,13 @@ body {
 .mypage-container {
     background: #ffffff;
     width: 420px;
+    height: 420px;
     margin: 0 auto;
     padding: 30px;
     position: relative;
     user-select: none;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* ✅ 프로필 제목 및 회원탈퇴 버튼 */
@@ -30,13 +57,15 @@ body {
 
 /* ✅ 프로필 제목 (입체감 추가) */
 .mypage-container .profile-title {
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 20px;
+    font-weight: 590;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
     background-color: #8E8B82; /* 진한 회색 */
     color: white;
-    padding: 7px 20px;
+    padding: 9px 25px;
     border-radius: 10px;
     box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+    margin-left: 10px;
 }
 
 /* ✅ 회원탈퇴 버튼 */
@@ -49,49 +78,106 @@ body {
     opacity: 0.5; /* 불투명 */
     border: none;
     cursor: pointer;
+    margin-right: 10px;
+    transition: color 0.3s ease; /* 색상 변화 부드럽게 */
+}
+/* ✅ 마우스를 올렸을 때 글씨색 변경 */
+.mypage-container .delete-btn:hover {
+    color: #8E8B82; /* 마우스를 올리면 글씨색 변경 */
+    background: white; /* 배경색을 하얀색으로 */
+    border: 1px solid #8E8B82; /* 테두리 추가 */
+    opacity: 1; /* 불투명도 완전하게 */
 }
 
 /* ✅ 프로필 이미지 */
 .mypage-container .profile-img {
-    width: 150px;
-    height: 150px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     object-fit: cover;
     display: block;
-    margin: 20px auto;
+    margin: 10px auto;
     cursor: pointer; /* 클릭 가능 */
+    margin-top: 30px;
 }
 
 /* ✅ 프로필 정보 */
 .mypage-container .profile-info {
-    margin-top: 20px;
+    margin-top: 40px;
     text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }
 
 /* ✅ 정보 행 */
 .mypage-container .info-row {
+    width: 95%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* ✅ 각 행 사이 간격 줄이기 */
+    justify-content: flex-start;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
-/* ✅ 라벨 */
+/* ✅ 라벨과 입력 필드의 높이를 동일하게 설정 */
+.mypage-container .info-label,
+.mypage-container .profile-info input {
+    height: 36px; /* ✅ 높이를 동일하게 맞춤 */
+    font-size: 18px;
+    display: flex;
+    align-items: center; /* ✅ 내부 텍스트 정렬 */
+}
+
+/* ✅ 라벨 스타일 */
 .mypage-container .info-label {
-    font-size: 14px;
-    font-weight: bold;
-    background-color: #8E8B82; /* 진한 회색 */
+    width: 100px; /* ✅ 라벨 너비 */
+    font-weight: 590;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
+    background-color: #8E8B82;
     color: white;
-    padding: 5px 10px;
     border-radius: 5px;
+    flex-shrink: 0;
+    justify-content: center; /* ✅ 라벨 텍스트 중앙 정렬 */
 }
 
-/* ✅ 입력 필드 */
+/* ✅ 입력 필드 스타일 */
 .mypage-container .profile-info input {
     flex-grow: 1;
-    padding: 8px;
-    border: 1px solid #8E8B82;
-    border-radius: 5px;
-    background: #F3F3F3;
     text-align: center;
+    border-radius: 5px;
+    border: 1px solid #8E8B82;
+    background: #F3F3F3;
+    padding: 0; /* ✅ 불필요한 내부 여백 제거 */
+    height: 36px; /* ✅ 높이를 라벨과 동일하게 */
+    font-size: 16px;
+    font-weight: 590;
+    margin-left: 10px;
+}
+
+/* ✅ 라벨과 입력 필드 간 간격 추가 */
+.mypage-container .profile-info input {
+    margin-left: 12px;
+}
+
+/* ✅ 입력 필드와 버튼 사이 간격 조정 */
+.info-row + .info-row {
+    margin-top: 10px; /* ✅ 간격 최소화 */
+}
+
+/* ✅ 이름과 이메일 필드 간 간격 추가 */
+.info-row {
+    margin-bottom: 12px; /* ✅ 행 간 간격 추가 */
+}
+
+/* ✅ 입력 필드 사이 간격 추가 */
+.info-row + .info-row {
+    margin-top: 15px; /* ✅ 행 사이 추가 여백 */
+}
+
+/* ✅ 입력 필드와 라벨 간 간격 추가 */
+.mypage-container .profile-info input {
+    margin-left: 12px; /* ✅ 라벨과 입력 필드 사이 간격 */
 }
