@@ -20,6 +20,7 @@
  *                         ~님 => @~ 변경 (+ 그에 따른 부수적인 것 변경)
  * 이홍비    2025.03.20     방문지 마커 - n일 차 고려, 중복 처리
  * 이홍비    2025.03.22     공동 경비 예산, 잔액 출력 주석 처리
+ * 이홍비    2025.03.23     기행문 쪽 사진 null => 사진 등록 버튼 추가
  * ========================================================
  */
 
@@ -440,6 +441,7 @@ function noChoice() {
 
     // 기행문 - 사진 로고 출력
     document.getElementById("journal-image").src = "/images/pic-icon/logo-letter-o.png";
+    document.getElementById("go-to-journal-p").style.display = "none";
 
     // 기행문 - 출력 내용 변경
     // document.getElementById("journal-no-choice").display = "block";
@@ -447,7 +449,7 @@ function noChoice() {
     journalContent.innerText = "방문지를 선택해 주세요!"
     journalContent.style.textAlign = "center";
 
-    document.getElementById("go-to-journal").style.display = "none";
+    document.getElementById("go-to-journal-c").style.display = "none";
 
 
     // 기행문 - content 쪽 null 처리
@@ -509,7 +511,8 @@ function hasChoice(index) {
     // const journalNoContent = document.getElementById("no-content");
     // const journalHasContent = document.getElementById("has-content");
     const journalContent = document.getElementById("journal-content-p");
-    const goToJournal = document.getElementById("go-to-journal");
+    const goToJournalC = document.getElementById("go-to-journal-c");
+    const goToJournalP = document.getElementById("go-to-journal-p");
     const datetime = document.getElementById('date-time');
 
     console.log("journal.imageUrl:", journal.imageUrl);
@@ -521,9 +524,10 @@ function hasChoice(index) {
         datetime.style.display = "none";
 
         journalImage.src = "/images/pic-icon/logo-letter-o.png";
+        goToJournalP.style.display = "none";
         journalContent.innerText = "기억이 옅어지기 전에 소중한 순간을 남겨 주세요!";
         journalContent.style.textAlign = "center";
-        goToJournal.style.display = "block";
+        goToJournalC.style.display = "block";
     }
     else {
         datetime.textContent = new Intl.DateTimeFormat('ko-KR', timeFormat).format(new Date(journal.modifiedAt));
@@ -533,24 +537,28 @@ function hasChoice(index) {
             journalImage.src = journal.imageUrl;
             journalContent.textContent = journal.content;
             journalContent.style.textAlign = "left";
-            goToJournal.style.display = "none";
+            goToJournalC.style.display = "none";
             // journalHasContent.textContent = journal.content;
             // journalHasContent.style.display = "block";
             // journalNoContent.style.display = "none";
         }
         else if ((journal.imageUrl !== null) && (journal.content === null)) {
             journalImage.src = journal.imageUrl;
+            goToJournalP.style.display = "none";
+
             journalContent.innerText = "기억이 옅어지기 전에 소중한 순간을 남겨 주세요!";
             journalContent.style.textAlign = "center";
-            goToJournal.style.display = "block";
+            goToJournalC.style.display = "block";
             // journalHasContent.style.display = "none";
             // journalNoContent.style.display = "block";
         }
         else if ((journal.imageUrl === null) && (journal.content !== null)) {
             journalImage.src = "/images/pic-icon/logo-letter-o.png";
+            goToJournalP.style.display = "block";
+
             journalContent.innerText = journal.content;
             journalContent.style.textAlign = "left";
-            goToJournal.style.display = "none";
+            goToJournalC.style.display = "none";
             // journalHasContent.textContent = journal.content;
             // journalHasContent.style.display = "block";
             // journalNoContent.style.display = "none";
