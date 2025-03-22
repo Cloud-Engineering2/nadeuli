@@ -19,6 +19,7 @@
  * 이홍비    2025.03.17     경비 정산, 여행자별 정산 글자 가운데 정렬
  *                         ~님 => @~ 변경 (+ 그에 따른 부수적인 것 변경)
  * 이홍비    2025.03.20     방문지 마커 - n일 차 고려, 중복 처리
+ * 이홍비    2025.03.22     공동 경비 예산, 잔액 출력 주석 처리
  * ========================================================
  */
 
@@ -619,12 +620,12 @@ function removeAndCreateExpense(kind) {
         // expensesContainer.appendChild(expenseTitleSeparator);
         jointExpenseContainer.appendChild(jointExpenseTitleSeparator);
 
-        let moneyFormat = formatKoreanMoney(finalSettlement.expenseBookDTO.totalBudget);
-        const totalBudget = document.createElement("p");
-        totalBudget.classList.add('dynamic-expense');
-        totalBudget.textContent = `예산 : ${moneyFormat}원`;
+        // let moneyFormat = formatKoreanMoney(finalSettlement.expenseBookDTO.totalBudget);
+        // const totalBudget = document.createElement("p");
+        // totalBudget.classList.add('dynamic-expense');
+        // totalBudget.textContent = `예산 : ${moneyFormat}원`;
         // expensesContainer.appendChild(totalBudget);
-        jointExpenseContainer.appendChild(totalBudget);
+        // jointExpenseContainer.appendChild(totalBudget);
 
         moneyFormat = formatKoreanMoney(finalSettlement.expenseBookDTO.totalExpenses);
         const totalExpenses = document.createElement("p");
@@ -633,12 +634,12 @@ function removeAndCreateExpense(kind) {
         // expensesContainer.appendChild(totalBudget);
         jointExpenseContainer.appendChild(totalExpenses);
 
-        moneyFormat = formatKoreanMoney(finalSettlement.totalBalance);
-        const totalBalance = document.createElement("p");
-        totalBalance.classList.add('dynamic-expense');
-        totalBalance.textContent = `잔액 : ${moneyFormat}원`;
+        // moneyFormat = formatKoreanMoney(finalSettlement.totalBalance);
+        // const totalBalance = document.createElement("p");
+        // totalBalance.classList.add('dynamic-expense');
+        // totalBalance.textContent = `잔액 : ${moneyFormat}원`;
         // expensesContainer.appendChild(totalBudget);
-        jointExpenseContainer.appendChild(totalBalance);
+        // jointExpenseContainer.appendChild(totalBalance);
 
         const expenseSeparator = document.createElement('hr');
         expenseSeparator.classList.add('dynamic-expense', 'separator');

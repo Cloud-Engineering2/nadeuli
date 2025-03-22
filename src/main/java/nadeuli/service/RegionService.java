@@ -17,6 +17,7 @@ package nadeuli.service;
 
 import nadeuli.common.PhotoType;
 import nadeuli.dto.RegionTreeDTO;
+import nadeuli.dto.request.AdminRegionUpdateRequestDTO;
 import nadeuli.dto.response.RegionImageResponseDTO;
 import nadeuli.entity.Region;
 import nadeuli.repository.RegionRepository;
@@ -197,5 +198,12 @@ public class RegionService {
         return resolveImageUrl(parent, regionMap);
     }
 
+    public void updateRegionPosition(AdminRegionUpdateRequestDTO dto) {
+        Region region = regionRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("지역 정보 없음"));
+
+        region.updatePosition(dto.getLatitude(), dto.getLongitude(), dto.getRadius());
+        regionRepository.save(region);
+    }
 
 }

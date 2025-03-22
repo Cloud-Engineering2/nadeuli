@@ -51,9 +51,10 @@ function showLoggedInUI() {
     if (userRole === userRoleAdmin) {
         console.log("관리자입니다.");
         menuItems = `
-        <a href="#">지역 관리</a>
-        <a href="#">일정 관리</a>
-        <a href="#">회원 관리</a>
+        <a href="/admin/region">지역 관리</a>
+        <a href="/itinerary/create">일정 생성</a>
+        <a href="/itinerary/mylist">내 일정</a>
+        <a href="/mypage">내 정보</a>
       `;
     } else if (userRole === userRoleMember) {
         console.log("회원입니다.");

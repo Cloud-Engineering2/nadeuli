@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="/css/view.css">
     <link rel="stylesheet" href="/css/expense-book.css">
     <link rel="stylesheet" href="/css/header-footer.css">
+    <link rel="stylesheet" href="/css/journal-modal.css">
     <style>
 
 
@@ -28,8 +29,76 @@
 
 <!-- 상단 헤더 -->
 <div th:replace="~{fragments/header :: headerFragment}"></div>
+<!-- Journal Modal -->
+<div id="journal-modal" class="journal-modal-overlay" style="display: none;">
+    <div class="journal-modal-content">
 
-<!-- Modal -->
+        <div id="content-alert" class="nadeuli-alert" style="display: none;">
+            <p id="content-alert-message"> 소중한 나들이 순간을 남겨 주세요! <button class="nadeuli-alert-button" onclick="closeNadeuliAlert('content-alert')">✅</button></p>
+        </div>
+
+        <div id="photo-size-alert" class="nadeuli-alert" style="display: none;">
+            <p id="photo-size-alert-message"> 20MB 이하 사진 파일을 올려 주세요! <button class="nadeuli-alert-button" onclick="closeNadeuliAlert('photo-size-alert')">✅</button></p>
+        </div>
+
+        <div id="photo-type-alert" class="nadeuli-alert" style="display: none;">
+            <p id="photo-type-alert-message"> 첨부 가능한 사진 파일이 아닙니다. <button class="nadeuli-alert-button" onclick="closeNadeuliAlert('photo-type-alert')">✅</button></p>
+            <br>
+            <p>(첨부 가능 파일 : .bmp, .gif, .jpeg, .png, .webp)</p>
+        </div>
+
+        <div class="journal-container">
+            <!-- 기존 좌우 영역 유지 -->
+            <div class="left-space">
+                <div class="content-header">
+                    <span id="date-time"></span>
+                    <div class="content-header-button">
+                        <button id="write-btn" onclick="enableEditMode()" style="display: none">✏️</button>
+                        <button id="edit-btn" onclick="enableEditMode()" style="display: none">✏️</button>
+                        <button id="delete-btn" onclick="confirmDelete()" style="display: none">❌</button>
+                    </div>
+                </div>
+                <hr class="divider">
+
+                <div class="content" id="content">
+                    <div id="no-content">소중한 나들이 순간을 남겨 주세요!</div>
+                    <div id="has-content"></div>
+                </div>
+
+                <div id="edit-content-area" style="display: none;">
+                    <textarea id="content-input" rows="5"></textarea>
+                    <div class="button-group">
+                        <button onclick="saveContent()">저장</button>
+                        <button onclick="cancelEdit()">취소</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-space">
+                <div class="image-header">
+                    <div class="image-header-button">
+                        <button id="upload-btn" onclick="uploadPhoto()" style="display: none">🖼️</button>
+                        <button id="download-btn" onclick="downloadPhoto()" style="display: none">💾</button>
+                        <button id="modify-btn" onclick="modifyPhoto()" style="display: none">🖼️</button>
+                        <button id="remove-btn" onclick="confirmPhotoDelete()" style="display: none">❌</button>
+                    </div>
+                </div>
+
+                <div class="image-container" id="image-container">
+                    <span class="plus" id="plus-icon">+</span>
+                    <img id="image-preview" src="" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- 닫기 버튼 -->
+        <button class="modal-close-btn" onclick="closeJournalModal()" title="닫기">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+    </div>
+</div>
+<!-- PlaceDetial Modal -->
 <div id="placeModal" class="modal fade" tabindex="-1" aria-labelledby="placeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow-lg p-4">
@@ -126,6 +195,7 @@
 </div>
 <script src="/js/view.js"></script>
 <script src="/js/expense-book.js"></script>
+<script src="/js/journal-modal.js"></script>
 <script async th:src="@{'https://maps.googleapis.com/maps/api/js?libraries=places,visualization&key=' + ${googleApiKey} + '&v=weekly&callback=initMap'}">
 </script>
 
