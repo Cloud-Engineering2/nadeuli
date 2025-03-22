@@ -50,22 +50,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
 
-        String token = extractToken(request);
-        if (token != null && jwtTokenService.validateToken(token)) {
-            String email = jwtTokenService.extractEmail(token);
-            Optional<User> userOptional = userRepository.findByUserEmail(email);
+        try {
+            String token = extractToken(request);
+            if (token != null && jwtTokenService.validateToken(token)) {
+                String email = jwtTokenService.extractEmail(token);
+                Optional<User> userOptional = userRepository.findByUserEmail(email);
 
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                UserDetails userDetails = new CustomUserDetails(user);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                if (userOptional.isPresent()) {
+                    User user = userOptional.get();
+                    UserDetails userDetails = new CustomUserDetails(user);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
+        } catch ( Exception e ) {
+            log.warn(e.getMessage());
         }
-
         chain.doFilter(request, response);
     }
 

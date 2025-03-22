@@ -35,7 +35,7 @@ import java.util.Date;
 public class JwtTokenService {
 
     private final Key key;
-    private static final long ACCESS_TOKEN_EXPIRATION =  60 * 60 * 1000;
+    private static final long ACCESS_TOKEN_EXPIRATION =  30 * 1000;
     private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24 * 7;
 
     public JwtTokenService(@Value("${jwt.secret}") String secretKey) {

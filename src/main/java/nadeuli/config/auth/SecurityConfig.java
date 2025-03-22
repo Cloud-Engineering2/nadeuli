@@ -24,6 +24,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler; // ✅ 주입
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthorizationRequestResolver customResolver) throws Exception {
@@ -54,6 +55,8 @@ public class SecurityConfig {
 //                        .defaultSuccessUrl("/mypage", true) // (선택) 기본 리다이렉트 경로
 //                        .failureUrl("/login?error=true") // 실패 시 리다이렉트
                 )
+                .exceptionHandling(
+                        config -> config.authenticationEntryPoint(customAuthenticationEntryPoint))
 //                .logout(logout -> logout.logoutUrl("/logout").permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable());
