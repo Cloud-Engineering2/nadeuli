@@ -1,3 +1,21 @@
+/* PlaceCategory.java
+ * nadeuli Service - 여행
+ * 열거형 PlaceCategory
+ * 작성자 : 박한철
+ * 최종 수정 날짜 : 2025.03.09
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자       날짜       수정 / 보완 내용
+ * ========================================================
+ * 박한철   2025.03.09    최초 작성 : PlaceCategory
+ * 이홍비   2025.03.23    어트랙션 => 여가 시설로 변경
+ *
+ * ========================================================
+ */
+
+
 package nadeuli.entity.constant;
 
 import java.util.HashMap;
@@ -108,7 +126,7 @@ public class PlaceCategory {
         addPlaceType("rest_stop", PlaceType.TRANSPORTATION, 6);
         addPlaceType("truck_stop", PlaceType.TRANSPORTATION, 5);
 
-        // 어트랙션 (Entertainment & Activity)
+        // 여가 시설 (Entertainment & Activity)
         addPlaceType("amusement_park", PlaceType.ATTRACTION, 20);
         addPlaceType("water_park", PlaceType.ATTRACTION, 20);
         addPlaceType("casino", PlaceType.ATTRACTION, 20);
@@ -123,7 +141,7 @@ public class PlaceCategory {
         addPlaceType("hiking_area", PlaceType.ATTRACTION, 20);
         addPlaceType("playground", PlaceType.ATTRACTION, 20);
 
-        // 편의시설 (Convenience & Services)
+        // 편의 시설 (Convenience & Services)
         addPlaceType("bank", PlaceType.CONVENIENCE, 19);
         addPlaceType("public_bathroom", PlaceType.CONVENIENCE, 19);
         addPlaceType("public_bath", PlaceType.CONVENIENCE, 18);
