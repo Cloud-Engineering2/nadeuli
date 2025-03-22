@@ -19,13 +19,16 @@ package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import nadeuli.auth.oauth.CustomOidcUser;
+import nadeuli.auth.jwt.JwtUtils;
 import nadeuli.entity.User;
-import nadeuli.entity.constant.UserRole;
+
+import nadeuli.common.enums.UserRole;
 import nadeuli.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -40,7 +44,7 @@ import java.util.Map;
 public class GoogleOidcUserService extends OidcUserService {
 
     private final UserRepository userRepository;
-    private final JwtTokenService jwtTokenService;
+    private final JwtUtils jwtUtils;
 
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) {
@@ -58,7 +62,6 @@ public class GoogleOidcUserService extends OidcUserService {
         return processOidcUser(oidcUser, provider, googleAccessToken);
     }
 
-
     private OidcUser processOidcUser(OidcUser oidcUser, String provider, String googleAccessToken) {
         Map<String, Object> attributes = oidcUser.getAttributes();
         String email = getSafeString(attributes, "email");
@@ -75,18 +78,32 @@ public class GoogleOidcUserService extends OidcUserService {
                     return newUser;
                 });
 
-        // ✅ RefreshToken만 발급 및 DB 저장
-        JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
-        userEntity.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
         userRepository.save(userEntity);
 
-        return new DefaultOidcUser(
+
+        // RefreshToken + Redis 저장
+        String sessionId = UUID.randomUUID().toString();
+        JwtUtils.TokenResponse refreshTokenResponse = jwtUtils.generateRefreshToken(email);
+        jwtUtils.storeRefreshTokenInRedis(email, sessionId, refreshTokenResponse);
+        log.info("[Redis exported Google Refresh Token] sessionId: {}, email: {}", sessionId, email);
+
+        // Updated Attributes
+        Map<String, Object> updatedAttributes = new HashMap<>(attributes);
+        updatedAttributes.put("refreshToken", refreshTokenResponse.token);
+        updatedAttributes.put("sessionId", sessionId);
+        updatedAttributes.put("email", email); // 혹시 모를 누락 방지용
+
+
+
+        return new CustomOidcUser(
                 oidcUser.getAuthorities(),
+                updatedAttributes,
                 oidcUser.getIdToken(),
                 oidcUser.getUserInfo(),
                 "email"
         );
     }
+
 
     @Value("${cloudfront.url}")
     private String cloudFrontUrl;
@@ -106,7 +123,7 @@ public class GoogleOidcUserService extends OidcUserService {
             log.info("Google Access Token 변경 감지! 기존 값: {}, 새 값: {}", user.getUserToken(), googleAccessToken);
             user.updateProfile(updatedName, updatedProfileImage, "google", googleAccessToken, LocalDateTime.now());
 
-            JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(user.getUserEmail());
+            JwtUtils.TokenResponse refreshTokenResponse = jwtUtils.generateRefreshToken(user.getUserEmail());
             user.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
         } else {
             log.info("기존 Google Access Token 유지: {}", googleAccessToken);
@@ -117,7 +134,7 @@ public class GoogleOidcUserService extends OidcUserService {
     }
 
     private User createNewUser(String email, String name, String profileImage, String googleAccessToken) {
-        JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
+        JwtUtils.TokenResponse refreshTokenResponse = jwtUtils.generateRefreshToken(email);
         return User.createNewUser(email, name, profileImage, "google", googleAccessToken, LocalDateTime.now(), refreshTokenResponse.token, refreshTokenResponse.expiryAt);
     }
 

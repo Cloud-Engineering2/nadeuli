@@ -16,7 +16,7 @@
  * ========================================================
  */
 
-package nadeuli.config.auth;
+package nadeuli.auth.oauth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;

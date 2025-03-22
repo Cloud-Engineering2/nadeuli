@@ -1,4 +1,4 @@
-package nadeuli.entity.constant;
+package nadeuli.common.enums;
 
 import java.util.HashMap;
 import java.util.List;

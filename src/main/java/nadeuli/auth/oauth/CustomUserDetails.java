@@ -1,4 +1,4 @@
-package nadeuli.security;
+package nadeuli.auth.oauth;
 
 import lombok.Getter;
 import nadeuli.entity.User;

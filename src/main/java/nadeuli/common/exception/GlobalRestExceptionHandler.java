@@ -15,7 +15,7 @@
  * ========================================================
  */
 
-package nadeuli.exception;
+package nadeuli.common.exception;
 
 import nadeuli.controller.*;
 import org.springframework.http.HttpStatus;

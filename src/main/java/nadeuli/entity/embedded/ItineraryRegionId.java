@@ -1,4 +1,4 @@
-package nadeuli.entity.constant;
+package nadeuli.entity.embedded;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;

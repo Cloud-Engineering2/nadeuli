@@ -23,7 +23,7 @@ package nadeuli.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import nadeuli.common.util.UserRoleAttributeConverter;
-import nadeuli.entity.constant.UserRole;
+import nadeuli.common.enums.UserRole;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;

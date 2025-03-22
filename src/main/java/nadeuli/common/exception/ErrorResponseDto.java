@@ -12,7 +12,7 @@
  * 박한철      2025.03.19     최초 작성
  * ========================================================
  */
-package nadeuli.exception;
+package nadeuli.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

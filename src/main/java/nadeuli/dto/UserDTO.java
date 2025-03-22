@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.User;
-import nadeuli.entity.constant.UserRole;
+import nadeuli.common.enums.UserRole;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

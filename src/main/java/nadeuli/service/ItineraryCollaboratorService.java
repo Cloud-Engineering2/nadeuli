@@ -17,10 +17,8 @@ package nadeuli.service;
 import lombok.RequiredArgsConstructor;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
-import nadeuli.entity.constant.CollaboratorRole;
-import nadeuli.repository.ExpenseBookRepository;
+import nadeuli.common.enums.CollaboratorRole;
 import nadeuli.repository.ItineraryCollaboratorRepository;
-import nadeuli.repository.ItineraryRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 

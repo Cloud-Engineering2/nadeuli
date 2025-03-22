@@ -16,17 +16,15 @@
  * ========================================================
  */
 
-package nadeuli.config.auth;
+package nadeuli.auth.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nadeuli.entity.User;
+import nadeuli.common.util.CookieUtils;
+import nadeuli.auth.jwt.JwtUtils;
 import nadeuli.repository.UserRepository;
-import nadeuli.service.JwtTokenService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -39,7 +37,7 @@ import java.util.Base64;
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    private final JwtTokenService jwtTokenService;
+    private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
 
     @Override
@@ -61,38 +59,34 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         log.info("✅ onAuthenticationSuccess 진입");
         try {
-        OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
-        String email = authToken.getPrincipal().getAttribute("email");
+            OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
 
-        String accessToken = jwtTokenService.generateAccessToken(email);
-        JwtTokenService.TokenResponse refreshToken = jwtTokenService.generateRefreshToken(email);
+            // ????OidcUserService에서 attribute에 넣어준 값들 그대로 꺼냄
+            String email = authToken.getPrincipal().getAttribute("email");
+            String refreshToken = authToken.getPrincipal().getAttribute("refreshToken");
+            String sessionId = authToken.getPrincipal().getAttribute("sessionId");
 
-        User user = userRepository.findByUserEmail(email).orElseThrow();
-        user.updateRefreshToken(refreshToken.token, refreshToken.expiryAt);
-        userRepository.save(user);
+            if (refreshToken == null || sessionId == null) {
+                log.error("🔴 refreshToken 또는 sessionId가 null");
+                response.sendRedirect("/login?error=true");
+                return;
+            }
 
-        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(3600)
-                .build();
+            // AccessToken 발급
+            String accessToken = jwtUtils.generateAccessToken(email);
 
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken.token)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(7 * 24 * 60 * 60)
-                .build();
+            CookieUtils.addCookies(response,
+                    CookieUtils.createAccessTokenCookie(accessToken),
+                    CookieUtils.createRefreshTokenCookie(refreshToken),
+                    CookieUtils.createSessionIdCookie(sessionId)
+            );
 
-        response.setHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+            // ✅ 최종 리디렉션
+            response.sendRedirect(redirectUri);
 
-        // 쿠키 저장 완료 후 메인으로 리디렉션
-        response.sendRedirect(redirectUri);
         } catch (Exception e) {
             log.error("[OAuth2SuccessHandler] 오류 발생: {}", e.getMessage(), e);
-            response.sendRedirect("/login?error=true"); // fallback 처리
+            response.sendRedirect("/login?error=true");
         }
     }
 }
