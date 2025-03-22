@@ -11,6 +11,7 @@
  * ========================================================
  * 이홍비    2025.03.20     최초 작성 : Controller 와 RestController 분리
  *                         로그인 인증 관련 처리
+ * 이홍비    2025.03.22     해당 일정엗 대한 기행문인지 아닌지 확인 절차 추가
  * ========================================================
  */
 
@@ -19,7 +20,7 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import nadeuli.security.CustomUserDetails;
 import nadeuli.service.ItineraryCollaboratorService;
-import nadeuli.service.JournalService;
+import nadeuli.service.ItineraryEventService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,8 +29,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RequiredArgsConstructor
 @Controller
 public class JournalController {
-    private final JournalService journalService;
     private final ItineraryCollaboratorService itineraryCollaboratorService;
+    private final ItineraryEventService itineraryEventService;
 
 
     // 기행문 조회 (열람)
@@ -38,7 +39,7 @@ public class JournalController {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
 
-        journalService.getJournal(ieid); // exception 발생 시 error.html 로 바로 이동하기 위해서 작성
+        itineraryEventService.checkItineraryEventIdInItinerary(iid, ieid); // iid 일정에 해당하는 방문지인지 아닌지 확인
 
         System.out.println("📌 Journal.html 로 이동");
 

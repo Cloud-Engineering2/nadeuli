@@ -20,6 +20,7 @@
  * 이홍비    2025.03.20     Controller 와 RestController 분리 : exception handler
  *                         로그인 인증 관련 처리
  * 박한철    2025.03.22     getJournalList 추가로 인한 컨트롤러단 맵핑주소범위 축소 + 기존함수로 이동
+ * 이홍비    2025.03.22     그 일정에 해당하는 방문지 기행인지 아닌지 확인
  * ========================================================
  */
 
@@ -30,6 +31,7 @@ import nadeuli.dto.JournalDTO;
 import nadeuli.dto.JournalSimpleDTO;
 import nadeuli.security.CustomUserDetails;
 import nadeuli.service.ItineraryCollaboratorService;
+import nadeuli.service.ItineraryEventService;
 import nadeuli.service.JournalService;
 import nadeuli.service.S3Service;
 import org.springframework.core.io.Resource;
@@ -47,6 +49,7 @@ public class JournalRestController {
     private final JournalService journalService;
     private final S3Service s3Service;
     private final ItineraryCollaboratorService itineraryCollaboratorService;
+    private final ItineraryEventService itineraryEventService;
 
     /*
     * 있어야 하는 거
@@ -81,6 +84,8 @@ public class JournalRestController {
     public ResponseEntity<JournalDTO> getJournalDTO(@PathVariable("iid") Long iid, @PathVariable("ieid") Long ieid, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         itineraryCollaboratorService.checkViewPermission(userDetails.getUser().getId(), iid); // 로그인 인증
+
+        itineraryEventService.checkItineraryEventIdInItinerary(iid, ieid); // iid 일정에 해당하는 방문지인지 아닌지 확인
 
         JournalDTO journalDTO = journalService.getJournal(ieid); // Jouranl 조회
         //JournalDTO journalDTO = journalService.getJournal(ieid, userDetails.getUser().getId());
