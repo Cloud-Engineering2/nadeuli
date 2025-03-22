@@ -13,9 +13,9 @@
  * ========================================================
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
- * 국경민, 김대환   2025.03.19     최초 작성 - Kakao OAuth 로그인 처리 및 JWT 토큰 발급 로직 구현
- * 김대환 2025.03.19 User_Role 기본값 지정
- * 박한철          2025.03.20       Email과 Provider를 동시에 검증하도록 수정
+ * 국경민, 김대환    2025.03.19     최초 작성 - Kakao OAuth 로그인 처리 및 JWT 토큰 발급 로직 구현
+ * 김대환    2025.03.19     User_Role 기본값 지정
+ * 박한철    2025.03.20     Email과 Provider를 동시에 검증하도록 수정
  * ========================================================
  */
 package nadeuli.service;
@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import nadeuli.entity.User;
 import nadeuli.entity.constant.UserRole;
 import nadeuli.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
@@ -32,6 +33,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -46,7 +48,7 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        String provider = userRequest.getClientRegistration().getRegistrationId();
+        String provider = userRequest.getClientRegistration().getRegistrationId().toLowerCase(Locale.ROOT);
 
         if (!"kakao".equals(provider)) {
             log.warn("[KakaoOidcUserService] Unsupported provider '{}'", provider);
@@ -96,9 +98,23 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
         );
     }
 
+    @Value("${cloudfront.url}")
+    private String cloudFrontUrl;
+
     private User updateExistingUser(User user, String name, String profileImage, String kakaoAccessToken) {
-        log.info("기존 사용자 정보 업데이트 - Email: {}, AccessToken 변경 여부: {}", user.getUserEmail(), !kakaoAccessToken.equals(user.getUserToken()));
-        user.updateProfile(name, profileImage, "kakao", kakaoAccessToken, LocalDateTime.now());
+        log.info("기존 사용자 정보 업데이트 - Email: {}, AccessToken 변경 여부: {}",
+                user.getUserEmail(),
+                !kakaoAccessToken.equals(user.getUserToken()));
+
+        String currentProfileImage = user.getProfileImage();
+
+        boolean isUserProfileFromS3 = (currentProfileImage != null && currentProfileImage.startsWith(cloudFrontUrl));
+
+        String updatedName = user.getUserName();
+
+        String updatedProfileImage = isUserProfileFromS3 ? currentProfileImage : profileImage;
+
+        user.updateProfile(updatedName, updatedProfileImage, "kakao", kakaoAccessToken, LocalDateTime.now());
         return user;
     }
 

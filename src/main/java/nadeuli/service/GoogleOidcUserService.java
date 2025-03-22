@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import nadeuli.entity.User;
 import nadeuli.entity.constant.UserRole;
 import nadeuli.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
@@ -43,7 +45,7 @@ public class GoogleOidcUserService extends OidcUserService {
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) {
         OidcUser oidcUser = super.loadUser(userRequest);
-        String provider = userRequest.getClientRegistration().getRegistrationId();
+        String provider = userRequest.getClientRegistration().getRegistrationId().toLowerCase(Locale.ROOT);
 
         if (!"google".equals(provider)) {
             log.warn("[GoogleOidcUserService] Unsupported provider '{}'", provider);
@@ -51,10 +53,11 @@ public class GoogleOidcUserService extends OidcUserService {
         }
 
         String googleAccessToken = userRequest.getAccessToken().getTokenValue();
-        log.info("[Google OAuth] Google Access Token: {}", googleAccessToken);
+        log.debug("[Google OAuth] Google Access Token: {}", googleAccessToken);
 
         return processOidcUser(oidcUser, provider, googleAccessToken);
     }
+
 
     private OidcUser processOidcUser(OidcUser oidcUser, String provider, String googleAccessToken) {
         Map<String, Object> attributes = oidcUser.getAttributes();
@@ -62,9 +65,9 @@ public class GoogleOidcUserService extends OidcUserService {
         String name = getSafeString(attributes, "name");
         String picture = getSafeString(attributes, "picture");
 
-        log.info("[Google OIDC] Email: {}, Name: {}, Picture: {}", email, name, picture);
+        log.debug("[Google OIDC] Email: {}, Name: {}, Picture: {}", email, name, picture);
 
-       User userEntity = userRepository.findByUserEmailAndProvider(email, provider)
+        User userEntity = userRepository.findByUserEmailAndProvider(email, provider)
                 .map(existing -> updateExistingUser(existing, name, picture, googleAccessToken))
                 .orElseGet(() -> {
                     User newUser = createNewUser(email, name, picture, googleAccessToken);
@@ -72,18 +75,10 @@ public class GoogleOidcUserService extends OidcUserService {
                     return newUser;
                 });
 
+        // ✅ RefreshToken만 발급 및 DB 저장
         JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(email);
         userEntity.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
         userRepository.save(userEntity);
-
-        String accessToken = jwtTokenService.generateAccessToken(email);
-
-        log.info("[Google OIDC] JWT Access Token 발급 완료: {}", accessToken);
-        log.info("[Google OIDC] JWT Refresh Token 발급 완료: {}", refreshTokenResponse.token);
-
-        Map<String, Object> updatedAttributes = new HashMap<>(attributes);
-        updatedAttributes.put("accessToken", accessToken);
-        updatedAttributes.put("email", email);
 
         return new DefaultOidcUser(
                 oidcUser.getAuthorities(),
@@ -93,18 +88,29 @@ public class GoogleOidcUserService extends OidcUserService {
         );
     }
 
+    @Value("${cloudfront.url}")
+    private String cloudFrontUrl;
+
     private User updateExistingUser(User user, String name, String profileImage, String googleAccessToken) {
         boolean tokenUpdated = !googleAccessToken.equals(user.getUserToken());
 
+        String currentProfileImage = user.getProfileImage();
+
+        boolean isUserProfileFromS3 = (currentProfileImage != null && currentProfileImage.startsWith(cloudFrontUrl));
+
+        String updatedName = user.getUserName();
+
+        String updatedProfileImage = isUserProfileFromS3 ? currentProfileImage : profileImage;
+
         if (tokenUpdated) {
             log.info("Google Access Token 변경 감지! 기존 값: {}, 새 값: {}", user.getUserToken(), googleAccessToken);
-            user.updateProfile(name, profileImage, "google", googleAccessToken, LocalDateTime.now());
+            user.updateProfile(updatedName, updatedProfileImage, "google", googleAccessToken, LocalDateTime.now());
 
             JwtTokenService.TokenResponse refreshTokenResponse = jwtTokenService.generateRefreshToken(user.getUserEmail());
             user.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
         } else {
             log.info("기존 Google Access Token 유지: {}", googleAccessToken);
-            user.updateProfile(name, profileImage, "google", null, LocalDateTime.now());
+            user.updateProfile(updatedName, updatedProfileImage, "google", null, LocalDateTime.now());
         }
 
         return user;
