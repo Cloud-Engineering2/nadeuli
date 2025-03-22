@@ -1,24 +1,23 @@
-/* journal.js
+/* journal-modal.js
  * nadeuli Service - 여행
- * journal.html 에서 사용할 js 함수 정리
- * 작성자 : 이홍비
- * 최종 수정 날짜 : 2025.02.27
+ * view.html 에서 사용할 journal-modal 관련 js 함수 정리
+ * 작성자 : 박한철
+ * 최종 수정 날짜 : 2025.03.22
  *
  * ========================================================
  * 프로그램 수정 / 보완 이력
  * ========================================================
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
- * 이홍비    2025.02.27     최초 작성 : journal.js
- * 이홍비    2025.03.02     journal.html 에서 사용할 함수 정리
- * 이홍비    2025.03.03     사진 crud 관련 js 처리 + 다운로드 처리
- *                         첨부 가능한 사진 파일, 파일 크기 제약 추가
- *                         url 에서 iid, ieid 추출
- * 이홍비    2025.03.13     no-content 일 때 매번 innerText 작성하던 것
- *                         html 에 문구 작성해 두고 그냥 display block, none 만 하는 것으로 처리
- * 박한철    2025.03.22     axios -> $.ajax로 수정
+ * 박한철    2025.03.22     최초 작성 : journal.js 에서 필요한 부분 추출
+ *                         axios -> $.ajax로 수정
+ * 이홍비    2025.03.23     showNadeuliAlert import 처리
+ *                         window.fetchJournal = fetchJournal; - 전역 범위 할당
  * ========================================================
  */
+
+import { showNadeuliAlert } from "./common.js";
+
 
 var journal = {};
 var this_iid;
@@ -416,6 +415,7 @@ function downloadPhoto() {
 // }
 
 // 전역 범위 할달
+window.fetchJournal = fetchJournal;
 window.enableEditMode = enableEditMode;
 window.saveContent = saveContent;
 window.confirmDelete = confirmDelete;
