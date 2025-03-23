@@ -9,8 +9,10 @@
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
  * 고민정   2025.03.12    Itineraray id로 조회하는 메서드 추가
+ * 이홍비   2025.03.22    Itinerary 에 포함된 ItineraryEvent 인지 확인
  * ========================================================
  */
+
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import nadeuli.entity.ItineraryPerDay;
 import nadeuli.repository.ItineraryEventRepository;
 import nadeuli.repository.ItineraryPerDayRepository;
 import nadeuli.repository.ItineraryRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,6 +47,7 @@ public class ItineraryEventService {
         return itineraryEventList;
     }
 
+
     public ItineraryEventDTO retrieveItineraryEvent(Long itineraryEventId) {
         ItineraryEvent itineraryEvent = itineraryEventRepository.findById(itineraryEventId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ItineraryEvent가 존재하지 않습니다"));
@@ -53,6 +57,19 @@ public class ItineraryEventService {
     }
 
 
+    
+    // 해당 일정에 포함된 방문지인지 아닌지 확인
+    public void checkItineraryEventIdInItinerary(Long itineraryId, Long itineraryEventId) {
+        System.out.println("🔥 ItineraryEventService - checkItineraryEventIdInItinerary()");
 
+        List<Long> ieidList = itineraryEventRepository.findItineraryEventIdsByItineraryId(itineraryId);
+
+        if (!ieidList.contains(itineraryEventId)) {
+            // ieidList 에 해당 id  포함 x => 해당 일정에 대한 방문지 아님
+            System.out.println("❌ 해당 일정에 대한 방문지가 아닙니다 ❌");
+
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+    }
 
 }

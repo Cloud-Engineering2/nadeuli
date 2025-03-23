@@ -11,6 +11,7 @@
  * 박한철    2025.03.05     최초 작성
  * 박한철    2025.03.12     description -> explanation
  * 박한철    2025.03.17     id -> rid로 수정, level -> region_level, name -> region_name
+ * 박한철    2025.03.22     위도경도반경 수정 함수 추가
  * ========================================================
  */
 
@@ -107,6 +108,12 @@ public class Region {
 
     public void setExplanation(String explanation) {
         this.explanation = explanation;
+    }
+
+    public void updatePosition(Double latitude, Double longitude, Double radius) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.radius = radius;
     }
 
 }

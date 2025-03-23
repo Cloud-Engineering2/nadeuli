@@ -16,13 +16,12 @@ package nadeuli.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import nadeuli.dto.request.AdminRegionUpdateRequestDTO;
 import nadeuli.service.RegionService;
 import nadeuli.service.S3Service;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -32,6 +31,7 @@ public class AdminRestController {
 
     private final RegionService regionService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/region/upload/photo")
     public ResponseEntity<String> uploadRegionImage(
             @RequestParam("regionId") Long regionId,
@@ -40,5 +40,10 @@ public class AdminRestController {
         String newImageUrl = regionService.uploadRegionImage(regionId, file);
         return ResponseEntity.ok(newImageUrl);
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/region/update")
+    public ResponseEntity<Void> updateRegion(@RequestBody AdminRegionUpdateRequestDTO dto) {
+        regionService.updateRegionPosition(dto);
+        return ResponseEntity.ok().build();
+    }
 }
