@@ -14,20 +14,6 @@
  */
 
 
-// alert 창
-function showNadeuliAlert(id) {
-    document.getElementById(`${id}`).style.display = 'block';
-}
-
-function closeNadeuliAlert(id) {
-    document.getElementById(`${id}`).style.display = 'none';
-}
-
-window.closeNadeuliAlert = closeNadeuliAlert;
-
-
-
-
 function apiWithAutoRefresh(options) {
     $.ajax({
         ...options,

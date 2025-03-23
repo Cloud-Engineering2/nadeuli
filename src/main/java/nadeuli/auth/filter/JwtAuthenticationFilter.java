@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.common.enums.ErrorCode;
-import nadeuli.auth.jwt.JwtUtils;
+import nadeuli.common.util.JwtUtils;
 import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.repository.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,7 +45,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
 
 
@@ -56,9 +55,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = extractAccessToken(request);
         log.warn("✅ JwtAuthenticationFilter 필터진입");
         if (accessToken != null) {
-            Optional<ErrorCode> errorCode = jwtUtils.validateToken(accessToken);
+            Optional<ErrorCode> errorCode = JwtUtils.validateToken(accessToken);
             if (errorCode.isEmpty()) {
-                log.warn("✅ JWT 인증 성공: {}", jwtUtils.extractEmail(accessToken));
+                log.warn("✅ JWT 인증 성공: {}", JwtUtils.extractEmail(accessToken));
                 authenticateUserFromToken(accessToken, request);
             } else {
 
@@ -75,7 +74,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void authenticateUserFromToken(String token, HttpServletRequest request) {
-        String email = jwtUtils.extractEmail(token);
+        String email = JwtUtils.extractEmail(token);
         userRepository.findByUserEmail(email).ifPresent(user -> {
             UserDetails userDetails = new CustomUserDetails(user);
             UsernamePasswordAuthenticationToken authentication =

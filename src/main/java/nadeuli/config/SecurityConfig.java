@@ -3,7 +3,7 @@ package nadeuli.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.auth.handler.CustomAuthenticationEntryPoint;
-import nadeuli.auth.oauth.CustomAuthorizationRequestResolver;
+import nadeuli.auth.handler.CustomAuthorizationRequestResolver;
 import nadeuli.auth.handler.CustomOAuth2SuccessHandler;
 import nadeuli.auth.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;

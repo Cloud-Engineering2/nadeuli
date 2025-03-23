@@ -22,7 +22,8 @@ package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nadeuli.auth.jwt.JwtUtils;
+import nadeuli.common.util.JwtUtils;
+import nadeuli.dto.response.TokenResponse;
 import nadeuli.entity.User;
 import nadeuli.common.enums.UserRole;
 import nadeuli.repository.UserRepository;
@@ -45,7 +46,7 @@ import java.util.UUID;
 public class KakaoOidcUserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final JwtUtils jwtUtils;
+    private final JwtRedisService jwtRedisService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
@@ -80,8 +81,8 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
 
         // RefreshToken + Redis 저장
         String sessionId = UUID.randomUUID().toString();
-        JwtUtils.TokenResponse refreshTokenResponse = jwtUtils.generateRefreshToken(email);
-        jwtUtils.storeRefreshTokenInRedis(email, sessionId, refreshTokenResponse);
+        TokenResponse refreshTokenResponse = JwtUtils.generateRefreshToken(email);
+        jwtRedisService.storeRefreshToken(email, sessionId, refreshTokenResponse);
         log.info("[Redis exported Kakao Refresh Token] sessionId: {}, email: {}", sessionId, email);
 
 
@@ -119,7 +120,7 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
     }
 
     private User createNewUser(String email, String name, String profileImage, String kakaoAccessToken) {
-        JwtUtils.TokenResponse refreshTokenResponse = jwtUtils.generateRefreshToken(email);
+        TokenResponse refreshTokenResponse = JwtUtils.generateRefreshToken(email);
         return User.createNewUser(email, name, profileImage, "kakao", kakaoAccessToken, LocalDateTime.now(), refreshTokenResponse.token, refreshTokenResponse.expiryAt);
     }
 

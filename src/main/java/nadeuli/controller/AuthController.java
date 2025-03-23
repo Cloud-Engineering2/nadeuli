@@ -5,9 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.common.util.CookieUtils;
-import nadeuli.auth.jwt.JwtUtils;
-import nadeuli.repository.UserRepository;
-import org.springframework.data.redis.core.RedisTemplate;
+import nadeuli.service.JwtRedisService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -23,10 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final JwtUtils jwtUtils;
-    private final RedisTemplate<String, String> redisTemplate;
-
+    private final JwtRedisService jwtRedisService;
 
 
     @PostMapping("/logout")
@@ -53,15 +48,15 @@ public class AuthController {
         }
 
         // 2. AccessToken 블랙리스트 등록
-        jwtUtils.blacklistAccessToken(jwtAccessToken);
+        jwtRedisService.blacklistAccessToken(jwtAccessToken);
 
         // 3. RefreshToken 삭제 및 블랙리스트 등록
         if (refreshTokenFromCookie != null) {
-            jwtUtils.blacklistRefreshToken(refreshTokenFromCookie);
+            jwtRedisService.blacklistRefreshToken(refreshTokenFromCookie);
         }
 
         if (sessionIdFromCookie != null) {
-            jwtUtils.deleteRefreshTokenFromRedis(jwtAccessToken, sessionIdFromCookie);
+           jwtRedisService.deleteRefreshToken(jwtAccessToken, sessionIdFromCookie);
         }
 
         // 4. 쿠키 삭제
@@ -93,7 +88,7 @@ public class AuthController {
             return;
         }
 
-        JwtUtils.TokenReissueResult result = jwtUtils.reissueTokensAndSetCookies(refreshToken, sessionId, response);
+        JwtRedisService.TokenReissueResult result = jwtRedisService.reissueTokensAndSetCookies(refreshToken, sessionId, response);
 
         if (!result.success) {
             response.sendRedirect("/login?error=refreshInvalid");
@@ -112,7 +107,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("RefreshToken 또는 sessionId 없음");
         }
 
-        JwtUtils.TokenReissueResult result = jwtUtils.reissueTokensAndSetCookies(refreshToken, sessionId, response);
+        JwtRedisService.TokenReissueResult result = jwtRedisService.reissueTokensAndSetCookies(refreshToken, sessionId, response);
 
         if (!result.success) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 RefreshToken");

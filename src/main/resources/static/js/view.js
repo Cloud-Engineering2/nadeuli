@@ -1,3 +1,5 @@
+window.isJournalModal = true;
+
 // Event 전역변수
 let itinerary = null;
 const perDayMap = new Map();

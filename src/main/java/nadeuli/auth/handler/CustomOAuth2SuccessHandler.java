@@ -23,7 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.common.util.CookieUtils;
-import nadeuli.auth.jwt.JwtUtils;
+import nadeuli.common.util.JwtUtils;
 import nadeuli.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -37,7 +37,6 @@ import java.util.Base64;
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
 
     @Override
@@ -73,7 +72,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             }
 
             // AccessToken 발급
-            String accessToken = jwtUtils.generateAccessToken(email);
+            String accessToken = JwtUtils.generateAccessToken(email);
 
             CookieUtils.addCookies(response,
                     CookieUtils.createAccessTokenCookie(accessToken),
