@@ -49,56 +49,7 @@ public class OAuthController {
 
     private static final String KAKAO_UNLINK_URL = "https://kapi.kakao.com/v1/user/unlink";
     private static final String GOOGLE_UNLINK_URL = "https://oauth2.googleapis.com/revoke?token=";
-
-//
-//@PostMapping("/logout")
-//public ResponseEntity<Map<String, Object>> logout(
-//        @RequestHeader(value = "Authorization", required = false) String authHeader,
-//        @CookieValue(name = "accessToken", required = false) String accessTokenFromCookie,
-//        @CookieValue(name = "refreshToken", required = false) String refreshTokenFromCookie) {
-//
-//    log.info("로그아웃 요청 - Authorization Header: {}", authHeader);
-//
-//    String jwtAccessToken = null;
-//    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-//        jwtAccessToken = authHeader.replace("Bearer ", "").trim();
-//    } else if (accessTokenFromCookie != null) {
-//        jwtAccessToken = accessTokenFromCookie;
-//    }
-//
-//    if (jwtAccessToken == null) {
-//        log.warn("로그아웃 요청 - 인증 정보 없음");
-//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-//                "success", false,
-//                "message", "로그인된 사용자가 없습니다."
-//        ));
-//    }
-//
-//    ResponseCookie expiredAccessTokenCookie = ResponseCookie.from("accessToken", "")
-//            .path("/")
-//            .maxAge(0)
-//            .httpOnly(true)
-//            .secure(true) // ✅ 로그인 시 secure=true였다면 반드시 필요
-//            .build();
-//
-//    ResponseCookie expiredRefreshTokenCookie = ResponseCookie.from("refreshToken", "")
-//            .path("/")
-//            .maxAge(0)
-//            .httpOnly(true)
-//            .secure(true) // ✅ 로그인 시 secure=true였다면 반드시 필요
-//            .build();
-//
-//    log.info("로그아웃 성공 - accessToken, refreshToken 삭제 완료");
-//
-//    return ResponseEntity.ok()
-//            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
-//            .header(HttpHeaders.SET_COOKIE, expiredRefreshTokenCookie.toString()) // 이렇게 이어서!
-//            .body(Map.of(
-//                    "success", true,
-//                    "message", "로그아웃 완료"
-//            ));
-//}
-
+    private static final String GOOGLE_TOKEN_URL = ""; // 비어있음
 
     @DeleteMapping("/unlink")
     public ResponseEntity<Map<String, Object>> unlinkUser() {
@@ -128,8 +79,8 @@ public class OAuthController {
         User user = userOptional.get();
         Long id = user.getId(); // UID 가져오기
         String provider = user.getProvider();
-        String accessToken = user.getUserToken();
-        String refreshToken = user.getRefreshToken(); // ✅ 구글 재발급용
+        String accessToken = user.getProviderRefreshToken(); // 얜 가지고 있지 않음
+        String refreshToken =  user.getProviderRefreshToken(); // DB엔 얘만을 가지고 있음
 
         log.info("[OAuthUnlink] 회원 탈퇴 요청 - UID: {}, Email: {}", id, email);
 
