@@ -160,11 +160,36 @@
                     </div>
                 </div>
                 <div class="schedule-header-right">
-                    <button class="toggle-map-button on" title="지도 숨기기">
-                        <i class="bi bi-map-fill on-icon"></i>
-                        <i class="bi bi-map off-icon"></i>
-                    </button>
-                    <button class="refresh-button"><i class="fas fa-arrows-rotate"></i></button>
+                    <!-- Traveler 추가 모달 -->
+                    <div id="travelerModal" class="traveler-modal" style="display: none;">
+                        <div class="traveler-modal-content">
+                            <span class="traveler-close">&times;</span>
+                            <h2>여행자 추가</h2>
+                            <!--                            <input type="hidden" id="itinerary-id" value="12"> &lt;!&ndash; 일정 ID 값 &ndash;&gt;-->
+                            <label for="travelerName">이름</label>
+                            <input type="text" id="travelerName" placeholder="여행자 이름 입력">
+
+                            <!--                            <label for="travelerBudget">예산</label>-->
+                            <!--                            <input type="number" id="travelerBudget" placeholder="예산 입력">-->
+
+                            <button id="travelerSendButton" class="traveler-send-button">추가</button>
+
+                            <div class="traveler-list" id="travelerList"></div>
+                        </div>
+                    </div>
+
+
+                    <div class="button-container">
+                        <!-- 여행자 추가 버튼 -->
+                        <button class="traveler-addition-button" title="여행자 추가하기">
+                            <i class="fa-solid fa-person-walking-luggage"></i>
+                        </button>
+                        <button class="toggle-map-button on" title="지도 숨기기">
+                            <i class="bi bi-map-fill on-icon"></i>
+                            <i class="bi bi-map off-icon"></i>
+                        </button>
+                        <button class="refresh-button"><i class="fas fa-arrows-rotate"></i></button>
+                    </div>
                     <!--                    <button class="event-options-button schedule"><i class="fas fa-cog"></i></button>-->
 <!--                    <div class="event-options hidden">-->
 <!--                        <button class="event-date-change">기간 및 시간 변경</button>-->

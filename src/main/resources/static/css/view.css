@@ -908,3 +908,47 @@
     margin-left: 10px;
 
 }
+
+
+
+
+/* 여행자, 예산 추가 모달 */
+/* 모달 배경 */
+.traveler-modal {
+    display: none;  /* 기본적으로 숨겨짐 */
+    position: fixed;  /* 화면에 고정 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);  /* 배경을 어둡게 */
+    z-index: 1050;  /* 모달이 다른 요소들 위로 올 수 있도록 설정 */
+    overflow: auto;  /* 화면을 벗어나는 경우 스크롤 처리 */
+}
+
+/* 모달 내용 */
+.traveler-modal-content {
+    position: relative;
+    background-color: white;
+    text-align: center;
+    margin: 15% auto;  /* 화면 중앙에 위치 */
+    padding: 20px;
+    border-radius: 10px;
+    width: 40%;  /* 적당한 크기로 설정 */
+    z-index: 1060;  /* 배경보다 위에 표시되도록 설정 */
+}
+
+/* 닫기 버튼 */
+.traveler-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.traveler-close:hover,
+.traveler-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
