@@ -18,10 +18,10 @@
 package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
+import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.dto.UserDTO;
 import nadeuli.entity.User;
 import nadeuli.repository.UserRepository;
-import nadeuli.security.CustomUserDetails;
 import nadeuli.service.S3Service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -75,7 +75,7 @@ public class ProfileController {
         }
 
         String newProfileUrl = s3Service.uploadProfileImage(file, user.getProfileImage());
-        user.updateProfile(user.getUserName(), newProfileUrl, user.getProvider(), user.getUserToken(), user.getLastLoginAt());
+        user.updateProfile(user.getUserName(), newProfileUrl, user.getProvider(), user.getProviderRefreshToken(), user.getLastLoginAt());
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("success", true, "profileImage", newProfileUrl));
@@ -102,7 +102,7 @@ public class ProfileController {
                 newName,
                 user.getProfileImage(),
                 user.getProvider(),
-                user.getUserToken(),
+                user.getProviderRefreshToken(),
                 user.getLastLoginAt()
         );
         userRepository.save(user);
