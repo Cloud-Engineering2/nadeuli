@@ -31,16 +31,24 @@
 
         <!-- ✅ 드롭다운 메뉴 -->
         <div id="profileDropdown" class="dropdown-menu">
-            <button onclick="downloadProfileImage()">사진 저장</button>
+            <button onclick="triggerNameEdit()">이름 변경</button>
+            <button onclick="downloadProfileImage()">사진 받기</button>
             <button onclick="triggerFileUpload()">사진 변경</button>
         </div>
 
         <!-- ✅ 사용자 정보 -->
         <div class="profile-info">
+            <!-- 이름 -->
             <div class="info-row">
                 <label class="info-label name-label">이 름</label>
-                <input type="text" id="userName" th:value="${userName}" readonly>
+                <div class="input-group">
+                    <input type="text" id="userName" th:value="${userName}" readonly>
+                    <button id="saveNameBtn" style="display: none;">저장</button>
+                </div>
             </div>
+
+
+            <!-- 이메일 -->
             <div class="info-row">
                 <label class="info-label email-label">이 메 일</label>
                 <input type="email" id="userEmail" th:value="${userEmail}" readonly>

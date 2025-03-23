@@ -38,7 +38,7 @@ body {
 .mypage-container {
     background: #ffffff;
     width: 420px;
-    height: 450px; /* 🔹 높이를 약간 조정 */
+    height: 420px; /* 🔹 높이를 약간 조정 */
     margin: 0 auto;
     padding: 30px;
     position: relative;
@@ -63,10 +63,17 @@ body {
     background-color: #8E8B82;
     color: white;
     padding: 9px 25px;
+    border: none;
     border-radius: 10px;
     box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
     margin-left: 10px;
     cursor: pointer; /* 🔹 클릭 가능하도록 변경 */
+}
+
+/* 🔹 클릭(포커스)했을 때 테두리 추가 */
+.mypage-container .profile-title:active,
+.mypage-container .profile-title:focus {
+    border: 2px solid black;
 }
 
 /* ✅ 회원탈퇴 버튼 */
@@ -182,8 +189,8 @@ body {
 .dropdown-menu {
     display: none;
     position: absolute;
-    top: 50px;
-    left: 10px;
+    top: 78px;
+    left: 48px;
     background: white;
     border: 1px solid #8E8B82;
     border-radius: 10px;
@@ -203,4 +210,35 @@ body {
 
 .dropdown-menu button:hover {
     background: #E9DCBE;
+}
+/* ✅ 이름 + 저장 버튼을 감싸는 input 그룹 */
+.input-group {
+    display: flex;
+    flex-grow: 1;
+}
+
+/* ✅ 이름 입력 필드 (버튼 공간 확보) */
+#userName {
+    flex: 1;
+}
+
+/* ✅ 저장 버튼 너비 고정 */
+#saveNameBtn {
+    width: 60px; /* 적절한 고정값 */
+    margin-left: 10px;
+    background-color: #8E8B82;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    height: 36px;
+    display: none; /* 처음에는 숨김 */
+}
+
+#saveNameBtn:hover {
+    background-color: white;
+    color: #8E8B82;
+    border: 1px solid #8E8B82;
 }

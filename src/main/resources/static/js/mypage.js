@@ -2,19 +2,35 @@ document.addEventListener("DOMContentLoaded", () => {
     // 프로필 이미지 업로드 이벤트 연결
     document.getElementById("profileInput").addEventListener("change", saveProfileImage);
 
-    // 드롭다운 메뉴 토글
+    // 드롭다운 버튼 및 메뉴
     const dropdownBtn = document.getElementById("profileDropdownBtn");
     const dropdownMenu = document.getElementById("profileDropdown");
 
-    dropdownBtn.addEventListener("click", () => {
-        dropdownMenu.style.display = dropdownMenu.style.display === "block" ? "none" : "block";
+    // 드롭다운 토글
+    dropdownBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const isActive = dropdownMenu.style.display === "block";
+        dropdownMenu.style.display = isActive ? "none" : "block";
+        dropdownBtn.classList.toggle("active", !isActive);
     });
+
+    dropdownMenu.addEventListener("click", (event) => {
+        event.stopPropagation();
+    });
+
+    document.addEventListener("click", () => {
+        dropdownMenu.style.display = "none";
+        dropdownBtn.classList.remove("active");
+    });
+
+    // 이름 저장 버튼 클릭 이벤트 연결
+    document.getElementById("saveNameBtn").addEventListener("click", saveUserName);
 
     // 사용자 정보 자동 로딩
     getUserInfo();
 });
 
-// ✅ 사용자 정보 불러오기 (자동 입력)
+// ✅ 사용자 정보 불러오기
 async function getUserInfo() {
     try {
         const response = await fetch("/auth/user/me", {
@@ -26,17 +42,52 @@ async function getUserInfo() {
 
         const data = await response.json();
 
-        // ✅ 프로필 이미지 로드
         document.getElementById("profileImage").src =
             data.profileImage && data.profileImage.trim() !== ""
                 ? data.profileImage
                 : "/images/default_profile.png";
 
-        // ✅ 사용자 정보 자동 입력
         document.getElementById("userName").value = data.userName || "이름 없음";
         document.getElementById("userEmail").value = data.userEmail || "이메일 없음";
     } catch (error) {
         console.error("🚨 사용자 정보 불러오기 오류:", error);
+    }
+}
+
+// ✅ 이름 변경 버튼 (드롭다운에서 호출)
+function triggerNameEdit() {
+    const input = document.getElementById("userName");
+    const saveBtn = document.getElementById("saveNameBtn");
+
+    input.removeAttribute("readonly");
+    input.focus();
+    saveBtn.style.display = "inline-block";
+
+    // 드롭다운 닫기
+    document.getElementById("profileDropdown").style.display = "none";
+    document.getElementById("profileDropdownBtn").classList.remove("active");
+}
+
+// ✅ 이름 저장
+async function saveUserName() {
+    const input = document.getElementById("userName");
+    const newName = input.value;
+
+    try {
+        const res = await fetch("/auth/user/profile/name", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ name: newName })
+        });
+
+        if (!res.ok) throw new Error("이름 저장 실패");
+
+        alert("✅ 이름이 저장되었습니다.");
+        input.setAttribute("readonly", true);
+        document.getElementById("saveNameBtn").style.display = "none";
+    } catch (err) {
+        alert("🚨 이름 저장 실패: " + err.message);
     }
 }
 
@@ -63,14 +114,14 @@ async function saveProfileImage(event) {
     }
 }
 
-// ✅ 사진 변경 버튼 → 업로드 input 열기
+// ✅ 사진 변경 input 트리거
 function triggerFileUpload() {
     document.getElementById("profileInput").click();
 }
 
 // ✅ 사진 저장
 function downloadProfileImage() {
-    window.location.href = "/auth/user/profile/download"; // 백엔드에서 해당 경로로 파일 다운로드 응답 필요
+    window.location.href = "/auth/user/profile/download";
 }
 
 // ✅ 회원 탈퇴
