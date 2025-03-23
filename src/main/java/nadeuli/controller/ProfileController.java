@@ -11,6 +11,7 @@
  * ========================================================
  * 국경민     2025.03.??    최초작성
  * 국경민     2025.03.23    이름변경 추가
+ * 국경민     2025.03.23    사진받기 추가
  * ========================================================
  */
 
@@ -27,8 +28,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
 
 import java.util.Map;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 
 @RestController
 @RequestMapping("/auth/user")
@@ -111,4 +121,39 @@ public class ProfileController {
         }
         return null;
     }
+
+    /**
+     * ✅ 프로필 이미지 다운로드
+     */
+    @GetMapping("/profile/download")
+    public ResponseEntity<Resource> downloadProfileImage() {
+        User user = extractAuthenticatedUser();
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            String imageUrl = user.getProfileImage();
+            if (imageUrl.contains("s3")) {
+            return s3Service.downloadFile(imageUrl); // ✅ S3 이미지 처리
+            } else {
+            // ✅ 외부 URL 이미지 (카카오/구글)
+            URL url = new URL(imageUrl);
+            URLConnection conn = url.openConnection();
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+            String contentType = conn.getContentType();
+            InputStream inputStream = conn.getInputStream();
+            InputStreamResource resource = new InputStreamResource(inputStream);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(contentType));
+            headers.set("Content-Disposition", "attachment; filename=\"profile_image.jpg\"");
+
+            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
 }
