@@ -15,7 +15,7 @@
 
 
 // alert 창
-export function showNadeuliAlert(id) {
+function showNadeuliAlert(id) {
     document.getElementById(`${id}`).style.display = 'block';
 }
 
@@ -50,4 +50,35 @@ function apiWithAutoRefresh(options) {
             }
         }
     });
+}
+
+async function fetchWithAutoRefresh(url, fetchOptions = {}) {
+    let response = await fetch(url, fetchOptions);
+
+    // AccessToken 만료 + recoveryHint가 있는 경우 → refresh-rest 호출 후 재요청
+    if (response.status === 401) {
+        try {
+            const errorData = await response.json();
+            if (errorData?.recoveryHint === '/auth/refresh-rest') {
+                const refreshResponse = await fetch('/auth/refresh-rest', { method: 'POST' });
+                const refreshResult = await refreshResponse.json();
+
+                if (refreshResult.success) {
+                    // 토큰 재발급 성공 → 원래 요청 다시 수행
+                    return await fetch(url, fetchOptions);
+                } else {
+                    alert('다시 로그인 해주세요.');
+                    window.location.href = '/login';
+                    throw new Error('Token refresh failed');
+                }
+            }
+        } catch (e) {
+            console.error('토큰 갱신 중 오류', e);
+            alert('다시 로그인 해주세요.');
+            window.location.href = '/login';
+            throw new Error('Token refresh failed');
+        }
+    }
+
+    return response;
 }

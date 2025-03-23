@@ -40,6 +40,14 @@ public class CookieUtils {
                 .build();
     }
 
+    /* Auth 관련 쿠키 전부 삭제 */
+    public static void deleteAuthCookies(HttpServletResponse response) {
+        ResponseCookie expiredAccessToken = CookieUtils.expireAccessTokenCookie();
+        ResponseCookie expiredRefreshToken = CookieUtils.expireRefreshTokenCookie();
+        ResponseCookie expiredSessionId = CookieUtils.expireSessionIdCookie();
+        CookieUtils.addCookies(response, expiredAccessToken, expiredRefreshToken, expiredSessionId);
+    }
+
     /* AccessToken 쿠키 만료 (삭제) */
     public static ResponseCookie expireAccessTokenCookie() {
         return ResponseCookie.from("accessToken", "")

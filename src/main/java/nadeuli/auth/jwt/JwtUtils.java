@@ -243,6 +243,7 @@ public class JwtUtils {
 
         } catch (Exception e) {
             log.error("토큰 재발급 실패: {}", e.getMessage(), e);
+            CookieUtils.deleteAuthCookies(response);
             return new TokenReissueResult(false, null, null, null);
         }
     }

@@ -48,8 +48,7 @@ $(document).ready(function () {
     let pathSegments = window.location.pathname.split('/');
     let itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
 
-
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itinerary/${itineraryId}`,
         method: "GET",
         dataType: "json",
@@ -67,8 +66,6 @@ $(document).ready(function () {
             console.error("Error fetching itinerary:", error);
         }
     });
-
-
 });
 
 // 일정 데이터 생성 함수
@@ -858,22 +855,18 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
     const requestData = [];
     const validToEvents = [];
 
-    if(eventPairs.length === 0 )
-        return;
+    if (eventPairs.length === 0) return;
 
-    console.log("eventPairs",eventPairs);
+    console.log("eventPairs", eventPairs);
 
-    // 유효한 쌍 추출 및 기본값 처리
     eventPairs.forEach(([from, to]) => {
         if (from && to && from.placeDTO && to.placeDTO) {
-            // 같은 장소라면 거리/시간 0 설정
             if (from.placeDTO.id === to.placeDTO.id) {
                 to.movingDistanceFromPrevPlace = 0;
                 to.movingMinuteFromPrevPlace = 0;
                 return;
             }
 
-            // 이동 거리 계산 대상이면 기본값 설정하고 push
             to.movingDistanceFromPrevPlace = 0;
             to.movingMinuteFromPrevPlace = 0;
 
@@ -884,10 +877,9 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
                 destinationLongitude: to.placeDTO.longitude,
             });
             validToEvents.push(to);
-        } else if(from === null && to){
-                to.movingDistanceFromPrevPlace = 0;
-                to.movingMinuteFromPrevPlace = 0;
-
+        } else if (from === null && to) {
+            to.movingDistanceFromPrevPlace = 0;
+            to.movingMinuteFromPrevPlace = 0;
         }
     });
 
@@ -897,7 +889,7 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
     }
 
     try {
-        const response = await fetch('/api/place/routes', {
+        const response = await fetchWithAutoRefresh('/api/place/routes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -909,7 +901,6 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
 
         responseData.forEach((route, index) => {
             const toEvent = validToEvents[index];
-
             toEvent.movingDistanceFromPrevPlace = route.distanceMeters || 0;
             toEvent.movingMinuteFromPrevPlace = route.duration;
             console.log(route);
@@ -920,6 +911,7 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
         console.error("거리 계산 중 오류:", error);
     }
 }
+
 
 
 
@@ -1282,7 +1274,7 @@ function saveItinerary() {
         }
     });
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: "/api/itinerary/update",
         method: "POST",
         contentType: "application/json",
@@ -1636,7 +1628,7 @@ function fetchRecommendedPlaces(pageSize = 10) {
     if (isLastPage) return; // 더 이상 가져올 데이터 없음
 
     const searchEnabled = isSearchTriggered && activeSearchQuery.length > 0;
-    const searchQuery = activeSearchQuery; // ✅ 고정된 검색어만 서버로 보냄
+    const searchQuery = activeSearchQuery;
 
     const requestData = {
         userLng: selectedRegionLng,
@@ -1651,7 +1643,8 @@ function fetchRecommendedPlaces(pageSize = 10) {
     };
 
     console.log(requestData);
-    $.ajax({
+
+    apiWithAutoRefresh({
         url: "/api/place/recommend",
         type: "POST",
         contentType: "application/json",
@@ -1683,6 +1676,7 @@ function fetchRecommendedPlaces(pageSize = 10) {
         }
     });
 }
+
 
 //필터 타입 맵핑
 function getKoreanLabel(filterType) {
@@ -1771,7 +1765,7 @@ function searchGooglePlaces() {
     };
     let radius = Math.min(googleRegionRadius ?? 50000, 50000);
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: "/api/google-places/search",
         type: "GET",
         data: {
@@ -1782,8 +1776,8 @@ function searchGooglePlaces() {
         },
         success: function (data) {
             try {
-                let parsedData = typeof data === "string" ? JSON.parse(data) : data; // JSON 문자열인지 확인 후 변환
-                let results = parsedData.places || []; // `places` 키에서 데이터 가져오기
+                let parsedData = typeof data === "string" ? JSON.parse(data) : data;
+                let results = parsedData.places || [];
                 clearGoogleMarkers();
                 displayGoogleSearchResults(results);
             } catch (error) {
@@ -1795,6 +1789,7 @@ function searchGooglePlaces() {
         }
     });
 }
+
 
 // 구글 Place Text Search 결과 출력
 function displayGoogleSearchResults(places) {
@@ -1900,16 +1895,13 @@ function registerPlace(button) {
             }
         });
 
-        $.ajax({
+        apiWithAutoRefresh({
             url: "/api/place/register",
             type: "POST",
-            xhrFields: {
-                withCredentials: true
-            },
             contentType: "application/json",
             data: JSON.stringify({ placeId: placeId }),
             success: function (response) {
-                const place = response.place; // 백엔드에서 내려준 PlaceDTO
+                const place = response.place;
 
                 if (response.status === 201) {
                     Swal.fire({
@@ -1957,6 +1949,7 @@ function registerPlace(button) {
         });
     });
 }
+
 
 //구글 검색창에서 엔터키 누를시 검색
 function handleGoogleKeyPress(event) {
