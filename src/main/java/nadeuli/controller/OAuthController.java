@@ -49,7 +49,7 @@ public class OAuthController {
 
     private static final String KAKAO_UNLINK_URL = "https://kapi.kakao.com/v1/user/unlink";
     private static final String GOOGLE_UNLINK_URL = "https://oauth2.googleapis.com/revoke?token=";
-    private static final String GOOGLE_TOKEN_URL = ""; // 비어있음
+
 
     @DeleteMapping("/unlink")
     public ResponseEntity<Map<String, Object>> unlinkUser() {
@@ -79,7 +79,7 @@ public class OAuthController {
         User user = userOptional.get();
         Long id = user.getId(); // UID 가져오기
         String provider = user.getProvider();
-        String accessToken = user.getProviderRefreshToken();
+        String accessToken = user.getProviderAccessToken();
 //        String refreshToken = user.getRefreshToken(); // ✅ 구글 재발급용
 
         log.info("[OAuthUnlink] 회원 탈퇴 요청 - UID: {}, Email: {}", id, email);
@@ -95,19 +95,7 @@ public class OAuthController {
         // 3️⃣ OAuth 계정 해제 요청
         boolean unlinkSuccess = switch (provider.toLowerCase()) {
             case "kakao" -> unlinkKakaoUser(accessToken);
-            case "google" -> {
-                boolean success = unlinkGoogleUser(accessToken);
-//                if (!success && refreshToken != null && !refreshToken.isEmpty()) {
-//                    String newAccessToken = refreshGoogleAccessToken(refreshToken);
-//                    if (newAccessToken != null) {
-//                        log.info("[Google] access_token 재발급 성공 → unlink 재시도");
-//                        success = unlinkGoogleUser(newAccessToken);
-//                    } else {
-//                        log.warn("[Google] access_token 재발급 실패 → unlink 불가");
-//                    }
-//                }
-                yield success;
-            }
+            case "google" -> unlinkGoogleUser(accessToken);
             default -> {
                 log.error("[OAuthUnlink] 지원되지 않는 OAuth 제공자 - UID: {}, provider: {}", id, provider);
                 yield false;
@@ -177,28 +165,5 @@ public class OAuthController {
         }
         return false;
     }
-
-    // ✅ 구글 refresh_token 으로 access_token 재발급
-//    private String refreshGoogleAccessToken(String refreshToken) {
-//        try {
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-//
-//            String body = "client_id=" + env.getProperty("oauth.google.client-id")
-//                    + "&client_secret=" + env.getProperty("oauth.google.client-secret")
-//                    + "&refresh_token=" + refreshToken
-//                    + "&grant_type=refresh_token";
-//
-//            HttpEntity<String> request = new HttpEntity<>(body, headers);
-//            ResponseEntity<Map> response = restTemplate.postForEntity(GOOGLE_TOKEN_URL, request, Map.class);
-//
-//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-//                return (String) response.getBody().get("access_token");
-//            }
-//        } catch (Exception e) {
-//            log.error("[Google] access_token 재발급 실패: {}", e.getMessage());
-//        }
-//        return null;
-//    }
 
 }

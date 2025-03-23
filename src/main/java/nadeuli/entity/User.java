@@ -65,8 +65,11 @@ public class User implements Serializable {
     @Column(name = "user_role", nullable = false, length = 20)
     private UserRole userRole;
 
-    @Column(name = "provider_refresh_token", columnDefinition = "TEXT")
-    private String providerRefreshToken;
+    @Column(name = "provider_id", nullable = false, columnDefinition = "TEXT")
+    private String providerId;
+
+    @Column(name = "provider_access_token", columnDefinition = "TEXT")
+    private String providerAccessToken;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
@@ -75,22 +78,18 @@ public class User implements Serializable {
     private LocalDateTime createdAt;
 
 
-    public void updateProfile(String userName, String profileImage, String provider, String providerRefreshToken, LocalDateTime lastLoginAt) {
+    public void updateProfile(String userName, String profileImage, String provider, String providerAccessToken, LocalDateTime lastLoginAt) {
         this.userName = userName;
         this.profileImage = profileImage;
         this.provider = provider;
-
-        if (providerRefreshToken != null && !providerRefreshToken.isEmpty()) {
-            this.providerRefreshToken = providerRefreshToken;
-        }
-
+        this.providerAccessToken = providerAccessToken;
         this.lastLoginAt = lastLoginAt;
     }
 
     public static User of(Long id, String userEmail, String provider, String userName,
-                          String profileImage, UserRole userRole, String providerRefreshToken,
+                          String profileImage, UserRole userRole,String providerId, String providerAccessToken,
                           LocalDateTime lastLoginAt, LocalDateTime createdAt) {
-        return new User(id, userEmail, provider, userName, profileImage, userRole, providerRefreshToken, lastLoginAt, createdAt);
+        return new User(id, userEmail, provider, userName, profileImage, userRole, providerId, providerAccessToken, lastLoginAt, createdAt);
     }
 
     @PrePersist
@@ -101,7 +100,7 @@ public class User implements Serializable {
     }
 
     public static User createNewUser(String userEmail, String userName, String profileImage, String provider,
-                                     String providerRefreshToken, LocalDateTime lastLoginAt) {
+                                     String providerId, String providerAccessToken, LocalDateTime lastLoginAt) {
         return new User(
                 null,
                 userEmail,
@@ -109,7 +108,8 @@ public class User implements Serializable {
                 userName,
                 profileImage,
                 UserRole.MEMBER,
-                providerRefreshToken,
+                providerId,
+                providerAccessToken,
                 lastLoginAt,
                 LocalDateTime.now()
         );

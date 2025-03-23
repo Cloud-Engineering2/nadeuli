@@ -176,12 +176,21 @@ function unlink() {
         method: "DELETE",
         credentials: "include"
     })
-        .then(res => res.json())
+        .then(res => {
+            if (res.status === 500) {
+                // 서버 오류 시 로그인 페이지로 리다이렉트
+                location.href = "/login?redirect=/mypage";
+                throw new Error("Internal Server Error");
+            }
+            return res.json();
+        })
         .then(data => {
             if (data.success) {
                 alert("회원 탈퇴 완료되었습니다.");
-                fetch("/auth/logout", {method: "POST", credentials: "include"})
-                    .finally(() => location.href = "/");
+                fetch("/auth/logout", {
+                    method: "POST",
+                    credentials: "include"
+                }).finally(() => location.href = "/");
             } else {
                 alert("회원 탈퇴 실패: " + data.message);
             }

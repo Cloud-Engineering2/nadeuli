@@ -75,7 +75,7 @@ public class ProfileController {
         }
 
         String newProfileUrl = s3Service.uploadProfileImage(file, user.getProfileImage());
-        user.updateProfile(user.getUserName(), newProfileUrl, user.getProvider(), user.getProviderRefreshToken(), user.getLastLoginAt());
+        user.updateProfile(user.getUserName(), newProfileUrl, user.getProvider(), user.getProviderAccessToken(), user.getLastLoginAt());
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("success", true, "profileImage", newProfileUrl));
@@ -102,7 +102,7 @@ public class ProfileController {
                 newName,
                 user.getProfileImage(),
                 user.getProvider(),
-                user.getProviderRefreshToken(),
+                user.getProviderAccessToken(),
                 user.getLastLoginAt()
         );
         userRepository.save(user);
