@@ -1,3 +1,19 @@
+/* ProfileController.java
+ * ProfileController
+ * 프로필 관련 페이지 컨트롤러
+ * 작성자 : 국경민
+ * 최초 작성 날짜 : 2025-03-기억이 안남..
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자       날짜       수정 / 보완 내용
+ * ========================================================
+ * 국경민     2025.03.??    최초작성
+ * 국경민     2025.03.23    이름변경 추가
+ * ========================================================
+ */
+
 package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +68,35 @@ public class ProfileController {
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("success", true, "profileImage", newProfileUrl));
+    }
+
+    /**
+     * ✅ 이름 변경 API
+     */
+    @PostMapping("/profile/name")
+    public ResponseEntity<?> updateUserName(@RequestBody Map<String, String> payload) {
+        String newName = payload.get("name");
+
+        if (newName == null || newName.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("이름이 비어 있습니다.");
+        }
+
+        User user = extractAuthenticatedUser();
+        if (user == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        // 이름만 변경
+        user.updateProfile(
+                newName,
+                user.getProfileImage(),
+                user.getProvider(),
+                user.getUserToken(),
+                user.getLastLoginAt()
+        );
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("success", true));
     }
 
     /**
