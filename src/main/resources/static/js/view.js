@@ -1055,34 +1055,11 @@ $(document).on("click", ".traveler-addition-button", function() {
     document.getElementById("travelerModal").style.display = "block";
 
     // 리스트 조회
-    $.ajax({
-        url: `/api/itinerary/${iid}/travelers`,
-        method: "GET",
-        dataType: "json",
-        success: function(response) {
-            const travelerList = document.getElementById("travelerList");
-
-            // 여행자 배열을 순회하여 HTML 요소로 추가
-            response.travelers.forEach(traveler => {
-                const travelerDiv = document.createElement("div");
-                travelerDiv.classList.add("traveler-item"); // 클래스 추가 (스타일링을 위한 선택)
-
-                // 여행자 이름과 예산 출력
-                travelerDiv.innerHTML = `
-                    <p><strong>이름:</strong> ${traveler.name} <!--<span>예산:</span> ${traveler.totalBudget}--> <button class="traveler-delete-button" id="travelerDeleteButton" data-tid="${traveler.id}">삭제</button></p>
-                `;
-
-                // 생성한 travelerDiv를 travelerList에 추가
-                travelerList.appendChild(travelerDiv);
-            });
-        },
-    });
-
+    loadTravelerList(iid);
 });
 
-// 여행자, 예산 추가 모달
+// 여행자 추가 모달
 document.getElementById("travelerSendButton").addEventListener("click", function() {
-
     // 여행 ID 가져오기
     let pathSegments = window.location.pathname.split("/"); // '/' 기준으로 자름
     let iid = pathSegments[pathSegments.length - 1]; // 마지막 값이 ID
@@ -1091,12 +1068,10 @@ document.getElementById("travelerSendButton").addEventListener("click", function
 
     // 입력값 가져오기
     const travelerName = document.getElementById("travelerName").value;
-    // const travelerBudget = parseInt(document.getElementById("travelerBudget").value);
 
     // 입력값이 모두 있는지 확인
-    if (travelerName) { //  && travelerBudget) {
+    if (travelerName) {
         console.log("여행자 이름:", travelerName);
-        // console.log("여행자 예산:", travelerBudget);
 
         // 예를 들어 서버로 전송하는 경우
         $.ajax({
@@ -1105,10 +1080,16 @@ document.getElementById("travelerSendButton").addEventListener("click", function
             contentType: "application/json",
             data: JSON.stringify({
                 travelerName: travelerName,
-                totalBudget: 0 // travelerBudget
+                totalBudget: 0 // 예산 값 설정
             }),
             success: function(response) {
                 console.log("여행자 추가 성공:", response);
+
+                // 여행자 추가 후 모달 업데이트
+                loadTravelerList(iid);
+            },
+            error: function(error) {
+                console.error("여행자 추가 실패:", error);
             }
         });
 
@@ -1124,6 +1105,61 @@ document.getElementById("travelerSendButton").addEventListener("click", function
     }
 });
 
+
+// 여행자 삭제 버튼 클릭 시 처리
+$(document).on("click", ".traveler-delete-button", function() {
+    const iid = $(this).data("iid"); // 여행 ID
+    const tid = $(this).data("tid"); // 여행자 ID
+    const travelerName = $(this).data("tname"); // 여행자 이름
+
+    // 여행자 삭제 요청
+    $.ajax({
+        url: `/api/itinerary/${iid}/traveler/${travelerName}`,
+        method: "DELETE",
+        dataType: "json",
+        success: function(response) {
+            console.log("여행자 삭제 성공:", response);
+
+            // 삭제 후 리스트 다시 불러오기
+            loadTravelerList(iid);
+        },
+        error: function(error) {
+            console.error("여행자 삭제 실패:", error);
+        }
+    });
+});
+
+
+// 여행자 목록을 모달에 로드하는 함수
+function loadTravelerList(iid) {
+    $.ajax({
+        url: `/api/itinerary/${iid}/travelers`,
+        method: "GET",
+        dataType: "json",
+        success: function(response) {
+            const travelerList = document.getElementById("travelerList");
+            travelerList.innerHTML = ""; // 기존 리스트 초기화
+
+            // 여행자 배열을 순회하여 HTML 요소로 추가
+            response.travelers.forEach(traveler => {
+                const travelerDiv = document.createElement("div");
+                travelerDiv.classList.add("traveler-item"); // 클래스 추가 (스타일링을 위한 선택)
+
+                // 여행자 이름과 예산 출력
+                travelerDiv.innerHTML = `
+                    <p><strong>이름:</strong> ${traveler.name} <!--<span>예산:</span> ${traveler.totalBudget}--> 
+                    <button class="traveler-delete-button" id="travelerDeleteButton" data-iid="${iid}" data-tid="${traveler.id}" data-tname="${traveler.name}">삭제</button></p>
+                `;
+
+                // 생성한 travelerDiv를 travelerList에 추가
+                travelerList.appendChild(travelerDiv);
+            });
+        },
+        error: function(error) {
+            console.error("여행자 목록 조회 실패:", error);
+        }
+    });
+}
 
 
 $(document).on("click", ".toggle-map-button", function () {
