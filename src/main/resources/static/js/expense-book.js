@@ -685,8 +685,15 @@ async function callApiAt(url, method, requestData) {
             throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
         }
 
-        const data = response.headers.get("Content-Length") === "0" ? null : await response.json();
-        return data;
+        const contentType = response.headers.get("Content-Type");
+        if (contentType && contentType.includes("application/json")) {
+            return await response.json(); // JSON 데이터 파싱 후 반환
+        } else {
+            // JSON 외의 데이터 형식에 대해 처리할 수 있는 로직 추가
+            const text = await response.text();
+            console.warn("예상하지 못한 응답 형식:", text);
+            return text;
+        }
     } catch (error) {
         console.error("에러 발생:", error);
         throw error;
