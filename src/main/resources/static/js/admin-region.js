@@ -303,8 +303,8 @@ document.body.addEventListener('click', event => {
             radius: radius
         };
 
-        // ✅ Ajax 요청 (POST /api/admin/region/update)
-        $.ajax({
+        // ✅ apiWithAutoRefresh로 AJAX 요청
+        apiWithAutoRefresh({
             url: '/api/admin/region/update',
             method: 'POST',
             contentType: 'application/json',
@@ -427,13 +427,13 @@ function uploadImage(file) {
     formData.append("file", file);
     formData.append("regionId", regionId);
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/admin/region/upload/photo`,
-        type: 'POST',
+        method: 'POST',
         data: formData,
         processData: false,
         contentType: false,
-        success: function(response) {
+        success: function (response) {
             const imageUrl = response.imageUrl || response;
             const row = $(`tr[data-id="${regionId}"]`);
             if (row.length) {
@@ -441,11 +441,12 @@ function uploadImage(file) {
             }
             alert('이미지가 업로드되었습니다!');
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.error(xhr);
             alert(xhr.responseJSON?.message || '이미지 업로드에 실패했습니다.');
         }
     });
 }
+
 
 

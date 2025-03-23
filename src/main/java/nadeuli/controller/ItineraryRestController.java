@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.request.ItineraryCreateRequestDTO;
 import nadeuli.dto.request.ItineraryTotalUpdateRequestDTO;
 import nadeuli.dto.response.*;
-import nadeuli.security.CustomUserDetails;
+import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.service.ItineraryCollaboratorService;
 import nadeuli.service.ItineraryService;
 import nadeuli.service.ShareService;

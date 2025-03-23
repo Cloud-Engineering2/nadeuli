@@ -2,7 +2,7 @@ package nadeuli.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
-import nadeuli.entity.constant.PlaceCategory.PlaceType;
+import nadeuli.common.enums.PlaceCategory.PlaceType;
 
 @Getter
 @Builder

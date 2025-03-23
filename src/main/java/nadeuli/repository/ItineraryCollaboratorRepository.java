@@ -14,10 +14,8 @@
  */
 package nadeuli.repository;
 
-import nadeuli.dto.response.CollaboratorResponse;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
-import nadeuli.entity.constant.CollaboratorRole;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

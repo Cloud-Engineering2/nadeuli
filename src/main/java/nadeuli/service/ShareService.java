@@ -26,7 +26,7 @@ import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
 import nadeuli.entity.ShareToken;
 import nadeuli.entity.User;
-import nadeuli.entity.constant.CollaboratorRole;
+import nadeuli.common.enums.CollaboratorRole;
 import nadeuli.repository.ItineraryCollaboratorRepository;
 import nadeuli.repository.ItineraryRepository;
 import nadeuli.repository.ShareTokenRepository;

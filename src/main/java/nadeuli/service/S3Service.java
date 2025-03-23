@@ -33,7 +33,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import nadeuli.common.PhotoType;
+import nadeuli.common.enums.PhotoType;
 import nadeuli.repository.JournalRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;

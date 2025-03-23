@@ -21,7 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import nadeuli.entity.constant.PlaceCategory.PlaceType;
+import nadeuli.common.enums.PlaceCategory.PlaceType;
 
 import java.io.Serializable;
 

@@ -29,7 +29,7 @@ import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
 import nadeuli.dto.response.ItineraryEventSimpleDTO;
 import nadeuli.dto.response.ItineraryTotalReadResponseDTO;
-import nadeuli.security.CustomUserDetails;
+import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.service.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

@@ -20,7 +20,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import nadeuli.entity.constant.ItineraryRegionId;
+import nadeuli.entity.embedded.ItineraryRegionId;
 
 @Getter
 @Entity

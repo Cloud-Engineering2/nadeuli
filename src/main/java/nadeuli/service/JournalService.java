@@ -27,7 +27,7 @@ package nadeuli.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import nadeuli.common.PhotoType;
+import nadeuli.common.enums.PhotoType;
 import nadeuli.dto.JournalDTO;
 import nadeuli.dto.JournalSimpleDTO;
 import nadeuli.entity.ItineraryEvent;
@@ -40,7 +40,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
