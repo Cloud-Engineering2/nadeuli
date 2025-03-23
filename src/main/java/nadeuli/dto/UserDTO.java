@@ -35,10 +35,18 @@ public class UserDTO {
     private String profileImage;
     private String provider;
     private UserRole userRole;
-    private String providerRefreshToken;
+    private String providerId;
+    private String providerAccessToken;
     private String lastLoginAt;
     private String createdAt;
 
+
+    // 새로운 생성자 추가 (프로필용)
+    public UserDTO(String userName, String userEmail, String profileImage) {
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.profileImage = profileImage;
+    }
 
     public static UserDTO from(User user) {
         return new UserDTO(
@@ -48,7 +56,8 @@ public class UserDTO {
                 user.getProfileImage(),
                 user.getProvider(),
                 user.getUserRole(),
-                user.getProviderRefreshToken(),
+                user.getProviderId(),
+                user.getProviderAccessToken(),
                 formatDateTime(user.getLastLoginAt()),
                 formatDateTime(user.getCreatedAt())
         );
@@ -62,7 +71,8 @@ public class UserDTO {
                 this.userName,
                 this.profileImage,
                 this.userRole,
-                this.providerRefreshToken,
+                this.providerId,
+                this.providerAccessToken,
                 parseDateTime(this.lastLoginAt),
                 parseDateTime(this.createdAt)
         );
