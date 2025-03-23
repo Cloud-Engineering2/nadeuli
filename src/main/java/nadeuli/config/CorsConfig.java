@@ -13,9 +13,18 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
+
+                // 본인: 마이페이지 등 인증이 필요한 auth API
+                registry.addMapping("/auth/**")
+                        .allowedOrigins("http://localhost:3000")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowCredentials(true); // 쿠키 인증
+
+                // 팀원: REST API (예: itinerary, journal 등)
                 registry.addMapping("/api/**")
                         .allowedOrigins("http://localhost:3000")
-                        .allowedMethods("GET", "POST");
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowCredentials(true);
             }
         };
     }

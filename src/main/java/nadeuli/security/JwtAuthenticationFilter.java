@@ -57,6 +57,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
+                // 인증 성공 로그 추가
+                log.info("✅ JWT 인증 성공: {} ({})", user.getUserEmail(), request.getRequestURI());
                 UserDetails userDetails = new CustomUserDetails(user);
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

@@ -33,7 +33,6 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/auth/**", "/auth/unlink/**").permitAll()
                         .requestMatchers("/auth/refresh", "/auth/refresh/**").permitAll()
-                        .requestMatchers("/auth/user/**").permitAll()
                         .requestMatchers("/join/**").permitAll()
                         .requestMatchers("/login", "/mypage").permitAll()
                         .requestMatchers("/api/share/join").permitAll()
