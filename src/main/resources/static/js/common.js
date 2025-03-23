@@ -24,3 +24,30 @@ function closeNadeuliAlert(id) {
 }
 
 window.closeNadeuliAlert = closeNadeuliAlert;
+
+
+
+
+function apiWithAutoRefresh(options) {
+    $.ajax({
+        ...options,
+        success: options.success,
+        error: function (xhr, status, error) {
+            if (xhr.status === 401 && xhr.responseJSON?.recoveryHint === '/auth/refresh-rest') {
+                $.post('/auth/refresh-rest', null, function (data) {
+                    if (data.success) {
+                        $.ajax(options);
+                    } else {
+                        alert('다시 로그인 해주세요.');
+                        window.location.href = '/login';
+                    }
+                }).fail(function () {
+                    alert('다시 로그인 해주세요.');
+                    window.location.href = '/login';
+                });
+            } else {
+                if (options.error) options.error(xhr, status, error);
+            }
+        }
+    });
+}

@@ -29,7 +29,7 @@ public class JwtUtils {
     private final Key key;
 
     public static final String EXCEPTION_ATTRIBUTE = "exception";
-    private static final long ACCESS_TOKEN_EXPIRATION = 50 * 60 * 1000;
+    private static final long ACCESS_TOKEN_EXPIRATION = 20 * 1000;
     private static final long REFRESH_TOKEN_EXPIRATION = 1000L * 60 * 60 * 24 * 7;
 
     public JwtUtils(@Value("${jwt.secret}") String secretKey,
