@@ -1,3 +1,17 @@
+/* CustomOidcUser.java
+ * nadeuli Service - 여행
+ * Spring Security OIDC 인증 사용자 커스텀 구현 클래스 (Google OAuth2 용)
+ * 작성자 : 박한철
+ * 최초 작성 일자 : 2025.03.23
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자        날짜        수정 / 보완 내용
+ * ========================================================
+ * 박한철    2025.03.23     최초 작성 : OidcUser 구현체 - Google 로그인 사용자 속성 처리
+ */
+
 package nadeuli.auth.oauth;
 
 import org.springframework.security.core.GrantedAuthority;

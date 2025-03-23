@@ -1,3 +1,17 @@
+/* CustomAuthenticationEntryPoint.java
+ * nadeuli Service - 여행
+ * JWT 인증 실패 핸들링 클래스 (Global Security EntryPoint 처리)
+ * 작성자 : 박한철
+ * 최초 작성 일자 : 2025.03.23
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자        날짜        수정 / 보완 내용
+ * ========================================================
+ * 박한철    2025.03.23     최초 작성 : JWT 인증 실패 처리 로직 구현 (HTML/REST 분기)
+ */
+
 package nadeuli.auth.handler;
 
 import jakarta.servlet.http.HttpServletRequest;

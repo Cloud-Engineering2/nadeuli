@@ -1,3 +1,19 @@
+/* JwtRedisService.java
+ * nadeuli Service - 여행
+ * JWT RefreshToken 및 블랙리스트 Redis 관리 유틸리티 클래스
+ * 작성자 : 박한철
+ * 최초 작성 일자 : 2025.03.23
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자        날짜        수정 / 보완 내용
+ * ========================================================
+ * 박한철    2025.03.23     최초 작성 : RefreshToken 저장/검증/삭제 및 블랙리스트 관리 구현
+ * 박한철    2025.03.23     AccessToken 블랙리스트 관리 로직 추가 (현재 성능상 미사용)
+ * 박한철    2025.03.23     토큰 재발급 및 쿠키 응답 처리 기능 구현
+ */
+
 package nadeuli.service;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -101,6 +117,7 @@ public class JwtRedisService {
 
     /**
      * AccessToken 블랙리스트 여부 확인
+     * (필터가 매번 redis에 접근하는건 성능상 안좋을거같아서 미사용중 - 엑세스토큰주기를 줄이는걸로 해결)
      */
     public boolean isBlacklistedAccessToken(String token) {
         return Boolean.TRUE.equals(redisTemplate.hasKey("jwt:blacklist:" + token));

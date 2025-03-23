@@ -1,3 +1,17 @@
+/* JwtUtils.java
+ * nadeuli Service - 여행
+ * JWT 토큰 생성 및 검증 유틸리티 클래스
+ * 작성자 : 김대환, 국경민
+ * 최초 작성 일자 : 2025.03.18
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자        날짜        수정 / 보완 내용
+ * ========================================================
+ * 김대환,국경민 2025.03.18     최초 작성 : Access/RefreshToken 생성 및 유효성 검증 로직 구현
+ * 박한철    2025.03.23      리펙토링
+ */
 package nadeuli.common.util;
 
 import io.jsonwebtoken.*;
@@ -18,7 +32,7 @@ import java.util.Optional;
 public class JwtUtils {
 
     private static Key key;
-    private static final long ACCESS_TOKEN_EXPIRATION = 20 * 1000;
+    private static final long ACCESS_TOKEN_EXPIRATION = 30 * 60 * 1000;
     private static final long REFRESH_TOKEN_EXPIRATION = 1000L * 60 * 60 * 24 * 7;
     public static final String EXCEPTION_ATTRIBUTE = "exception";
 
@@ -91,133 +105,3 @@ public class JwtUtils {
     }
 }
 
-
-//    /**
-//     * Redis 키 구성 - jwt:refresh:{email}:{sessionId} OK
-//     */
-//    private String buildRedisKey(String email, String sessionId) {
-//        return "jwt:refresh:" + URLEncoder.encode(email, StandardCharsets.UTF_8) + ":" + sessionId;
-//    }
-//
-//    /**
-//     * RefreshToken을 Redis에 저장 OK
-//     */
-//    public void storeRefreshTokenInRedis(String email, String sessionId, TokenResponse refreshToken) {
-//        String redisKey = buildRedisKey(email, sessionId);
-//        Duration expireDuration = Duration.between(LocalDateTime.now(), refreshToken.expiryAt);
-//        redisTemplate.opsForValue().set(redisKey, refreshToken.token, expireDuration);
-//    }
-//
-//
-//    /**
-//     * Redis에 저장된 RefreshToken과 요청된 토큰 일치 여부 검증 OK
-//     */
-//    public boolean validateRefreshTokenInRedis(String email, String sessionId, String token) {
-//        String key = buildRedisKey(email, sessionId);
-//        try {
-//            String storedToken = redisTemplate.opsForValue().get(key);
-//            return token.equals(storedToken);
-//        } catch (Exception e) {
-//            log.error("Redis 조회 오류: {}", e.getMessage(), e);
-//            return false;
-//        }
-//    }
-//
-//    /**
-//     * Redis에서 RefreshToken 삭제 OK
-//     */
-//    public void deleteRefreshTokenFromRedis(String accessToken, String sessionId) {
-//        try {
-//            String email = extractEmail(accessToken);
-//            String key = buildRedisKey(email, sessionId);
-//            redisTemplate.delete(key);
-//        } catch (Exception e) {
-//            log.error("Redis 삭제 오류: {}", e.getMessage(), e);
-//        }
-//    }
-//
-//    /**
-//     * AccessToken 블랙리스트 등록 OK
-//     */
-//    public void blacklistAccessToken(String token) {
-//        try {
-//            Date expiration = extractAllClaims(token).getExpiration();
-//            Duration ttl = Duration.ofMillis(expiration.getTime() - System.currentTimeMillis());
-//            redisTemplate.opsForValue().set("jwt:blacklist:" + token, "blacklisted", ttl);
-//        } catch (Exception e) {
-//            log.error("AccessToken 블랙리스트 실패: {}", e.getMessage(), e);
-//        }
-//    }
-//
-//    /**
-//     * AccessToken 블랙리스트 여부 확인
-//     */
-//    public boolean isBlacklistedAccessToken(String token) {
-//        return Boolean.TRUE.equals(redisTemplate.hasKey("jwt:blacklist:" + token));
-//    }
-//
-//    /**
-//     * RefreshToken 블랙리스트 등록 OK
-//     */
-//    public void blacklistRefreshToken(String token) {
-//        try {
-//            Date expiration = extractAllClaims(token).getExpiration();
-//            Duration ttl = Duration.ofMillis(expiration.getTime() - System.currentTimeMillis());
-//            redisTemplate.opsForValue().set("jwt:blacklist:refresh:" + token, "blacklisted", ttl);
-//        } catch (Exception e) {
-//            log.error("RefreshToken 블랙리스트 실패: {}", e.getMessage(), e);
-//        }
-//    }
-//
-//    /**
-//     * RefreshToken 블랙리스트 여부 확인 OK
-//     */
-//    public boolean isBlacklistedRefreshToken(String token) {
-//        return Boolean.TRUE.equals(redisTemplate.hasKey("jwt:blacklist:refresh:" + token));
-//    }
-//    /**
-//     * RefreshToken 유효 시 토큰 재발급 및 쿠키 세팅
-//     */
-//    public TokenReissueResult reissueTokensAndSetCookies(String refreshToken, String sessionId, HttpServletResponse response) {
-//        try {
-//            // 1. 블랙리스트 체크
-//            if (isBlacklistedRefreshToken(refreshToken)) {
-//                throw new IllegalStateException("Blacklisted Refresh Token");
-//            }
-//
-//            // 2. 토큰에서 이메일 추출
-//            String email = extractEmail(refreshToken);
-//
-//            // 3. Redis에 저장된 RefreshToken과 비교
-//            if (!validateRefreshTokenInRedis(email, sessionId, refreshToken)) {
-//                throw new IllegalStateException("Invalid Refresh Token in Redis");
-//            }
-//
-//            // 4. 새로운 Access/RefreshToken 발급
-//            String newAccessToken = generateAccessToken(email);
-//            TokenResponse newRefreshToken = generateRefreshToken(email);
-//
-//            // 5. 기존 RefreshToken → 블랙리스트 등록
-//            blacklistRefreshToken(refreshToken);
-//
-//            // 6. Redis에 새로운 RefreshToken 저장
-//            storeRefreshTokenInRedis(email, sessionId, newRefreshToken);
-//
-//            // 7. 쿠키 설정
-//            ResponseCookie accessTokenCookie = CookieUtils.createAccessTokenCookie(newAccessToken);
-//            ResponseCookie refreshTokenCookie = CookieUtils.createRefreshTokenCookie(newRefreshToken.token);
-//            ResponseCookie sessionIdCookie = CookieUtils.createSessionIdCookie(sessionId);
-//            CookieUtils.addCookies(response, accessTokenCookie, refreshTokenCookie, sessionIdCookie);
-//
-//            return new TokenReissueResult(true, email, newAccessToken, newRefreshToken.token);
-//
-//        } catch (Exception e) {
-//            log.error("토큰 재발급 실패: {}", e.getMessage(), e);
-//            CookieUtils.deleteAuthCookies(response);
-//            return new TokenReissueResult(false, null, null, null);
-//        }
-//    }
-//
-
-
-//    }
