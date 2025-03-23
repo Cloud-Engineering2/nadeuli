@@ -79,8 +79,8 @@ public class OAuthController {
         User user = userOptional.get();
         Long id = user.getId(); // UID 가져오기
         String provider = user.getProvider();
-        String accessToken = user.getProviderRefreshToken(); // 얜 가지고 있지 않음
-        String refreshToken =  user.getProviderRefreshToken(); // DB엔 얘만을 가지고 있음
+        String accessToken = user.getProviderRefreshToken();
+//        String refreshToken = user.getRefreshToken(); // ✅ 구글 재발급용
 
         log.info("[OAuthUnlink] 회원 탈퇴 요청 - UID: {}, Email: {}", id, email);
 
@@ -97,15 +97,15 @@ public class OAuthController {
             case "kakao" -> unlinkKakaoUser(accessToken);
             case "google" -> {
                 boolean success = unlinkGoogleUser(accessToken);
-                if (!success && refreshToken != null && !refreshToken.isEmpty()) {
-                    String newAccessToken = refreshGoogleAccessToken(refreshToken);
-                    if (newAccessToken != null) {
-                        log.info("[Google] access_token 재발급 성공 → unlink 재시도");
-                        success = unlinkGoogleUser(newAccessToken);
-                    } else {
-                        log.warn("[Google] access_token 재발급 실패 → unlink 불가");
-                    }
-                }
+//                if (!success && refreshToken != null && !refreshToken.isEmpty()) {
+//                    String newAccessToken = refreshGoogleAccessToken(refreshToken);
+//                    if (newAccessToken != null) {
+//                        log.info("[Google] access_token 재발급 성공 → unlink 재시도");
+//                        success = unlinkGoogleUser(newAccessToken);
+//                    } else {
+//                        log.warn("[Google] access_token 재발급 실패 → unlink 불가");
+//                    }
+//                }
                 yield success;
             }
             default -> {
@@ -179,26 +179,26 @@ public class OAuthController {
     }
 
     // ✅ 구글 refresh_token 으로 access_token 재발급
-    private String refreshGoogleAccessToken(String refreshToken) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-            String body = "client_id=" + env.getProperty("oauth.google.client-id")
-                    + "&client_secret=" + env.getProperty("oauth.google.client-secret")
-                    + "&refresh_token=" + refreshToken
-                    + "&grant_type=refresh_token";
-
-            HttpEntity<String> request = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(GOOGLE_TOKEN_URL, request, Map.class);
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return (String) response.getBody().get("access_token");
-            }
-        } catch (Exception e) {
-            log.error("[Google] access_token 재발급 실패: {}", e.getMessage());
-        }
-        return null;
-    }
+//    private String refreshGoogleAccessToken(String refreshToken) {
+//        try {
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//
+//            String body = "client_id=" + env.getProperty("oauth.google.client-id")
+//                    + "&client_secret=" + env.getProperty("oauth.google.client-secret")
+//                    + "&refresh_token=" + refreshToken
+//                    + "&grant_type=refresh_token";
+//
+//            HttpEntity<String> request = new HttpEntity<>(body, headers);
+//            ResponseEntity<Map> response = restTemplate.postForEntity(GOOGLE_TOKEN_URL, request, Map.class);
+//
+//            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+//                return (String) response.getBody().get("access_token");
+//            }
+//        } catch (Exception e) {
+//            log.error("[Google] access_token 재발급 실패: {}", e.getMessage());
+//        }
+//        return null;
+//    }
 
 }

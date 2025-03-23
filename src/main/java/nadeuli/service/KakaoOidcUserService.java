@@ -16,7 +16,6 @@
  * 국경민, 김대환    2025.03.19     최초 작성 - Kakao OAuth 로그인 처리 및 JWT 토큰 발급 로직 구현
  * 김대환    2025.03.19     User_Role 기본값 지정
  * 박한철    2025.03.20     Email과 Provider를 동시에 검증하도록 수정
- * 박한철    2025.03.23     jwt with redis로 바꾸면서 리펙토링
  * ========================================================
  */
 package nadeuli.service;
@@ -134,4 +133,39 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
         }
         return current.toString();
     }
+
+//    private String extractEmailFromAttributes(Map<String, Object> attributes) {
+//        if (attributes.containsKey("email")) {
+//            return attributes.get("email").toString();
+//        }
+//        if (attributes.containsKey("kakao_account")) {
+//            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+//            if (kakaoAccount.containsKey("email")) {
+//                return kakaoAccount.get("email").toString();
+//            }
+//        }
+//        return null;
+//    }
+//
+//    private String extractUserNameFromAttributes(Map<String, Object> attributes) {
+//        if (attributes.containsKey("kakao_account")) {
+//            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+//            if (kakaoAccount.containsKey("profile")) {
+//                Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+//                return profile.getOrDefault("nickname", "").toString();
+//            }
+//        }
+//        return "";
+//    }
+//
+//    private String extractProfileImageFromAttributes(Map<String, Object> attributes) {
+//        if (attributes.containsKey("kakao_account")) {
+//            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+//            if (kakaoAccount.containsKey("profile")) {
+//                Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+//                return profile.getOrDefault("profile_image_url", "").toString();
+//            }
+//        }
+//        return "";
+//    }
 }
