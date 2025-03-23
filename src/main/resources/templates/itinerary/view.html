@@ -15,10 +15,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/common-alert.css">
     <link rel="stylesheet" href="/css/view.css">
     <link rel="stylesheet" href="/css/expense-book.css">
     <link rel="stylesheet" href="/css/header-footer.css">
     <link rel="stylesheet" href="/css/journal-modal.css">
+    <script type="module" src="/js/common.js"></script>
+    <script type="module" src="/js/journal-modal.js"></script>
+
+
     <style>
 
 
@@ -51,11 +56,11 @@
             <!-- 기존 좌우 영역 유지 -->
             <div class="left-space">
                 <div class="content-header">
-                    <span id="date-time"></span>
+                    <span id="date-time" style="font-family: 'GriunNoltoTAENGGU';"></span>
                     <div class="content-header-button">
-                        <button id="write-btn" onclick="enableEditMode()" style="display: none">✏️</button>
-                        <button id="edit-btn" onclick="enableEditMode()" style="display: none">✏️</button>
-                        <button id="delete-btn" onclick="confirmDelete()" style="display: none">❌</button>
+                        <button id="write-btn" onclick="enableEditMode()" style="display: none" title="기행문 작성">✏️</button>
+                        <button id="edit-btn" onclick="enableEditMode()" style="display: none" title="기행문 수정">✏️</button>
+                        <button id="delete-btn" onclick="confirmDelete()" style="display: none" title="기행문 삭제">❌</button>
                     </div>
                 </div>
                 <hr class="divider">
@@ -77,10 +82,10 @@
             <div class="right-space">
                 <div class="image-header">
                     <div class="image-header-button">
-                        <button id="upload-btn" onclick="uploadPhoto()" style="display: none">🖼️</button>
-                        <button id="download-btn" onclick="downloadPhoto()" style="display: none">💾</button>
-                        <button id="modify-btn" onclick="modifyPhoto()" style="display: none">🖼️</button>
-                        <button id="remove-btn" onclick="confirmPhotoDelete()" style="display: none">❌</button>
+                        <button id="upload-btn" onclick="uploadPhoto()" style="display: none" title="사진 첨부">🖼️</button>
+                        <button id="download-btn" onclick="downloadPhoto()" style="display: none" title="사진 받기">💾</button>
+                        <button id="modify-btn" onclick="modifyPhoto()" style="display: none" title="사진 변경">🖼️</button>
+                        <button id="remove-btn" onclick="confirmPhotoDelete()" style="display: none" title="사진 삭제">❌</button>
                     </div>
                 </div>
 

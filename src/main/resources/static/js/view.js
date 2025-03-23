@@ -474,8 +474,8 @@ function getKoreanLabel(filterType) {
         LODGING: "숙소",
         CAFE: "카페",
         TRANSPORTATION: "교통",
-        ATTRACTION: "어트랙션",
-        CONVENIENCE: "편의시설"
+        ATTRACTION: "여가 시설",
+        CONVENIENCE: "편의 시설"
     };
 
     return filterMap[filterType] || "알 수 없음";
@@ -886,7 +886,7 @@ $(document).on("dblclick", ".event", function () {
                     </div>
                     <div style="margin-bottom: 6px;">
                         <img src="${eventData.placeDTO.imageUrl || '/default-placeholder.jpg'}" 
-                             alt="장소 이미지" 
+                             alt="장소 사진" 
                              style="width: 200px; height: 100px; border-radius: 6px; object-fit: cover;">
                     </div>
                     <button class="btn btn-sm btn-outline-primary w-100" 
@@ -1055,7 +1055,7 @@ function updateTabs() {
     // "전체 일정" 탭 추가
     let allTab = document.createElement("span");
     allTab.classList.add("tab-btn");
-    allTab.textContent = "전체일정";
+    allTab.textContent = "전체 일정";
     allTab.setAttribute("data-day", "all");
     allTab.addEventListener("click", function () {
         showSchedule("all");
@@ -1168,12 +1168,12 @@ $(document).on("click", ".event-image-wrap", async function () {
     const hashId = $(this).closest(".event").data("id");
     const event = getEventById(hashId);
     if (!event || !event.id) {
-        console.warn("해당 이벤트 정보를 찾을 수 없습니다.");
+        console.warn("해당 방문지 정보를 찾을 수 없습니다.");
         return;
     }
 
     const eventId = event.id;
-    console.log("🖼 클릭한 이벤트 ID:", eventId, ", hashId:", hashId);
+    console.log("🖼 클릭한 방문지 ID:", eventId, ", hashId:", hashId);
 
     await fetchJournal(itineraryId, eventId); // 저널 데이터 가져오기
     openJournalModal(); // 모달 열기
