@@ -19,7 +19,6 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.response.AdjustmentResponseDTO;
-import nadeuli.dto.response.EventExpenseSummaryDTO;
 import nadeuli.dto.response.EventExpenseSummaryTotalResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
 import nadeuli.service.ExpenseBookService;
@@ -64,10 +63,13 @@ public class ExpenseBookController {
         FinanceResponseDTO financeResponseDTO = expenseBookService.getAdjustment(itineraryId);
         Long totalExpense = financeResponseDTO.getTotalExpense();
 
+        System.out.println("totalExpense: " + totalExpense); // 🔥 확인
+
         // 지출, 잔액 갱신
         ExpenseBookDTO expenseBookDto = expenseBookService.updateExpenseBook(itineraryId, totalExpense);
 
         Long balance = expenseBookDto.getTotalBudget() - totalExpense;
+
 
         return ResponseEntity.ok(new AdjustmentResponseDTO(financeResponseDTO.getAdjustment(),
                                                             financeResponseDTO.getEachExpenses(),
