@@ -1,4 +1,4 @@
-package nadeuli.entity.constant;
+package nadeuli.common.enums;
 
 public enum CollaboratorRole {
     ROLE_OWNER,

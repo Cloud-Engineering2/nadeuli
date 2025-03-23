@@ -17,7 +17,6 @@ package nadeuli.dto.request;
 
 
 import lombok.Getter;
-import nadeuli.entity.constant.PlaceCategory;
 
 import java.util.List;
 

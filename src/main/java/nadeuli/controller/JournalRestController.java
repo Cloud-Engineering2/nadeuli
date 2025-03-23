@@ -29,7 +29,7 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.JournalDTO;
 import nadeuli.dto.JournalSimpleDTO;
-import nadeuli.security.CustomUserDetails;
+import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.service.ItineraryCollaboratorService;
 import nadeuli.service.ItineraryEventService;
 import nadeuli.service.JournalService;

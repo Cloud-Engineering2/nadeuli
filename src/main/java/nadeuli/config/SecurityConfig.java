@@ -1,8 +1,11 @@
-package nadeuli.config.auth;
+package nadeuli.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nadeuli.security.JwtAuthenticationFilter;
+import nadeuli.auth.handler.CustomAuthenticationEntryPoint;
+import nadeuli.auth.handler.CustomAuthorizationRequestResolver;
+import nadeuli.auth.handler.CustomOAuth2SuccessHandler;
+import nadeuli.auth.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,6 +27,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler; // ✅ 주입
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthorizationRequestResolver customResolver) throws Exception {
@@ -53,6 +57,8 @@ public class SecurityConfig {
 //                        .defaultSuccessUrl("/mypage", true) // (선택) 기본 리다이렉트 경로
 //                        .failureUrl("/login?error=true") // 실패 시 리다이렉트
                 )
+                .exceptionHandling(
+                        config -> config.authenticationEntryPoint(customAuthenticationEntryPoint))
 //                .logout(logout -> logout.logoutUrl("/logout").permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable());

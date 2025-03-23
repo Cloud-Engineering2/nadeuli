@@ -21,9 +21,8 @@ package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nadeuli.security.CustomUserDetails;
+import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.service.ItineraryCollaboratorService;
-import nadeuli.service.ItineraryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;

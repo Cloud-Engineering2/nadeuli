@@ -16,10 +16,10 @@
  * ========================================================
  */
 
-package nadeuli.config.auth;
+package nadeuli.common.advice;
 
 import nadeuli.entity.User;
-import nadeuli.security.CustomUserDetails;
+import nadeuli.auth.oauth.CustomUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;

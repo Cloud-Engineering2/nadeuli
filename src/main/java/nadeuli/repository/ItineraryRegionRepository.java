@@ -16,7 +16,7 @@ package nadeuli.repository;
 
 
 import nadeuli.entity.ItineraryRegion;
-import nadeuli.entity.constant.ItineraryRegionId;
+import nadeuli.entity.embedded.ItineraryRegionId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

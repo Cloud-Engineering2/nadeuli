@@ -605,9 +605,8 @@ function generateItineraryJSON() {
     return itineraryJSON;
 }
 
-function itineraryCreateSubmit(){
-    // Step 3 → 완료 (모달 닫기 + 저장 처리)
-    console.log("✅ 플래너 생성 시도중 ");
+function itineraryCreateSubmit() {
+    console.log("✅ 플래너 생성 시도중");
 
     // 버튼 및 입력요소 비활성화
     nextButton.disabled = true;
@@ -619,9 +618,9 @@ function itineraryCreateSubmit(){
 
     const itineraryJSON = generateItineraryJSON();
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: "/api/itinerary/create",
-        type: "POST",
+        method: "POST",
         contentType: "application/json",
         data: JSON.stringify(itineraryJSON),
         beforeSend: function () {

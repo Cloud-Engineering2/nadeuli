@@ -1,4 +1,4 @@
-package nadeuli.config.auth;
+package nadeuli.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

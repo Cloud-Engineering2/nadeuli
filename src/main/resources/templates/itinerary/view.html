@@ -20,14 +20,7 @@
     <link rel="stylesheet" href="/css/expense-book.css">
     <link rel="stylesheet" href="/css/header-footer.css">
     <link rel="stylesheet" href="/css/journal-modal.css">
-    <script type="module" src="/js/common.js"></script>
-    <script type="module" src="/js/journal-modal.js"></script>
 
-
-    <style>
-
-
-    </style>
 
 </head>
 <body>
@@ -198,9 +191,10 @@
                 </div>
             </div>
 </div>
+<script src="/js/common.js"></script>
 <script src="/js/view.js"></script>
 <script src="/js/expense-book.js"></script>
-<script src="/js/journal-modal.js"></script>
+<script src="/js/journal-common.js"></script>
 <script async th:src="@{'https://maps.googleapis.com/maps/api/js?libraries=places,visualization&key=' + ${googleApiKey} + '&v=weekly&callback=initMap'}">
 </script>
 

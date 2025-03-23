@@ -17,7 +17,7 @@
  * ========================================================
  */
 
-package nadeuli.exception;
+package nadeuli.common.exception;
 
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
