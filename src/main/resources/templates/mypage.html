@@ -17,7 +17,7 @@
         <!-- ✅ 프로필 제목 + 드롭다운 버튼 -->
         <div class="profile-header">
             <button id="profileDropdownBtn" class="profile-title">내 정보</button>
-            <button id="deleteAccount" class="delete-btn" onclick="unlink()">회원탈퇴</button>
+            <button id="deleteAccount" class="delete-btn" onclick="unlink()">회원 탈퇴</button>
         </div>
 
         <!-- ✅ 프로필 이미지 -->
@@ -32,7 +32,7 @@
         <!-- ✅ 드롭다운 메뉴 -->
         <div id="profileDropdown" class="dropdown-menu">
             <button onclick="triggerNameEdit()">이름 변경</button>
-            <button onclick="downloadProfileImage()">사진 받기</button>
+            <button id="downloadProfileBtn" onclick="downloadProfileImage()">사진 받기</button>
             <button onclick="triggerFileUpload()">사진 변경</button>
         </div>
 

@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.entity.User;
 import nadeuli.repository.UserRepository;
+import nadeuli.service.S3Service;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -44,59 +45,59 @@ public class OAuthController {
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
     private final Environment env;
+    private final S3Service s3Service;
 
     private static final String KAKAO_UNLINK_URL = "https://kapi.kakao.com/v1/user/unlink";
     private static final String GOOGLE_UNLINK_URL = "https://oauth2.googleapis.com/revoke?token=";
+    private static final String GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @CookieValue(name = "accessToken", required = false) String accessTokenFromCookie,
+            @CookieValue(name = "refreshToken", required = false) String refreshTokenFromCookie) {
 
-@PostMapping("/logout")
-public ResponseEntity<Map<String, Object>> logout(
-        @RequestHeader(value = "Authorization", required = false) String authHeader,
-        @CookieValue(name = "accessToken", required = false) String accessTokenFromCookie,
-        @CookieValue(name = "refreshToken", required = false) String refreshTokenFromCookie) {
+        log.info("로그아웃 요청 - Authorization Header: {}", authHeader);
 
-    log.info("로그아웃 요청 - Authorization Header: {}", authHeader);
+        String jwtAccessToken = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwtAccessToken = authHeader.replace("Bearer ", "").trim();
+        } else if (accessTokenFromCookie != null) {
+            jwtAccessToken = accessTokenFromCookie;
+        }
 
-    String jwtAccessToken = null;
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-        jwtAccessToken = authHeader.replace("Bearer ", "").trim();
-    } else if (accessTokenFromCookie != null) {
-        jwtAccessToken = accessTokenFromCookie;
-    }
-
-    if (jwtAccessToken == null) {
-        log.warn("로그아웃 요청 - 인증 정보 없음");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-                "success", false,
-                "message", "로그인된 사용자가 없습니다."
-        ));
-    }
-
-    ResponseCookie expiredAccessTokenCookie = ResponseCookie.from("accessToken", "")
-            .path("/")
-            .maxAge(0)
-            .httpOnly(true)
-            .secure(true) // ✅ 로그인 시 secure=true였다면 반드시 필요
-            .build();
-
-    ResponseCookie expiredRefreshTokenCookie = ResponseCookie.from("refreshToken", "")
-            .path("/")
-            .maxAge(0)
-            .httpOnly(true)
-            .secure(true) // ✅ 로그인 시 secure=true였다면 반드시 필요
-            .build();
-
-    log.info("로그아웃 성공 - accessToken, refreshToken 삭제 완료");
-
-    return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
-            .header(HttpHeaders.SET_COOKIE, expiredRefreshTokenCookie.toString()) // 이렇게 이어서!
-            .body(Map.of(
-                    "success", true,
-                    "message", "로그아웃 완료"
+        if (jwtAccessToken == null) {
+            log.warn("로그아웃 요청 - 인증 정보 없음");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "success", false,
+                    "message", "로그인된 사용자가 없습니다."
             ));
-}
+        }
 
+        ResponseCookie expiredAccessTokenCookie = ResponseCookie.from("accessToken", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(true) // ✅ 로그인 시 secure=true였다면 반드시 필요
+                .build();
+
+        ResponseCookie expiredRefreshTokenCookie = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(true) // ✅ 로그인 시 secure=true였다면 반드시 필요
+                .build();
+
+        log.info("로그아웃 성공 - accessToken, refreshToken 삭제 완료");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, expiredRefreshTokenCookie.toString()) // 이렇게 이어서!
+                .body(Map.of(
+                        "success", true,
+                        "message", "로그아웃 완료"
+                ));
+    }
 
 
     @DeleteMapping("/unlink")
@@ -128,6 +129,7 @@ public ResponseEntity<Map<String, Object>> logout(
         Long id = user.getId(); // UID 가져오기
         String provider = user.getProvider();
         String accessToken = user.getUserToken();
+        String refreshToken = user.getRefreshToken(); // ✅ 구글 재발급용
 
         log.info("[OAuthUnlink] 회원 탈퇴 요청 - UID: {}, Email: {}", id, email);
 
@@ -142,7 +144,19 @@ public ResponseEntity<Map<String, Object>> logout(
         // 3️⃣ OAuth 계정 해제 요청
         boolean unlinkSuccess = switch (provider.toLowerCase()) {
             case "kakao" -> unlinkKakaoUser(accessToken);
-            case "google" -> unlinkGoogleUser(accessToken);
+            case "google" -> {
+                boolean success = unlinkGoogleUser(accessToken);
+                if (!success && refreshToken != null && !refreshToken.isEmpty()) {
+                    String newAccessToken = refreshGoogleAccessToken(refreshToken);
+                    if (newAccessToken != null) {
+                        log.info("[Google] access_token 재발급 성공 → unlink 재시도");
+                        success = unlinkGoogleUser(newAccessToken);
+                    } else {
+                        log.warn("[Google] access_token 재발급 실패 → unlink 불가");
+                    }
+                }
+                yield success;
+            }
             default -> {
                 log.error("[OAuthUnlink] 지원되지 않는 OAuth 제공자 - UID: {}, provider: {}", id, provider);
                 yield false;
@@ -157,7 +171,19 @@ public ResponseEntity<Map<String, Object>> logout(
             ));
         }
 
-        // 4️⃣ 사용자 삭제
+        // 4️⃣ 사용자 삭제 전 - S3 프로필 이미지 삭제
+        String profileImageUrl = user.getProfileImage();
+        if (profileImageUrl != null && s3Service.isS3Image(profileImageUrl)) {
+            log.info("[OAuthUnlink] S3 이미지 삭제 시도: {}", profileImageUrl);
+            try {
+                s3Service.deleteFile(profileImageUrl);
+                log.info("[OAuthUnlink] S3 이미지 삭제 완료");
+            } catch (Exception e) {
+                log.warn("[OAuthUnlink] S3 이미지 삭제 실패: {}", e.getMessage());
+            }
+        }
+
+        // 5️⃣  사용자 삭제
         userRepository.delete(user);
         log.info("[OAuthUnlink] OAuth 계정 해제 및 사용자 삭제 완료 - UID: {}, provider: {}", id, provider);
 
@@ -200,4 +226,28 @@ public ResponseEntity<Map<String, Object>> logout(
         }
         return false;
     }
+
+    // ✅ 구글 refresh_token 으로 access_token 재발급
+    private String refreshGoogleAccessToken(String refreshToken) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            String body = "client_id=" + env.getProperty("oauth.google.client-id")
+                    + "&client_secret=" + env.getProperty("oauth.google.client-secret")
+                    + "&refresh_token=" + refreshToken
+                    + "&grant_type=refresh_token";
+
+            HttpEntity<String> request = new HttpEntity<>(body, headers);
+            ResponseEntity<Map> response = restTemplate.postForEntity(GOOGLE_TOKEN_URL, request, Map.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return (String) response.getBody().get("access_token");
+            }
+        } catch (Exception e) {
+            log.error("[Google] access_token 재발급 실패: {}", e.getMessage());
+        }
+        return null;
+    }
+
 }

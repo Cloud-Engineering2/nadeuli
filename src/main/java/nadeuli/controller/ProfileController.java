@@ -36,6 +36,7 @@ import java.util.Map;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -134,24 +135,26 @@ public class ProfileController {
 
         try {
             String imageUrl = user.getProfileImage();
-            if (imageUrl.contains("s3")) {
-            return s3Service.downloadFile(imageUrl); // ✅ S3 이미지 처리
+            if (imageUrl.contains("s3") || imageUrl.contains("cloudfront.net")) {
+                return s3Service.downloadFile(imageUrl); // ✅ S3 또는 CloudFront 이미지 처리
             } else {
-            // ✅ 외부 URL 이미지 (카카오/구글)
-            URL url = new URL(imageUrl);
-            URLConnection conn = url.openConnection();
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-            String contentType = conn.getContentType();
-            InputStream inputStream = conn.getInputStream();
-            InputStreamResource resource = new InputStreamResource(inputStream);
+                // ✅ 외부 URL 이미지 (카카오/구글)
+                URL url = new URL(imageUrl);
+                URLConnection conn = url.openConnection();
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+                String contentType = conn.getContentType();
+                InputStream inputStream = conn.getInputStream();
+                InputStreamResource resource = new InputStreamResource(inputStream);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(contentType));
-            headers.set("Content-Disposition", "attachment; filename=\"profile_image.jpg\"");
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.parseMediaType(contentType));
+                headers.setContentDispositionFormData("attachment", "profile_image.jpg");
 
-            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+                return new ResponseEntity<>(resource, headers, HttpStatus.OK);
             }
         } catch (Exception e) {
+            System.err.println("🚨 다운로드 실패 - 예외 발생: " + e.getMessage());
+            e.printStackTrace(); // 로그로 반드시 출력해야 콘솔에서 보임
             return ResponseEntity.status(500).build();
         }
     }

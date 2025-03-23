@@ -78,6 +78,18 @@ public class S3Service {
     public String uploadFile(MultipartFile file, PhotoType kind) {
         System.out.println("🔥 S3 & Cloud Front - 사진 올리기 실행!");
 
+        // ✅ 1️⃣ 파일 크기 제한 (20MB)
+        long maxSize = 20 * 1024 * 1024; // 20MB
+        if (file.getSize() > maxSize) {
+            throw new IllegalArgumentException("파일 크기가 20MB를 초과할 수 없습니다.");
+        }
+
+        // ✅ 2️⃣ 파일 타입 제한
+        String contentType = file.getContentType();
+        if (contentType == null || !isSupportedImageType(contentType)) {
+            throw new IllegalArgumentException("지원하지 않는 이미지 형식입니다.");
+        }
+
         try {
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             String s3Key;
@@ -115,7 +127,6 @@ public class S3Service {
             throw new RuntimeException("파일 업로드 실패", e);
         }
     }
-
 
 
     // MIME 타입 -> 확장자 매핑
@@ -173,11 +184,19 @@ public class S3Service {
     // cloud front cache 는 24시간 후 자동 소멸 => s3 파일 삭제 후 해당 url 접속할 일 x => 따로 처리 안 함
     public void deleteFile(String imageURL) {
 
+        try {
         String s3Key = extractRelativePathFromUrl(imageURL);
 
         // S3 - 사진 삭제
         System.out.println("🔥 사진 삭제 : " + s3Key);
+        System.out.println("🔥 삭제할 버킷: " + bucketName);
+        System.out.println("🔥 실제 S3 삭제 API 호출");
         amazonS3.deleteObject(bucketName, s3Key);
+        System.out.println("✅ 삭제 요청 완료");
+        } catch (Exception e) {
+            System.err.println("🚨 S3 파일 삭제 실패: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // DB 에 저장된 image URL => s3 에 저장된 파일 이름 추출 함수
@@ -197,8 +216,13 @@ public class S3Service {
     public ResponseEntity<Resource> downloadFile(String imageURL) throws UnsupportedEncodingException {
         Resource resource = null;
 
+        try {
+
         // key ; 경로 + 파일명
         String key = extractRelativePathFromUrl(imageURL);
+        System.out.println("📥 S3 다운로드 요청 - 원본 URL: " + imageURL);
+        System.out.println("🔑 S3 Key 추출 결과: " + key);
+
         S3Object s3Object = amazonS3.getObject(bucketName, key);
         S3ObjectInputStream s3Is = s3Object.getObjectContent(); // 자동 매핑
         resource = new InputStreamResource(s3Is); // resource 로 매핑
@@ -215,7 +239,13 @@ public class S3Service {
 
         return new ResponseEntity<Resource>(resource, headers, HttpStatus.OK);
 
+    } catch (Exception e) {
+        System.err.println("🚨 S3 파일 다운로드 중 오류 발생: " + e.getMessage());
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+
+}
 
     /**
      * ✅ 프로필 사진 업로드 (기존 사진 삭제 후 업로드)
@@ -224,13 +254,27 @@ public class S3Service {
         System.out.println("🔥 프로필 사진 업로드 실행!");
 
         // 기존 S3 프로필 사진 삭제 (카카오/구글 기본 프로필은 삭제 안 함)
-        if (currentProfileUrl != null && currentProfileUrl.contains("s3")) {
+        if (currentProfileUrl != null && currentProfileUrl.contains(cloudFrontUrl)) {
+            System.out.println("🗑️ 기존 프로필 S3 이미지 삭제 시도: " + currentProfileUrl);
             deleteFile(currentProfileUrl);
+        } else {
+            System.out.println("⚠️ S3 이미지가 아니므로 삭제 생략: " + currentProfileUrl);
         }
 
         return uploadFile(file, PhotoType.PROFILE);
     }
 
+    public boolean isS3Image(String imageUrl) {
+        return imageUrl != null && imageUrl.contains(cloudFrontUrl);
+    }
+
+    private boolean isSupportedImageType(String contentType) {
+        return contentType.equals("image/jpeg") ||
+                contentType.equals("image/png") ||
+                contentType.equals("image/webp") ||
+                contentType.equals("image/gif") ||
+                contentType.equals("image/bmp");
+    }
 }
 
 
