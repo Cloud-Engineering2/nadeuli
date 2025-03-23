@@ -111,7 +111,7 @@ public class GoogleOidcUserService extends OidcUserService {
     private String cloudFrontUrl;
 
     private User updateExistingUser(User user, String name, String profileImage, String googleAccessToken) {
-        boolean tokenUpdated = !googleAccessToken.equals(user.getUserToken());
+        boolean tokenUpdated = !googleAccessToken.equals(user.getProviderRefreshToken());
 
         String currentProfileImage = user.getProfileImage();
 
@@ -122,11 +122,9 @@ public class GoogleOidcUserService extends OidcUserService {
         String updatedProfileImage = isUserProfileFromS3 ? currentProfileImage : profileImage;
 
         if (tokenUpdated) {
-            log.info("Google Access Token 변경 감지! 기존 값: {}, 새 값: {}", user.getUserToken(), googleAccessToken);
+            log.info("Google Access Token 변경 감지! 기존 값: {}, 새 값: {}", user.getProviderRefreshToken(), googleAccessToken);
             user.updateProfile(updatedName, updatedProfileImage, "google", googleAccessToken, LocalDateTime.now());
 
-            TokenResponse refreshTokenResponse = JwtUtils.generateRefreshToken(user.getUserEmail());
-            user.updateRefreshToken(refreshTokenResponse.token, refreshTokenResponse.expiryAt);
         } else {
             log.info("기존 Google Access Token 유지: {}", googleAccessToken);
             user.updateProfile(updatedName, updatedProfileImage, "google", null, LocalDateTime.now());
@@ -137,7 +135,7 @@ public class GoogleOidcUserService extends OidcUserService {
 
     private User createNewUser(String email, String name, String profileImage, String googleAccessToken) {
         TokenResponse refreshTokenResponse = JwtUtils.generateRefreshToken(email);
-        return User.createNewUser(email, name, profileImage, "google", googleAccessToken, LocalDateTime.now(), refreshTokenResponse.token, refreshTokenResponse.expiryAt);
+        return User.createNewUser(email, name, profileImage, "google", googleAccessToken, LocalDateTime.now());
     }
 
     private String getSafeString(Map<String, Object> map, String key) {

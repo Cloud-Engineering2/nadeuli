@@ -108,7 +108,7 @@ public class OAuthController {
 
         User user = userOptional.get();
         String provider = user.getProvider();
-        String accessToken = user.getUserToken();
+        String accessToken = user.getProviderRefreshToken();
 
         if (accessToken == null || accessToken.isEmpty()) {
             log.warn("[OAuthUnlink] 저장된 Access Token 없음 - 이메일: {}", email);

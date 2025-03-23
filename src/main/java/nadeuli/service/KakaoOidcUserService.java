@@ -106,7 +106,7 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
     private User updateExistingUser(User user, String name, String profileImage, String kakaoAccessToken) {
         log.info("기존 사용자 정보 업데이트 - Email: {}, AccessToken 변경 여부: {}",
                 user.getUserEmail(),
-                !kakaoAccessToken.equals(user.getUserToken()));
+                !kakaoAccessToken.equals(user.getProviderRefreshToken()));
 
         String currentProfileImage = user.getProfileImage();
 
@@ -122,7 +122,7 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
 
     private User createNewUser(String email, String name, String profileImage, String kakaoAccessToken) {
         TokenResponse refreshTokenResponse = JwtUtils.generateRefreshToken(email);
-        return User.createNewUser(email, name, profileImage, "kakao", kakaoAccessToken, LocalDateTime.now(), refreshTokenResponse.token, refreshTokenResponse.expiryAt);
+        return User.createNewUser(email, name, profileImage, "kakao", kakaoAccessToken, LocalDateTime.now());
     }
 
     private String getNestedSafeString(Map<String, Object> parent, String... keys) {
@@ -134,39 +134,4 @@ public class KakaoOidcUserService extends DefaultOAuth2UserService {
         }
         return current.toString();
     }
-
-//    private String extractEmailFromAttributes(Map<String, Object> attributes) {
-//        if (attributes.containsKey("email")) {
-//            return attributes.get("email").toString();
-//        }
-//        if (attributes.containsKey("kakao_account")) {
-//            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-//            if (kakaoAccount.containsKey("email")) {
-//                return kakaoAccount.get("email").toString();
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private String extractUserNameFromAttributes(Map<String, Object> attributes) {
-//        if (attributes.containsKey("kakao_account")) {
-//            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-//            if (kakaoAccount.containsKey("profile")) {
-//                Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-//                return profile.getOrDefault("nickname", "").toString();
-//            }
-//        }
-//        return "";
-//    }
-//
-//    private String extractProfileImageFromAttributes(Map<String, Object> attributes) {
-//        if (attributes.containsKey("kakao_account")) {
-//            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-//            if (kakaoAccount.containsKey("profile")) {
-//                Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-//                return profile.getOrDefault("profile_image_url", "").toString();
-//            }
-//        }
-//        return "";
-//    }
 }

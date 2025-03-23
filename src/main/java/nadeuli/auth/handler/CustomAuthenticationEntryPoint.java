@@ -50,7 +50,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                 case INVALID_TOKEN -> "/login?error=invalidToken";
                 case INVALID_TOKEN_SIGNATURE -> "/login?error=invalidSignature";
                 case UNSUPPORTED_TOKEN -> "/login?error=unsupportedToken";
-                case UNEXPECTED_TOKEN -> "/error/500";
+                case UNEXPECTED_TOKEN -> "/error";
             };
             response.sendRedirect(redirectUrl);
 
@@ -84,47 +84,4 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             response.getWriter().write(errorJson);
         }
     }
-
-//    @Override
-//    public void commence(HttpServletRequest request, HttpServletResponse response,
-//                         AuthenticationException authException) throws IOException {
-//        log.warn("\uD83D\uDD12 {} commence", CustomAuthenticationEntryPoint.class.getName());
-//        String accept = request.getHeader("Accept");
-//        log.warn("🔒 인증 실패: 요청 Accept: {}", accept);
-//
-//        if (accept != null && accept.contains("text/html")) {
-//            log.warn("🔒 VIEW : {}", accept);
-//            // View 요청 → Refresh 처리 페이지로 리디렉트
-//
-//        } else {
-//            log.warn("🔒 REST: {}", accept);
-//            // API 요청 → JSON 응답
-//
-//        }
-//    }
-    //            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.setContentType("application/json");
-//            response.getWriter().write("{\"success\": false, \"message\": \"Access Token Expired\"}");
-
-
-
-//            String originalUrl = request.getRequestURI();
-//            String redirectUrl = "/auth/refresh?redirect=" + URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
-//            response.sendRedirect(redirectUrl);
-    //        Integer errorCode = (Integer) request.getAttribute("exception");
-//        if (errorCode == null) {
-//            setResponse(response, ErrorCode.UNKNOWN_ERROR);
-//        } else if (errorCode == ErrorCode.EXPIRED_TOKEN.getCode()) {
-//            setResponse(response, ErrorCode.EXPIRED_TOKEN);
-//        } else if (errorCode == ErrorCode.WRONG_TYPE_TOKEN.getCode()) {
-//            setResponse(response, ErrorCode.WRONG_TYPE_TOKEN);
-//        } // ... 기타 코드 분기
-//    private void setResponse(HttpServletResponse response, ErrorCode code) throws IOException {
-//        response.setContentType("application/json;charset=UTF-8");
-//        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//        JSONObject body = new JSONObject();
-//        body.put("message", code.getMessage());
-//        body.put("code", code.getCode());
-//        response.getWriter().print(body);
-//    }
 }
