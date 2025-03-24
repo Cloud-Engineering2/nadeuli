@@ -12,9 +12,9 @@
  * 박한철     2025.03.19    경로 변경에 따른 import 변경
  * 박한철     2025.03.24    actuator 관련 처리 추가
  * 이홍비     2025.03.24    .requestMatchers("/actuator/**").permitAll()로 변경
+ *                         .requestMatchers("/actuator/**").hasAnyAuthority("ACTUATOR_ADMIN") 으로 변경
  * ========================================================
  */
-
 
 
 package nadeuli.config;
@@ -64,8 +64,8 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
                         // ✅ 정적 리소스 허용 (CSS, JS, 이미지, 폰트)
                         .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**").permitAll()
-                        //.requestMatchers("/actuator/**").hasRole("ACTUATOR_ADMIN")
-                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/actuator/**").hasAnyAuthority("ACTUATOR_ADMIN")
+//                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
