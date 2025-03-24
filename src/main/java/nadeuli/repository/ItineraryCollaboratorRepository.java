@@ -40,4 +40,6 @@ public interface ItineraryCollaboratorRepository extends JpaRepository<Itinerary
     List<ItineraryCollaborator> findCollaboratorsByItineraryId(@Param("itineraryId") Long itineraryId);
 
     Optional<ItineraryCollaborator> findByItinerary_IdAndIcRole(Long itineraryId, String icRole);
+
+    void deleteByItinerary(Itinerary itinerary);
 }
