@@ -189,8 +189,11 @@ function renderTotalBudgetExpenseSummary() {
     const $wrap = $('.total-budget-expense-wrap');
     $wrap.empty();
 
-    let pathSegments = window.location.pathname.split("/"); // '/' 기준으로 자름
+    let pathSegments = window.location.pathname.split("/");
     let iid = pathSegments[pathSegments.length - 1]; // 마지막 값이 ID
+    console.log("여기 itinerary Id 출력");
+    console.log(iid); // '12'가 출력되어야 합니다.
+
 
 
     $.ajax({
@@ -223,6 +226,7 @@ function renderTotalBudgetExpenseSummary() {
         },
         error: function (xhr, status, error) {
             console.error("Error refreshing expense summary:", error);
+            console.log("🔥 서버 응답:", xhr.responseText); // 응답 내용을 확인!
         }
     });
 
@@ -1068,10 +1072,8 @@ $(document).on("click", ".traveler-addition-button", function() {
     // 여행 ID 가져오기
     let pathSegments = window.location.pathname.split("/"); // '/' 기준으로 자름
     let iid = pathSegments[pathSegments.length - 1]; // 마지막 값이 ID
-
     // 모달창 열기
     document.getElementById("travelerModal").style.display = "block";
-
     // 리스트 조회
     loadTravelerList(iid);
 });
@@ -1086,9 +1088,7 @@ document.getElementById("travelerSendButton").addEventListener("click", function
 
     // 입력값 가져오기
     const travelerName = document.getElementById("travelerName").value;
-
-    // 입력값이 모두 있는지 확인
-    if (travelerName) {
+    if (travelerName) { // 입력값이 모두 있는지 확인
         console.log("여행자 이름:", travelerName);
 
         // 예를 들어 서버로 전송하는 경우
@@ -1116,7 +1116,7 @@ document.getElementById("travelerSendButton").addEventListener("click", function
 
         // 입력값 초기화 (모달을 다시 열 때 값이 비어 있도록 설정)
         document.getElementById("travelerName").value = "";
-        document.getElementById("travelerBudget").value = "";
+        // document.getElementById("travelerBudget").value = 0;
     } else {
         // 입력값이 비어 있으면 알림 표시
         alert("이름과 예산을 모두 입력해주세요.");
