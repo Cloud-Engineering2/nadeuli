@@ -189,25 +189,43 @@ function renderTotalBudgetExpenseSummary() {
     const $wrap = $('.total-budget-expense-wrap');
     $wrap.empty();
 
-    // 예산 출력
-    const budgetHtml = `
-        <div class="total-budget">예산: ${totalBudget.toLocaleString()} 원</div>
-    `;
+    let pathSegments = window.location.pathname.split("/"); // '/' 기준으로 자름
+    let iid = pathSegments[pathSegments.length - 1]; // 마지막 값이 ID
 
-    // 지출/수익 계산
-    let expenseHtml = '';
-    if (totalExpense === 0) {
-        expenseHtml = `<div class="total-expense">지출: 0 원</div>`;
-    } else {
-        const isProfit = totalExpense < 0;
-        const displayAmount = isProfit ? `+ ${Math.abs(totalExpense).toLocaleString()}` : `- ${totalExpense.toLocaleString()}`;
-        const colorClass = isProfit ? "profit-expense" : "cost-expense";
 
-        expenseHtml = `<div class="total-expense ${colorClass}">지출: ${displayAmount} 원</div>`;
-    }
+    $.ajax({
+        url: `/api/itineraries/${iid}/adjustment` ,
+        method: "GET",
+        dataType: "json",
+        success: function (response) {
+            const displayTotalBudget = response.expenseBookDTO.totalBudget;
+            const displayTotalExpense = response.expenseBookDTO.totalExpenses;
 
-    $wrap.append(budgetHtml);
-    $wrap.append(expenseHtml);
+            // 예산 출력
+            const budgetHtml = `
+                                        <div class="total-budget">예산: ${displayTotalBudget.toLocaleString()} 원</div>
+                                    `;
+            // 지출/수익 계산
+            let expenseHtml = '';
+            // if (totalExpense === 0) {
+            //     expenseHtml = `<div class="total-expense">지출: 0 원</div>`;
+            // } else {
+            //     const isProfit = totalExpense < 0;
+                const isProfit = displayTotalExpense < 0;
+                const displayAmount = isProfit ? `+ ${Math.abs(displayTotalExpense).toLocaleString()}` : `- ${displayTotalExpense.toLocaleString()}`;
+                const colorClass = isProfit ? "profit-expense" : "cost-expense";
+
+                expenseHtml = `<div class="total-expense ${colorClass}">지출: ${displayAmount} 원</div>`;
+            // }
+
+            $wrap.append(budgetHtml);
+            $wrap.append(expenseHtml);
+        },
+        error: function (xhr, status, error) {
+            console.error("Error refreshing expense summary:", error);
+        }
+    });
+
 }
 
 // 이벤트 요소 생성 함수 (장소 보관함 & 일반 이벤트 공통 사용)

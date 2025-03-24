@@ -952,3 +952,16 @@
     text-decoration: none;
     cursor: pointer;
 }
+
+.traveler-addition-button {
+    background-color: #efe9d8;
+    border-color: #efe9d8;
+    padding: 0;
+    scrollbar-color: #efe9d8 #efe9d8;
+    width: 30px;
+    height: 30px;
+}
+.fa-person-walking-luggage::before {
+    width: 35px;
+    height: 35px;
+}
