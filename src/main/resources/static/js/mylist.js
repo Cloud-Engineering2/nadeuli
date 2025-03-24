@@ -700,3 +700,47 @@ $("#copyLinkBtn").click(function () {
     alert("링크가 복사되었습니다.");
 });
 
+function showPostTripModal(itineraryId) {
+    $("#postTripModal").data("itinerary-id", itineraryId).modal("show");
+}
+
+$(document).on("click", ".go-to-view", function () {
+    const itineraryId = $("#postTripModal").data("itinerary-id");
+    window.location.href = `/itinerary/view/${itineraryId}`;
+});
+
+$(document).on("click", ".go-to-summary", function () {
+    const itineraryId = $("#postTripModal").data("itinerary-id");
+    window.location.href = `/itineraries/${itineraryId}/bottomline`;
+});
+
+$(document).on("click", ".card-itinerary", function (event) {
+    event.stopPropagation();
+    if (!$(event.target).closest(".menu-btn, .card-footer-right").length) {
+        const hashId = $(this).data("id");
+        const itinerary = getItineraryById(hashId);
+
+        if (!itinerary) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startDate = new Date(itinerary.startDate);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + itinerary.totalDays - 1);
+
+        if (today <= endDate) {
+            // 여행 시작 전 or 여행 중이면 바로 이동
+            window.location.href = `/itinerary/view/${itinerary.id}`;
+        } else {
+            // 여행 종료 후이면 선택 모달 띄우기
+            showPostTripModal(itinerary.id);
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});

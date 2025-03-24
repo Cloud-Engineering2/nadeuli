@@ -39,6 +39,9 @@ $(document).ready(function () {
     let pathSegments = window.location.pathname.split('/');
     itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
 
+    $(document).on('click', '.navigate-edit-button', function () {
+        window.location.href = `/itinerary/edit/${itineraryId}`;
+    });
 
     apiWithAutoRefresh({
         url: `/api/itinerary/${itineraryId}`,
@@ -1180,3 +1183,5 @@ $(document).on("click", ".event-image-wrap", async function () {
     await fetchJournal(itineraryId, eventId); // 저널 데이터 가져오기
     openJournalModal(); // 모달 열기
 });
+
+

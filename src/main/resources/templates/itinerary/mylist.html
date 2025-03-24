@@ -113,7 +113,22 @@
         </div>
     </div>
 </div>
-
+<div class="modal fade" id="postTripModal" tabindex="-1" role="dialog" aria-labelledby="postTripModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <h5 class="modal-title w-100" id="postTripModalLabel">여행이 종료되었습니다</h5>
+            </div>
+            <div class="modal-body">
+                <p>어떤 페이지로 이동하시겠습니까?</p>
+                <div class="d-flex justify-content-around mt-3">
+                    <button class="btn btn-primary go-to-view">여행 일정 보기</button>
+                    <button class="btn btn-outline-secondary go-to-summary">여행 최종 결산</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <div th:replace="~{fragments/footer :: footerFragment}"></div>
 <script src="/js/common.js"></script>
 <script src="/js/mylist.js"></script>
