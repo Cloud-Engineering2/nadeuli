@@ -10,7 +10,7 @@ let allMarkers = [];
 let allPolylines = [];
 let markerState = 0;
 let infoWindow=null;
-let isDirty = false;
+window.isDirty = false;
 let mapReady = false;
 let dataReady = false;
 let isPlacePageInitialLoad = false;
@@ -47,6 +47,38 @@ let itineraryId = null;
 $(document).ready(function () {
     let pathSegments = window.location.pathname.split('/');
     let itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
+
+    $(document).on('click', '.navigate-view-button', function () {
+        if(window.isDirty){
+            Swal.fire({
+                title: '저장되지 않은 변경 사항이 있습니다.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '나가기',
+                cancelButtonText: '취소',
+                reverseButtons: true,
+                customClass: {
+                    title: 'swal2-sm-title'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/auth/logout", {
+                        method: "POST",
+                        credentials: "include"
+                    }).then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.isDirty = false;
+                                window.location.href = `/itinerary/view/${itineraryId}`;
+                            }
+                        });
+                }
+            });
+        } else {
+            window.location.href = `/itinerary/view/${itineraryId}`;
+        }
+
+    });
 
     apiWithAutoRefresh({
         url: `/api/itinerary/${itineraryId}`,
@@ -528,7 +560,7 @@ function createSortableInstance(element) {
                 clearSavedPlaceMarker();
                 markerState = extractDayId(toDayId);
                 renderMarkerByMarkerState();
-                isDirty = true;
+                window.isDirty = true;
 
             })();
 
@@ -1147,7 +1179,7 @@ function dateChangeSubmit() {
         }
     }
     precomputeDayOfWeekMap();
-    isDirty = true;
+    window.isDirty = true;
     console.log("Updated perDayMap:", perDayMap);
 }
 
@@ -1291,7 +1323,7 @@ function saveItinerary() {
                 });
             }
 
-            isDirty = false;
+            window.isDirty = false;
 
             // 2️⃣ 저장 완료 모달 띄우기 (버튼 2개)
             Swal.fire({
@@ -1429,7 +1461,7 @@ $(document).on("click", ".event-remove", function () {
 
 
     }
-    isDirty = true;
+    window.isDirty = true;
 });
 
 
@@ -1479,7 +1511,7 @@ $(document).on("click", ".event-duplicate", function (event) {
     if (!eventData) return;
 
     cloneAndInsertBelow(eventId);
-    isDirty = true;
+    window.isDirty = true;
 });
 
 
@@ -1505,7 +1537,7 @@ $(document).on("click", ".event-duration-save", function (event) {
     // ⏳ 값 저장
     eventData.stayMinute = totalMinutes;
     eventData.isStayMinuteModified = true;
-    isDirty = true;
+    window.isDirty = true;
     // 📌 UI 업데이트
     updateEventDisplay(`day-${eventData.dayCount}`, 0);
 
@@ -1550,7 +1582,7 @@ $(document).on("change", ".travel-minute-input", function () {
     if (!eventData) return;
 
     eventData.movingMinuteFromPrevPlace = newValue;
-    isDirty = true;
+    window.isDirty = true;
 
     updateEventDisplay(`day-${eventData.dayCount}`, 0); // 전체 시간 재계산
 });
@@ -2459,7 +2491,7 @@ function placeToSavedPlace(place) {
     };
 
     addEvent(event);
-    isDirty = true;
+    window.isDirty = true;
     console.log(event.hashId);
     updateSavedPlaceUI([event]);
 }
@@ -2467,7 +2499,7 @@ function placeToSavedPlace(place) {
 
 // 수정 후 브라우저 뒤로가기,나가기, 새로고침시 경고 메세지
 window.addEventListener("beforeunload", function (e) {
-    if (isDirty) {
+    if (window.isDirty) {
         e.preventDefault();  // 크롬 기준 필요
         e.returnValue = '저장되지 않은 변경 사항이 있습니다. 정말 페이지를 나가시겠습니까?';
     }
@@ -2475,7 +2507,7 @@ window.addEventListener("beforeunload", function (e) {
 
 // 수정후 링크 이동시 경고 메세지
 function handleDirtyNavigation(targetUrl) {
-    if (!isDirty) {
+    if (!window.isDirty) {
         window.location.href = targetUrl;
         return;
     }
@@ -2499,7 +2531,17 @@ function handleDirtyNavigation(targetUrl) {
 
 
 // 수정 후 링크 이동시 경고 메세지 event 핸들러
-$("a[href]").click(function(e) {
+// $("a[href]").click(function(e) {
+//     const href = $(this).attr("href");
+//     const target = $(this).attr("target");
+//
+//     if (!href || e.ctrlKey || e.metaKey || target === "_blank") return;
+//
+//     e.preventDefault();
+//     handleDirtyNavigation(href);
+// });
+
+$(document).on("click", "a[href]", function(e) {
     const href = $(this).attr("href");
     const target = $(this).attr("target");
 
@@ -2513,6 +2555,9 @@ $("a[href]").click(function(e) {
 $(document).on("dblclick", ".event", function (e) {
 
     if (
+
+        $(e.target).hasClass("travel-info") ||
+        $(e.target).closest(".travel-minute-input").length > 0 ||
         $(e.target).hasClass("event-options-button") ||
         $(e.target).closest(".event-options-button").length > 0 ||
         $(e.target).closest(".event-duration-input-container").length > 0
@@ -2541,7 +2586,8 @@ $(document).on("dblclick", ".event", function (e) {
         // 맵이 꺼져있으면 바로 모달 띄우기
         showPlaceModal(eventId);
     } else {
-        // 맵이 켜져있으면 마커 강조 + InfoWindow 열기
+        // 맵이 켜져있으면 모달 + 마커 강조 + InfoWindow 열기
+        showPlaceModal(eventId);
         const marker = allMarkers.find(m => m.hashId === eventId);
         if (marker) {
             enlargeMarkerTemporarily(marker);
@@ -2875,3 +2921,5 @@ function precomputeDayOfWeekMap() {
         dayOfWeekMap.set(dayCount, dayOfWeek);
     }
 }
+
+
