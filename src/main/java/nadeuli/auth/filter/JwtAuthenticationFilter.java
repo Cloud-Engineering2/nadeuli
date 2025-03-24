@@ -16,6 +16,7 @@
  * 국경민, 김대환   2025.03.19     최초 작성 - JWT 인증 필터 구현 (헤더 & 쿠키 토큰 처리 포함)
  * 박한철     2025.03.23    redis 버전으로 수정
  * 이홍비     2025.03.24    actuator 경로 추가
+ *                         /** 추가
  * ========================================================
  */
 
@@ -57,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         // Actuator 경로 처리
         String uri = request.getRequestURI();
-        if (uri.startsWith("/actuator")) {
+        if (uri.startsWith("/actuator/**")) {
             log.debug("✅ Actuator 요청 필터 제외: {}", uri);
             filterChain.doFilter(request, response);
             return;
