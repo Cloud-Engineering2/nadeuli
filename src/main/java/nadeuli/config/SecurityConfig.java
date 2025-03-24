@@ -76,7 +76,7 @@ public class SecurityConfig {
                                 .authorizationRequestResolver(customResolver)
                         )
                         .successHandler(customOAuth2SuccessHandler) // 로그인 성공 핸들러
-//                        .defaultSuccessUrl("/mypage", true) // (선택) 기본 리다이렉트 경로 좀되라
+//                        .defaultSuccessUrl("/mypage", true) // (선택) 기본 리다이렉트 경로 좀되라 제바ㅣㄹ
 //                        .failureUrl("/login?error=true") // 실패 시 리다이렉트
                 )
                 .exceptionHandling(
