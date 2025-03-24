@@ -26,4 +26,6 @@ public interface ShareTokenRepository extends JpaRepository<ShareToken, Long> {
     Optional<ShareToken> findByItineraryId(Long itineraryId);
     Optional<ShareToken> findByUuid(String uuid);
     boolean existsByItineraryId(Long itineraryId);
+
+    void deleteByItineraryId(Long itineraryId);
 }

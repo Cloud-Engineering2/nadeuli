@@ -91,10 +91,13 @@ a {
     background-color: #222;
 }
 
+
+
 /* 반응형 레이아웃: 작은 화면일 때 column 전환 */
 @media (max-width: 768px) {
-
-
+    .invitation-card{
+        min-width: 80vw;
+    }
     .naduli-layout {
         flex-direction: row;
         align-content: flex-start;

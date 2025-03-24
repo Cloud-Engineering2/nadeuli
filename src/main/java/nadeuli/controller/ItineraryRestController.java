@@ -102,6 +102,13 @@ public class ItineraryRestController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{itineraryId}")
+    public ResponseEntity<Void> deleteItinerary(@PathVariable Long itineraryId,
+                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        itineraryService.deleteItinerary(itineraryId, userId);
+        return ResponseEntity.ok().build();
+    }
 
 
 

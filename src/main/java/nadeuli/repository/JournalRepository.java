@@ -10,6 +10,7 @@
  * ========================================================
  * 이홍비   2025.03.06    ItineraryEvent 를 이용하여 Journal 조회하는 함수 명시
  * 박한철   2025.03.22    findJournalSimpleDTOsByItineraryId 추가
+ * 박한철   2025.03.24    itineraryEvent 들로 모든 Journal 찾아내는  쿼리 추가
  * ========================================================
  */
 
@@ -38,4 +39,7 @@ public interface JournalRepository extends JpaRepository<Journal, Long> {
             "JOIN ipd.itinerary i " +
             "WHERE i.id = :itineraryId")
     List<JournalSimpleDTO> findJournalSimpleDTOsByItineraryId(@Param("itineraryId") Long itineraryId);
+
+    @Query("SELECT j FROM Journal j WHERE j.ieid IN :events")
+    List<Journal> findByItineraryEvents(@Param("events") List<ItineraryEvent> events);
 }

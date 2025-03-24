@@ -18,6 +18,7 @@ package nadeuli.repository;
 import nadeuli.entity.ItineraryRegion;
 import nadeuli.entity.embedded.ItineraryRegionId;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -39,6 +40,11 @@ public interface ItineraryRegionRepository extends JpaRepository<ItineraryRegion
     WHERE ir.itinerary.id = :itineraryId
 """)
     List<ItineraryRegion> findByItineraryIdWithRegion(@Param("itineraryId") Long itineraryId);
+
+
+    @Modifying
+    @Query("DELETE FROM ItineraryRegion ir WHERE ir.itinerary.id = :itineraryId")
+    void deleteByItineraryId(@Param("itineraryId") Long itineraryId);
 
 
 }

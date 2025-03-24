@@ -54,6 +54,9 @@ public class ItineraryService {
     private final RegionRepository regionRepository;
     private final ItineraryRegionRepository itineraryRegionRepository;
     private final ExpenseBookRepository expenseBookRepository;
+    private final JournalRepository journalRepository;
+    private final ShareTokenRepository shareTokenRepository;
+    private final S3Service s3Service;
     // ===========================
     //  CREATE: 일정 생성
     // ===========================
@@ -346,4 +349,49 @@ public class ItineraryService {
 
         return new SaveEventResult(eventDtoList, createdMappings);
     }
+
+
+    @Transactional
+    public void deleteItinerary(Long itineraryId, Long userId) {
+        // 1. 일정 및 사용자 권한 확인
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("일정을 찾을 수 없습니다. ID: " + itineraryId));
+
+        ItineraryCollaborator collaborator = itineraryCollaboratorRepository
+                .findByUserIdAndItineraryId(userId, itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("이 일정에 대한 권한이 없습니다."));
+
+        if (!Objects.equals(collaborator.getIcRole(), "ROLE_OWNER")) {
+            throw new IllegalStateException("해당 일정 삭제 권한이 없습니다 (Owner만 삭제 가능).");
+        }
+
+        // 2. ItineraryPerDay → ItineraryEvent → Journal 조회 및 이미지 삭제
+        List<ItineraryPerDay> perDays = itineraryPerDayRepository.findByItinerary(itinerary);
+        List<ItineraryEvent> events = itineraryEventRepository.findByItineraryPerDayIn(perDays);
+
+        List<Journal> journals = journalRepository.findByItineraryEvents(events);
+        for (Journal journal : journals) {
+            String imageUrl = journal.getImageUrl();
+            if (imageUrl != null && !imageUrl.isBlank()) {
+                s3Service.deleteFile(imageUrl);
+            }
+        }
+        journalRepository.deleteAll(journals);
+
+        // 3. ItineraryRegion 삭제
+        itineraryRegionRepository.deleteByItineraryId(itineraryId);
+
+        // 4. ItineraryPerDay 삭제 → ItineraryEvent, ExpenseItem 자동 삭제
+        itineraryPerDayRepository.deleteAllByItinerary(itinerary);
+
+        // 5. Collaborator 삭제
+        itineraryCollaboratorRepository.deleteByItinerary(itinerary);
+
+        // 6. 공유토큰삭제
+        shareTokenRepository.deleteByItineraryId(itineraryId);
+
+        // 7. Itinerary 삭제 → ExpenseBook 자동 삭제 → ExpenseItem도 자동 삭제
+        itineraryRepository.delete(itinerary);
+    }
+
 }
