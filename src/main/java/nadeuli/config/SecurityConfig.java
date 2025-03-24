@@ -63,7 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/place/register").permitAll()
                         .requestMatchers("/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
                         // ✅ 정적 리소스 허용 (CSS, JS, 이미지, 폰트)
-                        .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**").permitAll()
+                        .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "favicon.ico").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ACTUATOR_ADMIN")
 //                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
