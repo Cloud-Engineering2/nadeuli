@@ -66,16 +66,17 @@ public class GoogleOidcUserService extends OidcUserService {
 
     private OidcUser processOidcUser(OidcUser oidcUser, String provider, String googleAccessToken) {
         Map<String, Object> attributes = oidcUser.getAttributes();
+        String providerId = getSafeString(attributes, "sub");
         String email = getSafeString(attributes, "email");
         String name = getSafeString(attributes, "name");
         String picture = getSafeString(attributes, "picture");
 
         log.debug("[Google OIDC] Email: {}, Name: {}, Picture: {}", email, name, picture);
 
-        User userEntity = userRepository.findByUserEmailAndProvider(email, provider)
+        User userEntity = userRepository.findByProviderIdAndProvider(providerId, provider)
                 .map(existing -> updateExistingUser(existing, name, picture, googleAccessToken))
                 .orElseGet(() -> {
-                    User newUser = createNewUser(email, name, picture, googleAccessToken);
+                    User newUser = createNewUser(email, name, picture, providerId, googleAccessToken);
                     newUser.setUserRole(UserRole.MEMBER);
                     return newUser;
                 });
@@ -111,7 +112,7 @@ public class GoogleOidcUserService extends OidcUserService {
     private String cloudFrontUrl;
 
     private User updateExistingUser(User user, String name, String profileImage, String googleAccessToken) {
-        boolean tokenUpdated = !googleAccessToken.equals(user.getProviderRefreshToken());
+        boolean tokenUpdated = !googleAccessToken.equals(user.getProviderAccessToken());
 
         String currentProfileImage = user.getProfileImage();
 
@@ -122,7 +123,7 @@ public class GoogleOidcUserService extends OidcUserService {
         String updatedProfileImage = isUserProfileFromS3 ? currentProfileImage : profileImage;
 
         if (tokenUpdated) {
-            log.info("Google Access Token 변경 감지! 기존 값: {}, 새 값: {}", user.getProviderRefreshToken(), googleAccessToken);
+            log.info("Google Access Token 변경 감지! 기존 값: {}, 새 값: {}", user.getProviderAccessToken(), googleAccessToken);
             user.updateProfile(updatedName, updatedProfileImage, "google", googleAccessToken, LocalDateTime.now());
 
         } else {
@@ -133,9 +134,9 @@ public class GoogleOidcUserService extends OidcUserService {
         return user;
     }
 
-    private User createNewUser(String email, String name, String profileImage, String googleAccessToken) {
+    private User createNewUser(String email, String name, String profileImage, String providerId, String googleAccessToken) {
         TokenResponse refreshTokenResponse = JwtUtils.generateRefreshToken(email);
-        return User.createNewUser(email, name, profileImage, "google", googleAccessToken, LocalDateTime.now());
+        return User.createNewUser(email, name, profileImage, "google", providerId, googleAccessToken, LocalDateTime.now());
     }
 
     private String getSafeString(Map<String, Object> map, String key) {

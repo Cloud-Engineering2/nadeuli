@@ -1,3 +1,22 @@
+/*
+ * SecurityConfig.java
+ * Spring Security 파일
+ * 작성자 : 김대환
+ * 최초 작성 날짜 : 2025-02-25
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자        날짜        수정 / 보완 내용
+ * ========================================================
+ * 박한철     2025.03.19    경로 변경에 따른 import 변경
+ * 박한철     2025.03.24    actuator 관련 처리 추가
+ * 이홍비     2025.03.24    .requestMatchers("/actuator/**").permitAll()로 변경
+ * ========================================================
+ */
+
+
+
 package nadeuli.config;
 
 import lombok.RequiredArgsConstructor;
@@ -37,14 +56,16 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/auth/**", "/auth/unlink/**").permitAll()
                         .requestMatchers("/auth/refresh", "/auth/refresh/**").permitAll()
-                        .requestMatchers("/auth/user/**").permitAll()
                         .requestMatchers("/join/**").permitAll()
                         .requestMatchers("/login", "/mypage").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/share/join").permitAll()
                         .requestMatchers("/api/place/register").permitAll()
                         .requestMatchers("/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
                         // ✅ 정적 리소스 허용 (CSS, JS, 이미지, 폰트)
                         .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**").permitAll()
+                        //.requestMatchers("/actuator/**").hasRole("ACTUATOR_ADMIN")
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

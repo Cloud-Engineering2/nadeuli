@@ -35,7 +35,7 @@ public class KakaoOAuthUnlinkController {
     private final KakaoUnlinkService kakaoUnlinkService;
     private final KakaoUserRepository kakaoUserRepository;
 
-    @DeleteMapping("/admin/unlink/{uid}")
+    @GetMapping("/admin/unlink/{uid}")
     public ResponseEntity<String> adminUnlinkUserByUid(@PathVariable Long uid) {
 
         Optional<KakaoUser> kakaoUserOptional = kakaoUserRepository.findByUid(uid);
