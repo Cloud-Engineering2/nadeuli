@@ -2876,24 +2876,26 @@ function isWithinOpeningHours(event) {
         }
 
         const baseStartMinutes = timeToMinutes(perDayMap.get(dayCount)?.startTime || "00:00:00");
-        const eventStart = baseStartMinutes + event.startMinuteSinceStartDay;
-        const eventEnd = baseStartMinutes + event.endMinuteSinceStartDay;
+        const eventStartMinutes = dayOfWeek * 1440 + (baseStartMinutes + event.startMinuteSinceStartDay);
+        const eventEndMinutes = dayOfWeek * 1440 + (baseStartMinutes + event.endMinuteSinceStartDay);
 
-        console.log(`[영업 시간 체크][${placeName}] 요일: ${dayOfWeek}, 일정 시간: ${formatTime(eventStart)} ~ ${formatTime(eventEnd)}`);
+        console.log(`[영업 시간 체크][${placeName}] 요일: ${dayOfWeek}, 일정 시간: ${formatTime(eventStartMinutes)} ~ ${formatTime(eventEndMinutes)}`);
 
-        const isWithin = matchingPeriods.some((period, idx) => {
-            const openTime = period.open.hour * 60 + period.open.minute;
-            let closeTime;
+        const isWithin = periods.some((period, idx) => {
+            const openDay = period.open.day;
+            const openMinutes = openDay * 1440 + (period.open.hour * 60 + period.open.minute);
+
+            let closeDay = openDay;
+            let closeMinutes = openMinutes + 1440; // 기본 24시간 후 종료
 
             if (period.close) {
-                closeTime = period.close.hour * 60 + period.close.minute;
-            } else {
-                closeTime = 1440;
-                console.log(` → [타임${idx + 1}] close 없음 → 24시간 처리`);
+                closeDay = period.close.day;
+                closeMinutes = closeDay * 1440 + (period.close.hour * 60 + period.close.minute);
             }
 
-            const match = eventStart >= openTime && eventEnd <= closeTime;
-            console.log(` → [타임${idx + 1}] ${formatTime(openTime)} ~ ${formatTime(closeTime)} : ${match ? '✅ 포함됨' : '❌ 불포함'}`);
+            const match = eventStartMinutes >= openMinutes && eventEndMinutes <= closeMinutes;
+
+            console.log(` → [타임${idx + 1}] ${formatTime(openMinutes)} ~ ${formatTime(closeMinutes)} : ${match ? '✅ 포함됨' : '❌ 불포함'}`);
             return match;
         });
 
