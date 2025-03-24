@@ -25,7 +25,7 @@ import java.util.Map;
 @Getter
 @Setter
 public class OpenAITravelRequest {
-    private String route;
+    private List<PlaceDTO> route;
     private String mode;
     private Map<String, List<String>> fixedDays;
 }

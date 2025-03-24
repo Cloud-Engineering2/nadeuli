@@ -78,4 +78,14 @@ public class PlaceDTO {
     public Place toEntity() {
         return new Place(googlePlaceId, placeName, address, latitude, longitude, explanation, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
     }
+
+    public String toPromptString() {
+        return String.format("%s (%s) / 위도: %.4f, 경도: %.4f / place-id : %s",
+                placeName,
+                placeType.name(),
+                latitude,
+                longitude,
+                googlePlaceId
+        );
+    }
 }

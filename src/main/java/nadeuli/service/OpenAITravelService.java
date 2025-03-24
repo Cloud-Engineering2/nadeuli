@@ -41,10 +41,13 @@ public class OpenAITravelService {
         System.out.println("GPT 응답:\n" + recommendedRouteJson);
 
         try {
-            Map<String, List<String>> recommendedRoute = objectMapper.readValue(recommendedRouteJson, new TypeReference<>() {});
+            Map<String, List<String>> recommendedRoute = objectMapper.readValue(
+                    recommendedRouteJson, new TypeReference<>() {
+                    }
+            );
             return new OpenAITravelResponse(recommendedRoute);
         } catch (Exception e) {
-            System.err.println("JSON 변환 오류 발생: " + e.getMessage());
+            System.err.println("🚨 JSON 변환 오류 발생: " + e.getMessage());
             throw new RuntimeException("JSON 변환 오류: " + e.getMessage());
         }
     }

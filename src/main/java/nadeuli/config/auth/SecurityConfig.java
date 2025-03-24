@@ -21,12 +21,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler; // ✅ 주입
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthorizationRequestResolver customResolver) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ CORS 설정 추가
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/auth/**", "/auth/unlink/**").permitAll()
@@ -38,7 +38,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/place/register").permitAll()
                         .requestMatchers("/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
                         .requestMatchers("/travel/**","/travel").permitAll()
-                        // ✅ 정적 리소스 허용 (CSS, JS, 이미지, 폰트)
                         .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**").permitAll()
                         .anyRequest().authenticated()
                 )
