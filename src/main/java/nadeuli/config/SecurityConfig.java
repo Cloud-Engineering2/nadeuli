@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/refresh", "/auth/refresh/**").permitAll()
                         .requestMatchers("/join/**").permitAll()
                         .requestMatchers("/login", "/mypage").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
+//                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/share/join").permitAll()
                         .requestMatchers("/api/place/register").permitAll()
                         .requestMatchers("/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
