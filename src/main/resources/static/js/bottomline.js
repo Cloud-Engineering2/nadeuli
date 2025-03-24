@@ -18,12 +18,17 @@
  *                         style.whiteSpace = "pre"; 추가 => 내어 쓰기 느낌
  * 이홍비    2025.03.17     경비 정산, 여행자별 정산 글자 가운데 정렬
  *                         ~님 => @~ 변경 (+ 그에 따른 부수적인 것 변경)
+ * 이홍비    2025.03.20     방문지 마커 - n일 차 고려, 중복 처리
+ * 이홍비    2025.03.22     공동 경비 예산, 잔액 출력 주석 처리
+ * 이홍비    2025.03.23     기행문 쪽 사진 null => 사진 등록 버튼 추가
  * ========================================================
  */
 
 let this_iid;
 let this_ieid;
 let this_index; // 현재 선택한 방문지 번호
+let this_dayNum = null;
+let prev_color = null;
 
 // map 쪽
 let map;
@@ -33,8 +38,14 @@ let selectedMarker = null;
 let selectedPlace = null;
 let infowindow;
 
+let markerMap;
+let pathMap;
+
+let centerLatLng;
+
 let itineraryTotalRead;
-let ieidList = [];
+let itineraryMap; // itinerary_per_day - dayCount
+let ieidList = []; // 방문지 관련 id
 
 let travler;
 
@@ -43,6 +54,8 @@ let partialSettlement; // 방문지 선택 o - 방문지별 정산
 let journal; // 방문지 선택 o - 기행문
 let expense; //
 
+// 지도 마커 그룹별 색상
+const groupColors = ["#343434", "#fd7a2b", "#16c35d", "#00b2ff", "#9b59b6", "#c63db8", "#cc3434", "#462ad3"];
 
 
 // 시간 출력 형태 -
@@ -65,10 +78,18 @@ async function fetchBottomLine(iid) {
     travler = itineraryTotalRead.travelerList;
     finalSettlement = itineraryTotalRead.finalSettlement;
 
+    initMap();
+
+    itineraryMap = new Map();
+    markerMap = new Map();
+    pathMap = new Map();
+    addSortItineraryDayEvent();
+
     console.log("fetchBottomLine - itineraryTotalRead : ", itineraryTotalRead); // 데이터 확인
     console.log("Itinerary Total : ", itineraryTotalRead.itineraryTotal);
     console.log("Traveler List : ", itineraryTotalRead.travelerList);
     console.log("Final Settlement : ", itineraryTotalRead.finalSettlement);
+    console.log("itineraryMap : ", itineraryMap);
     // console.log("Expense Book : ", itineraryTotalRead.expenseBook);
 
     noChoice();
@@ -80,7 +101,6 @@ async function fetchBottomLine(iid) {
     //     })
     //     .catch(error => console.error("Error saving content:", error));
 
-    initMap();
 
     // updateContentView();
     // updatePhotoView();
@@ -101,9 +121,10 @@ window.onload = function() {
     console.log("iid : ", iid);
     // console.log("ieid : ", ieid);
 
-    fetchBottomLine(iid);
-};
+    // fetchBottomLine(iid);
+    ensureGoogleMapsLoaded(() => fetchBottomLine(iid));
 
+};
 
 // 지도 관련
 
@@ -113,16 +134,81 @@ function loadGoogleMapsApi() {
         .then(response => response.text())
         .then(apiKey => {
             let script = document.createElement("script");
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMapVer2`;
             script.async = true;
             script.defer = true;
             document.head.appendChild(script);
-            initMap();
+            // initMap();
         })
         .catch(error => console.error("API Key 가져오기 실패:", error));
 }
 
-// 맵 초기화
+// Google Maps API가 로드될 때까지 대기하는 함수
+function ensureGoogleMapsLoaded(callback) {
+    if (window.google && window.google.maps) {
+        callback();
+    } else {
+        console.log("Google Maps API 로드 대기 중...");
+        setTimeout(() => ensureGoogleMapsLoaded(callback), 100);
+    }
+}
+
+
+// Ver2 - 마커 변경, 장소 관련 순서 설정
+
+function addSortItineraryDayEvent() {
+    let ipdids = new Map(); // 임시로 쓸 애
+
+    // itineraryEvents - event 에서 dayCount 추출 => 그에 해당하는 event 저장
+    itineraryTotalRead.itineraryTotal.itineraryEvents.forEach(event => {
+        if (!itineraryMap.has(event.dayCount)) {
+            // [ipdid, []] 형태 설정
+            itineraryMap.set(event.dayCount, []);
+            markerMap.set(event.dayCount, []);
+            pathMap.set(event.dayCount, []);
+            ipdids.set(event.dayCount, []);
+        }
+
+        // [ipdid, [event List]]
+        ipdids.get(event.dayCount).push(event);
+    });
+
+    //console.log("addSortItineraryDayEvent - ipdids : ", ipdids);
+
+    // event - endMinuteSinceStartDay 기준 오름차순 정렬
+    // => event.id 를 itineraryMap 에 삽입 - [ipdid, [event.id list]]
+    let count = 0;
+    let latitudeAvg = 0;
+    let longitudeAvg = 0;
+    ipdids.forEach((events, ipdid) => {
+        events.sort((a, b) => a.endMinuteSinceStartDay - b.endMinuteSinceStartDay);
+
+        //console.log("addSortItineraryDayEvent - events.sort : ", events);
+
+        let index = 1;
+        events.forEach(event => {
+            //console.log("forEach - event.id : ", event.id);
+            addMarker(ipdid, event.placeDTO, index, groupColors[ipdid]);
+            itineraryMap.get(ipdid).push(event.id);
+            latitudeAvg += event.placeDTO.latitude;
+            longitudeAvg += event.placeDTO.longitude;
+            index += 1;
+
+            count++;
+        });
+
+        // console.log("count : ", count, "latitude : ", latitudeAvg, "longitude : ", longitudeAvg, "itineraryMap.get(ipdid) : ", itineraryMap.get(ipdid));
+    });
+
+    // 지도 초기화 시 중심 좌표 계산
+    latitudeAvg = latitudeAvg / count;
+    longitudeAvg = longitudeAvg / count;
+    centerLatLng = { lat: latitudeAvg, lng: longitudeAvg };
+    map.setCenter(centerLatLng);
+    console.log("count : ", count, "latitude: ", latitudeAvg, "longitude: ", longitudeAvg, "centerLatLng: ", centerLatLng);
+}
+
+
 function initMap() {
     if (!itineraryTotalRead || !itineraryTotalRead.itineraryTotal || !itineraryTotalRead.itineraryTotal.itineraryEvents.length) {
         console.error("🚨 방문지 데이터가 없습니다.");
@@ -139,36 +225,18 @@ function initMap() {
 
     infowindow = new google.maps.InfoWindow(); // 정보 창 초기화
 
-    let latitude = 0;
-    let longitude = 0;
-    const itineraryEventList = itineraryTotalRead.itineraryTotal.itineraryEvents;
-    itineraryEventList.forEach((event, index) => {
-        console.log("event : ", event);
-        console.log("index : ", index);
-        addMarker(event.placeDTO, index + 1); // 방문 순서대로 번호 추가
-
-        ieidList.push(event.id);
-
-        latitude += event.placeDTO.latitude;
-        longitude += event.placeDTO.longitude;
-    });
-    console.log("markerList : ", markerList);
-
-
-    let avgLatitude = latitude / itineraryEventList.length;
-    let avgLongitude = longitude / itineraryEventList.length;
-    let centerLatLng = { lat: avgLatitude, lng: avgLongitude };
 
     map.setCenter(centerLatLng);
-    console.log("📌 지도 중심 위치:", centerLatLng);
+    console.log("📌 지도 중심 위치 : ", centerLatLng, " map : ", map);
 
     noChoice();
 }
 
-function addMarker(place, order) {
+
+function addMarker(dayNum, place, order, color) {
     const marker = new google.maps.Marker({
         position: { lat: place.latitude, lng: place.longitude },
-        map,
+        map: map,
         title: place.placeName,
         label: {
             text: order.toString(), // 순서 숫자
@@ -177,11 +245,16 @@ function addMarker(place, order) {
             fontWeight: "bold"      // 라벨 텍스트 굵기
         },
         // icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // 기본 파란색 마커
-        icon: getMarkerIcon('skyblue')
+        icon: getMarkerIcon(color)
     });
 
     // marker.addListener("click", () => toggleMarker(marker));
     marker.addListener("click", () => {
+        // if (this_dayNum) {
+        //     prev_color = groupColors[this_dayNum];
+        //     console.log("this_dayNum : ", this_dayNum, " prev_color : ", prev_color);
+        // }
+        this_dayNum = dayNum;
         toggleMarker(marker);
 
         if (selectedMarker !== null) {
@@ -197,21 +270,57 @@ function addMarker(place, order) {
         }
     });
 
-    markerList.push(marker);
+    markerMap.get(dayNum).push(marker);
+    console.log("markerMap.get(dayNum).push(marker) : ", markerMap.get(dayNum));
 
     // 경로 좌표 추가
-    pathCoordinates.push({ lat: place.latitude, lng: place.longitude });
+    pathMap.get(dayNum).push({ lat: place.latitude, lng: place.longitude });
 
     // 경로를 지도에 그리기
     const path = new google.maps.Polyline({
-        path: pathCoordinates,
+        path: pathMap.get(dayNum),
         geodesic: true,
         strokeColor: "#FF0000",
-        strokeOpacity: 1.0,
-        strokeWeight: 2
+        strokeOpacity: 0,
+        icons: [{
+            icon: {
+                path: 'M 0,-1 0,1',
+                strokeOpacity: 1,
+                scale: 4,
+                strokeColor: color
+            },
+            offset: '0',
+            repeat: '20px'
+        }]
+        // strokeWeight: 2
     });
     path.setMap(map);
+
+    console.log("path.setMap(map) : ", path, " map : ", map);
+
 }
+
+function getMarkerIcon(color) {
+    return {
+        path: `
+                            M 0,0 
+                            m -10,-20 
+                            a 10,10 0 1,0 20,0 
+                            a 10,10 0 1,0 -20,0 
+                            M 0,0 
+                            l -7,-10 
+                            l 14,0 
+                            z
+                        `,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: "#ffffff",
+        strokeWeight: 0.5,
+        scale: 1,
+        labelOrigin: new google.maps.Point(0, -20)
+    }
+}
+
 
 function toggleMarker(marker) {
     if (selectedMarker === marker) {
@@ -223,10 +332,22 @@ function toggleMarker(marker) {
         }
 
         // marker.setIcon("http://maps.google.com/mapfiles/ms/icons/blue-dot.png");
-        marker.setIcon(getMarkerIcon('skyblue')); // 색상을 기본 색으로 되돌림
+        selectedMarker.setZIndex(null);
+        selectedMarker.setAnimation(null); // 애니메이션 초기화
+        selectedMarker.setIcon(getMarkerIcon(prev_color)); // 색상을 기본 색으로 되돌림
+        selectedMarker.getLabel().fontSize = "14px";
+
+        // marker.setLabel({
+        //     text: (this_index + 1).toString(), // 기존 라벨 텍스트 유지
+        //     color: 'black', // 기본 색상
+        //     fontWeight: 'bold', // 기본 폰트
+        //     fontSize: '14px' // 글자 크기 기본 설정
+        // });
+
         selectedMarker = null;
 
         this_index = -1; // 아예 관련 없는 값으로 처리
+        prev_color = null;
         noChoice();
     }
     else {
@@ -238,11 +359,22 @@ function toggleMarker(marker) {
             }
 
             // selectedMarker.setIcon("http://maps.google.com/mapfiles/ms/icons/blue-dot.png");
-            selectedMarker.setIcon(getMarkerIcon('skyblue'));
+            selectedMarker.setZIndex(null); // 이전 선택된 마커의 z-index 초기화
+            selectedMarker.setAnimation(null); // 애니메이션 초기화
+            selectedMarker.setIcon(getMarkerIcon(prev_color));
+            selectedMarker.getLabel().fontSize = "14px";
         }
+
         // marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
-        marker.setIcon(getMarkerIcon('red'));
+        marker.setIcon(getMarkerIcon('#FFFF00'));
+        marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1); // 클릭한 마커를 다른 마커 위로 올림
+        marker.setAnimation(google.maps.Animation.BOUNCE); // 클릭 시 애니메이션 (바운스)
+        marker.getLabel().fontSize = "0px";
+
         selectedMarker = marker;
+
+        markerList = markerMap.get(this_dayNum);
+        prev_color = groupColors[this_dayNum];
 
         const index = marker.getLabel().text;
         console.log("Label Text : ", index);
@@ -250,15 +382,12 @@ function toggleMarker(marker) {
 
         // index - 1 : label 값 설정할 때 index + 1 해서 기록함 : index 1 부터 시작
         // ieidList 에서 index 는 0 부터 시작함
+        ieidList = itineraryMap.get(this_dayNum);
         this_ieid = ieidList[this_index];
-        // console.log("ieid : ", ieid);
 
-        console.log("this_iid : ", this_iid, "this_ieid : ", this_ieid, "this_index : ", this_index);
-        console.log("itineraryTotalRead:", itineraryTotalRead);
-        console.log("itineraryTotalRead.itineraryEvents:", itineraryTotalRead?.itineraryEvents);
+        console.log("ieidList : ", ieidList, " this_ieid : ", this_ieid);
 
-        console.log("itineraryTotalRead.itineraryEvents[this_index] : ", itineraryTotalRead.itineraryTotal.itineraryEvents[this_index]);
-        console.log("itineraryTotalRead.itineraryEvents[this_index].placeDTO.imageUrl : ", itineraryTotalRead.itineraryTotal.itineraryEvents[this_index].placeDTO.imageUrl);
+        console.log("itineraryMap.get(this_dayNum) :", itineraryMap.get(this_dayNum));
 
         // 장소 정보 창 업데이트
         const content = `
@@ -288,17 +417,7 @@ function toggleMarker(marker) {
     }
 }
 
-function getMarkerIcon(color) {
-    return {
-        path: google.maps.SymbolPath.CIRCLE, // 둥근 마커
-        scale: 12, // 마커 크기
-        fillColor: color, // 내부 색상
-        fillOpacity: 1, // 색상 투명도
-        strokeColor: "white", // 테두리 색상
-        strokeWeight: 2, // 테두리 두께
-        labelOrigin: { x: 0, y: 0 } // 라벨의 중심 위치 설정
-    };
-}
+
 
 
 // 화면 출력 - 방문지 선택 x
@@ -321,7 +440,8 @@ function noChoice() {
     datetime.style.display = "none";
 
     // 기행문 - 사진 로고 출력
-    document.getElementById("journal-image").src = "/pic-icon/logo-letter-o.png";
+    document.getElementById("journal-image").src = "/images/pic-icon/logo-letter-o.png";
+    document.getElementById("go-to-journal-p").style.display = "none";
 
     // 기행문 - 출력 내용 변경
     // document.getElementById("journal-no-choice").display = "block";
@@ -329,7 +449,7 @@ function noChoice() {
     journalContent.innerText = "방문지를 선택해 주세요!"
     journalContent.style.textAlign = "center";
 
-    document.getElementById("go-to-journal").style.display = "none";
+    document.getElementById("go-to-journal-c").style.display = "none";
 
 
     // 기행문 - content 쪽 null 처리
@@ -391,7 +511,8 @@ function hasChoice(index) {
     // const journalNoContent = document.getElementById("no-content");
     // const journalHasContent = document.getElementById("has-content");
     const journalContent = document.getElementById("journal-content-p");
-    const goToJournal = document.getElementById("go-to-journal");
+    const goToJournalC = document.getElementById("go-to-journal-c");
+    const goToJournalP = document.getElementById("go-to-journal-p");
     const datetime = document.getElementById('date-time');
 
     console.log("journal.imageUrl:", journal.imageUrl);
@@ -402,10 +523,11 @@ function hasChoice(index) {
         datetime.textContent = null;
         datetime.style.display = "none";
 
-        journalImage.src = "/pic-icon/logo-letter-o.png";
+        journalImage.src = "/images/pic-icon/logo-letter-o.png";
+        goToJournalP.style.display = "none";
         journalContent.innerText = "기억이 옅어지기 전에 소중한 순간을 남겨 주세요!";
         journalContent.style.textAlign = "center";
-        goToJournal.style.display = "block";
+        goToJournalC.style.display = "block";
     }
     else {
         datetime.textContent = new Intl.DateTimeFormat('ko-KR', timeFormat).format(new Date(journal.modifiedAt));
@@ -415,24 +537,28 @@ function hasChoice(index) {
             journalImage.src = journal.imageUrl;
             journalContent.textContent = journal.content;
             journalContent.style.textAlign = "left";
-            goToJournal.style.display = "none";
+            goToJournalC.style.display = "none";
             // journalHasContent.textContent = journal.content;
             // journalHasContent.style.display = "block";
             // journalNoContent.style.display = "none";
         }
         else if ((journal.imageUrl !== null) && (journal.content === null)) {
             journalImage.src = journal.imageUrl;
+            goToJournalP.style.display = "none";
+
             journalContent.innerText = "기억이 옅어지기 전에 소중한 순간을 남겨 주세요!";
             journalContent.style.textAlign = "center";
-            goToJournal.style.display = "block";
+            goToJournalC.style.display = "block";
             // journalHasContent.style.display = "none";
             // journalNoContent.style.display = "block";
         }
         else if ((journal.imageUrl === null) && (journal.content !== null)) {
-            journalImage.src = "/pic-icon/logo-letter-o.png";
+            journalImage.src = "/images/pic-icon/logo-letter-o.png";
+            goToJournalP.style.display = "block";
+
             journalContent.innerText = journal.content;
             journalContent.style.textAlign = "left";
-            goToJournal.style.display = "none";
+            goToJournalC.style.display = "none";
             // journalHasContent.textContent = journal.content;
             // journalHasContent.style.display = "block";
             // journalNoContent.style.display = "none";
@@ -453,6 +579,8 @@ function prevJournal() {
     // if (document.getElementById("prev-btn").disabled) return; // 버튼 비활성화 => 종료
     console.log("prevJournal");
 
+    // selectedMarker.getLabel().fontSize = "14px";
+
     this_index -= 1;
     toggleMarker(markerList[this_index]);
 }
@@ -460,6 +588,8 @@ function prevJournal() {
 function nextJournal() {
     // if (document.getElementById("next-btn").disabled) return; // 버튼 비활성화 =>  종료
     console.log("nextJournal");
+
+    // selectedMarker.getLabel().fontSize = "14px";
 
     this_index += 1;
     toggleMarker(markerList[this_index]);
@@ -498,12 +628,12 @@ function removeAndCreateExpense(kind) {
         // expensesContainer.appendChild(expenseTitleSeparator);
         jointExpenseContainer.appendChild(jointExpenseTitleSeparator);
 
-        let moneyFormat = formatKoreanMoney(finalSettlement.expenseBookDTO.totalBudget);
-        const totalBudget = document.createElement("p");
-        totalBudget.classList.add('dynamic-expense');
-        totalBudget.textContent = `예산 : ${moneyFormat}원`;
+        // let moneyFormat = formatKoreanMoney(finalSettlement.expenseBookDTO.totalBudget);
+        // const totalBudget = document.createElement("p");
+        // totalBudget.classList.add('dynamic-expense');
+        // totalBudget.textContent = `예산 : ${moneyFormat}원`;
         // expensesContainer.appendChild(totalBudget);
-        jointExpenseContainer.appendChild(totalBudget);
+        // jointExpenseContainer.appendChild(totalBudget);
 
         moneyFormat = formatKoreanMoney(finalSettlement.expenseBookDTO.totalExpenses);
         const totalExpenses = document.createElement("p");
@@ -512,12 +642,12 @@ function removeAndCreateExpense(kind) {
         // expensesContainer.appendChild(totalBudget);
         jointExpenseContainer.appendChild(totalExpenses);
 
-        moneyFormat = formatKoreanMoney(finalSettlement.totalBalance);
-        const totalBalance = document.createElement("p");
-        totalBalance.classList.add('dynamic-expense');
-        totalBalance.textContent = `잔액 : ${moneyFormat}원`;
+        // moneyFormat = formatKoreanMoney(finalSettlement.totalBalance);
+        // const totalBalance = document.createElement("p");
+        // totalBalance.classList.add('dynamic-expense');
+        // totalBalance.textContent = `잔액 : ${moneyFormat}원`;
         // expensesContainer.appendChild(totalBudget);
-        jointExpenseContainer.appendChild(totalBalance);
+        // jointExpenseContainer.appendChild(totalBalance);
 
         const expenseSeparator = document.createElement('hr');
         expenseSeparator.classList.add('dynamic-expense', 'separator');

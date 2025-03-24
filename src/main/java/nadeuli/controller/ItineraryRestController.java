@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import nadeuli.dto.request.ItineraryCreateRequestDTO;
 import nadeuli.dto.request.ItineraryTotalUpdateRequestDTO;
 import nadeuli.dto.response.*;
-import nadeuli.security.CustomUserDetails;
+import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.service.ItineraryCollaboratorService;
 import nadeuli.service.ItineraryService;
 import nadeuli.service.ShareService;
@@ -102,6 +102,13 @@ public class ItineraryRestController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{itineraryId}")
+    public ResponseEntity<Void> deleteItinerary(@PathVariable Long itineraryId,
+                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        itineraryService.deleteItinerary(itineraryId, userId);
+        return ResponseEntity.ok().build();
+    }
 
 
 

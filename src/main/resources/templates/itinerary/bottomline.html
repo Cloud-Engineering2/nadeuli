@@ -34,9 +34,10 @@
         <div class="journal-space">
             <div class="image-container">
                 <img id="journal-image" src="" alt="여행 사진">
+                <span id="go-to-journal-p" style="color: #3498DB; cursor: pointer; text-align: center; text-decoration: underline; text-underline-offset: 5px; z-index:9999" onclick="goToJournal()" title="사진 등록">사진 등록 🖼️</span>
                 <div class="image-buttons">
-                    <button id="prev-btn" onclick="prevJournal()">◀</button>
-                    <button id="next-btn" onclick="nextJournal()">▶</button>
+                    <button id="prev-btn" onclick="prevJournal()" title="이전 방문지 열람">◀</button>
+                    <button id="next-btn" onclick="nextJournal()" title="이후 방문지 열람">▶</button>
                 </div>
             </div>
 
@@ -46,7 +47,7 @@
 
             <div class="journal-content">
                 <p id="journal-content-p" style="text-align: center;">방문지를 선택해 주세요.</p>
-                <span id="go-to-journal" style="color: #3498DB; cursor: pointer; text-align: center; text-decoration: underline; text-underline-offset: 5px" onclick="goToJournal()">기행문 작성 ⌨️</span>
+                <span id="go-to-journal-c" style="color: #3498DB; cursor: pointer; text-align: center; text-decoration: underline; text-underline-offset: 5px" onclick="goToJournal()" title="기행문 작성">기행문 작성 ⌨️</span>
 
             </div>
         </div>

@@ -1,7 +1,10 @@
+window.isJournalModal = true;
+
 // Event 전역변수
 let itinerary = null;
 const perDayMap = new Map();
 const eventMap = new Map();
+const eventIdToHashIdMap = new Map();
 let regions = null;
 const groupedByDay = {}; // 렌더링용 - perDay 별로 정렬된 event 리스트
 let eventPairs = [];
@@ -36,23 +39,23 @@ $(document).ready(function () {
     let pathSegments = window.location.pathname.split('/');
     itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
 
+    $(document).on('click', '.navigate-edit-button', function () {
+        window.location.href = `/itinerary/edit/${itineraryId}`;
+    });
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itinerary/${itineraryId}`,
         method: "GET",
         dataType: "json",
         success: function (data) {
-            itineraryData = data; // 전역 변수 저장
-            createData(data);     // 필요한 사전 작업
+            itineraryData = data;
+            createData(data);
 
-            // 두 번째 AJAX: expense summary 호출
-            $.ajax({
+            apiWithAutoRefresh({
                 url: `/api/itineraries/${itineraryId}/expense-summary`,
                 method: "GET",
                 dataType: "json",
                 success: function (expenseSummary) {
-                    // 전역 변수에 저장
-
                     expenseSummary.summaries.forEach(item => {
                         summaryMap.set(item.eventId, item.totalExpense);
                     });
@@ -60,8 +63,8 @@ $(document).ready(function () {
                     totalExpense = expenseSummary.totalExpenses;
 
                     console.log(summaryMap);
-                    // 이후 렌더링 실행
                     renderItinerary();
+                    refreshJournalUI();
                     dataReady = true;
                     tryRenderMarkerAll();
                 },
@@ -74,6 +77,7 @@ $(document).ready(function () {
             console.error("Error fetching itinerary:", error);
         }
     });
+
 
 
 });
@@ -104,6 +108,7 @@ function createData(data) {
         editedEvent.stayMinute = editedEvent.endMinuteSinceStartDay - editedEvent.startMinuteSinceStartDay;
 
         let eventHashId = addEvent(editedEvent); // 이벤트 추가 후 ID 생성
+        eventIdToHashIdMap.set(event.id, eventHashId);
         groupedByDay[dayKey].push({
             id: editedEvent.id,
             hashId: eventHashId,
@@ -261,7 +266,12 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
                                             </div>
                                         </div>
                                         <div class="event-right">
-          
+                                            <div class="event-image-wrap">
+                                                <img src="/images/journal_default.png" alt="event image" class="event-image" />
+                                                <div class="event-memo-icon" data-active="false">
+                                                    <i class="far fa-sticky-note"></i>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -271,7 +281,7 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
 }
 
 function refreshExpenseSummary() {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itineraries/${itineraryId}/expense-summary`,
         method: "GET",
         dataType: "json",
@@ -282,7 +292,6 @@ function refreshExpenseSummary() {
             summaryMap = new Map(summaries.map(item => [item.eventId, item.totalExpense]));
 
             renderTotalBudgetExpenseSummary();
-            // 모든 day-column 순회하면서 각 event의 비용 표시 갱신
             $('.day-column').each(function () {
                 const $dayColumn = $(this);
                 if ($dayColumn.hasClass('savedPlace')) return;
@@ -295,7 +304,7 @@ function refreshExpenseSummary() {
 
                     const total = summaryMap.get(eventId) ?? 0;
                     const $wrap = $event.find('.expense-wrap');
-                    $wrap.empty(); // 기존 내용 제거
+                    $wrap.empty();
 
                     if (total === 0) {
                         $wrap.append(`
@@ -441,9 +450,12 @@ function formatTime(minutes) {
 //  🎭 이벤트 핸들링
 //------------------------------------------
 
-$(".refresh-button").click(refreshExpenseSummary);
+$(".refresh-button").click(refresh_btn_func);
 
-
+function refresh_btn_func() {
+    refreshExpenseSummary();
+    refreshJournalUI();
+}
 
 // 장소추가 관련 코드
 // =================================================================
@@ -467,8 +479,8 @@ function getKoreanLabel(filterType) {
         LODGING: "숙소",
         CAFE: "카페",
         TRANSPORTATION: "교통",
-        ATTRACTION: "어트랙션",
-        CONVENIENCE: "편의시설"
+        ATTRACTION: "여가 시설",
+        CONVENIENCE: "편의 시설"
     };
 
     return filterMap[filterType] || "알 수 없음";
@@ -879,7 +891,7 @@ $(document).on("dblclick", ".event", function () {
                     </div>
                     <div style="margin-bottom: 6px;">
                         <img src="${eventData.placeDTO.imageUrl || '/default-placeholder.jpg'}" 
-                             alt="장소 이미지" 
+                             alt="장소 사진" 
                              style="width: 200px; height: 100px; border-radius: 6px; object-fit: cover;">
                     </div>
                     <button class="btn btn-sm btn-outline-primary w-100" 
@@ -1048,7 +1060,7 @@ function updateTabs() {
     // "전체 일정" 탭 추가
     let allTab = document.createElement("span");
     allTab.classList.add("tab-btn");
-    allTab.textContent = "전체일정";
+    allTab.textContent = "전체 일정";
     allTab.setAttribute("data-day", "all");
     allTab.addEventListener("click", function () {
         showSchedule("all");
@@ -1108,3 +1120,68 @@ document.addEventListener("DOMContentLoaded", function () {
         tabContainer.scrollLeft = scrollLeft - walk;
     });
 });
+
+function refreshJournalUI() {
+    apiWithAutoRefresh({
+        url: `/api/itineraries/${itineraryId}/journals`,
+        method: "GET",
+        dataType: "json",
+        success: function (journals) {
+            const journalMap = new Map();
+            journals.forEach(j => {
+                if (j && j.ieid) {
+                    journalMap.set(Number(j.ieid), j);
+                }
+            });
+
+            console.log('journalMap', journalMap);
+            eventIdToHashIdMap.forEach((hashId, eventId) => {
+                console.log(`hashId ${hashId}, eventId ${eventId}`);
+                const journal = journalMap.get(eventId);
+                console.log(`journal`, journal);
+                const $eventEl = $(`.event[data-id='${hashId}']`);
+                const $imageEl = $eventEl.find(".event-image");
+                const $memoIconEl = $eventEl.find(".event-memo-icon");
+                console.log($eventEl);
+
+                // 이미지 최적화 렌더링
+                const targetImageUrl = journal?.imageUrl || "/images/journal_default.png";
+                console.log($imageEl.attr("src"), targetImageUrl);
+                if ($imageEl.attr("src") !== targetImageUrl) {
+                    $imageEl.attr("src", targetImageUrl);
+                }
+
+                // 메모 아이콘 상태 최적화 렌더링
+                const hasContent = journal && journal.content && journal.content.trim() !== "";
+                const currentActive = $memoIconEl.attr("data-active") === "true";
+
+                if (hasContent !== currentActive) {
+                    $memoIconEl.attr("data-active", hasContent ? "true" : "false");
+                    $memoIconEl.toggleClass("active", hasContent);
+                }
+            });
+
+            console.log("📘 Journal UI refreshed with optimized DOM updates.");
+        },
+        error: function (xhr, status, error) {
+            console.error("Error loading journals:", error);
+        }
+    });
+}
+window.refreshJournalUI = refreshJournalUI;
+$(document).on("click", ".event-image-wrap", async function () {
+    const hashId = $(this).closest(".event").data("id");
+    const event = getEventById(hashId);
+    if (!event || !event.id) {
+        console.warn("해당 방문지 정보를 찾을 수 없습니다.");
+        return;
+    }
+
+    const eventId = event.id;
+    console.log("🖼 클릭한 방문지 ID:", eventId, ", hashId:", hashId);
+
+    await fetchJournal(itineraryId, eventId); // 저널 데이터 가져오기
+    openJournalModal(); // 모달 열기
+});
+
+

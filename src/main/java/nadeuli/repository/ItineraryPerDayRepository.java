@@ -37,4 +37,5 @@ public interface ItineraryPerDayRepository extends JpaRepository<ItineraryPerDay
     @Query("SELECT p FROM ItineraryPerDay p JOIN FETCH p.itinerary WHERE p.itinerary = :itinerary")
     List<ItineraryPerDay> findByItinerary(@Param("itinerary") Itinerary itinerary);
 
+    void deleteAllByItinerary(Itinerary itinerary);
 }

@@ -23,7 +23,7 @@ package nadeuli.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import nadeuli.common.util.UserRoleAttributeConverter;
-import nadeuli.entity.constant.UserRole;
+import nadeuli.common.enums.UserRole;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -65,8 +65,11 @@ public class User implements Serializable {
     @Column(name = "user_role", nullable = false, length = 20)
     private UserRole userRole;
 
-    @Column(name = "user_token", columnDefinition = "TEXT")
-    private String userToken;
+    @Column(name = "provider_id", nullable = false, columnDefinition = "TEXT")
+    private String providerId;
+
+    @Column(name = "provider_access_token", columnDefinition = "TEXT")
+    private String providerAccessToken;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
@@ -74,33 +77,19 @@ public class User implements Serializable {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "refresh_token", columnDefinition = "TEXT")
-    private String refreshToken;
 
-    @Column(name = "refresh_token_expiry_at", nullable = false)
-    private LocalDateTime refreshTokenExpiryAt;
-
-    public void updateRefreshToken(String refreshToken, LocalDateTime expiryAt) {
-        this.refreshToken = refreshToken;
-        this.refreshTokenExpiryAt = expiryAt;
-    }
-
-    public void updateProfile(String userName, String profileImage, String provider, String userToken, LocalDateTime lastLoginAt) {
+    public void updateProfile(String userName, String profileImage, String provider, String providerAccessToken, LocalDateTime lastLoginAt) {
         this.userName = userName;
         this.profileImage = profileImage;
         this.provider = provider;
-
-        if (userToken != null && !userToken.isEmpty()) {
-            this.userToken = userToken;
-        }
-
+        this.providerAccessToken = providerAccessToken;
         this.lastLoginAt = lastLoginAt;
     }
 
     public static User of(Long id, String userEmail, String provider, String userName,
-                          String profileImage, UserRole userRole, String userToken,
-                          LocalDateTime lastLoginAt, LocalDateTime createdAt, String refreshToken, LocalDateTime refreshTokenExpiryAt) {
-        return new User(id, userEmail, provider, userName, profileImage, userRole, userToken, lastLoginAt, createdAt, refreshToken, refreshTokenExpiryAt);
+                          String profileImage, UserRole userRole,String providerId, String providerAccessToken,
+                          LocalDateTime lastLoginAt, LocalDateTime createdAt) {
+        return new User(id, userEmail, provider, userName, profileImage, userRole, providerId, providerAccessToken, lastLoginAt, createdAt);
     }
 
     @PrePersist
@@ -108,13 +97,10 @@ public class User implements Serializable {
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
         }
-        if (this.refreshTokenExpiryAt == null) {
-            this.refreshTokenExpiryAt = LocalDateTime.now().plusDays(7);
-        }
     }
 
     public static User createNewUser(String userEmail, String userName, String profileImage, String provider,
-                                     String userToken, LocalDateTime lastLoginAt, String refreshToken, LocalDateTime refreshTokenExpiryAt) {
+                                     String providerId, String providerAccessToken, LocalDateTime lastLoginAt) {
         return new User(
                 null,
                 userEmail,
@@ -122,11 +108,10 @@ public class User implements Serializable {
                 userName,
                 profileImage,
                 UserRole.MEMBER,
-                userToken,
+                providerId,
+                providerAccessToken,
                 lastLoginAt,
-                LocalDateTime.now(),
-                refreshToken,
-                refreshTokenExpiryAt
+                LocalDateTime.now()
         );
     }
 }

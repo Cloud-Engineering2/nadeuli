@@ -21,18 +21,45 @@ const userRoleMember = "MEMBER";
 
 
 function logout() {
-    fetch("/auth/logout", {
-        method: "POST",
-        credentials: "include"
-    }).then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert("로그아웃 완료");
-                location.href = "/login"; // 또는 메인 페이지로
+    if(window.isDirty){
+        Swal.fire({
+            title: '저장되지 않은 변경 사항이 있습니다.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '로그아웃',
+            cancelButtonText: '취소',
+            reverseButtons: true,
+            customClass: {
+                title: 'swal2-sm-title'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch("/auth/logout", {
+                    method: "POST",
+                    credentials: "include"
+                }).then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.isDirty = false;
+                            location.href = "/login"; // 또는 메인 페이지로
+                        }
+                    });
             }
         });
+    } else {
+        fetch("/auth/logout", {
+            method: "POST",
+            credentials: "include"
+        }).then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("로그아웃 완료");
+                    window.isDirty = false;
+                    location.href = "/login"; // 또는 메인 페이지로
+                }
+            });
+    }
 }
-
 
 document.addEventListener("DOMContentLoaded", function () {
     console.log('User Name:', userName);
@@ -51,9 +78,10 @@ function showLoggedInUI() {
     if (userRole === userRoleAdmin) {
         console.log("관리자입니다.");
         menuItems = `
-        <a href="#">지역 관리</a>
-        <a href="#">일정 관리</a>
-        <a href="#">회원 관리</a>
+        <a href="/admin/region">지역 관리</a>
+        <a href="/itinerary/create">일정 생성</a>
+        <a href="/itinerary/mylist">내 일정</a>
+        <a href="/mypage">내 정보</a>
       `;
     } else if (userRole === userRoleMember) {
         console.log("회원입니다.");

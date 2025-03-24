@@ -4,6 +4,81 @@ let levelMap = new Map();
 
 let table = null;
 let tbody = null;
+let mapReady = false;
+
+let circle =null;
+let map = null;
+let isCenterLocked = false; // 고정 상태 토글 변수
+let lockedCenter = null;
+
+function initMap() {
+    console.log("initMap Execute");
+
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 37.5665, lng: 126.9780 },
+        zoom: 13,
+        fullscreenControl: false,    // 전체화면 버튼 비활성화
+        streetViewControl: false,    // 스트리트뷰 버튼 비활성화
+        mapTypeControl: false        // 지도 유형 변경 버튼 비활성화
+    });
+
+    circle = new google.maps.Circle({
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.2,
+        map: map,
+        center: map.getCenter(),
+        radius: 500, // 기본 반경
+        editable: true,  // 사용자가 반경 조절 가능
+        draggable: false
+    });
+
+    // 지도 로드 완료 후 중심 좌표 출력
+    // 중심 변화 감지 (google.maps.event 방식)
+    google.maps.event.addListener(map, 'center_changed', function () {
+        const center = map.getCenter();
+        if (!isCenterLocked) {
+            circle.setCenter(center);
+            document.getElementById('mapLatitude').value = center.lat().toFixed(6);
+            document.getElementById('mapLongitude').value = center.lng().toFixed(6);
+        }
+    });
+
+    google.maps.event.addListener(circle, 'center_changed', function () {
+        if (isCenterLocked) {
+            const center = circle.getCenter();
+            document.getElementById('mapLatitude').value = center.lat().toFixed(6);
+            document.getElementById('mapLongitude').value = center.lng().toFixed(6);
+        }
+    });
+
+
+    google.maps.event.addListener(circle, 'radius_changed', function () {
+        document.getElementById('mapRadius').value = circle.getRadius().toFixed(0);
+    });
+    mapReady = true;
+
+}
+
+document.getElementById('toggleCenterLock').addEventListener('click', function () {
+    isCenterLocked = !isCenterLocked;
+    if (isCenterLocked) {
+        lockedCenter = map.getCenter();
+        this.textContent = '원 중심 맵고정 해제';
+    } else {
+        lockedCenter = null;
+        this.textContent = '원 중심 맵고정';
+    }
+});
+
+document.getElementById('mapRadius').addEventListener('input', function () {
+    const radius = parseFloat(this.value);
+    if (!isNaN(radius) && circle) {
+        circle.setRadius(radius);
+    }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
     table = document.querySelector('.region-table');
@@ -15,6 +90,12 @@ document.body.addEventListener('click', async (event) => {
     if (event.target.classList.contains('refresh-btn')) {
         await fetchRegionsData(false);
     }
+});
+
+document.getElementById('copyMapToFormBtn').addEventListener('click', function () {
+    document.getElementById('regionLatitude').value = document.getElementById('mapLatitude').value;
+    document.getElementById('regionLongitude').value = document.getElementById('mapLongitude').value;
+    document.getElementById('regionRadius').value = document.getElementById('mapRadius').value;
 });
 
 
@@ -160,6 +241,33 @@ document.body.addEventListener('click', event => {
             document.getElementById('regionRadius').value = region.radius || '';
             document.getElementById('regionImage').value = region.imageUrl || '';
 
+            // ✅ 지도 이동
+            if (region.latitude && region.longitude) {
+                const lat = parseFloat(region.latitude);
+                const lng = parseFloat(region.longitude);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    map.setCenter({ lat, lng });
+                }
+            }
+
+            // ✅ 반경도 원에 적용
+            if (region.radius) {
+                const radius = parseFloat(region.radius);
+                if (!isNaN(radius) && circle) {
+                    circle.setRadius(radius);
+                    document.getElementById('mapRadius').value = radius.toFixed(0);
+                }
+            }
+
+            isCenterLocked = true;
+            lockedCenter = map.getCenter(); // 또는 { lat, lng } 로 바로 넣어도 됨
+            circle.setCenter(lockedCenter); // 원도 바로 고정 위치로 맞춤
+
+            const lockBtn = document.getElementById('toggleCenterLock');
+            if (lockBtn) {
+                lockBtn.textContent = '원 중심 맵고정 해제';
+            }
+
             // 이미지 프리뷰 업데이트
             const imagePreview = document.getElementById('imagePreview');
             console.log(imagePreview);
@@ -176,27 +284,55 @@ document.body.addEventListener('click', event => {
 document.body.addEventListener('click', event => {
     if (event.target.id === 'saveRegionButton') {
         console.log('저장 버튼 클릭됨');
+
         const regionId = Number(document.getElementById('regionId').value);
-        if (regionMap.has(regionId)) {
-            const region = regionMap.get(regionId);
-            region.name = document.getElementById('regionName').value;
-            region.latitude = document.getElementById('regionLatitude').value;
-            region.longitude = document.getElementById('regionLongitude').value;
-            region.radius = document.getElementById('regionRadius').value;
+        const latitude = parseFloat(document.getElementById('regionLatitude').value);
+        const longitude = parseFloat(document.getElementById('regionLongitude').value);
+        const radius = parseFloat(document.getElementById('regionRadius').value);
 
-
-            // 테이블 업데이트
-            const row = document.querySelector(`tr[data-id="${regionId}"]`);
-            if (row) {
-                row.children[0].innerHTML = `<div class="name-container"><span>${region.name}</span></div>`;
-                row.children[1].innerText = region.latitude || '-';
-                row.children[2].innerText = region.longitude || '-';
-                row.children[3].innerText = region.radius || '-';
-
-            }
-
-            alert('수정되었습니다!');
+        if (!regionId || isNaN(latitude) || isNaN(longitude) || isNaN(radius)) {
+            alert("입력값이 올바르지 않습니다.");
+            return;
         }
+
+        // ✅ 서버에 전송할 데이터 구성 (AdminRegionUpdateRequestDTO 구조)
+        const requestData = {
+            id: regionId,
+            latitude: latitude,
+            longitude: longitude,
+            radius: radius
+        };
+
+        // ✅ apiWithAutoRefresh로 AJAX 요청
+        apiWithAutoRefresh({
+            url: '/api/admin/region/update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(requestData),
+            success: function () {
+                // 서버 응답 성공 시 클라이언트 local regionMap도 업데이트
+                if (regionMap.has(regionId)) {
+                    const region = regionMap.get(regionId);
+                    region.latitude = latitude;
+                    region.longitude = longitude;
+                    region.radius = radius;
+
+                    // 테이블 UI 동기화
+                    const row = document.querySelector(`tr[data-id="${regionId}"]`);
+                    if (row) {
+                        row.children[1].innerText = latitude.toFixed(6);
+                        row.children[2].innerText = longitude.toFixed(6);
+                        row.children[3].innerText = radius.toFixed(0);
+                    }
+                }
+
+                alert("지역 정보가 성공적으로 수정되었습니다!");
+            },
+            error: function (xhr) {
+                console.error(xhr);
+                alert("수정 요청 실패: " + (xhr.responseJSON?.message || '서버 오류'));
+            }
+        });
     }
 });
 // 파일이 선택되었을 때 미리보기 표시 및 자동 업로드 실행
@@ -291,13 +427,13 @@ function uploadImage(file) {
     formData.append("file", file);
     formData.append("regionId", regionId);
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/admin/region/upload/photo`,
-        type: 'POST',
+        method: 'POST',
         data: formData,
         processData: false,
         contentType: false,
-        success: function(response) {
+        success: function (response) {
             const imageUrl = response.imageUrl || response;
             const row = $(`tr[data-id="${regionId}"]`);
             if (row.length) {
@@ -305,11 +441,12 @@ function uploadImage(file) {
             }
             alert('이미지가 업로드되었습니다!');
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.error(xhr);
             alert(xhr.responseJSON?.message || '이미지 업로드에 실패했습니다.');
         }
     });
 }
+
 
 

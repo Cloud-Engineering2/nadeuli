@@ -9,6 +9,7 @@
     <!-- 공통 스타일 -->
     <link rel="stylesheet" href="/css/admin-common.css">
     <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/header-footer.css">
 
     <!-- 동적으로 추가되는 스타일 -->
     <th:block th:if="${adminStyle}">
@@ -53,7 +54,7 @@
             item.addEventListener("click", function (event) {
                 event.preventDefault(); // 기본 동작 방지
                 const page = this.getAttribute("data-page"); // data-page 값 가져오기
-                if (page) {
+                if (page && page === 'region') { // 리전페이지만 구현되어 제한
                     window.location.href = `/admin/${page}`; // 페이지 이동
                 }
             });

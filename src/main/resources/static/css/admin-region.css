@@ -1,3 +1,14 @@
+.map-area {
+    margin-left: 50px;
+    width:500px;
+    height:500px;
+}
+#map {
+    width: 500px;
+    height: 500px;
+}
+
+
 /* 기본 테이블 스타일 */
 .region-page table {
     width: 100%;
@@ -117,7 +128,6 @@
 .region-page #regionForm {
     display: flex;
     flex-direction: column;
-    gap: 15px;
 }
 
 /* 입력 필드 스타일 */
@@ -146,6 +156,23 @@
     background-color: #f8f9fa;
     color: #6c757d;
     cursor: not-allowed;
+}
+
+.map-form{
+    margin-left: 20px;
+}
+.map-form .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.map-form label{
+    font-weight: bold;
+    color: #444;
+    font-size: 0.9rem;
 }
 
 /* 이미지 미리보기 스타일 */

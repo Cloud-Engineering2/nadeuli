@@ -18,6 +18,7 @@
  *                         => 삭제 쪽 함수에도 flush() 처리
  *                         불필요한 것 삭제
  * 이홍비    2025.03.06     ItineraryEvent - ieid 로 조회
+ * 박한철    2025.03.22     getJournalsByItineraryId 추가
  * ========================================================
  */
 
@@ -26,22 +27,27 @@ package nadeuli.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import nadeuli.common.PhotoType;
+import nadeuli.common.enums.PhotoType;
 import nadeuli.dto.JournalDTO;
+import nadeuli.dto.JournalSimpleDTO;
 import nadeuli.entity.ItineraryEvent;
 import nadeuli.entity.Journal;
 import nadeuli.repository.ItineraryEventRepository;
+import nadeuli.repository.ItineraryPerDayRepository;
 import nadeuli.repository.JournalRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class JournalService {
+
     private final JournalRepository journalRepository;
+    private final ItineraryPerDayRepository itineraryPerDayRepository;
     private final ItineraryEventRepository itineraryEventRepository;
     private final S3Service s3Service;
 
@@ -221,4 +227,10 @@ public class JournalService {
 
         return JournalDTO.from(journal);
     }
+
+    // itineraryId부터 모든 저널 가져오기
+    public List<JournalSimpleDTO> getJournalsByItineraryId(Long itineraryId) {
+        return journalRepository.findJournalSimpleDTOsByItineraryId(itineraryId);
+    }
+
 }

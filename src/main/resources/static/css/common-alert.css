@@ -22,7 +22,7 @@
     font-family: 'GriunNoltoTAENGGU'; /* 원하는 폰트 설정 */
     font-size: 1.2rem; /* 폰트 크기 설정 */
     border-radius: 5px; /* 테두리의 모서리를 둥글게 */
-    z-index: 1000;
+    z-index: 99999;
 
     flex-direction: column; /* flexbox 방향을 열로 설정 */
     align-items: center; /* 내용과 버튼을 가운데 정렬 */

@@ -11,7 +11,7 @@ let regionImageMap = null;
 // 페이지 로드 시 첫 데이터 로드
 $(document).ready(function () {
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: '/api/regions/image-urls',
         method: 'GET',
         success: function (response) {
@@ -25,6 +25,7 @@ $(document).ready(function () {
             console.error('지역 이미지 정보를 불러오는데 실패했습니다.');
         }
     });
+
 
 
 
@@ -76,9 +77,9 @@ function getItineraryById(id) {
 // 일정 데이터를 가져오는 함수
 function fetchItineraryData(reset) {
     return new Promise((resolve, reject) => {
-        $.ajax({
+        apiWithAutoRefresh({
             url: `/api/itinerary/mylist`,
-            type: "GET",
+            method: "GET",
             data: {
                 page: currentPage,
                 size: 12,
@@ -459,6 +460,37 @@ $(document).ready(function () {
     });
 
     // 삭제 버튼 클릭 이벤트
+    // $(document).on("click", ".dropdown-item.delete", function (event) {
+    //     event.preventDefault();
+    //     if (currentMenuOwner) {
+    //         let itinerary = getItineraryById(currentMenuOwner);
+    //
+    //         if (!itinerary) {
+    //             console.error("Itinerary 정보를 찾을 수 없습니다.");
+    //             return;
+    //         }
+    //
+    //         if (itinerary.role === "ROLE_OWNER") {
+    //             let message = "정말 삭제하시겠습니까?";
+    //             if (itinerary.isShared || itinerary.hasGuest) {
+    //                 message += "\n※ 이 일정은 공유된 상태입니다. 삭제하면 공유된 사용자도 접근할 수 없습니다.";
+    //             }
+    //             if (confirm(message)) {
+    //                 console.log("삭제 요청 보냄 (OWNER):", itinerary.id);
+    //                 // 삭제 요청 실행 로직 추가
+    //             }
+    //         }
+    //
+    //         if (itinerary.role === "ROLE_GUEST") {
+    //             let message = "정말 이 공유받은 일정을 제거하시겠습니까?\n※ 제거하면 공유받은 일정 목록에서 접근할수 없습니다.";
+    //             if (confirm(message)) {
+    //                 removeGuestMine(itinerary.id);
+    //                 $("#dynamicDropdown").hide();
+    //                 $(".dropdown-arrow").hide();
+    //             }
+    //         }
+    //     }
+    // });
     $(document).on("click", ".dropdown-item.delete", function (event) {
         event.preventDefault();
         if (currentMenuOwner) {
@@ -469,24 +501,102 @@ $(document).ready(function () {
                 return;
             }
 
+            // 🔸 ROLE_OWNER 삭제 처리
             if (itinerary.role === "ROLE_OWNER") {
                 let message = "정말 삭제하시겠습니까?";
                 if (itinerary.isShared || itinerary.hasGuest) {
                     message += "\n※ 이 일정은 공유된 상태입니다. 삭제하면 공유된 사용자도 접근할 수 없습니다.";
                 }
-                if (confirm(message)) {
-                    console.log("삭제 요청 보냄 (OWNER):", itinerary.id);
-                    // 삭제 요청 실행 로직 추가
-                }
+
+                Swal.fire({
+                    title: '일정 삭제 확인',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '삭제',
+                    cancelButtonText: '취소',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: '삭제 중입니다...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        apiWithAutoRefresh({
+                            url: `/api/itinerary/${itinerary.id}`,
+                            method: "DELETE",
+                            success: function () {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '삭제 완료',
+                                    text: '일정이 성공적으로 삭제되었습니다.'
+                                }).then(() => {
+                                    location.reload(); // 또는 삭제된 itinerary DOM 제거
+                                });
+                            },
+                            error: function () {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: '삭제 실패',
+                                    text: '일정 삭제 중 오류가 발생했습니다.'
+                                });
+                            }
+                        });
+                    }
+                });
             }
 
+            // 🔸 ROLE_GUEST 삭제 처리
             if (itinerary.role === "ROLE_GUEST") {
-                let message = "정말 이 공유받은 일정을 제거하시겠습니까?\n※ 제거하면 공유받은 일정 목록에서 접근할수 없습니다.";
-                if (confirm(message)) {
-                    removeGuestMine(itinerary.id);
-                    $("#dynamicDropdown").hide();
-                    $(".dropdown-arrow").hide();
-                }
+                let message = "정말 이 공유받은 일정을 제거하시겠습니까?\n※ 제거하면 공유받은 일정 목록에서 접근할 수 없습니다.";
+
+                Swal.fire({
+                    title: '공유 일정 제거 확인',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '제거',
+                    cancelButtonText: '취소',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: '제거 중입니다...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        apiWithAutoRefresh({
+                            url: `/api/share/remove-mine?itineraryId=${itinerary.id}`,
+                            method: "DELETE",
+                            success: function () {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '제거 완료',
+                                    text: '공유 일정을 제거했습니다.'
+                                }).then(() => {
+                                    refreshItineraryElement(currentMenuOwner, false, false, false, true);
+                                });
+                            },
+                            error: function () {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: '제거 실패',
+                                    text: '공유 일정 제거 중 오류가 발생했습니다.'
+                                });
+                            }
+                        });
+
+                        $("#dynamicDropdown").hide();
+                        $(".dropdown-arrow").hide();
+                    }
+                });
             }
         }
     });
@@ -512,9 +622,9 @@ $(document).ready(function () {
 let itineraryStatus = null;
 
 function fetchItineraryStatus(iid, showModal = false, callback = null) {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/share/status?itineraryId=${iid}`,
-        type: "GET",
+        method: "GET",
         success: function (response) {
             // API 응답 반영
             itineraryStatus = {
@@ -535,7 +645,7 @@ function fetchItineraryStatus(iid, showModal = false, callback = null) {
                 $("#shareModal").modal("show");
             }
 
-            // 완료 후 `callback` 실행
+            // 완료 후 callback 실행
             if (typeof callback === "function") {
                 callback(itineraryStatus);
             }
@@ -548,7 +658,6 @@ function fetchItineraryStatus(iid, showModal = false, callback = null) {
 
 
 function updateModalUI() {
-
     $("#ownerList").empty();
     $("#guestList").empty();
 
@@ -574,16 +683,15 @@ function updateModalUI() {
         }
     });
 
-
     if (itineraryStatus.isShared) {
         $("#shareStatus").text("ON").removeClass("bg-secondary").addClass("bg-success");
         $("#shareLinkContainer").removeClass("d-none");
 
-        $.ajax({
+        apiWithAutoRefresh({
             url: `/api/share/token?itineraryId=${itineraryStatus.id}`,
-            type: "GET",
+            method: "GET",
             xhrFields: {
-                withCredentials: true  // 쿠키에 있는 JWT를 전송
+                withCredentials: true // 쿠키 방식 유지
             },
             success: function (token) {
                 $("#shareLink").val(`${window.location.origin}/join/${token}`);
@@ -592,7 +700,6 @@ function updateModalUI() {
                 $("#shareLink").val("공유 링크를 불러올 수 없습니다.");
             }
         });
-
 
         $("#disableShareBtn").toggleClass("d-none", !isOwner);
         $("#generateLinkBtn").addClass("d-none");
@@ -614,54 +721,55 @@ function updateModalUI() {
         let targetUserId = $(this).data("user-id");
         removeGuest(targetUserId);
     });
-
 }
-function removeGuestMine(iid) {
-    $.ajax({
-        url: `/api/share/remove-mine?itineraryId=${iid}`,
-        type: "DELETE",
 
-        success: function () {
-            alert("GUEST가 삭제되었습니다.");
+// function removeGuestMine(iid) {
+//     apiWithAutoRefresh({
+//         url: `/api/share/remove-mine?itineraryId=${iid}`,
+//         method: "DELETE",
+//         success: function () {
+//             alert("GUEST가 삭제되었습니다.");
+//             refreshItineraryElement(currentMenuOwner, false, false, false, true);
+//         },
+//         error: function () {
+//             alert("GUEST 삭제에 실패했습니다.");
+//         }
+//     });
+// }
 
-                refreshItineraryElement(currentMenuOwner, false, false, false, true);
-        },
-        error: function () {
-            alert("GUEST 삭제에 실패했습니다.");
-        }
-    });
-}
 
 
 function removeGuest(targetUserId) {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/share/remove?itineraryId=${itineraryStatus.id}&targetUserId=${targetUserId}`,
-        type: "DELETE",
-
+        method: "DELETE",
         success: function () {
             alert("GUEST가 삭제되었습니다.");
             fetchItineraryStatus(itineraryStatus.id, true, function (status) {
                 refreshItineraryElement(currentMenuOwner, status.role, status.isShared, status.hasGuest, false);
             });
-
         },
         error: function () {
             alert("GUEST 삭제에 실패했습니다.");
         }
     });
 }
+
 // 공유 링크 생성 (OWNER만 가능)
 $("#generateLinkBtn").click(function () {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/share/create?itineraryId=${itineraryStatus.id}`,
-        type: "POST",
-
+        method: "POST",
         success: function (token) {
             itineraryStatus.isShared = true;
             updateModalUI();
-            refreshItineraryElement(currentMenuOwner, itineraryStatus.role, itineraryStatus.isShared,
-                itineraryStatus.hasGuest, false);
-
+            refreshItineraryElement(
+                currentMenuOwner,
+                itineraryStatus.role,
+                itineraryStatus.isShared,
+                itineraryStatus.hasGuest,
+                false
+            );
         },
         error: function (xhr) {
             alert("공유 링크 생성에 실패했습니다.");
@@ -669,23 +777,29 @@ $("#generateLinkBtn").click(function () {
     });
 });
 
+
 // 공유 링크 삭제 (OWNER만 가능)
 $("#disableShareBtn").click(function () {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/share/delete?itineraryId=${itineraryStatus.id}`,
-        type: "DELETE",
-
+        method: "DELETE",
         success: function () {
             itineraryStatus.isShared = false;
             updateModalUI();
-            refreshItineraryElement(currentMenuOwner, itineraryStatus.role, itineraryStatus.isShared,
-                itineraryStatus.hasGuest, false);
+            refreshItineraryElement(
+                currentMenuOwner,
+                itineraryStatus.role,
+                itineraryStatus.isShared,
+                itineraryStatus.hasGuest,
+                false
+            );
         },
         error: function (xhr) {
             alert("공유 링크 삭제에 실패했습니다.");
         }
     });
 });
+
 
 // 링크 복사 기능
 $("#copyLinkBtn").click(function () {
@@ -695,3 +809,47 @@ $("#copyLinkBtn").click(function () {
     alert("링크가 복사되었습니다.");
 });
 
+function showPostTripModal(itineraryId) {
+    $("#postTripModal").data("itinerary-id", itineraryId).modal("show");
+}
+
+$(document).on("click", ".go-to-view", function () {
+    const itineraryId = $("#postTripModal").data("itinerary-id");
+    window.location.href = `/itinerary/view/${itineraryId}`;
+});
+
+$(document).on("click", ".go-to-summary", function () {
+    const itineraryId = $("#postTripModal").data("itinerary-id");
+    window.location.href = `/itineraries/${itineraryId}/bottomline`;
+});
+
+$(document).on("click", ".card-itinerary", function (event) {
+    event.stopPropagation();
+    if (!$(event.target).closest(".menu-btn, .card-footer-right").length) {
+        const hashId = $(this).data("id");
+        const itinerary = getItineraryById(hashId);
+
+        if (!itinerary) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startDate = new Date(itinerary.startDate);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + itinerary.totalDays - 1);
+
+        if (today <= endDate) {
+            // 여행 시작 전 or 여행 중이면 바로 이동
+            window.location.href = `/itinerary/view/${itinerary.id}`;
+        } else {
+            // 여행 종료 후이면 선택 모달 띄우기
+            showPostTripModal(itinerary.id);
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});

@@ -49,11 +49,12 @@ $(document).ready(function () {
             console.error('지역 이미지 정보를 불러오는데 실패했습니다.');
         }
     });
+    loadRegionTreeIfNeeded();
 });
 
-document.getElementById("travelModal").addEventListener("show.bs.modal", function () {
-    loadRegionTreeIfNeeded();  // ✅ 한 번만 로딩됨
-});
+// document.getElementById("travelModal").addEventListener("show.bs.modal", function () {
+//     loadRegionTreeIfNeeded();  // ✅ 한 번만 로딩됨
+// });
 
 
 
@@ -466,8 +467,8 @@ $(document).ready(function () {
     });
 
 
-    travelModal = new bootstrap.Modal(document.getElementById("travelModal"));
-    travelModal.show();
+    // travelModal = new bootstrap.Modal(document.getElementById("travelModal"));
+    // travelModal.show();
 });
 
 $('#date-range-container').dateRangePicker({
@@ -605,9 +606,8 @@ function generateItineraryJSON() {
     return itineraryJSON;
 }
 
-function itineraryCreateSubmit(){
-    // Step 3 → 완료 (모달 닫기 + 저장 처리)
-    console.log("✅ 플래너 생성 시도중 ");
+function itineraryCreateSubmit() {
+    console.log("✅ 플래너 생성 시도중");
 
     // 버튼 및 입력요소 비활성화
     nextButton.disabled = true;
@@ -619,9 +619,9 @@ function itineraryCreateSubmit(){
 
     const itineraryJSON = generateItineraryJSON();
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: "/api/itinerary/create",
-        type: "POST",
+        method: "POST",
         contentType: "application/json",
         data: JSON.stringify(itineraryJSON),
         beforeSend: function () {

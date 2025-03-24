@@ -168,7 +168,22 @@
 
 
 .schedule-header-right {
+    display:flex;
     margin-left: auto; /* 버튼을 오른쪽 끝으로 이동 */
+    align-items: center;
+}
+
+.navigate-edit-button{
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.navigate-edit-button:hover {
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .toggle-map-button{
@@ -190,6 +205,7 @@
 .toggle-map-button.on .off-icon {
     display: none;
 }
+
 
 
 
@@ -372,138 +388,54 @@
 
 .event-left {
     padding: 8px 0 0 8px;
-    flex: 9; /* 왼쪽 박스를 9배 크기로 설정 */
+    flex: 7; /* 왼쪽 박스를 9배 크기로 설정 */
 }
+
+/*.event-right {*/
+/*    flex: 3; !* 오른쪽 박스를 1배 크기로 설정 *!*/
+/*    display: flex;*/
+/*    position: relative;*/
+/*    justify-content: center; !* 버튼 가운데 정렬 *!*/
+/*    align-items: center;*/
+/*}*/
 
 .event-right {
-    flex: 1; /* 오른쪽 박스를 1배 크기로 설정 */
     display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.event-image-wrap {
     position: relative;
-    justify-content: center; /* 버튼 가운데 정렬 */
-    align-items: center;
-}
-
-.event-duplicate.place-btn {
-    all: unset;
+    width: 180px; /* 원하는 정사각형 크기 */
+    height: 100px;
+    overflow: hidden;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 3px;
-}
-
-.event-remove.place-btn {
-    all: unset;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10px;
-}
-
-
-/* 📌 입력창 스타일 */
-.event-duration-input-container {
-    background: #fff;
-    padding: 10px;
     border-radius: 8px;
-    border: 1px solid #cfcfcf;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: 180px;
-    position: absolute;
-    z-index: 10;
-    transition: all 0.2s ease-in-out;
-}
-/* 📌 숫자 입력 필드 스타일 */
-.event-duration-input-box {
-    display: flex;
-    align-items: center;
-    gap: 1px;
+    flex-shrink: 0;
 }
 
-.event-duration-input-box input {
-    width: 40px;
-    padding: 0px;
-    font-size: 14px;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    outline: none;
-}
-
-/* 📌 버튼 스타일 */
-.event-duration-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.event-duration-save,
-.event-duration-cancel {
-    padding: 5px 10px;
-    font-size: 13px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s ease-in-out;
-}
-
-.event-duration-save {
-    background: #4CAF50;
-    color: white;
-}
-
-.event-duration-save:hover {
-    background: #45a049;
-}
-
-.event-duration-cancel {
-    background: #f44336;
-    color: white;
-}
-
-.event-duration-cancel:hover {
-    background: #d32f2f;
-}
-
-
-
-.event-options-button {
-    color: black;
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.event-options {
-    position: absolute;
-    top: 80%;
-    right: 0;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    min-width: 120px;
-    z-index: 10;
-}
-
-.event-options button {
-    background: none;
-    border: none;
-    padding: 8px;
-    text-align: left;
-    cursor: pointer;
+.event-image {
     width: 100%;
+    height: 100%;
+    object-fit: cover; /* 이미지 꽉 채우기 (가로세로 상관없이 잘림 허용) */
 }
 
-.event-options button:hover {
-    background: #f0f0f0;
+.event-memo-icon {
+    position: absolute;
+    bottom: -3px;
+    left: 4px;
+    font-size: 20px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.event-memo-icon[data-active="true"] i {
+    color: #00ff0a; /* 활성화 - 검정 */
+}
+
+.event-memo-icon[data-active="false"] i {
+    color: #636363; /* 비활성화 - 회색 */
 }
 
 /* 메뉴 기본 숨김 */
@@ -561,301 +493,11 @@
     min-height: 100%;
 }
 
-.date-range-container{ width: 17em; padding: .2em .2em 0; display: none; font-size:62.5%; }
-
-/* 날짜 선택기 래퍼 스타일 */
-.date-picker-wrapper {
-    width:100%; font-size: 11px;
-    display: flex; /* 내부 요소를 가로로 배치 */
-    /*flex-wrap: nowrap; !* 줄바꿈 방지 *!*/
-    /*justify-content: center; !* 요소를 중앙 정렬 *!*/
-    /*align-items: flex-start; !* 상단 정렬 *!*/
-    /*padding: 16px; !* 내부 여백 설정 *!*/
-    background: #ffffff; /* 배경색 설정 */
-    border: none; /* 테두리 제거 */
-    /*max-width: 100%;*/
-}
-
-
-/* 월 이름 스타일 */
-.date-picker-wrapper .month-name {
-    padding-top: .2em;
-    font-size:120%;
-    font-weight: 500;
-    color: #000000;
-}
-
-/* 월 래퍼 스타일 */
-.date-picker-wrapper .month-wrapper {
-    display: flex;
-    border: none;
-    width: 100% !important;
-    flex-wrap: wrap;
-    justify-content: center;
-    /*min-width: 650px;*/
-}
-
-
-.date-picker-wrapper .month-wrapper table.month1 {
-    border-right: 1px solid rgba(0, 0, 0, 0.10);
-}
-
-/* 월 캡션 스타일 */
-.date-picker-wrapper .month-wrapper .caption {
-    height: 80px;
-}
-
-/* 요일명 스타일 */
-.date-picker-wrapper .month-wrapper table .week-name {
-    font-size: 120%;
-    font-weight: 100;
-    color: #000000;
-}
-
-/* 날짜 셀 스타일 */
-.date-picker-wrapper .month-wrapper table td {
-    text-align: center;
-    cursor: pointer;
-}
-
-.date-picker-wrapper .month-wrapper table .day.real-today {
-    background-color: #00ff59;
-    border-radius: 30px;
-}
-
-#date-range-container {
-    width : 100%;
-    background: #ffffff; /* 배경색 설정 */
-    /*display: inline-block; !* 인라인 블록 요소로 설정 *!*/
-}
-
-
-/* 개별 날짜 스타일 */
-.date-picker-wrapper .month-wrapper table .day {
-    margin: 2px;
-    width: 2.5em;
-    height: 2.5em;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    text-align: center;
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 32px;
-}
-
-/* 다른 달의 날짜 스타일 */
-.date-picker-wrapper .day.other-month {
-    color: #d1d5db;
-}
-
-/* 유효한 날짜에 마우스를 올렸을 때의 스타일 */
-.date-picker-wrapper .day.valid:hover {
-    background: #f3f4f6;
-    color: #000000;
-}
-
-/* 선택된 날짜 스타일 */
-.date-picker-wrapper .day.selected {
-    background: #9c9c9c !important;
-    color: #ffffff !important;
-    font-weight: bold;
-}
-
-/* 날짜에 마우스를 올렸을 때 스타일 */
-.date-picker-wrapper .day.hovering {
-    background: #ededed !important;
-    border-radius: 6px; /* 15% → 6px */
-}
-
-/* 선택된 날짜 범위 스타일 */
-.date-picker-wrapper .day.toMonth.valid.checked {
-    background: #e6e6e6 !important;
-    border-radius: 6px; /* 15% → 6px */
-}
-
-/* 범위 선택 시 첫 번째 날짜 스타일 */
-.date-picker-wrapper .day.toMonth.valid.checked.first-date-selected {
-    border-top-left-radius: 6px; /* 15% → 6px */
-    border-bottom-left-radius: 6px; /* 15% → 6px */
-    background: #000000 !important;
-    color: #ffffff !important;
-}
-
-/* 범위 선택 시 마지막 날짜 스타일 */
-.date-picker-wrapper .day.toMonth.valid.checked.last-date-selected {
-    border-top-right-radius: 6px; /* 15% → 6px */
-    border-bottom-right-radius: 6px; /* 15% → 6px */
-    background: #000000 !important;
-    color: #ffffff !important;
-}
-
-/* 캡션(월 표기 부분) 스타일 */
-.date-picker-wrapper table .caption {
-    font-size: 16px; /* 1rem → 16px */
-}
-
-/* 다음 달 이동 버튼 스타일 */
-.date-picker-wrapper table .caption .next:hover {
-    color: #000000 !important;
-    background: transparent !important;
-}
-
-/* 이전 달 이동 버튼 스타일 */
-.date-picker-wrapper table .caption .prev:hover {
-    color: #000000 !important;
-    background: transparent !important;
-}
-
-.drp_top-bar normal{
-    display: none;
-}
-#step-container {
-    position: relative; /* 자식 absolute 위치 기준 */
-    min-height: 527px; /* 가장 높은 폼 기준으로 설정 */
-}
-/* 두 요소를 완전히 겹치도록 설정 */
-#step-date-selection,
-#step-time-selection {
-    position: absolute;
-    overflow-y: auto;
-    overflow-x:hidden;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-#step-date-selection {
-    visibility: visible;
-    opacity: 1;
-    z-index: 2;
-}
-#step-time-selection {
-    visibility: hidden;
-    opacity: 0;
-    z-index: 1;
-}
-.time-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.date-picker-wrapper .gap {
-    display: none;
-}
-.date-label { width: 120px; font-weight: bold; text-align: right; margin-right: 10px;}
-.time-input {
-    width: 150px;
-    margin-right: 10px;
-}
-
-
 /*====================================================================
 
 장소관련 css
 
 =====================================================================*/
-
-
-.place-container {
-    margin: 5px 0 0 10px;
-    width: 400px;
-    min-width: 400px;
-    min-height: 0;
-    display: none;
-    flex-direction: column;
-}
-
-.place-container.active{
-    display: flex;
-}
-
-.tab-content-wrap {
-    flex-grow: 1;
-    display: flex;
-    height: 100%;
-    min-height: 0;
-}
-
-.search-area {
-    width: 100%;
-    margin: 0;
-    background-color: white;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    flex-grow: 1;
-    min-height: 0;
-}
-
-.search-container {
-    display: flex;
-    user-select: none;
-    align-items: center;
-    min-height: 40px;
-    height: 40px;
-    background-color: #ffffff;
-    padding: 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: relative;
-    margin: 5px 0 5px 0;
-}
-.search-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    font-size: 16px;
-    user-select: none;
-    color: #666;
-    cursor: pointer;
-}
-.search-clear {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    font-size: 16px;
-    user-select: none;
-    color: #878787;
-    cursor: pointer;
-}
-
-.search-select{
-    height: 100%;
-    width: 80px;
-    font-size: 0.85em;
-    border: none;
-    /*appearance: none;*/
-    outline: none;
-    cursor: pointer;
-}
-
-.search-select:focus {
-    outline: none;
-}
-
-.d-none {
-    display: none !important;
-}
-
-.search-input {
-    flex-grow: 1;
-    border: none;
-    background-color: transparent;
-    height: 100%;
-    font-size: 0.85em;
-    padding: 0 10px;
-}
-.search-input:focus {
-    outline: none;
-}
-
-.place-map-area-wrap {
-    height: 100px; /* 지도 영역 고정 높이 */
-    margin-top: 5px;
-}
-
 
 .map-area {
     height: 100%; /* 지도 영역 고정 높이 */
@@ -866,67 +508,6 @@
     width: 100%;
     height: 100px;
 }
-
-.search-results-header {
-    font-weight: bold;
-    font-size: 1rem;
-    text-align: center;
-    padding: 15px 10px 5px 10px;
-}
-
-.search-results-wrap {
-    flex-grow: 1;
-    min-height: 0;
-    overflow-y: auto;
-}
-
-#google-search-results {
-    min-height: 100px;
-    padding: 10px;
-    background-color: #f3f3f3;
-}
-
-.google-result-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 13px 13px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.google-result-content {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.google-result-title {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #333;
-}
-
-.google-result-address {
-    font-size: 0.8rem;
-    color: #666;
-}
-
-.google-result-tags {
-    font-size: 0.9rem;
-    color: #555;
-    font-weight: normal;
-}
-
-.google-register-btn {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-}
-
 
 
 /* ✅ 탭 버튼 스타일 */

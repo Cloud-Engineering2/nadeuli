@@ -8,19 +8,17 @@
  * ========================================================
  * 작업자       날짜       수정 / 보완 내용
  * ========================================================
- *
- *
+ * 이홍비    2025.03.22   AccessDeniedException 오류 메시지 "대한" 추가
  * ========================================================
  */
+
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryCollaborator;
-import nadeuli.entity.constant.CollaboratorRole;
-import nadeuli.repository.ExpenseBookRepository;
+import nadeuli.common.enums.CollaboratorRole;
 import nadeuli.repository.ItineraryCollaboratorRepository;
-import nadeuli.repository.ItineraryRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +31,7 @@ public class ItineraryCollaboratorService {
     public CollaboratorRole getUserRole(Long userId, Long itineraryId) {
         return itineraryCollaboratorRepository.findByUserIdAndItineraryId(userId, itineraryId)
                 .map(collaborator -> CollaboratorRole.from(collaborator.getIcRole()))
-                .orElseThrow(() -> new AccessDeniedException("해당 일정에 접근 권한이 없습니다."));
+                .orElseThrow(() -> new AccessDeniedException("해당 일정에 대한 접근 권한이 없습니다."));
     }
 
     //일정파트는 ROLE_OWNER만 가능하므로 일정파트인지 Expense파트인지에 따라 추가 검사가 이루어짐

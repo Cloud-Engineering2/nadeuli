@@ -21,7 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.Place;
-import nadeuli.entity.constant.PlaceCategory.PlaceType;
+import nadeuli.common.enums.PlaceCategory.PlaceType;
 
 @Getter
 @AllArgsConstructor
