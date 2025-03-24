@@ -203,6 +203,8 @@ function renderTotalBudgetExpenseSummary() {
         success: function (response) {
             const displayTotalBudget = response.expenseBookDTO.totalBudget;
             const displayTotalExpense = response.expenseBookDTO.totalExpenses;
+            console.log("여기 response");
+            console.log(response);
 
             // 예산 출력
             const budgetHtml = `
@@ -1084,43 +1086,90 @@ document.getElementById("travelerSendButton").addEventListener("click", function
     let pathSegments = window.location.pathname.split("/"); // '/' 기준으로 자름
     let iid = pathSegments[pathSegments.length - 1]; // 마지막 값이 ID
 
+    let user = null;
+    let travelerList = null;
+
     console.log("Itinerary ID:", iid);
+    $.ajax({
+        url: `/api/itinerary/${iid}/user/owner`,
+        method: "GET",
+        dataType: "json",
+        success: function(response) {
+            user = response.userName;
+            // user를 traveler에 추가
+            $.ajax({
+                url: `/api/itinerary/${iid}/travelers`,
+                method: "GET",
+                dataType: "json",
+                success: function(response) {
+                    travelerList = response.travelers.map(traveler => traveler.name)
+                    if (travelerList.includes(user)) {
+                        console.log(`${user}는 여행자 목록에 있습니다.`);
+                    } else {
+                        console.log(`${user}를 여행자 목록에 추가합니다.`);
+                        $.ajax({
+                            url: `/api/itinerary/${iid}/traveler`,
+                            method: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                travelerName: user,
+                                totalBudget: 0 // 예산 값 설정
+                            }),
+                            success: function(res) {
+                                console.log(`${user}를 여행자 목록에 추가했습니다.`);
+                            }
+                        });
+                    }
+
+                    const travelerName = document.getElementById("travelerName").value;
+                    if (travelerName) { // 입력값이 모두 있는지 확인
+                        console.log("여행자 이름:", travelerName);
+                        // if (!travelerList.includes(travelerName)) {
+                        // 서버로 전송하는 경우
+                        $.ajax({
+                            url: `/api/itinerary/${iid}/traveler`,
+                            method: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                travelerName: travelerName,
+                                totalBudget: 0 // 예산 값 설정
+                            }),
+                            success: function (response) {
+                                console.log("여행자 추가 성공:", response);
+
+                                // 여행자 추가 후 모달 업데이트
+                                loadTravelerList(iid);
+                            },
+                            error: function (error) {
+                                console.error("여행자 추가 실패:", error);
+                            }
+                        });
+                        // }
+
+                        // 모달 닫기
+                        document.getElementById("travelerModal").style.display = "none";
+
+                        // 입력값 초기화 (모달을 다시 열 때 값이 비어 있도록 설정)
+                        document.getElementById("travelerName").value = "";
+                        // document.getElementById("travelerBudget").value = 0;
+                    } else {
+                        // 입력값이 비어 있으면 알림 표시
+                        alert("이름을 입력해주세요.");
+                    }
+
+
+                }
+            });
+        },
+        error: function(error) {
+            console.error("owner 유저 여행자 조회 실패:", error);
+        }
+    });
 
     // 입력값 가져오기
-    const travelerName = document.getElementById("travelerName").value;
-    if (travelerName) { // 입력값이 모두 있는지 확인
-        console.log("여행자 이름:", travelerName);
 
-        // 예를 들어 서버로 전송하는 경우
-        $.ajax({
-            url: `/api/itinerary/${iid}/traveler`,
-            method: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({
-                travelerName: travelerName,
-                totalBudget: 0 // 예산 값 설정
-            }),
-            success: function(response) {
-                console.log("여행자 추가 성공:", response);
 
-                // 여행자 추가 후 모달 업데이트
-                loadTravelerList(iid);
-            },
-            error: function(error) {
-                console.error("여행자 추가 실패:", error);
-            }
-        });
 
-        // 모달 닫기
-        document.getElementById("travelerModal").style.display = "none";
-
-        // 입력값 초기화 (모달을 다시 열 때 값이 비어 있도록 설정)
-        document.getElementById("travelerName").value = "";
-        // document.getElementById("travelerBudget").value = 0;
-    } else {
-        // 입력값이 비어 있으면 알림 표시
-        alert("이름을 입력해주세요.");
-    }
 });
 
 
@@ -1197,6 +1246,15 @@ $(document).off("click", ".traveler-confirm-button").on("click", ".traveler-conf
 
 // 여행자 목록을 모달에 로드하는 함수
 function loadTravelerList(iid) {
+    // $.ajax({
+    //     url: `/api/itinerary/${iid}/user/owner`,
+    //     method: "GET",
+    //     dataType: "json",
+    //     success: function(response) {
+    //         console.log(response);
+    //     }
+    // });
+
     $.ajax({
         url: `/api/itinerary/${iid}/travelers`,
         method: "GET",

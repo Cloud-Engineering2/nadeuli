@@ -7,6 +7,7 @@ import nadeuli.entity.User;
 import nadeuli.repository.UserRepository;
 import nadeuli.security.CustomUserDetails;
 import nadeuli.service.JwtTokenService;
+import nadeuli.service.UserService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 @Slf4j
@@ -25,6 +27,7 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final JwtTokenService jwtTokenService;
+    private final UserService userService;
 
     @PostMapping("/auth/success")
     public ResponseEntity<?> oauthSuccess(OAuth2AuthenticationToken authToken) {
