@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/refresh", "/auth/refresh/**").permitAll()
                         .requestMatchers("/join/**").permitAll()
                         .requestMatchers("/login", "/mypage").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
+//                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/share/join").permitAll()
                         .requestMatchers("/api/place/register").permitAll()
                         .requestMatchers("/oauth2/authorization/kakao", "/oauth2/authorization/google").permitAll()
@@ -76,7 +76,7 @@ public class SecurityConfig {
                                 .authorizationRequestResolver(customResolver)
                         )
                         .successHandler(customOAuth2SuccessHandler) // 로그인 성공 핸들러
-//                        .defaultSuccessUrl("/mypage", true) // (선택) 기본 리다이렉트 경로
+//                        .defaultSuccessUrl("/mypage", true) // (선택) 기본 리다이렉트 경로 좀되라 제바ㅣㄹ
 //                        .failureUrl("/login?error=true") // 실패 시 리다이렉트
                 )
                 .exceptionHandling(
