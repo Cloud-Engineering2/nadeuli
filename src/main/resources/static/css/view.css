@@ -924,13 +924,18 @@
     background-color: rgba(0, 0, 0, 0.5);  /* 배경을 어둡게 */
     z-index: 1050;  /* 모달이 다른 요소들 위로 올 수 있도록 설정 */
     overflow: auto;  /* 화면을 벗어나는 경우 스크롤 처리 */
+
 }
 
 /* 모달 내용 */
 .traveler-modal-content {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /*position: relative;*/
     background-color: white;
-    text-align: center;
+    /*text-align: center;*/
     margin: 15% auto;  /* 화면 중앙에 위치 */
     padding: 20px;
     border-radius: 10px;
@@ -964,4 +969,79 @@
 .fa-person-walking-luggage::before {
     width: 35px;
     height: 35px;
+}
+
+
+
+/* Traveler 조회 */
+.traveler-box {
+    margin-bottom: 5px;
+}
+.traveler-input-form {
+    display: flex;
+    margin-bottom: 20px;
+}
+#travelerName {
+    text-align: center;
+    margin-right: 55px;
+    width: 245px;
+    margin-left: 17px;
+}
+#travelerSendButton {
+    background-color: #8E8B82;
+    color: white;
+    font-weight: bold;
+    box-shadow: none;
+    border-radius: 5px;
+}
+/* Traveler 수정 */
+.traveler-name {
+    border: 1px solid #E9DCBE;
+    padding: 2px;
+    width: 250px;
+    text-align: center; /* 글자 정렬 */
+    margin-right: 53px;
+}
+
+/* traveler 수정 버튼 */
+.traveler-edit-button {
+    display: flex; /* Flexbox 레이아웃 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+.traveler-edit-button:active {
+    transform: scale(0.98); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
+}
+.traveler-edit-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
+}
+
+/* traveler 수정 완료 버튼 */
+.traveler-confirm-button {
+    display: none;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+.traveler-confirm-button:active {
+    transform: scale(0.98);
+}
+.traveler-confirm-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
+    padding: 5px 5px 5px 5px;
 }

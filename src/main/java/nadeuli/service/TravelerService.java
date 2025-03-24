@@ -10,7 +10,7 @@
  * ========================================================
  * 박한철   2025.02.25   Service 생성
  * 고민정   2025.02.26   Traveler CRUD 메서드 추가
- *
+ * 고민정   2025.03.24   traveler 이름, 예산 업데이트 메서드
  * ========================================================
  */
 package nadeuli.service;
@@ -134,5 +134,12 @@ public class TravelerService {
         expenseBook.updateBudget(beforeBudget - beforeTravelerBudget + change);
         return ExpenseBookDTO.from(expenseBook);
 
+    }
+
+    public TravelerDTO updateName(Integer tid, String editedName) {
+        Traveler traveler = travelerRepository.findById(tid)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Traveler가 존재하지 않습니다."));
+        traveler.updateName(editedName);
+        return TravelerDTO.from(traveler);
     }
 }
