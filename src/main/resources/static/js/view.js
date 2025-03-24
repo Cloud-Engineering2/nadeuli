@@ -1078,6 +1078,27 @@ $(document).on("click", ".traveler-addition-button", function() {
     document.getElementById("travelerModal").style.display = "block";
     // 리스트 조회
     loadTravelerList(iid);
+
+    // 경비 내역이 하나도 없는 경우, traveler 삭제 및 재추가 가능
+    $.ajax({
+        url: `/api/itineraries/${iid}/expense`,
+        method: "GET",
+        dataType: "json",
+        success: function(response) {
+            console.log(response);
+
+            if (response.length === 0) {
+                // 여행자 삭제 버튼 숨기기
+                $(".traveler-delete-button").show();
+            } else {
+                // 여행자 삭제 버튼 다시 표시 (필요할 경우)
+                $(".traveler-delete-button").hide();
+            }
+        },
+        error: function(error) {
+            console.error("경비 내역 조회 실패:", error);
+        }
+    });
 });
 
 // 여행자 추가 모달
@@ -1174,27 +1195,27 @@ document.getElementById("travelerSendButton").addEventListener("click", function
 
 
 // 여행자 삭제 버튼 클릭 시 처리
-// $(document).on("click", ".traveler-delete-button", function() {
-//     const iid = $(this).data("iid"); // 여행 ID
-//     const tid = $(this).data("tid"); // 여행자 ID
-//     const travelerName = $(this).data("tname"); // 여행자 이름
-//
-//     // 여행자 삭제 요청
-//     $.ajax({
-//         url: `/api/itinerary/${iid}/traveler/${travelerName}`,
-//         method: "DELETE",
-//         dataType: "json",
-//         success: function(response) {
-//             console.log("여행자 삭제 성공:", response);
-//
-//             // 삭제 후 리스트 다시 불러오기
-//             loadTravelerList(iid);
-//         },
-//         error: function(error) {
-//             console.error("여행자 삭제 실패:", error);
-//         }
-//     });
-// });
+$(document).on("click", ".traveler-delete-button", function() {
+    const iid = $(this).data("iid"); // 여행 ID
+    const tid = $(this).data("tid"); // 여행자 ID
+    const travelerName = $(this).data("tname"); // 여행자 이름
+
+    // 여행자 삭제 요청
+    $.ajax({
+        url: `/api/itinerary/${iid}/traveler/${travelerName}`,
+        method: "DELETE",
+        dataType: "json",
+        success: function(response) {
+            console.log("여행자 삭제 성공:", response);
+
+            // 삭제 후 리스트 다시 불러오기
+            loadTravelerList(iid);
+        },
+        error: function(error) {
+            console.error("여행자 삭제 실패:", error);
+        }
+    });
+});
 
 // 여행자 수정 버튼 클릭 시 처리
 $(document).off("click", ".traveler-edit-button").on("click", ".traveler-edit-button", async function() {
@@ -1217,6 +1238,8 @@ $(document).off("click", ".traveler-confirm-button").on("click", ".traveler-conf
     const travelerName = $(this).data("tname"); // 여행자 이름
 
     const travelerBox = $(this).closest(".traveler-box"); // 해당 버튼이 속한 여행자 박스를 찾음
+    const travelerNameContent = travelerBox.find(".traveler-name")[0]; // 해당 박스 내의 .traveler-name 요소 찾기
+    travelerNameContent.setAttribute("contenteditable", "false");
     const newTravelerName = travelerBox.find(".traveler-name")[0].innerText; // 수정된 이름 가져오기
 
     if (!newTravelerName) {
@@ -1224,19 +1247,16 @@ $(document).off("click", ".traveler-confirm-button").on("click", ".traveler-conf
     }
 
     // 서버로 수정된 이름 전송 (API 호출 등)
-    // const response = await $.ajax({
+    // $.ajax({
     //     url: `/api/itinerary/${iid}/traveler/${tid}`,
     //     method: "PUT",
     //     contentType: "application/json",
-    //     data: JSON.stringify({ name: newTravelerName })
+    //     data: JSON.stringify({ name: newTravelerName }),
+    //     success: function(response) {
+    //         console.log(response);
+    //     }
     // });
-    //
-    // console.log("수정된 여행자:", response);
-    ///////////// 또는 /////////////////
-    // const requestData = { name: newTravelerName };
-    //
-    // const response = await callApiAt(`/api/itinerary/${iid}/traveler/${tid}`, "PUT", requestData); // updateExpenseItem(iid, ieid, emid, expenseItemRequestData);
-    // console.log("수정된 여행자 : ", response);
+
 
     // 수정 버튼과 확인 버튼 상태 변경
     travelerBox.find(".traveler-edit-button").show(); // 수정 버튼 보이기
@@ -1246,14 +1266,6 @@ $(document).off("click", ".traveler-confirm-button").on("click", ".traveler-conf
 
 // 여행자 목록을 모달에 로드하는 함수
 function loadTravelerList(iid) {
-    // $.ajax({
-    //     url: `/api/itinerary/${iid}/user/owner`,
-    //     method: "GET",
-    //     dataType: "json",
-    //     success: function(response) {
-    //         console.log(response);
-    //     }
-    // });
 
     $.ajax({
         url: `/api/itinerary/${iid}/travelers`,
@@ -1271,13 +1283,16 @@ function loadTravelerList(iid) {
 
                     // 여행자 이름과 예산 출력
                     `<div class="traveler-box" id="travelerBox" style="display: flex;">
-                        <div class="traveler-name">${traveler.name}</div>
+                        <div class="traveler-name">@${traveler.name}</div>
                         <!--<span>예산: ${traveler.totalBudget} </span> -->
-                        <button type="button" class="traveler-edit-button" id="travelerEditButton" data-iid="${iid}" data-tid="${traveler.id}" data-tname="${traveler.name}">
+                        <button type="button" class="traveler-edit-button" id="travelerEditButton" style="display: none" data-iid="${iid}" data-tid="${traveler.id}" data-tname="${traveler.name}">
                             <i class="fa-solid fa-pen traveler-edit-icon"></i> <!-- 수정 버튼  -->
                         </button>
-                        <button type="button" class="traveler-confirm-button" id="travelerConfirmButton" data-iid="${iid}", data-tid="${traveler.id}" data-tname="${traveler.name}">
+                        <button type="button" class="traveler-confirm-button" id="travelerConfirmButton" style="display: none" data-iid="${iid}", data-tid="${traveler.id}" data-tname="${traveler.name}">
                             <i class="fa-solid fa-check traveler-confirm-icon"></i> <!-- 체크 버튼 -->
+                        </button>
+                        <button type="button" class="traveler-delete-button" id="travelerDeleteButton" data-iid="${iid}", data-tid="${traveler.id}" data-tname="${traveler.name}">
+                            <i class="fa fa-minus traveler-delete-icon"></i> <!-- 빼기 버튼 -->
                         </button>
                     </div>`
                 ).join("");

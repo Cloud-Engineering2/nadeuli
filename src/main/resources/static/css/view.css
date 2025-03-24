@@ -1001,11 +1001,35 @@
 }
 /* Traveler 수정 */
 .traveler-name {
-    border: 1px solid #E9DCBE;
+    /*border: 1px solid #E9DCBE;*/
     padding: 2px;
     width: 250px;
     text-align: center; /* 글자 정렬 */
     margin-right: 53px;
+    font-weight: bold;
+    color: #8E8B82;
+}
+
+/* traveler 삭제 버튼 */
+.traveler-delete-button {
+    display: flex; /* Flexbox 레이아웃 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+/* 삭제 버튼 클릭 애니메이션  */
+.traveler-delete-button:active {
+    /*transform: scale(0.98); !* 버튼을 살짝 축소시켜 눌린 느낌을 줌 *!*/
+}
+.traveler-delete-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
 }
 
 /* traveler 수정 버튼 */

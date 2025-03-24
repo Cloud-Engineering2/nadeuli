@@ -9,6 +9,7 @@
  * ========================================================
  * 고민정    2025.02.27   지출 내역 CRUD 추가
  * 고민정    2025.03.10   지출 추가 메서드 반환값 변경
+
  * ========================================================
  */
 package nadeuli.controller;
@@ -104,6 +105,8 @@ public class ExpenseItemRestController {
         expenseItemService.deleteExpenseItem(expenseItemId);
         return ResponseEntity.ok().build();
     }
+
+
 
 
 }

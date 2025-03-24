@@ -23,6 +23,7 @@ package nadeuli.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
+import nadeuli.dto.ExpenseItemDTO;
 import nadeuli.dto.Person;
 import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.EventExpenseSummaryDTO;
@@ -249,4 +250,14 @@ public class ExpenseBookService {
     }
 
 
+    // ExpenseBook에 있는 모든 Expense Item 조회
+    public List<ExpenseItemDTO> getAllExpenseItems(Long itineraryId) {
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다."));
+
+        List<ExpenseItem> expenseItems = expenseItemRepository.findAllByEbid(expenseBook);
+        return expenseItems.stream().map(ExpenseItemDTO::from).collect(Collectors.toList());
+    }
 }

@@ -11,6 +11,7 @@
  * 고민정    2025.03.11   예산 산정 메서드 삭제
  * 고민정    2025.03.11   최종, itinerary event 별 정산 메서드 추가
  * 박한철    2025.03.17   합산 금액 리턴값 추가
+ * 고민정    2025.03.24   expense book에 포함된 모든 expense item 조회 메서드 추가
  * ========================================================
  */
 
@@ -18,6 +19,7 @@ package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
+import nadeuli.dto.ExpenseItemDTO;
 import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.EventExpenseSummaryTotalResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
@@ -27,6 +29,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/itineraries")
@@ -76,6 +80,17 @@ public class ExpenseBookController {
                                                             expenseBookDto,
                                                             balance)
                                 );
+    }
+
+
+
+    // itinerary(ExpenseBook) 별 모든 expense item 조회
+    @GetMapping("/{iid}/expense")
+    public ResponseEntity<List<ExpenseItemDTO>> getExpense(@PathVariable("iid") Integer iid) {
+        Long itineraryId = Long.valueOf(iid);
+
+        List<ExpenseItemDTO> expenseItemDtos = expenseBookService.getAllExpenseItems(itineraryId);
+        return ResponseEntity.ok(expenseItemDtos);
     }
 
 
