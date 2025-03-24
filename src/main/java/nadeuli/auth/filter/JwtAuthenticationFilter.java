@@ -57,14 +57,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        // Actuator 경로 처리
-//        String uri = request.getRequestURI();
-//        log.info("✅ uri :" +  uri);
-//        if (uri.startsWith("/actuator")) {
-//            log.info("✅ Actuator 요청 필터 제외: {}", uri);
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
 
         String accessToken = extractAccessToken(request);
         log.warn("✅ JwtAuthenticationFilter 필터진입");
