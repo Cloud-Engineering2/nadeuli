@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("saveNameBtn").addEventListener("click", saveUserName);
 
     // 사용자 정보 자동 로딩
-    getUserInfo();
+    //getUserInfo();
 });
 
 // ✅ 사용자 정보 불러오기 (자동 입력)
