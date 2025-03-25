@@ -46,6 +46,7 @@ let itineraryId = null;
 //------------------------------------------
 
 $(document).ready(function () {
+    $('.recommend-button').hide();
     let pathSegments = window.location.pathname.split('/');
     let itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
 
@@ -101,6 +102,8 @@ $(document).ready(function () {
                     icon: 'question',
                     title: 'AI 기반 추천 여행 경로 생성을 시작하시겠습니까?',
                     text: 'AI를 활용해 여행 경로를 자동으로 추천해드립니다. (Beta)',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
                     showCancelButton: true,
                     confirmButtonText: '시작하기',
                     cancelButtonText: '취소',
@@ -1198,6 +1201,18 @@ function dateChangeSubmit() {
         }
     }
     precomputeDayOfWeekMap();
+
+    // 마지막 줄에 추가
+    if (selectedDates.length > 0) {
+        const firstDate = moment(selectedDates[0]);
+        const lastDate = moment(selectedDates[selectedDates.length - 1]);
+
+        const firstStr = firstDate.format("YYYY. MM. DD") + `. (${getKoreanDayOfWeek(firstDate.isoWeekday())})`;
+        const lastStr = lastDate.format("YYYY. MM. DD") + `. (${getKoreanDayOfWeek(lastDate.isoWeekday())})`;
+
+        $(".schedule-header-date").text(`${firstStr} ~ ${lastStr}`);
+    }
+
     window.isDirty = true;
     console.log("Updated perDayMap:", perDayMap);
 }
@@ -1224,6 +1239,8 @@ nextButton.addEventListener("click", function () {
             Swal.fire({
                 title: '예전 여정을 작성하시는 건가요?',
                 icon: 'question',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
                 showCancelButton: true,
                 confirmButtonText: '네',
                 cancelButtonText: '아니요'
@@ -1329,6 +1346,9 @@ function generateItineraryJson() {
         pid: event.placeDTO.id, // placeDTO.id를 pid로 변경
         placeDTO: undefined, // placeDTO 제거
         stayMinute: undefined, // stayMinute
+        movingMinute:  undefined,
+        startMinute: undefined,
+        endMinute: undefined,
         isStayMinuteModified : undefined
     }));
 
@@ -1344,6 +1364,7 @@ function recommend() {
     Swal.fire({
         title: 'AI 추천경로 생성 중...',
         allowOutsideClick: false,
+        allowEscapeKey: false,
         didOpen: () => {
             Swal.showLoading();
         }
@@ -1375,7 +1396,7 @@ function recommend() {
             const eventListByDay = {};
 
             Object.entries(recommendedPlaceDTOsByDay).forEach(([dayKey, placeDTOList]) => {
-                const dayCount = parseInt(dayKey.replace("day-", ""), 10) - 1;
+                const dayCount = parseInt(dayKey.replace("day-", ""), 10);
 
                 eventListByDay[dayKey] = placeDTOList.map((placeDTO, index) => {
                     const isFirstOfDay = index === 0;
@@ -1417,7 +1438,7 @@ function recommend() {
 
             console.log('✅ 거리 계산이 완료된 EVENT들:',eventListByDay);
             Object.entries(eventListByDay).forEach(([dayKey, eventList]) => {
-            const dayCount = parseInt(dayKey.replace("day-", ""), 10) - 1;
+            const dayCount = parseInt(dayKey.replace("day-", ""), 10);
             const baseStartTime = perDayMap.get(dayCount)?.startTime || "00:00:00";
             const baseStartMinutes = timeToMinutes(baseStartTime); // 분 단위로 변환
 
@@ -1590,7 +1611,7 @@ function formatTime(minutes) {
 
 //  🎭 이벤트 핸들링
 //------------------------------------------
-$(".recommend-button").click(recommend);
+$(".recommend-button").click(recommendWithConfirmation);
 
 $(".save-button").click(saveItinerary);
 
@@ -2734,6 +2755,7 @@ function handleDirtyNavigation(targetUrl) {
         }
     }).then((result) => {
         if (result.isConfirmed) {
+            isDirty = false;
             window.location.href = targetUrl;
         }
     });
@@ -2765,7 +2787,8 @@ $(document).on("click", "a[href]", function(e) {
 $(document).on("dblclick", ".event", function (e) {
 
     if (
-
+        $(e.target).hasClass("event-duplicate") ||
+        $(e.target).closest(".event-duplicate").length > 0 ||
         $(e.target).hasClass("travel-info") ||
         $(e.target).closest(".travel-minute-input").length > 0 ||
         $(e.target).hasClass("event-options-button") ||
@@ -3195,4 +3218,25 @@ function forcePlaceContainerOnIfEditMode2() {
             .addClass('active')                 // 버튼 상태도 active로 맞추고
             .text('완료');                      // 버튼 텍스트도 '완료'로 갱신
     }
+}
+
+function getKoreanDayOfWeek(weekdayNumber) {
+    const days = ['월', '화', '수', '목', '금', '토', '일'];
+    return days[weekdayNumber - 1];
+}
+
+function recommendWithConfirmation() {
+    Swal.fire({
+        title: 'AI 추천 경로를 생성하시겠어요?',
+        text: '현재 선택된 조건을 바탕으로 AI가 여행 일정을 자동으로 구성합니다.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '네, 생성할게요!',
+        cancelButtonText: '아니요, 취소할게요',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            recommend(); // 기존 함수 호출
+        }
+    });
 }
