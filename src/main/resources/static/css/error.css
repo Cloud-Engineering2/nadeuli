@@ -6,6 +6,11 @@
     src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
 }
 
+@font-face {
+    font-family: 'NotoSansKRVar';
+    src: url('../fonts/NotoSansKR-VariableFont_wght.ttf') format('truetype');
+}
+
 html, body {
     height: 100%;
     font-family: 'GriunNoltoTAENGGU';
