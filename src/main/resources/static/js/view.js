@@ -1197,14 +1197,14 @@ document.getElementById("travelerSendButton").addEventListener("click", function
     let user = null;
     let travelerList = null;
 
-    $.ajax({
+    $.ajax({  // user 조회
         url: `/api/itinerary/${iid}/user/owner`,
         method: "GET",
         dataType: "json",
         success: function(response) {
             user = response.userName;
-            // user를 traveler에 추가
-            $.ajax({
+
+            $.ajax({  // user를 traveler에 추가
                 url: `/api/itinerary/${iid}/travelers`,
                 method: "GET",
                 dataType: "json",
@@ -1214,21 +1214,37 @@ document.getElementById("travelerSendButton").addEventListener("click", function
                         console.log(`${user}는 여행자 목록에 있습니다.`);
                     } else {
                         console.log(`${user}를 여행자 목록에 추가합니다.`);
+
                         $.ajax({
-                            url: `/api/itinerary/${iid}/traveler`,
-                            method: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify({
-                                travelerName: user,
-                                totalBudget: 0 // 예산 값 설정
-                            }),
-                            success: function(res) {
-                                console.log(`${user}를 여행자 목록에 추가했습니다.`);
+                            url: `/api/itineraries/${iid}/expense-book`,
+                            method: "GET",
+                            dataType: "json",
+                            success: function (response) {
+
+
+                                $.ajax({ // traveler 추가
+                                    url: `/api/itinerary/${iid}/traveler`,
+                                    method: "POST",
+                                    contentType: "application/json",
+                                    data: JSON.stringify({
+                                        travelerName: user,
+                                        totalBudget: response.totalBudget // 예산 값 설정
+                                    }),
+                                    success: function(res) {
+                                        console.log(`${user}를 여행자 목록에 추가했습니다.`);
+                                    }
+                                });
+                            },
+                            error: function (status, error) {
+
                             }
                         });
+
+
                     }
 
                     const travelerName = document.getElementById("travelerName").value;
+                    const travelerBudget = document.getElementById("travelerBudget").value;
                     if (travelerName) { // 입력값이 모두 있는지 확인
                         // if (!travelerList.includes(travelerName)) {
                         // 서버로 전송하는 경우
@@ -1238,7 +1254,7 @@ document.getElementById("travelerSendButton").addEventListener("click", function
                             contentType: "application/json",
                             data: JSON.stringify({
                                 travelerName: travelerName,
-                                totalBudget: 0 // 예산 값 설정
+                                totalBudget: travelerBudget // 예산 값 설정
                             }),
                             success: function (response) {
                                 console.log("여행자 추가 성공:", response);
@@ -1257,7 +1273,7 @@ document.getElementById("travelerSendButton").addEventListener("click", function
 
                         // 입력값 초기화 (모달을 다시 열 때 값이 비어 있도록 설정)
                         document.getElementById("travelerName").value = "";
-                        // document.getElementById("travelerBudget").value = 0;
+                        document.getElementById("travelerBudget").value = 0;
                     } else {
                         // 입력값이 비어 있으면 알림 표시
                         alert("이름을 입력해주세요.");
@@ -1369,7 +1385,7 @@ function loadTravelerList(iid) {
                     // 여행자 이름과 예산 출력
                     `<div class="traveler-box" id="travelerBox" style="display: flex;">
                         <div class="traveler-name">@${traveler.name}</div>
-                        <!--<span>예산: ${traveler.totalBudget} </span> -->
+                        <div class="traveler-budget">예산: ${traveler.totalBudget} 원</div> 
                         <button type="button" class="traveler-edit-button" id="travelerEditButton" style="display: none" data-iid="${iid}" data-tid="${traveler.id}" data-tname="${traveler.name}">
                             <i class="fa-solid fa-pen traveler-edit-icon"></i> <!-- 수정 버튼  -->
                         </button>
