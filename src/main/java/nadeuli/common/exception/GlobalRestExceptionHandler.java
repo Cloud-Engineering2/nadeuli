@@ -17,6 +17,7 @@
 
 package nadeuli.common.exception;
 
+import jakarta.persistence.EntityNotFoundException;
 import nadeuli.controller.*;
 import nadeuli.dto.response.ErrorResponseDto;
 import org.springframework.http.HttpStatus;
@@ -78,4 +79,16 @@ public class GlobalRestExceptionHandler {
                 .status(status)
                 .body(new ErrorResponseDto(status.value(), message));
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<?> handleIllegalStateException(IllegalStateException e) {
+        return buildErrorResponse(HttpStatus.CONFLICT, e.getMessage()); // 409 Conflict
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException e) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()); // 404 Not Found
+    }
+
+
 }
