@@ -201,6 +201,9 @@ public class ExpenseBookService {
             System.out.println(traveler.getTotalExpense());
         }
 
+        ExpenseBookDTO expenseBookDto = updateExpenseBook(itineraryId, totalExpense);
+
+
         return new FinanceResponseDTO(totalAdjustment, totalExpense, eachExpense);
     }
 
@@ -208,8 +211,10 @@ public class ExpenseBookService {
         // Itinerary 조회
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
-        ExpenseBookDTO expenseBookDto = getExpenseBook(itineraryId);
-        ExpenseBook expenseBook = expenseBookDto.toEntity(itinerary);
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다."));
+//        ExpenseBookDTO expenseBookDto = getExpenseBook(itineraryId);
+//        ExpenseBook expenseBook = expenseBookDto.toEntity(itinerary);
 
         expenseBook.updateExpense(totalExpense);
         ExpenseBookDTO responseDto = ExpenseBookDTO.from(expenseBook);

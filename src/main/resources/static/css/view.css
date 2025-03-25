@@ -895,7 +895,7 @@
 }
 
 .total-budget{
-    /*margin-top: 5px;*/
+    margin-top: 5px;
     margin-right: 10px;
     font-size: 0.90em;
     color: #8E8B82;
@@ -905,9 +905,12 @@
     width: 100px;
     border: 1px solid #8E8B82;
     border-radius: 5px;
+    height: 30px;
+
 }
 .total-budget-label {
-    margin-right: 10px;
+    /*margin-right: 10px;*/
+    margin-top: 5px;
 }
 
 .total-budget-expense-wrap{
@@ -918,6 +921,7 @@
 
 .total-expense {
     margin-left: 20px;
+    font-size: 16px;
 }
 
 
@@ -934,9 +938,9 @@
 
 .budget-confirm-icon {
     color: white; /* 아이콘 색상 */
-    font-size: 15px; /* 아이콘 크기 */
-    padding: 10px 15px; /* 패딩 */
-    border-radius: 5px; /* 아이콘 둥근 모서리 */
+    font-size: 12px; /* 아이콘 크기 감소 */
+    padding: 5px 10px; /* 패딩을 줄여 크기 감소 */
+    border-radius: 4px; /* 둥근 모서리 크기 줄이기 */
 }
 
 

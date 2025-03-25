@@ -191,7 +191,7 @@ function renderTotalBudgetExpenseSummary() {
     // 예산 출력
     const budgetHtml = `
 <!--        <div class="total-budget">예산: ${totalBudget.toLocaleString()} 원</div>-->
-        <label for="total-budget-label">예산 : </label>
+        <label class="total-budget-label" for="total-budget">예산 : </label>
         <input type="text" class="total-budget" id="totalBudget" name="name" placeholder="(원)">
         <button type="button" class="budget-confirm-button" id="budgetConfirmButton">
             <i class="fa-solid fa-check budget-confirm-icon"></i> <!-- 체크 아이콘 -->
@@ -202,7 +202,15 @@ function renderTotalBudgetExpenseSummary() {
         // 여행 id 추출
     let pathSegments = window.location.pathname.split("/");
     let iid = pathSegments[pathSegments.length - 1];
-    
+
+    $.ajax({
+        url: `/api/itineraries/${iid}/adjustment`,
+        method: "GET",
+        dataType: "json",
+        success: function (response) {
+            console.log("📝 장부 총 지출 업데이트 목적");
+        }
+    });
     let expenseHtml = '';
     if (totalExpense === 0) {
         expenseHtml = `<div class="total-expense">지출: 0 원</div>`;

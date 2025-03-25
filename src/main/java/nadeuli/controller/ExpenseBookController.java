@@ -62,9 +62,11 @@ public class ExpenseBookController {
     @GetMapping("/{iid}/adjustment")
     public ResponseEntity<AdjustmentResponseDTO> getFinalAdjustment(@PathVariable("iid") Integer iid) {
         Long itineraryId = Long.valueOf(iid);
-
         FinanceResponseDTO financeResponseDTO = expenseBookService.getAdjustment(itineraryId);
+
+        System.out.println(financeResponseDTO);
         Long totalExpense = financeResponseDTO.getTotalExpense();
+
 
         System.out.println("totalExpense: " + totalExpense); // 🔥 확인
 
@@ -98,6 +100,14 @@ public class ExpenseBookController {
         Long itineraryId = Long.valueOf(iid);
         Long budget = Long.valueOf(budgetRequestDto.getTotalBudget());
         ExpenseBookDTO expenseBookDto = expenseBookService.updateBudget(itineraryId, budget);
+        return ResponseEntity.ok(expenseBookDto);
+    }
+    
+    // Budget 조회
+    @GetMapping("/{iid}/expense-book")
+    public ResponseEntity<ExpenseBookDTO> getBudget(@PathVariable("iid") Integer iid) {
+        Long itineraryId = Long.valueOf(iid);
+        ExpenseBookDTO expenseBookDto = expenseBookService.getExpenseBook(itineraryId);
         return ResponseEntity.ok(expenseBookDto);
     }
 }

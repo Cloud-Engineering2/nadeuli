@@ -12,6 +12,7 @@
  * 고민정    2025.02.25     생성자 접근수준 수정
  * 고민정    2025.03.11     total_budget, expense 필드 추가, budget update 메서드 추가
  * 고민정    2025.03.24     traveler 수정 메서드 추가
+ * 고민정    2025.03.25     total expense 업데이트 null 처리
  * ========================================================
  */
 
@@ -66,6 +67,11 @@ public class Traveler {
     }
 
     public void updateTotalExpense(Long totalExpense) {
+
+        if (totalExpense == null) {
+            System.out.println("Warning: totalExpense is null!");
+            totalExpense = 0L;
+        }
         this.totalExpense = totalExpense;
     }
 
