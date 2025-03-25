@@ -1499,7 +1499,7 @@ function recommend() {
             }
             editMode = 1;
             toggleUIByEditMode()
-
+            tryRenderMarkerAll();
             // 2️⃣ 저장 완료 모달 띄우기 (버튼 2개)
             Swal.fire({
                 icon: 'success',
