@@ -64,16 +64,8 @@ $(document).ready(function () {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch("/auth/logout", {
-                        method: "POST",
-                        credentials: "include"
-                    }).then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.isDirty = false;
-                                window.location.href = `/itinerary/view/${itineraryId}`;
-                            }
-                        });
+                window.isDirty = false;
+                window.location.href = `/itinerary/view/${itineraryId}`;
                 }
             });
         } else {

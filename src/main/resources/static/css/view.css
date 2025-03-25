@@ -921,11 +921,9 @@
 }
 
 .total-budget{
-    margin-top: 5px;
     margin-right: 10px;
     font-size: 0.90em;
     color: #8E8B82;
-    font-weight: bold;
     cursor: pointer;
     background-color: #ffffff;
     width: 100px;
@@ -935,13 +933,13 @@
 
 }
 .total-budget-label {
-    /*margin-right: 10px;*/
-    margin-top: 5px;
+    margin-right: 5px;
 }
 
 .total-budget-expense-wrap{
     display:flex;
     margin-left: 10px;
+    align-items: center;
 
 }
 
@@ -955,11 +953,11 @@
     display: flex;
     justify-content: center; /* 가로 중앙 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
-    border-radius: 10px; /* 둥근 모서리 */
+    border-radius: 5px; /* 둥근 모서리 */
     background-color: #E9DCBE;
-    width: 35px;
-    height: 35px;
-    border-color: #ffffff;
+    width: 25px;
+    height: 25px;
+    border: none #ffffff;
 }
 
 .budget-confirm-icon {
