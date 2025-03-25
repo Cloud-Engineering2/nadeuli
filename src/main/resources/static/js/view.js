@@ -20,7 +20,7 @@ let savedPlaceMarker = null;
 let summaryMap = new Map();
 let totalBudget = null;
 let totalExpense = null;
-
+window.globaleventId = null;
 
 const travelerMap = new Map();
 // 모달 전역변수
@@ -1315,7 +1315,7 @@ function loadTravelerList() {
                     </div>
         
                     <div class="traveler-budget-wrap">
-                        <label>예산:</label>
+                        <label>예산: </label>
                         <input type="number" class="traveler-budget-input" value="${traveler.totalBudget}" readonly>
                         <button type="button" class="traveler-budget-edit-button" data-iid="${itineraryId}" data-tid="${traveler.id}">
                             <i class="fa-solid fa-pen"></i>
