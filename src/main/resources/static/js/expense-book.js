@@ -279,7 +279,7 @@ $(document).off("click", ".expense-item-addition-button").on("click", ".expense-
         return;
     }
     if (withWhomList.includes(payer)) {
-        alert("Payer는 함께 계산할 수 없습니다!");
+        alert("지불한 사람을 함께한 사람으로 선택할 수 없습니다!");
         return;
     }
 

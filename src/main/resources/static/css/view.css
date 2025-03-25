@@ -1020,6 +1020,7 @@
     scrollbar-color: #efe9d8 #efe9d8;
     width: 30px;
     height: 30px;
+    margin-left: 20px;
 }
 .fa-person-walking-luggage::before {
     font-size: 25px;
@@ -1037,9 +1038,9 @@
 }
 #travelerName {
     text-align: center;
-    margin-right: 55px;
+    margin-right: 30px;
     width: 245px;
-    margin-left: 17px;
+    /*margin-left: 17px;*/
 }
 #travelerSendButton {
     background-color: #8E8B82;
@@ -1048,7 +1049,12 @@
     box-shadow: none;
     border-radius: 5px;
 }
-/* Traveler 수정 */
+/* Traveler 조회 */
+.traveler-list {
+    max-height: 100px; /* 원하는 높이 설정 */
+    overflow-y: auto; /* 세로 스크롤 활성화 */
+
+}
 .traveler-name {
     /*border: 1px solid #E9DCBE;*/
     padding: 2px;
@@ -1057,6 +1063,20 @@
     margin-right: 53px;
     font-weight: bold;
     color: #8E8B82;
+}
+
+.traveler-budget {
+    /*border: 1px solid #E9DCBE;*/
+    padding: 2px;
+    width: 250px;
+    text-align: center; /* 글자 정렬 */
+    margin-right: 53px;
+    font-weight: bold;
+    color: #8E8B82;
+}
+
+#travelerBudget {
+    margin-right: 10px;
 }
 
 /* traveler 삭제 버튼 */
