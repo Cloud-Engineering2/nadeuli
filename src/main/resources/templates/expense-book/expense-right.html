@@ -21,21 +21,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+
 </head>
 <body>
 
 <div class="expense-header-background" id="expenseHeaderBackground">
-    <span class="expense-header-tab-active" id="expenseHeaderTabActive">경 비</span>
-    <span class="expense-header-tab-inactive" id="expenseHeaderTabInactive">정 산</span>
+
+    <div th:replace="expense-book/adjustment-expense-tab :: tab-container"></div>
 
     <div class="itinerary-event-expense-item-info" id="itineraryEventExpenseItemInfo">
 
-        <div class="expense-basic-info" id="expenseBasicInfoIn">
-            <!-- 남은 예산 -->
-            <span class="expense-basic-info-remained-budget" id="expenseBasicInfoRemainedBudget">남은 예산 : 100,000 원</span>
-            <!-- 함께하는 친구 -->
-            <span class="expense-basic-info-traveler" id="expenseBasicInfoTraveler">3 명의 친구와 함께하고 있습니다</span>
-        </div>
+        <div th:replace="expense-book/expense-book-basic-info :: budget-and-traveler-info"></div>
 
         <!-- Expense Item 조회 -->
         <div class="expense-item-container" id="expenseItemContainer">
@@ -44,10 +40,12 @@
                 <div class="expense-item-content-title">📝CONTENT</div><div class="expense-item-expenditure-title">💸EXPENDITURE</div><div class="expense-item-payer-title">😄PAYER</div><div class="expense-item-with-whom-title">👥withWHOM</div>
             </div>
             <hr>
-            <!-- Expense Item 리스트-->
-            <div class="expense-item-list" id="expenseItemList"></div>
-            <!-- 경비 내역 추가 폼 -->
-            <div class="expense-item-creation" id="expenseItemCreation"></div>
+            <div class="expense-item-list-scroll" id="expenseItemListScroll">
+                <!-- Expense Item 리스트-->
+                <div class="expense-item-list" id="expenseItemList"></div>
+                <!-- 경비 내역 추가 폼 -->
+                <div class="expense-item-creation" id="expenseItemCreation"></div>
+            </div>
 
 
         </div>

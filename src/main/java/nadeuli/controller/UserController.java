@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 @Slf4j
@@ -23,5 +24,4 @@ import java.util.Map;
 public class UserController {
 
     private final UserRepository userRepository;
-
 }

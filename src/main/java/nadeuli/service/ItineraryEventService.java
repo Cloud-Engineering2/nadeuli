@@ -16,6 +16,7 @@
 package nadeuli.service;
 
 import lombok.RequiredArgsConstructor;
+import nadeuli.dto.ItineraryEventDTO;
 import nadeuli.entity.Itinerary;
 import nadeuli.entity.ItineraryEvent;
 import nadeuli.entity.ItineraryPerDay;
@@ -46,6 +47,17 @@ public class ItineraryEventService {
         return itineraryEventList;
     }
 
+
+    public ItineraryEventDTO retrieveItineraryEvent(Long itineraryEventId) {
+        ItineraryEvent itineraryEvent = itineraryEventRepository.findById(itineraryEventId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ItineraryEvent가 존재하지 않습니다"));
+        return ItineraryEventDTO.from(itineraryEvent);
+
+
+    }
+
+
+    
     // 해당 일정에 포함된 방문지인지 아닌지 확인
     public void checkItineraryEventIdInItinerary(Long itineraryId, Long itineraryEventId) {
         System.out.println("🔥 ItineraryEventService - checkItineraryEventIdInItinerary()");

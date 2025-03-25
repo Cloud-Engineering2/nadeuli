@@ -53,7 +53,6 @@ public class ExpenseBook extends BaseTimeEntity {
     private Long totalExpenses;
 
 
-//
 
     // static factory method
     public static ExpenseBook of (Long id, Itinerary iid, Long totalBudget, Long totalExpenses) {

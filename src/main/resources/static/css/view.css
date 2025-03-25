@@ -756,7 +756,7 @@
 .right-side-expense{
     width:100%;
     height:75%;
-    background-color: #ff0000;
+    background-color: #E9DCBE;
 }
 
 .right-side-expense.expand{
@@ -911,15 +911,215 @@
 
 .total-budget{
     margin-top: 5px;
-    margin-right: 5px;
+    margin-right: 10px;
     font-size: 0.90em;
-    color: #000000;
+    color: #8E8B82;
     font-weight: bold;
     cursor: pointer;
+    background-color: #ffffff;
+    width: 100px;
+    border: 1px solid #8E8B82;
+    border-radius: 5px;
+    height: 30px;
+
+}
+.total-budget-label {
+    /*margin-right: 10px;*/
+    margin-top: 5px;
 }
 
 .total-budget-expense-wrap{
     display:flex;
     margin-left: 10px;
 
+}
+
+.total-expense {
+    margin-left: 20px;
+    font-size: 16px;
+}
+
+
+.budget-confirm-button {
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+
+.budget-confirm-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 12px; /* 아이콘 크기 감소 */
+    padding: 5px 10px; /* 패딩을 줄여 크기 감소 */
+    border-radius: 4px; /* 둥근 모서리 크기 줄이기 */
+}
+
+
+
+
+/* 여행자, 예산 추가 모달 */
+/* 모달 배경 */
+.traveler-modal {
+    display: none;  /* 기본적으로 숨겨짐 */
+    position: fixed;  /* 화면에 고정 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);  /* 배경을 어둡게 */
+    z-index: 1050;  /* 모달이 다른 요소들 위로 올 수 있도록 설정 */
+    overflow: auto;  /* 화면을 벗어나는 경우 스크롤 처리 */
+
+}
+
+/* 모달 내용 */
+.traveler-modal-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /*position: relative;*/
+    background-color: white;
+    /*text-align: center;*/
+    margin: 15% auto;  /* 화면 중앙에 위치 */
+    padding: 20px;
+    border-radius: 10px;
+    width: 40%;  /* 적당한 크기로 설정 */
+    z-index: 1060;  /* 배경보다 위에 표시되도록 설정 */
+}
+
+.traveler-addition-title {
+    margin-bottom: 20px;
+
+}
+
+/* 닫기 버튼 */
+.traveler-close {
+    color: #aaa;
+    float: right;
+    margin-left: auto;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.traveler-close:hover,
+.traveler-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.traveler-addition-button {
+    background-color: #efe9d8;
+    border: none;
+    padding: 0;
+    scrollbar-color: #efe9d8 #efe9d8;
+    width: 30px;
+    height: 30px;
+}
+.fa-person-walking-luggage::before {
+    font-size: 25px;
+}
+
+
+
+/* Traveler 조회 */
+.traveler-box {
+    margin-bottom: 5px;
+}
+.traveler-input-form {
+    display: flex;
+    margin-bottom: 20px;
+}
+#travelerName {
+    text-align: center;
+    margin-right: 55px;
+    width: 245px;
+    margin-left: 17px;
+}
+#travelerSendButton {
+    background-color: #8E8B82;
+    color: white;
+    font-weight: bold;
+    box-shadow: none;
+    border-radius: 5px;
+}
+/* Traveler 수정 */
+.traveler-name {
+    /*border: 1px solid #E9DCBE;*/
+    padding: 2px;
+    width: 250px;
+    text-align: center; /* 글자 정렬 */
+    margin-right: 53px;
+    font-weight: bold;
+    color: #8E8B82;
+}
+
+/* traveler 삭제 버튼 */
+.traveler-delete-button {
+    display: flex; /* Flexbox 레이아웃 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+/* 삭제 버튼 클릭 애니메이션  */
+.traveler-delete-button:active {
+    /*transform: scale(0.98); !* 버튼을 살짝 축소시켜 눌린 느낌을 줌 *!*/
+}
+.traveler-delete-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
+}
+
+/* traveler 수정 버튼 */
+.traveler-edit-button {
+    display: flex; /* Flexbox 레이아웃 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+.traveler-edit-button:active {
+    transform: scale(0.98); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
+}
+.traveler-edit-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
+}
+
+/* traveler 수정 완료 버튼 */
+.traveler-confirm-button {
+    display: none;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+.traveler-confirm-button:active {
+    transform: scale(0.98);
+}
+.traveler-confirm-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
+    padding: 5px 5px 5px 5px;
 }

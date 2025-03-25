@@ -56,10 +56,13 @@ public class WithWhomService {
 
     // WithWhom 삭제
     @Transactional
-    public void cancelWithWhom(Integer withWhomId) {
-        if (withWhomRepository.existsById(withWhomId)) {
-            withWhomRepository.deleteById(withWhomId);
-        }
+    public void cancelWithWhom(Long expenseItemId) {
+        ExpenseItem expenseItem = expenseItemRepository.findById(expenseItemId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseItem이 존재하지 않습니다"));
+        List<WithWhom> withWhoms = withWhomRepository.findAllByEmid(expenseItem);
+        withWhoms.forEach(withWhom -> {
+            withWhomRepository.deleteById(withWhom.getId());
+        });
     }
 
     // WithWhom 조회

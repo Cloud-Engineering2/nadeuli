@@ -23,6 +23,7 @@ package nadeuli.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
+import nadeuli.dto.ExpenseItemDTO;
 import nadeuli.dto.Person;
 import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.EventExpenseSummaryDTO;
@@ -200,6 +201,9 @@ public class ExpenseBookService {
             System.out.println(traveler.getTotalExpense());
         }
 
+        ExpenseBookDTO expenseBookDto = updateExpenseBook(itineraryId, totalExpense);
+
+
         return new FinanceResponseDTO(totalAdjustment, totalExpense, eachExpense);
     }
 
@@ -207,12 +211,27 @@ public class ExpenseBookService {
         // Itinerary 조회
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
-        ExpenseBookDTO expenseBookDto = getExpenseBook(itineraryId);
-        ExpenseBook expenseBook = expenseBookDto.toEntity(itinerary);
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다."));
+//        ExpenseBookDTO expenseBookDto = getExpenseBook(itineraryId);
+//        ExpenseBook expenseBook = expenseBookDto.toEntity(itinerary);
 
         expenseBook.updateExpense(totalExpense);
         ExpenseBookDTO responseDto = ExpenseBookDTO.from(expenseBook);
 
+        return responseDto;
+
+    }
+
+    public ExpenseBookDTO updateBudget(Long itineraryId, Long budget) {
+        // Itinerary 조회
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
+
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다."));
+        expenseBook.updateBudget(budget);
+        ExpenseBookDTO responseDto = ExpenseBookDTO.from(expenseBook);
         return responseDto;
 
     }
@@ -249,4 +268,14 @@ public class ExpenseBookService {
     }
 
 
+    // ExpenseBook에 있는 모든 Expense Item 조회
+    public List<ExpenseItemDTO> getAllExpenseItems(Long itineraryId) {
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다."));
+
+        List<ExpenseItem> expenseItems = expenseItemRepository.findAllByEbid(expenseBook);
+        return expenseItems.stream().map(ExpenseItemDTO::from).collect(Collectors.toList());
+    }
 }

@@ -14,6 +14,7 @@
  */
 package nadeuli.repository;
 
+import nadeuli.entity.ExpenseBook;
 import nadeuli.entity.ExpenseItem;
 import nadeuli.entity.ItineraryEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,4 +35,5 @@ public interface ExpenseItemRepository extends JpaRepository<ExpenseItem, Long> 
     List<Object[]> findTotalExpenseByEventByExpenseBookId(@Param("expenseBookId") Long expenseBookId);
 
 
+    List<ExpenseItem> findAllByEbid(ExpenseBook expenseBook);
 }

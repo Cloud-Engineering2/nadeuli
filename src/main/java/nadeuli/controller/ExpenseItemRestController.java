@@ -9,6 +9,7 @@
  * ========================================================
  * 고민정    2025.02.27   지출 내역 CRUD 추가
  * 고민정    2025.03.10   지출 추가 메서드 반환값 변경
+
  * ========================================================
  */
 package nadeuli.controller;
@@ -85,11 +86,11 @@ public class ExpenseItemRestController {
     }
 
     // 지출 내역 수정
-    @PutMapping("/{iid}/events/{ieid}/expense/{eiid}")
-    public ResponseEntity<ExpenseItemDTO> updateExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("eiid") Integer eiid, @RequestBody @Valid ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
+    @PutMapping("/{iid}/events/{ieid}/expense/{emid}")
+    public ResponseEntity<ExpenseItemDTO> updateExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("emid") Integer emid, @RequestBody @Valid ExpenseItemUpdateRequestDTO expenseItemUpdateRequestDTO) {
         // PathVariable
         Long itineraryId = Long.valueOf(iid);
-        Long expenseItemId = Long.valueOf(eiid);
+        Long expenseItemId = Long.valueOf(emid);
 
         ExpenseItemDTO expenseItemDTO = expenseItemService.updateExpenseItem(itineraryId, expenseItemId, expenseItemUpdateRequestDTO);
 
@@ -98,12 +99,14 @@ public class ExpenseItemRestController {
 
 
     // 지출 내역 삭제
-    @DeleteMapping("/{iid}/events/{ieid}/expense/{eiid}")
-    public ResponseEntity<Void> deleteExpense(@PathVariable Integer eiid) {
-        Long expenseItemId = Long.valueOf(eiid);
+    @DeleteMapping("/{iid}/events/{ieid}/expense/{emid}")
+    public ResponseEntity<Void> deleteExpense(@PathVariable("iid") Integer iid, @PathVariable("ieid") Integer ieid, @PathVariable("emid") Integer emid) {
+        Long expenseItemId = Long.valueOf(emid);
         expenseItemService.deleteExpenseItem(expenseItemId);
         return ResponseEntity.ok().build();
     }
+
+
 
 
 }
