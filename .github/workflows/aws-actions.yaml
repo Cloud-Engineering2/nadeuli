@@ -3,7 +3,6 @@ name: nadeuli With Github Actions - develop
 
 on:
   push
-
 jobs:
   ci:
     runs-on: ubuntu-latest
