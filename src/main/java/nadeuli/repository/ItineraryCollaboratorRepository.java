@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ItineraryCollaboratorRepository extends JpaRepository<ItineraryCollaborator, Integer> {
-//    List<ItineraryCollaborator> findByUser_Id(Long userId); // User의 id로 찾기 Collborator
+    List<ItineraryCollaborator> findByUser_Id(Long userId); // User의 id로 찾기 Collborator
+//    List<ItineraryCollaborator> findByUserId(Long userId);
 
     Optional<ItineraryCollaborator> findByUserIdAndItineraryId(Long itineraryId, Long userId);
     Optional<ItineraryCollaborator> findFirstByItinerary(Itinerary itinerary);

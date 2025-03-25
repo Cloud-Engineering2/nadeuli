@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.entity.User;
 import nadeuli.repository.UserRepository;
+import nadeuli.service.ItineraryService;
 import nadeuli.service.S3Service;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
@@ -42,6 +43,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OAuthController {
 
+    private final ItineraryService itineraryService;
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
     private final Environment env;
@@ -121,7 +123,7 @@ public class OAuthController {
                 log.warn("[OAuthUnlink] S3 이미지 삭제 실패: {}", e.getMessage());
             }
         }
-
+        itineraryService.deleteAllItinerary(id);
         // 5️⃣  사용자 삭제
         userRepository.delete(user);
         log.info("[OAuthUnlink] OAuth 계정 해제 및 사용자 삭제 완료 - UID: {}, provider: {}", id, provider);

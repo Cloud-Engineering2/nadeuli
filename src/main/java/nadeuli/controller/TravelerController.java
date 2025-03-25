@@ -25,7 +25,6 @@ import nadeuli.dto.request.TravelerBudgetRequestDTO;
 import nadeuli.dto.request.TravelerNameRequestDTO;
 import nadeuli.dto.request.TravelerRequestDTO;
 import nadeuli.dto.response.ExpenseTravelerDTO;
-import nadeuli.dto.response.TravelerResponseDTO;
 import nadeuli.dto.response.TravelerResponseDTO2;
 import nadeuli.service.TravelerService;
 import nadeuli.service.UserService;
@@ -71,6 +70,7 @@ public class TravelerController {
     // 여행자 삭제
     @DeleteMapping("/{iid}/traveler/{tid}")
     public ResponseEntity<List<TravelerDTO>> deleteTraveler(@PathVariable("iid") Integer iid, @PathVariable("tid") Integer tid) {
+
         Long itineraryId = Long.valueOf(iid);
         List<TravelerDTO> travelerDtos = travelerService.deleteTraveler(itineraryId, tid);
 

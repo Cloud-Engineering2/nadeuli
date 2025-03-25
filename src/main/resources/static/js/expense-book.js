@@ -279,7 +279,6 @@ async function createTravelerOption(itineraryId, selectElement, explainText=null
 $(document).off("click", ".expense-item-addition-button").on("click", ".expense-item-addition-button", async function(event) {
     event.preventDefault(); // 폼 제출 방지
 
-
     // Request Data
     const content = $("#expenseItemCreationContent").val() || null;
     const expenditure = $("#expenseItemCreationExpenditure").val();
@@ -325,7 +324,9 @@ $(document).off("click", ".expense-item-addition-button").on("click", ".expense-
         $("#expenseItemCreationForm")[0].reset();
 
         // 🎯 페이지 새로고침 (데이터 반영을 위해)
-        location.reload();
+        await loadExpensePage();
+        window.refreshExpenseSummary();
+
     } catch (error) {
         console.error("🚨 데이터 저장 중 오류 발생:", error);
         alert("지출 항목을 추가하는 중 오류가 발생했습니다.");
@@ -363,7 +364,9 @@ $(document).off("click", ".expense-item-delete-button").on("click", ".expense-it
 
     await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense/${emid}`, "DELETE", null);
 
-    location.reload();
+
+    await loadExpensePage();
+    window.refreshExpenseSummary();
 });
 
 //💡 오른쪽 패널 - 연필 버튼 클릭 시 -> 경비 내역(expense item, with whom) 수정
@@ -474,11 +477,13 @@ $(document).off("click", ".expense-item-confirm-button").on("click", ".expense-i
         await callApiAt(`/api/itineraries/${iid}/expense/${emid}/withWhom`, "POST", withWhomData);
 
         // 🎯 페이지 새로고침 (데이터 반영을 위해)
-        location.reload();
+        await loadExpensePage();
+        window.refreshExpenseSummary();
     } catch (error) {
         console.error("🚨 데이터 수정 중 오류 발생:", error);
         alert("지출 항목을 수정하는 중 오류가 발생했습니다.");
     }
+
 
 
 });
@@ -519,7 +524,7 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
             expenseItems.map(expenseItem =>
                 `<div class="expense-item-box" id="expenseItemBox-${expenseItem.id}" style="display: flex;">
                     <div class="expense-item-content" id="expenseItemContent">${expenseItem.content}</div>
-                    <div class="expense-item-expenditure" id="expenseItemExpenditure">${expenseItem.expense} 원</div>
+                    <div class="expense-item-expenditure" id="expenseItemExpenditure">${formatKoreanMoney(expenseItem.expense)} 원</div>
                     <div class="expense-item-payer" id="expenseItemPayer">@${expenseItem.travelerDTO.travelerName}</div>
                     <div class="expense-item-with-whom" id="expenseItemWithWhom-${expenseItem.id}"><span class="with-whom" data-emid="${expenseItem.id}">💡 함께한 사람: 로딩 중...</span></div>
                     <button type="button" class="expense-item-edit-button" id="expenseItemEditButton" data-iid="${iid}", data-ieid="${ieid}" data-emid="${expenseItem.id}">
@@ -653,13 +658,13 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
             // 함께하는 traveler
         adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
             // 총 지출
-        let totalExpenditureDetails = `<p class="total-expenditure-money-align"><span class="total-expenditure-money-label">총 지출</span>    <span class="total-expenditure-money">${totalExpense} 원</span></p>`;
+        let totalExpenditureDetails = `<p class="total-expenditure-money-align"><span class="total-expenditure-money-label">총지출</span>    <span class="total-expenditure-money">${formatKoreanMoney(totalExpense)} 원</span></p>`;
         totalExpenditure.html(totalExpenditureDetails);
 
             // 개인 지출
         let individualExpenditureDetails = "";
         for (const [name, expense] of Object.entries(eachExpenses)) {
-            individualExpenditureDetails += `<p class="individual-expenditure"><span class="individual-expenditure-label">@${name}</span><br><!--<span class="individual-expenditure-label">지출</span>--> <span class="total-expenditure-money">${expense.toLocaleString()} 원</span></p>`;
+            individualExpenditureDetails += `<p class="individual-expenditure"><span class="individual-expenditure-label">@${name}</span><br><!--<span class="individual-expenditure-label">지출</span>--> <span class="total-expenditure-money">${formatKoreanMoney(expense)} 원</span></p>`;
         }
         individualExpenditureList.html(individualExpenditureDetails);
 
@@ -674,7 +679,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
                 .map(([from, amount], index) => `
                     <div class="adjustment-received-row">
                         ${index === 0 ? '<div class="adjustment-received-label">수금</div>' : '<div class="adjustment-received-label"></div>'} <!-- 첫 번째만 "수금" 표시 -->
-                        <div class="adjustment-received"><span class="adjustment-received-from">@${from}</span> <span class="adjustment-received-amount">${amount.toLocaleString()} 원</span></div>
+                        <div class="adjustment-received"><span class="adjustment-received-from">@${from}</span> <span class="adjustment-received-amount">${formatKoreanMoney(amount.toLocaleString())} 원</span></div>
                     </div>
         `)
         .join("") || `
@@ -690,7 +695,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
             .map(([to, amount], index) => `
                     <div class="adjustment-send-row">
                         ${index === 0 ? '<div class="adjustment-send-label">송금</div>' : '<div class="adjustment-send-label"></div>'} <!-- 첫 번째만 "송금" 표시 -->
-                        <div class="adjustment-send"><span class="adjustment-send-to">@${to}</span> <span class="adjustment-send-amount">${amount.toLocaleString()} 원</span></div>
+                        <div class="adjustment-send"><span class="adjustment-send-to">@${to}</span> <span class="adjustment-send-amount">${formatKoreanMoney(amount.toLocaleString())} 원</span></div>
                     </div>
                     `)
                 .join("") || `
@@ -746,4 +751,17 @@ async function callApiAt(url, method, requestData) {
         console.error("에러 발생:", error);
         throw error;
     }
+}
+
+
+
+// 원화 단위(,)
+// let moneyFormat = formatKoreanMoney(partialSettlement.totalExpense);
+function formatKoreanMoney(value) {
+    // 숫자를 문자열로 변환
+    const stringValue = String(value);
+    console.log("formatKoreanMoney", stringValue);
+
+    // 정규식을 사용하여 4자리 단위로 나눔
+    return stringValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }

@@ -102,7 +102,7 @@ async function saveUserName() {
     const newName = input.value;
 
     try {
-        const res = await fetch("/auth/user/profile/name", {
+        const res = await fetchWithAutoRefresh("/auth/user/profile/name", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -111,49 +111,82 @@ async function saveUserName() {
 
         if (!res.ok) throw new Error("이름 저장 실패");
 
-        alert("✅ 이름이 저장되었습니다.");
+        await Swal.fire({
+            icon: 'success',
+            title: '✅ 이름 저장 완료',
+            text: '이름이 성공적으로 저장되었습니다.'
+        });
+
         input.setAttribute("readonly", true);
         document.getElementById("saveNameBtn").style.display = "none";
     } catch (err) {
-        alert("🚨 이름 저장 실패: " + err.message);
+        await Swal.fire({
+            icon: 'error',
+            title: '🚨 이름 저장 실패',
+            text: err.message || '알 수 없는 오류가 발생했습니다.'
+        });
     }
 }
+
 
 // ✅ 프로필 이미지 업로드
 async function uploadProfileImage(event) {
     const file = event.target.files[0];
+
     // ✅ 허용 이미지 타입
     const validImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp'];
     if (!validImageTypes.includes(file.type)) {
-        alert("지원하지 않는 이미지 형식입니다.");
+        await Swal.fire({
+            icon: 'error',
+            title: '🚫 업로드 실패',
+            text: '지원하지 않는 이미지 형식입니다.'
+        });
         return;
     }
 
     // ✅ 20MB 제한
     const maxSize = 20 * 1024 * 1024;
     if (file.size > maxSize) {
-        alert("파일 크기는 20MB를 초과할 수 없습니다.");
+        await Swal.fire({
+            icon: 'error',
+            title: '🚫 업로드 실패',
+            text: '파일 크기는 20MB를 초과할 수 없습니다.'
+        });
         return;
     }
+
     if (!file) return;
 
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-        const response = await fetch("/auth/user/profile", {
+        const response = await fetchWithAutoRefresh("/auth/user/profile", {
             method: "POST",
             body: formData,
-            credentials: "include",
+            credentials: "include"
         });
 
         if (!response.ok) throw new Error("프로필 이미지 업로드 실패");
-        alert("✅ 프로필 이미지가 성공적으로 변경되었습니다.");
+
+        await Swal.fire({
+            icon: 'success',
+            title: '✅ 업로드 완료',
+            text: '프로필 이미지가 성공적으로 변경되었습니다.'
+        });
+
         window.location.reload();
     } catch (error) {
         console.error("🚨 프로필 이미지 업로드 실패:", error);
+        await Swal.fire({
+            icon: 'error',
+            title: '🚨 업로드 실패',
+            text: '프로필 이미지 업로드 중 오류가 발생했습니다.'
+        });
     }
 }
+
+
 
 // ✅ 사진 변경 버튼 → 업로드 input 열기
 function triggerFileUpload() {
@@ -168,35 +201,66 @@ function downloadProfileImage() {
 
 // ✅ 회원 탈퇴
 function unlink() {
-    if (!confirm("정말로 회원 탈퇴하시겠습니까?")) {
-        return;
-    }
+    Swal.fire({
+        title: '정말로 회원 탈퇴하시겠습니까?',
+        text: "탈퇴 후 계정 복구는 불가능합니다.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: '탈퇴하기',
+        cancelButtonText: '취소'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // 로딩 표시
+            Swal.fire({
+                title: '탈퇴 처리 중입니다...',
+                text: '잠시만 기다려주세요.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-    fetch("/auth/unlink", {
-        method: "DELETE",
-        credentials: "include"
-    })
-        .then(res => {
-            if (res.status === 500) {
-                // 서버 오류 시 로그인 페이지로 리다이렉트
-                location.href = "/login?redirect=/mypage";
-                throw new Error("Internal Server Error");
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert("회원 탈퇴 완료되었습니다.");
-                fetch("/auth/logout", {
-                    method: "POST",
-                    credentials: "include"
-                }).finally(() => location.href = "/");
-            } else {
-                alert("회원 탈퇴 실패: " + data.message);
-            }
-        })
-        .catch(error => {
-            console.error("회원 탈퇴 중 오류 발생:", error);
-            alert("회원 탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.");
-        });
+            apiWithAutoRefresh({
+                url: "/auth/unlink",
+                method: "DELETE",
+                xhrFields: { withCredentials: true },
+                success: function (data) {
+                    if (data.success) {
+                        Swal.fire({
+                            title: '탈퇴 완료',
+                            text: '회원 탈퇴가 완료되었습니다.',
+                            icon: 'success',
+                            confirmButtonText: '확인'
+                        }).then(() => {
+                            apiWithAutoRefresh({
+                                url: "/auth/logout",
+                                method: "POST",
+                                xhrFields: { withCredentials: true },
+                                complete: function () {
+                                    location.href = "/";
+                                }
+                            });
+                        });
+                    } else {
+                        Swal.fire({
+                            title: '탈퇴 실패',
+                            text: data.message || '회원 탈퇴에 실패했습니다.',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: '오류 발생',
+                        text: '회원 탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
+    });
 }
+
