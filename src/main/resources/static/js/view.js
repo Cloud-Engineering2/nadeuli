@@ -213,13 +213,13 @@ function renderTotalBudgetExpenseSummary() {
     });
     let expenseHtml = '';
     if (totalExpense === 0) {
-        expenseHtml = `<div class="total-expense">지출: 0 원</div>`;
+        expenseHtml = `<div class="total-expense">지출 : 0 원</div>`;
     } else {
         const isProfit = totalExpense < 0;
         const displayAmount = isProfit ? `+ ${Math.abs(totalExpense).toLocaleString()}` : `- ${totalExpense.toLocaleString()}`;
         const colorClass = isProfit ? "profit-expense" : "cost-expense";
 
-        expenseHtml = `<div class="total-expense ${colorClass}">지출: ${displayAmount} 원</div>`;
+        expenseHtml = `<div class="total-expense ${colorClass}">지출 : ${displayAmount} 원</div>`;
     }
 
     $wrap.append(budgetHtml);
@@ -237,7 +237,7 @@ function renderTotalBudgetExpenseSummary() {
             else {
                 document.getElementById("budgetConfirmButton").style.display = "none";
                 const div = document.createElement("div");
-                div.textContent = response.totalBudget + " 원";
+                div.textContent = formatKoreanMoney(response.totalBudget) + " 원";
                 div.style.fontWeight = "bold";
                 div.style.marginTop = "5px";
 
@@ -1172,11 +1172,30 @@ window.addEventListener("click", function(event) {
 
 // 모달 창 열기
 $(document).on("click", ".traveler-addition-button", function() {
-    // 여행 ID 가져오기
+    // 예산이 0인 경우, 모달창 열리지 않도록
 
-    document.getElementById("travelerModal").style.display = "block";
-    // 리스트 조회
-    loadTravelerList();
+    $.ajax({
+        url: `/api/itineraries/${itineraryId}/expense-book`,
+        method: "GET",
+        dataType: "json",
+        success: function (expensebook) {
+            if (expensebook.totalBudget === 0) {
+                alert("예산 설정 후 함께하는 여행자를 등록해 주세요");
+                return;
+            }
+            else {
+                // 모달창 open
+                document.getElementById("travelerModal").style.display = "block";
+                // 리스트 조회
+                loadTravelerList();
+            }
+        },
+        error: function(error) {
+        console.log("장부를 조회할 수 없습니다" + error);
+        }
+    });
+
+
 
 });
 
@@ -1214,8 +1233,16 @@ $(document).on("click", ".traveler-delete-button", function () {
     const iid = $(this).data("iid"); // 여행 ID
     const tid = $(this).data("tid"); // 여행자 ID
     const travelerName = $(this).data("tname"); // 여행자 이름
+    const isDeletable = $(this).data("isdeletable");
 
-    if (!confirm(`${travelerName} 여행자를 정말 삭제하시겠습니까?`)) {
+
+    // 경비 내역 있는 경우 여행자 삭제 불가능 처리
+    if (isDeletable) {
+        if (!confirm(`${travelerName} 여행자를 정말 삭제하시겠습니까?`)) {
+            return;
+        }
+    } else {
+        alert("지출 내역이 있어 삭제할 수 없습니다.");
         return;
     }
 
@@ -1336,7 +1363,7 @@ function loadTravelerList() {
                     </div>
         
                     <div class="traveler-budget-wrap">
-                        <label>예산: </label>
+                        <label>예산 : </label>
                         <input type="number" class="traveler-budget-input" value="${traveler.totalBudget}" readonly>
                         <button type="button" class="traveler-budget-edit-button" data-iid="${itineraryId}" data-tid="${traveler.id}">
                             <i class="fa-solid fa-pen"></i>
@@ -1346,11 +1373,10 @@ function loadTravelerList() {
                         </button>
                     </div>
         
-                    <button type="button" class="traveler-delete-button ${isDeletable ? "" : "disabled"}"
-                            
-                            data-iid="${itineraryId}" data-tid="${traveler.id}" data-tname="${traveler.name}" style="${hideDeleteButton}">
-                            <i class="fa fa-trash traveler-delete-icon"></i>
-                        </button>
+                    <button type="button" class="traveler-delete-button ${isDeletable ? "" : "disabled"} " data-isdeletable="${isDeletable}"
+                             data-iid="${itineraryId}" data-tid="${traveler.id}" data-tname="${traveler.name}" style="${hideDeleteButton}">
+                        <i class="fa fa-trash traveler-delete-icon"></i>
+                    </button>
                 </div>
                 `;
                         }).join("");
@@ -1576,3 +1602,6 @@ $(document).off("click", ".traveler-budget-confirm-button").on("click", ".travel
         }
     });
 });
+
+
+window.refreshExpenseSummary = refreshExpenseSummary;
