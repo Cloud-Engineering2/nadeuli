@@ -5,10 +5,7 @@ on:
   # workflow_dispatch
   push:
     branches:
-      - develop
-  #  paths-ignore:
-  #    - 'manifest/**'
-      
+      - main 
 jobs:
   ci:
     runs-on: ubuntu-latest

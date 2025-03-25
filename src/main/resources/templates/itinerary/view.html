@@ -5,23 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${itineraryName}">여행 일정</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-    <!-- Moment.js & Date Range Picker -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/common-alert.css">
     <link rel="stylesheet" href="/css/view.css">
     <link rel="stylesheet" href="/css/expense-book.css">
     <link rel="stylesheet" href="/css/header-footer.css">
     <link rel="stylesheet" href="/css/journal-modal.css">
-
-
+    <link rel="stylesheet" href="/css/expense-book.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <!-- Moment.js & Date Range Picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -161,7 +160,7 @@
 <!--                            <label for="travelerName">이름</label>-->
                             <div class="traveler-input-form">
                                 <input type="text" id="travelerName" placeholder="여행자 이름">
-                                <input type="number" id="travelerBudget" placeholder="예산 입력">
+<!--                                <input type="number" id="travelerBudget" placeholder="예산 입력">-->
                                 <button id="travelerSendButton" class="traveler-send-button">추가</button>
                             </div>
 
@@ -172,10 +171,11 @@
 
                     <div class="button-container">
                         <!-- 여행자 추가 버튼 -->
+
+                        <button class="navigate-edit-button" data-bs-toggle="tooltip" title="수정">수정</button>
                         <button class="traveler-addition-button" title="여행자 추가하기">
                             <i class="fa-solid fa-person-walking-luggage"></i>
                         </button>
-                        <button class="navigate-edit-button" data-bs-toggle="tooltip" title="수정">수정</button>
                         <button class="toggle-map-button on" title="지도 숨기기">
                             <i class="bi bi-map-fill on-icon"></i>
                             <i class="bi bi-map off-icon"></i>
@@ -205,14 +205,24 @@
 
             <!-- 오른쪽 지도 사이드 박스 -->
             <div class="right-side-wrap">
-                <div class="right-side-map">
-                    <div class="map-area">
-                        <div id="side-map"></div>
-                    </div>
-                </div>
-                <div class="right-side-expense">
-                    <div id="detailContainer">
 
+                    <div class="right-side-map notclicked">
+                        <div class="map-area">
+                            <div id="side-map"></div>
+                        </div>
+                    </div>
+
+                <div class="right-side-expense notclicked">
+                    <div class="tab-container-wrap">
+                        <div class="adjustment-expense-tab-container">
+                            <span class="adjustment-tab" id="adjustmentTab">정 산</span>
+                            <span class="expenditure-tab" id="expenditureTab">경 비</span>
+                            <div class="close-expense" id="closeExpense"> 닫 기 </div>
+                        </div>
+                    </div>
+                    <div id="detailContainer">
+                        <div th:replace="expense-book/adjustment-right :: adjustment-expense-right"></div>
+                        <div th:replace="expense-book/expense-right :: expenditure-expense-right"></div>
                     </div>
                 </div>
             </div>
