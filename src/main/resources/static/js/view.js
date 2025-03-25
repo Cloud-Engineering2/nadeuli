@@ -1173,8 +1173,9 @@ $(document).on("click", ".traveler-addition-button", function() {
 document.getElementById("travelerSendButton").addEventListener("click", function() {
 
     const travelerName = document.getElementById("travelerName").value;
-    if (travelerName) { // 입력값이 모두 있는지 확인
-        // if (!travelerList.includes(travelerName)) {
+    // const travelerBudget = document.getElementById("travelerBudget").value;
+
+    if (travelerName) { // 이름과 예산 모두 입력
         // 서버로 전송하는 경우
         $.ajax({
             url: `/api/itinerary/${itineraryId}/traveler`,
@@ -1182,7 +1183,7 @@ document.getElementById("travelerSendButton").addEventListener("click", function
             contentType: "application/json",
             data: JSON.stringify({
                 travelerName: travelerName,
-                totalBudget: 0 // 예산 값 설정
+                // totalBudget: travelerBudget // 예산 값 설정
             }),
             success: function (response) {
                 console.log("여행자 추가 성공:", response);
@@ -1194,11 +1195,6 @@ document.getElementById("travelerSendButton").addEventListener("click", function
             }
         });
     }
-
-
-
-
-
 });
 
 
