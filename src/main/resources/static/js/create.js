@@ -46,7 +46,7 @@ $(document).ready(function () {
             });
         },
         error: function () {
-            console.error('지역 이미지 정보를 불러오는데 실패했습니다.');
+            console.error('지역 이미지 정보를 불러오는 데 실패했습니다.');
         }
     });
     loadRegionTreeIfNeeded();
@@ -310,7 +310,7 @@ function renderSelectedList() {
     });
 
     if (selectedLocations.length === 0) {
-        $('#name-box').attr("placeholder", "여행 이름을 입력해주세요");
+        $('#name-box').attr("placeholder", "여행 이름을 입력해 주세요");
     } else {
         let regionNames = selectedLocations.map(loc => loc.name);
         let lastPart = "(으)로의 여행";
@@ -370,7 +370,7 @@ $(document).ready(function () {
             stepDateSelection.style.visibility = "visible";
             stepDateSelection.style.opacity = "1";
 
-            modalTitle.textContent = "여행 기간을 설정해주세요";
+            modalTitle.textContent = "여행 기간을 설정해 주세요";
             backButton.style.visibility = "visible";
             currentModalStep = 2;
 
@@ -390,7 +390,7 @@ $(document).ready(function () {
 
             if (lastSelectedDate < today && !oldTripConfirmed) {
                 Swal.fire({
-                    title: '예전 여정을 작성하시는건가요?',
+                    title: '지난 여정을 작성하시는 건가요?',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: '네',
@@ -430,7 +430,7 @@ $(document).ready(function () {
         stepTimeSelection.style.visibility = "visible";
         stepTimeSelection.style.opacity = "1";
 
-        modalTitle.textContent = "시작 시간을 설정해주세요";
+        modalTitle.textContent = "시작 시간을 설정해 주세요";
         currentModalStep = 3;
         nextButton.textContent = "완료";
     }
@@ -445,7 +445,7 @@ $(document).ready(function () {
             stepRegionSelection.style.visibility = "visible";
             stepRegionSelection.style.opacity = "1";
 
-            modalTitle.textContent = "지역을 설정해주세요";
+            modalTitle.textContent = "지역을 설정해 주세요";
             backButton.style.visibility = "hidden";
             currentModalStep = 1;
 
@@ -459,7 +459,7 @@ $(document).ready(function () {
             stepDateSelection.style.visibility = "visible";
             stepDateSelection.style.opacity = "1";
 
-            modalTitle.textContent = "여행 기간을 설정해주세요";
+            modalTitle.textContent = "여행 기간을 설정해 주세요";
             backButton.style.visibility = "visible";
             nextButton.textContent = "다음";
             currentModalStep = 2;
@@ -637,7 +637,7 @@ function itineraryCreateSubmit() {
         },
         error: function (xhr, status, error) {
             console.error("❌ 일정 저장 실패:", error);
-            toastr.error("일정 저장에 실패했습니다. 다시 시도해주세요.");
+            toastr.error("일정 저장에 실패했습니다. 다시 시도해 주세요.");
         },
         complete: function () {
             // UI 복원
