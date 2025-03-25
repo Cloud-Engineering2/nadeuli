@@ -274,7 +274,7 @@ document.body.addEventListener('click', event => {
             if (region.imageUrl) {
                 imagePreview.src = region.imageUrl;
             } else {
-                imagePreview.src = '';
+                imagePreview.src = '/images/logo-256x256.jpg';
             }
         }
     }
