@@ -2831,7 +2831,7 @@ $(document).on("dblclick", ".event", function (e) {
                         ${eventData.placeDTO.placeName}
                     </div>
                     <div style="margin-bottom: 6px;">
-                        <img src="${eventData.placeDTO.imageUrl || '/default-placeholder.jpg'}" 
+                        <img src="${eventData.placeDTO.imageUrl || '/images/logo-256x256.jpg'}" 
                              alt="장소 사진" 
                              style="width: 200px; height: 100px; border-radius: 6px; object-fit: cover;">
                     </div>
