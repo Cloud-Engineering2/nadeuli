@@ -11,32 +11,32 @@
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/header-footer.css">
 
-    <!-- 동적으로 추가되는 스타일 -->
-    <th:block th:if="${adminStyle}">
-        <link rel="stylesheet" th:href="${adminStyle}">
-    </th:block>
+<!--    &lt;!&ndash; 동적으로 추가되는 스타일 &ndash;&gt;-->
+<!--    <th:block th:if="${adminStyle}">-->
+<!--        <link rel="stylesheet" th:href="${adminStyle}">-->
+<!--    </th:block>-->
 
 
 
 </head>
 <body>
-<div th:replace="~{fragments/header :: headerFragment}"></div>
+<!--<div th:replace="~{fragments/header :: headerFragment}"></div>-->
 
-<div class="container-fluid">
-    <!-- 좌측 패널 -->
-    <div th:replace="~{/admin/admin-panel :: panel}" id="sidebar" class="sidebar">
+<!--<div class="container-fluid">-->
+<!--    &lt;!&ndash; 좌측 패널 &ndash;&gt;-->
+<!--    <div th:replace="~{/admin/admin-panel :: panel}" id="sidebar" class="sidebar">-->
 
-    </div>
+<!--    </div>-->
 
-    <th:block th:if="${adminContent}">
-        <div id="admin-content" class="content-area" th:replace="~{${adminContent}}"></div>
-    </th:block>
+<!--    <th:block th:if="${adminContent}">-->
+<!--        <div id="admin-content" class="content-area" th:replace="~{${adminContent}}"></div>-->
+<!--    </th:block>-->
 
-    <th:block th:unless="${adminContent}">
-        <div id="none-content" class="content-area">
-            <p>선택해주세요</p>
-        </div>
-    </th:block>
+<!--    <th:block th:unless="${adminContent}">-->
+<!--        <div id="none-content" class="content-area">-->
+<!--            <p>선택해주세요</p>-->
+<!--        </div>-->
+<!--    </th:block>-->
 
 
 
