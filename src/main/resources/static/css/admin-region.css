@@ -1,0 +1,212 @@
+.map-area {
+    margin-left: 50px;
+    width:500px;
+    height:500px;
+}
+#map {
+    width: 500px;
+    height: 500px;
+}
+
+
+/* 기본 테이블 스타일 */
+.region-page table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    background-color: black;
+}
+
+.region-page thead {
+    background-color: rgba(0, 0, 0, 0.56);
+    color: white;
+}
+
+.region-page th, td {
+    padding-left: 10px;
+    border: 1px solid #353535;
+    text-align: left;
+}
+
+.region-page tr {
+    height: 40px;
+    padding: 5px;
+}
+
+/* Level 별 색상 적용 */
+.region-page tr[data-level="1"] {
+    color:white;
+    background-color: #4a4a4a; /* Beige */
+}
+.region-page tr[data-level="1"]:hover {
+    background-color: #404040; /* Beige */
+}
+
+.region-page tr[data-level="2"] {
+    background-color: #dadada; /* Light Blue */
+}
+.region-page tr[data-level="2"]:hover {
+    background-color: #e8e8e8; /* Light Blue */
+}
+.region-page tr[data-level="3"] {
+    background-color: #eaf7d4; /* Light Green */
+}
+
+/* 트리 아이콘 스타일 */
+.region-page .toggle-btn {
+    margin-right: 5px;
+    cursor: pointer;
+    user-select: none;
+    display: inline-block;
+    text-align: center;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    background-color: #323232;
+    transition: background-color 0.2s;
+}
+
+.region-page .toggle-btn:hover {
+    background-color: #494949;
+}
+
+/* 이름과 아이콘 정렬 */
+.region-page .name-container {
+    display: flex;
+    margin-left:5px;
+    justify-content: space-between;
+    align-items: center;
+}
+.region-page {
+    display: flex;
+    gap: 20px; /* 테이블과 수정 영역 사이 간격 */
+}
+
+.region-page .table-wrapper {
+    width: 600px;
+    height: 100vh; /* 고정 높이 설정 */
+    overflow: auto; /* 내부 테이블만 스크롤 */
+    border: 1px solid #ccc;
+}
+
+
+.region-page .region-table th, .region-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.region-page .region-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10; /* 헤더가 다른 요소 위에 오도록 설정 */
+}
+
+
+.region-page .region-config {
+    flex-grow: 1;
+    height: 100vh;
+    min-width: 300px;
+    padding: 20px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 제목 스타일 */
+.region-page .region-config h3 {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* 폼 스타일 */
+.region-page #regionForm {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 입력 필드 스타일 */
+.region-page #regionForm label {
+    font-weight: bold;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+.region-page #regionForm input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: all 0.2s ease-in-out;
+}
+
+.region-page #regionForm input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* 비활성화된 입력 필드 스타일 */
+.region-page #regionForm input[disabled] {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.map-form{
+    margin-left: 20px;
+}
+.map-form .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.map-form label{
+    font-weight: bold;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+/* 이미지 미리보기 스타일 */
+/* 이미지 미리보기 스타일 - 200x200 유지 */
+.region-page #imagePreview {
+    display: block;
+    width: 300px;
+    height: 200px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 5px;
+    background: #f8f9fa;
+    object-fit: contain; /* 이미지 크기가 유지되도록 */
+}
+
+/* 파일 업로드 버튼 스타일 */
+.region-page #imageUpload {
+    padding: 6px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+/* 저장 버튼 스타일 */
+.region-page #saveButton {
+    background-color: #007bff;
+    color: white;
+    font-size: 1.1rem;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.region-page #saveButton:hover {
+    background-color: #0056b3;
+}
+

@@ -1,0 +1,285 @@
+@charset "UTF-8";
+
+
+@font-face {
+    font-family: 'GriunNoltoTAENGGU';
+    /*src: url('../fonts/Griun_NoltoTAENGGU-Rg.woff2') format('woff2');*/
+    src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
+}
+
+body {
+    font-family: 'GriunNoltoTAENGGU';
+    font-size: 1.1rem; /* 기존 : 17px*/
+    background-color: #E9DCBE;
+    color: #343434;
+    margin: 0;
+    padding: 20px;
+
+    flex-direction: column;  /* 페이지를 세로로 배치 */
+
+    display: flex;
+    align-items: center; /* 수직 가운데 정렬 */
+    justify-content: center; /* 수평 가운데 정렬 */
+    height: 100vh; /* 부모 요소의 높이를 전체 뷰포트 높이로 설정 */
+    box-sizing: border-box;
+    /*overflow: scroll;*/
+}
+
+.container {
+    display: flex;
+    flex-direction: row; /* 모바일 화면에서 컬럼 정렬 */
+    width: 90vw; /* 뷰포트 너비의 90% */
+    max-width: 1500px; /* 최대 너비 - 추후 변경 */
+    max-height: 100vh; /* 뷰포트 높이의 100% */
+    background: #F3F3F3;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* 패딩과 테두리를 포함한 너비 계산 */
+
+    overflow: auto; /* 콘텐츠 넘칠 시 스크롤 */
+    scrollbar-width: initial;
+}
+
+/* 스크롤바 기본 디자인 */
+.container::-webkit-scrollbar {
+    width: 2vh;  /* 얇고 슬림하게 */
+}
+
+/* 스크롤바 트랙 (배경) */
+.container::-webkit-scrollbar-track {
+    background: transparent; /* 기본적으로 배경 투명 */
+}
+
+/* 스크롤바 핸들(움직이는 부분) */
+.container::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0);  /* 기본적으로 투명 */
+    border-radius: 10px; /* 둥글게 */
+    transition: background 0.3s ease-in-out;  /* 부드러운 효과 */
+}
+
+/* 마우스를 올리면 스크롤바가 보임 */
+.container:hover::-webkit-scrollbar-thumb {
+    background: #8E8B82;
+}
+
+/* 스크롤바를 클릭하거나 드래그할 때 */
+.container::-webkit-scrollbar-thumb:active {
+    background: #343434;
+}
+
+.left-space, .right-space {
+    flex: 1;
+    padding: 10px;
+
+    width: calc(100% - 20px); /* 패딩 및 마진을 고려한 너비 설정 */
+
+    max-width: 50%; /* 부모 요소를 벗어나지 않도록 */
+
+}
+
+.content {
+    margin-top: 10px;
+    min-height: 100px;
+}
+
+.divider {
+    border: 1px solid #8E8B82;
+    margin-bottom: 10px;
+}
+
+.image-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 500px;
+    background-color: #F3F3F3;
+    border-radius: 10px;
+    /*cursor: pointer;*/
+    overflow: hidden;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    /*object-fit: cover;*/
+    object-fit: contain;
+    object-position: center;
+    /*object-fit: initial;*/
+}
+
+.image-container .plus {
+    font-size: 40px;
+    color: #F3F3F3;
+    position: absolute;
+}
+
+.button-group {
+    display: flex; /* 플렉스박스 레이아웃 사용 */
+    justify-content: flex-end; /* 버튼들을 오른쪽으로 정렬 */
+    margin-top: 5px; /* 버튼 그룹과 다른 요소 사이에 여백 추가 */
+}
+
+.button-group button {
+    font-family: 'GriunNoltoTAENGGU';
+    font-size: 1.1rem; /* 텍스트 크기 */
+    color: #8E8B82; /* 텍스트 색상 */
+    background-color: #E9DCBE; /* 배경색 */
+    border: none; /* 테두리 제거 */
+    padding: 0.5rem 1rem; /* 패딩 설정 */
+    border-radius: 0.5rem; /* 테두리 모서리를 둥글게 */
+    cursor: pointer; /* 커서 설정 */
+    box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+    transition: background-color 0.3s ease; /* 배경색 전환 효과 */
+    margin-left: 7px; /* 버튼 사이 간격 추가 */
+}
+
+.button-group button:hover {
+    background-color: #8E8B82; /* 호버 시 배경색 변경 */
+    color: #F3F3F3;
+}
+
+.content-header, .image-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+
+}
+
+.image-header {
+    /* 우측 배치 처리 */
+    justify-content: flex-end;
+}
+
+.content-header-button, .image-header-button {
+    display: flex;
+    gap: 10px;
+}
+
+.image-header-button {
+    margin-bottom: 7px;
+}
+
+.content-header-button button, .image-header-button button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 1.3rem;
+}
+
+#content {
+    font-family: 'GriunNoltoTAENGGU';
+    font-size: 1.3rem;
+    color: #343434;
+    width: 100%;
+    height: 32vh;
+    min-height: 100px;
+    resize: none;  /* 크기 조절 불가능 */
+    border: none;
+    outline: none; /* 클릭해도 테두리 안 보이게 */
+    padding: 8px;
+    line-height: 1.5;
+    background-color: transparent; /* 배경 투명 */
+    box-sizing: border-box;
+
+    /* 스크롤바 기본적으로 숨김 */
+    overflow: auto;
+    scrollbar-width: initial;
+}
+
+/* 스크롤바 기본 디자인 */
+#content::-webkit-scrollbar {
+    width: 0.7vh;
+}
+
+/* 스크롤바 트랙 (배경) */
+#content::-webkit-scrollbar-track {
+    background: transparent; /* 기본적으로 배경 투명 */
+}
+
+/* 스크롤바 핸들(움직이는 부분) */
+#content::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0);  /* 기본적으로 투명 */
+    border-radius: 10px; /* 둥글게 */
+    transition: background 0.3s ease-in-out;  /* 부드러운 효과 */
+}
+
+/* 마우스를 올리면 스크롤바가 보임 */
+#content:hover::-webkit-scrollbar-thumb {
+    background: #8E8B82;
+}
+
+/* 스크롤바를 클릭하거나 드래그할 때 */
+#content::-webkit-scrollbar-thumb:active {
+    background: #343434;  /* 더 어두운 회색 */
+}
+
+#content-input {
+    font-family: 'GriunNoltoTAENGGU';
+    font-size: 1.3rem;
+    color: #343434;
+    width: 100%;
+    height: 32vh;
+    min-height: 100px;
+    resize: none;  /* 크기 조절 불가능 */
+    border: 2px solid #8E8B82;  /* 테두리 색상 및 두께 설정 */
+    /*border: none;*/
+    outline: none; /* 클릭해도 테두리 안 보이게 */
+    padding: 8px;
+    line-height: 1.5;
+    background-color: transparent; /* 배경 투명 */
+
+    /* 스크롤바 기본적으로 숨김 */
+    overflow: auto; /* 콘텐츠 넘칠 시 스크롤 */
+    scrollbar-width: initial;
+
+    /* 커서 설정 */
+    cursor: text;
+
+    /* 추가 스타일 */
+    border-radius: 5px; /* 테두리의 모서리를 둥글게 */
+    box-shadow: 0 2px 4px rgba(142, 139, 130, 0.1); /* 살짝의 그림자 효과 */
+
+    /* 오른쪽 마진 추가 */
+    box-sizing: border-box; /* 테두리와 패딩을 포함한 너비 계산 */
+    /*margin-right: 30px;*/
+}
+
+/* 스크롤바 기본 디자인 */
+#content-input::-webkit-scrollbar {
+    width: 0.7vh;  /* 얇고 슬림하게 */
+}
+
+/* 스크롤바 트랙 (배경) */
+#content-input::-webkit-scrollbar-track {
+    background: transparent; /* 기본적으로 배경 투명 */
+}
+
+/* 스크롤바 핸들(움직이는 부분) */
+#content-input::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0);  /* 기본적으로 투명 */
+    border-radius: 10px; /* 둥글게 */
+    transition: background 0.3s ease-in-out;  /* 부드러운 효과 */
+}
+
+/* 마우스를 올리면 스크롤바가 보임 */
+#content-input:hover::-webkit-scrollbar-thumb {
+    background: #8E8B82;
+}
+
+/* 스크롤바를 클릭하거나 드래그할 때 */
+#content-input::-webkit-scrollbar-thumb:active {
+    background: #343434;  /* 더 어두운 회색 */
+}
+
+
+#has-content {
+    word-wrap: break-word; /* 긴 단어를 줄바꿈 */
+    overflow-wrap: break-word; /* 추가적인 줄바꿈 보장 */
+    white-space: pre-wrap; /* 줄바꿈과 공백 유지 */
+    max-width: 100%; /* 부모 요소를 벗어나지 않도록 */
+}

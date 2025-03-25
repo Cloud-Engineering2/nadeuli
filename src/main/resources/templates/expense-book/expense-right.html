@@ -1,0 +1,24 @@
+<!-- expense-book/expenditure-expense-right.html -->
+<div th:fragment="expenditure-expense-right">
+    <div class="expense-header-background" id="expenseHeaderBackground" style="display: none;">
+        <!-- <div th:replace="expense-book/adjustment-expense-tab :: tab-container"></div> -->
+
+        <div class="itinerary-event-expense-item-info" id="itineraryEventExpenseItemInfo">
+<!--            <div th:replace="expense-book/expense-book-basic-info :: budget-and-traveler-info"></div>-->
+
+            <div class="expense-item-container" id="expenseItemContainer">
+                <div class="expense-item-title" id="expenseItemTitle">
+                    <div class="expense-item-content-title">📝내역</div>
+                    <div class="expense-item-expenditure-title">💸금액</div>
+                    <div class="expense-item-payer-title">😄지불자</div>
+                    <div class="expense-item-with-whom-title">👥함께한 사람</div>
+                </div>
+                <hr>
+                <div class="expense-item-list-scroll" id="expenseItemListScroll">
+                    <div class="expense-item-list" id="expenseItemList"></div>
+                    <div class="expense-item-creation" id="expenseItemCreation"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

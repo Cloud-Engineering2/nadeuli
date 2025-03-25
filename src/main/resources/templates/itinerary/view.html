@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${itineraryName}">여행 일정</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/common-alert.css">
+    <link rel="stylesheet" href="/css/view.css">
+    <link rel="stylesheet" href="/css/expense-book.css">
+    <link rel="stylesheet" href="/css/header-footer.css">
+    <link rel="stylesheet" href="/css/journal-modal.css">
+    <link rel="stylesheet" href="/css/expense-book.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <!-- Moment.js & Date Range Picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<!-- 상단 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<!-- Journal Modal -->
+<div id="journal-modal" class="journal-modal-overlay" style="display: none;">
+    <div class="journal-modal-content">
+
+        <div id="content-alert" class="nadeuli-alert" style="display: none;">
+            <p id="content-alert-message"> 소중한 나들이 순간을 남겨 주세요! <button class="nadeuli-alert-button" onclick="closeNadeuliAlert('content-alert')">✅</button></p>
+        </div>
+
+        <div id="photo-size-alert" class="nadeuli-alert" style="display: none;">
+            <p id="photo-size-alert-message"> 20MB 이하 사진 파일을 올려 주세요! <button class="nadeuli-alert-button" onclick="closeNadeuliAlert('photo-size-alert')">✅</button></p>
+        </div>
+
+        <div id="photo-type-alert" class="nadeuli-alert" style="display: none;">
+            <p id="photo-type-alert-message"> 첨부 가능한 사진 파일이 아닙니다. <button class="nadeuli-alert-button" onclick="closeNadeuliAlert('photo-type-alert')">✅</button></p>
+            <br>
+            <p>(첨부 가능 파일 : .bmp, .gif, .jpeg, .png, .webp)</p>
+        </div>
+
+        <div class="journal-container">
+            <!-- 기존 좌우 영역 유지 -->
+            <div class="left-space">
+                <div class="content-header">
+                    <span id="date-time" style="font-family: 'GriunNoltoTAENGGU';"></span>
+                    <div class="content-header-button">
+                        <button id="write-btn" onclick="enableEditMode()" style="display: none" title="기행문 작성">✏️</button>
+                        <button id="edit-btn" onclick="enableEditMode()" style="display: none" title="기행문 수정">✏️</button>
+                        <button id="delete-btn" onclick="confirmDelete()" style="display: none" title="기행문 삭제">❌</button>
+                    </div>
+                </div>
+                <hr class="divider">
+
+                <div class="content" id="content">
+                    <div id="no-content">소중한 나들이 순간을 남겨 주세요!</div>
+                    <div id="has-content"></div>
+                </div>
+
+                <div id="edit-content-area" style="display: none;">
+                    <textarea id="content-input" rows="5"></textarea>
+                    <div class="button-group">
+                        <button onclick="saveContent()">저장</button>
+                        <button onclick="cancelEdit()">취소</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-space">
+                <div class="image-header">
+                    <div class="image-header-button">
+                        <button id="upload-btn" onclick="uploadPhoto()" style="display: none" title="사진 첨부">🖼️</button>
+                        <button id="download-btn" onclick="downloadPhoto()" style="display: none" title="사진 받기">💾</button>
+                        <button id="modify-btn" onclick="modifyPhoto()" style="display: none" title="사진 변경">🖼️</button>
+                        <button id="remove-btn" onclick="confirmPhotoDelete()" style="display: none" title="사진 삭제">❌</button>
+                    </div>
+                </div>
+
+                <div class="image-container" id="image-container">
+                    <span class="plus" id="plus-icon">+</span>
+                    <img id="image-preview" src="" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- 닫기 버튼 -->
+        <button class="modal-close-btn" onclick="closeJournalModal()" title="닫기">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+    </div>
+</div>
+<!-- PlaceDetial Modal -->
+<div id="placeModal" class="modal fade" tabindex="-1" aria-labelledby="placeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg p-4">
+
+            <div class="modal-header border-0">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0">
+                        <span id="placeModalName">성산 일출봉</span>
+                        <span class="text-primary fs-6 ms-2" id="placeModalType">명소</span>
+                    </h5>
+                    <div class="mt-1 small text-secondary">
+            <span class="me-2">
+              ❤️ <span id="placeModalRatingCount"></span>
+            </span>
+                        ⭐ <span id="placeModalRating"></span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <img id="placeModalImage" src="/default.jpg" class="img-fluid rounded mb-3 w-100" alt="장소 이미지">
+
+                <p id="placeModalExplanation" class="text-secondary">
+                </p>
+
+                <p class="mb-1">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <strong>주소 :</strong>
+                    <span id="placeModalAddress"></span>
+                    <a href="#" target="_blank" id="placeModalMapLink" class="ms-2 text-primary text-decoration-underline">지도</a>
+                </p>
+
+                <p class="mb-0">
+                    <i class="bi bi-clock-fill"></i>
+                    <strong>영업시간 :</strong>
+                </p>
+                <ul id="placeModalHours" class="mb-2 ps-4 small text-dark list-unstyled"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+
+        <!-- 왼쪽 패널 -->
+        <div id="sidebar" class="col-md-3">
+            <div class="schedule-header" id="scheduleHeader">
+                <div class="schedule-header-left">
+                    <div class="schedule-header-name">여행 제목</div>
+                    <div class="schedule-header-date">2025/03/02(화) ~ 2025/03/08(목)</div>
+                    <div class="total-budget-expense-wrap">
+                    </div>
+                </div>
+                <div class="schedule-header-right">
+                    <!-- Traveler 추가 모달 -->
+                    <div id="travelerModal" class="traveler-modal" style="display: none;">
+                        <div class="traveler-modal-content">
+                            <span class="traveler-close">&times;</span>
+                            <h4 class="traveler-addition-title">함께할 사람을 추가해주세요</h4>
+                            <!--                            <input type="hidden" id="itinerary-id" value="12"> &lt;!&ndash; 일정 ID 값 &ndash;&gt;-->
+<!--                            <label for="travelerName">이름</label>-->
+                            <div class="traveler-input-form">
+                                <input type="text" id="travelerName" placeholder="여행자 이름">
+                                <input type="number" id="travelerBudget" placeholder="예산 입력">
+                                <button id="travelerSendButton" class="traveler-send-button">추가</button>
+                            </div>
+
+                            <div class="traveler-list" id="travelerList"></div>
+                        </div>
+                    </div>
+
+
+                    <div class="button-container">
+                        <!-- 여행자 추가 버튼 -->
+
+                        <button class="navigate-edit-button" data-bs-toggle="tooltip" title="수정">수정</button>
+                        <button class="traveler-addition-button" title="여행자 추가하기">
+                            <i class="fa-solid fa-person-walking-luggage"></i>
+                        </button>
+                        <button class="toggle-map-button on" title="지도 숨기기">
+                            <i class="bi bi-map-fill on-icon"></i>
+                            <i class="bi bi-map off-icon"></i>
+                        </button>
+<!--                        <button class="refresh-button"><i class="fas fa-arrows-rotate"></i></button>-->
+                    </div>
+<!--                    <button class="refresh-button"><i class="fas fa-arrows-rotate"></i></button>-->
+
+                    <!--                    <button class="event-options-button schedule"><i class="fas fa-cog"></i></button>-->
+<!--                    <div class="event-options hidden">-->
+<!--                        <button class="event-date-change">기간 및 시간 변경</button>-->
+<!--                        <button class="event-remove">일정표 삭제</button>-->
+<!--                    </div>️-->
+                </div>
+            </div>
+            <div class="tab-container">
+                <div class="tab-wrapper">
+
+                </div>
+            </div>
+            <div class="container-wrap">
+                <div class="schedule-container" id="scheduleContainer"></div>
+            </div>
+        </div>
+
+
+
+            <!-- 오른쪽 지도 사이드 박스 -->
+            <div class="right-side-wrap">
+
+                    <div class="right-side-map notclicked">
+                        <div class="map-area">
+                            <div id="side-map"></div>
+                        </div>
+                    </div>
+
+                <div class="right-side-expense notclicked">
+                    <div class="tab-container-wrap">
+                        <div class="adjustment-expense-tab-container">
+                            <span class="adjustment-tab" id="adjustmentTab">정 산</span>
+                            <span class="expenditure-tab" id="expenditureTab">경 비</span>
+                        </div>
+                    </div>
+                    <div id="detailContainer">
+                        <div th:replace="expense-book/adjustment-right :: adjustment-expense-right"></div>
+                        <div th:replace="expense-book/expense-right :: expenditure-expense-right"></div>
+                    </div>
+                </div>
+            </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/view.js"></script>
+<script src="/js/expense-book.js"></script>
+<script src="/js/journal-common.js"></script>
+<script async th:src="@{'https://maps.googleapis.com/maps/api/js?libraries=places,visualization&key=' + ${googleApiKey} + '&v=weekly&callback=initMap'}">
+</script>
+
+
+
+
+
+</body>
+</html>

@@ -1,5 +1,5 @@
-/* Travler.java
- * Travler 엔티티
+/* traveler.java
+ * traveler 엔티티
  * 작성자 : 박한철
  * 최초 작성 날짜 : 2025-02-25
  *
@@ -9,13 +9,18 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
- *
+ * 고민정    2025.02.25     생성자 접근수준 수정
+ * 고민정    2025.03.11     total_budget, expense 필드 추가, budget update 메서드 추가
+ * 고민정    2025.03.24     traveler 수정 메서드 추가
+ * 고민정    2025.03.25     total expense 업데이트 null 처리
  * ========================================================
  */
 
 package nadeuli.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +29,8 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "traveler")
 public class Traveler {
     @Id
@@ -41,17 +46,39 @@ public class Traveler {
     @Column(name = "traveler_name", length = 20)
     private String travelerName;
 
-    // 생성자
-    public Traveler(Itinerary iid, String travelerName) {
+    @Column(name = "total_budget", nullable = false)
+    @Min(0)
+    private Long totalBudget;
 
-        // 초기화
-        this.iid = iid;
-        this.travelerName = travelerName;
-    }
+    @Column(name = "total_expense", nullable = false)
+    private Long totalExpense;
+
+//    // 생성자
+//    public Traveler(Itinerary iid, String travelerName) {
+//
+//        // 초기화
+//        this.iid = iid;
+//        this.travelerName = travelerName;
+//    }
 
     // static factory method
-    public static Traveler of(Itinerary iid, String travelerName) {
-        return new Traveler(iid, travelerName);
+    public static Traveler of(Itinerary iid, String travelerName, Long totalBudget) {
+        return new Traveler(null, iid, travelerName, totalBudget, 0L);
     }
+
+    public void updateTotalExpense(Long totalExpense) {
+
+        if (totalExpense == null) {
+            System.out.println("Warning: totalExpense is null!");
+            totalExpense = 0L;
+        }
+        this.totalExpense = totalExpense;
+    }
+
+    public void updateTotalBudget(Long totalBudget) {
+        this.totalBudget = totalBudget;
+    }
+
+    public void updateName(String editedName) { this.travelerName = editedName; }
 
 }

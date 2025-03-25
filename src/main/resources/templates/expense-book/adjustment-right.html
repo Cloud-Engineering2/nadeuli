@@ -1,0 +1,32 @@
+<div th:fragment="adjustment-expense-right">
+    <div class="adjustment-header-background" id="adjustmentHeaderBackground" style="display: none;">
+        <div class="itinerary-event-adjustment-info" id="itineraryEventAdjustmentInfo">
+            <div th:replace="expense-book/expense-book-basic-info :: budget-and-traveler-info"></div>
+
+            <div class="container-fluid part-container">
+                <!-- 지출 -->
+                <div class="col-md-6 expenditure-part" id="expenditurePart">
+                    <h4 class="expenditure-part-title" id="expenditurePartTitle">
+                        <i class="fa-solid fa-wallet"></i>&nbsp;&nbsp; 지 출
+                    </h4>
+                    <div class="expense-scroll">
+                        <div class="total-expenditure" id="totalExpenditure"></div>
+                        <div class="individual-expenditure-list" id="individualExpenditureList"></div>
+                    </div>
+                </div>
+
+                <!-- 경비 정산 -->
+                <div class="col-md-6 adjustment-part" id="adjustmentPart">
+                    <h4 class="adjustment-part-title" id="adjustmentPartTitle">
+                        <i class="fa-solid fa-book"></i>&nbsp;&nbsp; 경 비 정 산
+                    </h4>
+                    <div class="adjustment-scroll">
+                        <div class="individual-adjustment-list" id="individualAdjustmentList"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-3"></div>
+            </div>
+        </div>
+    </div>
+</div>

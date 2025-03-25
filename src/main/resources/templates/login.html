@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/header-footer.css">
+</head>
+<body>
+
+
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<!-- ✅ 로그인 상태라면 마이페이지로 자동 리디렉션 -->
+<!--<th:block th:if="${loggedIn}">-->
+<!--    <script>-->
+<!--        window.location.href = "/itinerary/mylist";-->
+<!--    </script>-->
+<!--</th:block>-->
+<div class="container">
+    <div class="login-container">
+        <h2>나들이</h2>
+            <img src="/images/logo.png" alt="로고" class="logo">
+        <p class="subtitle">여행의 계획부터 결산까지</p>
+        <p class="subtitle2">나들이와 함께</p>
+
+<!--        <button class="login-btn">로그인</button>-->
+
+        <!-- 카카오 로그인 -->
+        <a th:href="@{/oauth2/authorization/kakao(redirect=${param.redirect})}" class="kakao-btn btn-style">
+            <img src="/images/kakao_logo.png" alt="카카오 아이콘">카카오 로그인
+        </a>
+
+        <!-- 구글 로그인 -->
+        <a th:href="@{/oauth2/authorization/google(redirect=${param.redirect})}" class="google-btn btn-style">
+            <img src="/images/google_logo.png" alt="구글 아이콘">구글 로그인
+        </a>
+
+    </div>
+</div>
+</body>
+</html>

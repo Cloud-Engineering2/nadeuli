@@ -9,6 +9,7 @@
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
  * 이홍비    2025.02.25     생성자 + of() 추가
+ * 고민정    2025.02.25     생성자 접근수준, content 필드 columnDefinition 속성 추가
  *
  * ========================================================
  */
@@ -16,6 +17,7 @@
 package nadeuli.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +26,8 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "expense_item")
 public class ExpenseItem extends BaseTimeEntity {
     @Id
@@ -49,27 +51,37 @@ public class ExpenseItem extends BaseTimeEntity {
     private Traveler payer;
 
     @Lob
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "expense", columnDefinition = "INT UNSIGNED not null")
-    private Integer expense;
+    private Long expense;
 
 
-    // 생성자
-    public ExpenseItem(ExpenseBook ebid, ItineraryEvent ieid, Traveler payer, String content, Integer expense) {
-
-        // 초기화
-        this.ebid = ebid;
-        this.ieid = ieid;
-        this.payer = payer;
-        this.content = content;
-        this.expense = expense;
-    }
+//    // 생성자
+//    public ExpenseItem(ExpenseBook ebid, ItineraryEvent ieid, Traveler payer, String content, Integer expense) {
+//
+//        // 초기화
+//        this.ebid = ebid;
+//        this.ieid = ieid;
+//        this.payer = payer;
+//        this.content = content;
+//        this.expense = expense;
+//    }
 
     // static factory method
-    public static ExpenseItem of (ExpenseBook ebid, ItineraryEvent ieid, Traveler payer, String content, Integer expense) {
-        return new ExpenseItem(ebid, ieid, payer, content, expense);
+    public static ExpenseItem of (ExpenseBook ebid, ItineraryEvent ieid, Traveler payer, String content, Long expense) {
+        return new ExpenseItem(null, ebid, ieid, payer, content, expense);
+    }
+
+    public void updateExpense(Long expense) {
+        this.expense = expense;
+    }
+    public void updateContent(String content) {
+        this.content = content;
+    }
+    public void updatePayer(Traveler payer) {
+        this.payer = payer;
     }
 
 }

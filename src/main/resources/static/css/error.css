@@ -1,0 +1,97 @@
+@charset "UTF-8";
+
+@font-face {
+    font-family: 'GriunNoltoTAENGGU';
+    /*src: url('../fonts/Griun_NoltoTAENGGU-Rg.woff2') format('woff2');*/
+    src: url('../fonts/Griun_NoltoTAENGGU-Rg.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'NotoSansKRVar';
+    src: url('../fonts/NotoSansKR-VariableFont_wght.ttf') format('truetype');
+}
+
+html, body {
+    height: 100%;
+    font-family: 'GriunNoltoTAENGGU';
+    font-size: 1.2rem; /* 기존 : 17px*/
+    background-color: #E9DCBE;
+    color: #343434;
+    margin: 0;
+    padding: 20px;
+
+    flex-direction: column;  /* 페이지를 세로로 배치 */
+
+    display: flex;
+    align-items: center; /* 수직 가운데 정렬 */
+    justify-content: center; /* 수평 가운데 정렬 */
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    flex-direction: row; /* 모바일에서도 row 정렬 */
+    align-items: center; /* 텍스트와 버튼을 가로로 정렬 */
+    justify-content: center; /* 수직 가운데 정렬 */
+
+    width: 60vw; /* 뷰포트 너비의 90% */
+    height: 40vh;
+    max-width: 1000px; /* 최대 너비 - 추후 변경 */
+    max-height: 100vh; /* 뷰포트 높이의 100% */
+    background: #F3F3F3;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* 패딩과 테두리를 포함한 너비 계산 */
+    overflow: auto; /* 콘텐츠 넘칠 시 스크롤 */
+}
+
+/* 스크롤바 기본 디자인 */
+.container::-webkit-scrollbar {
+    width: 2vh;  /* 얇고 슬림하게 */
+}
+
+/* 스크롤바 트랙 (배경) */
+.container::-webkit-scrollbar-track {
+    background: transparent; /* 기본적으로 배경 투명 */
+}
+
+/* 스크롤바 핸들(움직이는 부분) */
+.container::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0);  /* 기본적으로 투명 */
+    border-radius: 10px; /* 둥글게 */
+    transition: background 0.3s ease-in-out;  /* 부드러운 효과 */
+}
+
+/* 마우스를 올리면 스크롤바가 보임 */
+.container:hover::-webkit-scrollbar-thumb {
+    background: #8E8B82;
+}
+
+/* 스크롤바를 클릭하거나 드래그할 때 */
+.container::-webkit-scrollbar-thumb:active {
+    background: #343434;
+}
+
+.left-space, .right-space {
+    flex: 1;
+    padding: 10px;
+
+    width: calc(100% - 20px); /* 패딩 및 마진을 고려한 너비 설정 */
+
+    align-items: center; /* 텍스트와 버튼을 가로로 정렬 */
+    justify-content: center; /* 수직 가운데 정렬 */
+    text-align: center;
+}
+
+.left-space {
+    display: flex;
+}
+.left-space img {
+    margin-right: 10px; /* 로고와 글자 사이의 간격 조정 */
+}
+
+.right-space {
+    display: flex;
+    flex-direction: column;
+}

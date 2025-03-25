@@ -1,0 +1,93 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="ko">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>1/N 정산</title>-->
+<!--    &lt;!&ndash; Bootstrap &ndash;&gt;-->
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">-->
+<!--    &lt;!&ndash; Custom Styles &ndash;&gt;-->
+<!--    <link rel="stylesheet" th:href="@{/css/expense-book.css}">-->
+<!--    <link rel="stylesheet" th:href="@{/css/admin-common.css}">-->
+<!--    <link rel="stylesheet" href="/css/header-footer.css">-->
+<!--    &lt;!&ndash; jQuery & Sortable &ndash;&gt;-->
+<!--    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>-->
+<!--    &lt;!&ndash; Tagify &ndash;&gt;-->
+<!--    <script src="https://unpkg.com/@yaireo/tagify" defer></script>-->
+<!--    <link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />-->
+<!--    &lt;!&ndash; Moment.js & Date Range Picker &ndash;&gt;-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>-->
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/jquery.daterangepicker.min.js"></script>-->
+<!--    &lt;!&ndash; font & icon &ndash;&gt;-->
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">-->
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">-->
+<!--</head>-->
+
+<!--<body>-->
+
+<!--&lt;!&ndash; 헤더 &ndash;&gt;-->
+<!--<div th:replace="~{fragments/header}"></div>-->
+
+
+
+<!--<div class="container-fluid adjustment-right-container-fluid">-->
+
+<!--    &lt;!&ndash; 왼쪽 패널 &ndash;&gt;-->
+<!--    <div class="col-md-3" id="left"> &lt;!&ndash; sidebar -> left &ndash;&gt;-->
+
+<!--        &lt;!&ndash; &#45;&#45; 헤더 &#45;&#45; &ndash;&gt;-->
+<!--        <div class="schedule-header" id="scheduleHeader">-->
+<!--            <div class="schedule-header-left">-->
+<!--                <div class="schedule-header-name" id="scheduleHeaderName">여행 제목</div>-->
+<!--                <div class="schedule-header-date" id="scheduleHeaderDate">2025/03/02(화) ~ 2025/03/08(목)</div>-->
+<!--            </div>-->
+<!--            &lt;!&ndash;            <div class="schedule-header-right">&ndash;&gt;-->
+<!--            &lt;!&ndash;                <button class="event-options-button schedule">⚙️</button>&ndash;&gt;-->
+<!--            &lt;!&ndash;                <div class="event-options hidden">&ndash;&gt;-->
+<!--            &lt;!&ndash;                    <button class="event-date-change">기간 및 시간 변경</button>&ndash;&gt;-->
+<!--            &lt;!&ndash;                    <button class="event-remove">일정표 삭제</button>&ndash;&gt;-->
+<!--            &lt;!&ndash;                </div>️&ndash;&gt;-->
+<!--            &lt;!&ndash;            </div>&ndash;&gt;-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; day 별 탭 컨테이너 &ndash;&gt;-->
+<!--        <div class="tab-container" id="tabContainer">일자별 탭</div>-->
+
+
+
+<!--        &lt;!&ndash; day 별 Event, jorunal 리스트 &ndash;&gt;-->
+<!--        <div class="list-itinerary-event-by-day-container" id="listItineraryEventByDayContainer">-->
+<!--            &lt;!&ndash; Itinerary Event 목록 &ndash;&gt;-->
+<!--            <div class="itinerary-event-list" id="itineraryEventList"></div> &lt;!&ndash; schedule-container &ndash;&gt;-->
+<!--            &lt;!&ndash; journal 목록 &ndash;&gt;-->
+<!--            <div class="journal-list" id="journalList"></div>-->
+<!--        </div>-->
+
+
+
+
+<!--    </div>-->
+
+<!--    &lt;!&ndash; 크기 조절 핸들 &ndash;&gt;-->
+<!--    <div id="resize-handle"></div>-->
+
+<!--    &lt;!&ndash; 오른쪽 패널 &ndash;&gt;-->
+<!--    <div class="col-md-9" id="right"> &lt;!&ndash; sidebarRight -> right &ndash;&gt;-->
+<!--        <div class="detail-container" id="detailContainer">지도 영역</div>-->
+<!--    </div>-->
+
+<!--</div>-->
+
+<!--&lt;!&ndash; JavaScript &ndash;&gt;-->
+<!--<script th:src="@{/js/expense-book.js}"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>-->
+
+
+<!--&lt;!&ndash; 푸터 &ndash;&gt;-->
+<!--<div th:replace="~{fragments/footer}"></div>-->
+
+<!--</body>-->
+
+<!--</html>-->

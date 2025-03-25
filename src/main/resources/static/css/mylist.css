@@ -1,0 +1,342 @@
+.itinerary-list{
+    display: flex;
+    gap: 15px; /* 카드 간 간격 */
+    justify-content: flex-start; /* 카드들이 균등하게 정렬됨 */
+    flex-wrap: wrap;
+
+}
+
+.itinerary-list-wrap{
+    user-select: none;
+    display: flex;
+    overflow-y: auto;         /* 스크롤 생김 */
+    flex-grow: 1;             /* 남은 공간 채움 */
+    height: calc(100vh - 200px);
+    padding-right: 5px;       /* 스크롤바 영역 여백 */
+    flex-direction: column;
+}
+
+/* 카드 스타일 */
+.card-itinerary {
+    flex: 1 1 calc(25% - 15px); /* 4개씩 배치 (간격 고려) */
+    max-width: calc(25% - 15px);
+    min-width: 225px; /* 최소 크기 유지 */
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+.card-itinerary.hide {
+    display:none;
+}
+
+
+/* 화면이 작아질 경우 반응형 조정 */
+@media (max-width: 1024px) {
+    .card-itinerary {
+        flex: 1 1 calc(33.33% - 15px); /* 3개씩 배치 */
+        max-width: calc(33.33% - 15px);
+    }
+}
+
+@media (max-width: 768px) {
+    .card-itinerary {
+        flex: 1 1 calc(50% - 15px); /* 2개씩 배치 */
+        max-width: calc(50% - 15px);
+    }
+}
+
+@media (max-width: 600px) {
+    .card-itinerary {
+        flex: 1 1 100%; /* 1개씩 배치 */
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+
+.card-thumbnail{
+    position: relative; /* 오버레이 위치 기준 */
+    width: 100%;
+    height: 100%;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* 넘치는 요소 숨김 */
+}
+.card-thumbnail img {
+    width: 100%;
+    aspect-ratio: 16 / 9; /* 비율 유지 */
+    object-fit: cover;
+    transition: transform 0.3s ease-in-out;
+}
+
+
+/* 항상 표시되는 오버레이 */
+.card-overlay {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.11); /* 반투명 배경 */
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    align-items: flex-start;
+    text-align: center;
+    opacity: 1; /* 항상 표시됨 */
+}
+.card-overlay h4 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.card-overlay p {
+    font-size: 1rem;
+    margin-top: 5px;
+}
+
+
+.card-header{
+    width: 100%;
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.badge-days {
+    background-color: rgba(0, 0, 0, 0.11);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 30px;
+    font-size: 0.9em;
+}
+.badge-share {
+
+    color: white;
+    padding: 3px 5px;
+    border-radius: 30px;
+    font-size: 0.7em;
+}
+
+.badge-share.not-share {
+    display : none;
+}
+.badge-share.host {
+    background-color: rgb(0 253 255 / 22%);
+}
+.badge-share.guest {
+    background-color: rgba(255, 255, 255, 0.11);
+}
+
+
+.location-name {
+    font-size:0.8em;
+    font-weight: bold;
+    margin-left: 1px;
+}
+
+.card-footer {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between; /* 좌우 정렬 */
+
+    align-items: flex-start; /* 왼쪽 정렬 */
+    padding: 10px;
+    text-align: left; /* 텍스트 왼쪽 정렬 */
+}
+.card-footer-left {
+    flex-grow: 1; /* 가능한 최대 크기로 확장 */
+}
+
+.card-footer-right {
+    flex-shrink: 0; /* 최소 크기 유지 */
+
+}
+
+.card-itinerary:hover .card-footer .name {
+    text-decoration: underline;
+    text-shadow: -1px 0 #ffffff0A, 0 1px #ffffff0A, 1px 0 #ffffff0A, 0 -1px #ffffff0A;
+}
+
+.card-itinerary:hover .card-footer .date {
+
+    text-shadow: -1px 0 #ffffff0A, 0 1px #ffffff0A, 1px 0 #ffffff0A, 0 -1px #ffffff0A;
+}
+
+
+.card-footer-left .name{
+    font-size:1em;
+    text-shadow: -1px 0 #00000022, 0 1px #00000022, 1px 0 #00000022, 0 -1px #00000022;
+}
+
+.card-footer-left .name{
+    font-size:1em;
+    text-shadow: -1px 0 #00000022, 0 1px #00000022, 1px 0 #00000022, 0 -1px #00000022;
+}
+
+.card-footer-left .date{
+    font-size:0.8em;
+    text-shadow: -1px 0 #00000022, 0 1px #00000022, 1px 0 #00000022, 0 -1px #00000022;
+}
+.card-footer-right button {
+    text-decoration: none;
+    background: transparent;
+    transition: background 3s ease-in-out;
+}
+
+.menu-btn{
+    margin: 5px;
+
+}
+
+.card-footer-right button:hover {
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+}
+
+.dropdown-menu {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 70px !important;
+    min-width: 70px !important; /* Bootstrap 기본 min-width를 덮어씌움 */
+    max-width: 70px !important; /* 추가적으로 최대 너비도 제한 */
+    transform: none !important;
+    text-align: center;
+    z-index: 1050; /* 드롭다운이 항상 위에 표시되도록 */
+    display: none;
+}
+
+/* 삼각형 테두리 (더 깔끔하게 보이도록) */
+.dropdown-arrow {
+    position: absolute;
+    top: -8px;
+    left: 70%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 10px;
+    background: #ffffff;
+    z-index: 1065; /* 드롭다운이 항상 위에 표시되도록 */
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.container{
+    margin-top: 60px;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 800px;
+}
+
+.container-header {
+    display:flex;
+    width: 100%;
+    flex-direction: row;
+    margin-bottom: 30px;
+    background-color: #ffffff;
+}
+.tab-container{
+    user-select: none;
+    display:flex;
+    height: 50px;
+    width: 100%;
+}
+.tab-container .tab{
+    display: flex;
+    flex: 1;
+    height: 100%;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: left;
+    padding-left: 5px;
+    align-items: center;
+}
+
+.tab-container .tab {
+    border-bottom : 3px solid #24cc0000;
+}
+
+.tab-container .tab.active {
+    border-bottom : 3px solid #24cc00;
+}
+
+
+.tab-container .tab.active span{
+    color : #1faa01;
+}
+
+.section{
+    display:flex;
+    width:100%;
+    flex-direction: column;
+}
+
+.itinerary-list-header{
+    display:flex;
+    user-select: none;
+    justify-content: space-between;
+}
+
+.itinerary-tab-container {
+    user-select: none;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+}
+
+.itinerary-list-header-left .header-name{
+    user-select: none;
+    font-weight: bolder;
+    font-size: 1.2em;
+}
+
+
+.itinerary-tab-container .itinerary-tab{
+    padding-right: 20px;
+    height: 100%;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: left;
+    padding-left: 5px;
+    align-items: center;
+    color:gray;
+}
+
+
+
+.itinerary-tab-container .itinerary-tab.active{
+    color:black;
+}
+
+.itinerary-tab-container .itinerary-tab:hover{
+    cursor: pointer;
+}
+
+.form-select {
+    user-select: none;
+    width: auto;
+    font-size: 0.9em;
+    text-align: center;
+    border:none;
+    background-color: #FDFDFD;
+}
+
+.form-select:focus{
+    box-shadow : none;
+}
+
+.form-select option {
+
+    outline: none;
+    font-weight: normal;
+    border:none;
+    font-size: 0.9em;
+
+}
+
+.modal {
+    z-index: 11000;
+}

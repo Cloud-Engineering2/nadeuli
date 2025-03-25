@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일정 생성</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Date Range Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/mylist.css">
+    <link rel="stylesheet" href="/css/header-footer.css">
+</head>
+<body>
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<div class="container">
+    <!-- 정렬 콤보박스 -->
+<!--    <div class="container-header">-->
+<!--        <div class="tab-container">-->
+<!--            <div class="tab active"><span>내 일정</span></span></div>-->
+<!--            <div class="tab"><span>내 사진</span></div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <!-- 일정 리스트 -->
+    <div class="section itinerary-list-wrap">
+        <div class="itinerary-list-header">
+            <div class="itinerary-list-header-left">
+                <div class="header-name">내 일정</div>
+            </div>
+            <div class="itinerary-list-header-right">
+                <select id="sortSelect" class="form-select">
+                    <option value="createdDate" data-direction="DESC">작성일 기준 최신순</option>
+                    <option value="createdDate" data-direction="ASC">작성일 기준 오래된 순</option>
+                    <option value="startDate" data-direction="ASC">여행 시작일 기준 오름차순</option>
+                    <option value="startDate" data-direction="DESC">여행 시작일 기준 내림차순</option>
+                </select>
+            </div>
+        </div>
+        <div class="itinerary-tab-container">
+            <div class="itinerary-tab active">전체 일정</div>
+            <div class="itinerary-tab">공유 중인 일정</div>
+            <div class="itinerary-tab">공유 받은 일정</div>
+        </div>
+        <div class="itinerary-list-wrap">
+            <div class="itinerary-list total"></div>
+            <div class="itinerary-list sharing"></div>
+            <div class="itinerary-list shared"></div>
+            <!-- 더보기 버튼 -->
+            <button id="loadMoreBtn" class="btn w-30 mt-3">더 보기</button>
+        </div>
+    </div>
+
+
+
+
+</div>
+<div class="dropdown-arrow" style="display: none;"></div>
+<ul id="dynamicDropdown" class="dropdown-menu" style="display: none;">
+    <li><a class="dropdown-item edit" href="#">편집</a></li>
+    <li><a class="dropdown-item delete" href="#">삭제</a></li>
+    <li><a class="dropdown-item share" href="#">공유</a></li>
+</ul>
+
+
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="shareModalLabel">공유하기</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">현재 공유 상태:</label>
+                    <span id="shareStatus" class="badge bg-secondary px-3 py-2">OFF</span>
+                </div>
+
+                <!-- 공유 링크 영역 (가로 정렬) -->
+                <div id="shareLinkContainer" class="mb-3 d-none">
+                    <label class="form-label fw-semibold">공유 링크:</label>
+                    <div class="input-group">
+                        <input type="text" id="shareLink" class="form-control rounded-start" readonly>
+                        <button class="btn btn-outline-primary rounded-end" id="copyLinkBtn">
+                            <i class="bi bi-clipboard"></i> 복사
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Owner 버튼 -->
+                <button class="btn btn-primary w-100 mb-2 py-2 fw-semibold" id="generateLinkBtn">
+                    <i class="bi bi-link-45deg"></i> 공유 링크 생성
+                </button>
+                <button class="btn btn-danger w-100 d-none py-2 fw-semibold" id="disableShareBtn">
+                    <i class="bi bi-x-circle"></i> 공유 끄기
+                </button>
+
+                <!-- Collaborator 목록 -->
+                <h6 class="mt-3 fw-bold">Collaborators</h6>
+                <ul class="list-group border-0">
+                    <li class="list-group-item bg-light fw-semibold">Owner</li>
+                    <ul id="ownerList" class="list-group mb-2"></ul>
+                    <li class="list-group-item bg-light fw-semibold">Guest</li>
+                    <ul id="guestList" class="list-group"></ul>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="postTripModal" tabindex="-1" role="dialog" aria-labelledby="postTripModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <h5 class="modal-title w-100" id="postTripModalLabel">여행이 종료되었습니다</h5>
+            </div>
+            <div class="modal-body">
+                <p>어떤 페이지로 이동하시겠습니까?</p>
+                <div class="d-flex justify-content-around mt-3">
+                    <button class="btn btn-primary go-to-view">여행 일정 보기</button>
+                    <button class="btn btn-outline-secondary go-to-summary">여행 최종 결산</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+<script src="/js/common.js"></script>
+<script src="/js/mylist.js"></script>
+</body>
+</html>
