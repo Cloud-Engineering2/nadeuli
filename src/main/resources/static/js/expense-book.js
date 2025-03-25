@@ -34,6 +34,11 @@ $(document).on("click", ".expense-item-list-addition", async function () {
     await loadExpensePage();
     $(".right-side-map, .right-side-expense").removeClass("notclicked");
 });
+$(document).on("click", ".close-expense", async function () {
+    $(".right-side-map, .right-side-expense").addClass("notclicked");
+});
+
+
 
 async function loadExpensePage() {
     try {
