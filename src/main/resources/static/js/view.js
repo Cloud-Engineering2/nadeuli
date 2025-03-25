@@ -188,6 +188,11 @@ function renderTotalBudgetExpenseSummary() {
     const $wrap = $('.total-budget-expense-wrap');
     $wrap.empty();
 
+    // 여행 id 추출
+    let pathSegments = window.location.pathname.split("/");
+    let iid = pathSegments[pathSegments.length - 1];
+
+
     // 예산 출력
     const budgetHtml = `
 <!--        <div class="total-budget">예산: ${totalBudget.toLocaleString()} 원</div>-->
@@ -199,9 +204,6 @@ function renderTotalBudgetExpenseSummary() {
     `;
 
     // 지출/수익 계산
-        // 여행 id 추출
-    let pathSegments = window.location.pathname.split("/");
-    let iid = pathSegments[pathSegments.length - 1];
 
     $.ajax({
         url: `/api/itineraries/${iid}/adjustment`,
@@ -224,6 +226,30 @@ function renderTotalBudgetExpenseSummary() {
 
     $wrap.append(budgetHtml);
     $wrap.append(expenseHtml);
+
+
+
+
+    $.ajax({
+        url: `/api/itineraries/${iid}/expense-book`,
+        method: "GET",
+        dataType: "json",
+        success: function (response) {
+            if (response.totalBudget === 0) {
+
+            }
+            else {
+                document.getElementById("budgetConfirmButton").style.display = "none";
+                const div = document.createElement("div");
+                div.textContent = response.totalBudget + " 원";
+                div.style.fontWeight = "bold";
+                div.style.marginTop = "5px";
+
+                const budgetInput = document.getElementById("totalBudget");
+                budgetInput.replaceWith(div);
+            }
+        }
+    });
 
 
 
@@ -282,6 +308,9 @@ $(document).on("click", ".budget-confirm-button", function() {
             const div = document.createElement("div");
             div.textContent = budget + " 원";
             budgetInput.replaceWith(div);
+            div.style.fontWeight = "bold";
+            div.style.marginTop = "5px";
+
             document.getElementById("budgetConfirmButton").style.display = "none";
         },
         error: function (status, error) {
