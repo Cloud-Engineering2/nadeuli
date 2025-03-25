@@ -1029,6 +1029,8 @@
 
 /* Traveler 조회 */
 .traveler-box {
+    border-bottom: 1px solid #e5e5e5;
+    box-sizing: border-box;
     margin-bottom: 5px;
 }
 .traveler-input-form {
@@ -1037,13 +1039,14 @@
 }
 #travelerName {
     text-align: center;
-    margin-right: 55px;
+    margin-right: 5px;
     width: 245px;
     margin-left: 17px;
 }
 #travelerSendButton {
-    background-color: #8E8B82;
-    color: white;
+    background: none;
+    color: #000000;
+    border: none;
     font-weight: bold;
     box-shadow: none;
     border-radius: 5px;
@@ -1051,55 +1054,59 @@
 /* Traveler 수정 */
 .traveler-name {
     /*border: 1px solid #E9DCBE;*/
+    line-height: 30px;
     padding: 2px;
-    width: 250px;
+    width: 150px;
     text-align: center; /* 글자 정렬 */
-    margin-right: 53px;
     font-weight: bold;
     color: #8E8B82;
+    outline: none !important;
 }
-
+.traveler-name:focus-visible{
+    outline:none !important;
+}
+.traveler-editing .traveler-name{
+    color: #002b65;
+}
 /* traveler 삭제 버튼 */
 .traveler-delete-button {
-    display: flex; /* Flexbox 레이아웃 */
+
     justify-content: center; /* 가로 중앙 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
-    border-radius: 10px; /* 둥근 모서리 */
-    background-color: #E9DCBE;
-    width: 35px;
-    height: 35px;
-    border-color: #ffffff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #000000; /* 아이콘 색상 */
 }
-/* 삭제 버튼 클릭 애니메이션  */
-.traveler-delete-button:active {
-    /*transform: scale(0.98); !* 버튼을 살짝 축소시켜 눌린 느낌을 줌 *!*/
+
+.traveler-delete-button.disabled {
+    color: #a3a3a3; /* 아이콘 색상 */
+    cursor: none;
 }
+
 .traveler-delete-icon {
-    color: white; /* 아이콘 색상 */
+    width:15px;
     font-size: 15px; /* 아이콘 크기 */
-    padding: 10px 15px; /* 패딩 */
-    border-radius: 5px; /* 아이콘 둥근 모서리 */
 }
 
 /* traveler 수정 버튼 */
 .traveler-edit-button {
-    display: flex; /* Flexbox 레이아웃 */
+
     justify-content: center; /* 가로 중앙 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
-    border-radius: 10px; /* 둥근 모서리 */
-    background-color: #E9DCBE;
-    width: 35px;
-    height: 35px;
-    border-color: #ffffff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #000000; /* 아이콘 색상 */
 }
-.traveler-edit-button:active {
-    transform: scale(0.98); /* 버튼을 살짝 축소시켜 눌린 느낌을 줌 */
-}
+
 .traveler-edit-icon {
-    color: white; /* 아이콘 색상 */
+    width:15px;
     font-size: 15px; /* 아이콘 크기 */
-    padding: 10px 15px; /* 패딩 */
-    border-radius: 5px; /* 아이콘 둥근 모서리 */
 }
 
 /* traveler 수정 완료 버튼 */
@@ -1107,19 +1114,99 @@
     display: none;
     justify-content: center; /* 가로 중앙 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
-    border-radius: 10px; /* 둥근 모서리 */
-    background-color: #E9DCBE;
-    width: 35px;
-    height: 35px;
-    border-color: #ffffff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #000000; /* 아이콘 색상 */
 }
-.traveler-confirm-button:active {
-    transform: scale(0.98);
-}
+
 .traveler-confirm-icon {
-    color: white; /* 아이콘 색상 */
+    width:15px;
     font-size: 15px; /* 아이콘 크기 */
-    /* 패딩 */
-    border-radius: 5px; /* 아이콘 둥근 모서리 */
-    padding: 5px 5px 5px 5px;
 }
+
+.traveler-name-wrap{
+    display:flex;
+    box-sizing: border-box;
+    border: 1px solid #ffffff;
+    border-radius: 4px;
+
+}
+
+.traveler-editing {
+
+    border: 1px solid #0077ff;
+    border-radius: 4px;
+}
+
+/* 예산 전체 래퍼 */
+.traveler-budget-wrap {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    border: 1px solid #ffffff;
+    border-radius: 4px;
+    margin-left: 5px;
+    padding-left: 5px;
+}
+
+/* 수정 중 테두리 강조 */
+.traveler-budget-editing {
+    border: 1px solid #0077ff;
+    border-radius: 4px;
+}
+
+/* 예산 인풋 */
+.traveler-budget-input {
+    width: 100px;
+    text-align: right;
+    padding: 2px 0;
+    font-weight: bold;
+    color: #8E8B82;
+    border: none;
+    background-color: transparent;
+    outline: none;
+}
+
+.traveler-budget-input:read-only {
+    pointer-events: none;
+}
+
+/* 수정 버튼 */
+.traveler-budget-edit-button {
+    justify-content: center;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #000000;
+}
+
+.traveler-budget-edit-button i {
+    width: 15px;
+    font-size: 15px;
+}
+
+/* 완료(체크) 버튼 */
+.traveler-budget-confirm-button {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #000000;
+}
+
+.traveler-budget-confirm-button i {
+    width: 15px;
+    font-size: 15px;
+}
+
+
