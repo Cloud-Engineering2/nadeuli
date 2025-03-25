@@ -16,6 +16,7 @@ package nadeuli.controller;
  * ========================================================
  */
 
+import lombok.extern.slf4j.Slf4j;
 import nadeuli.dto.OpenAITravelRequest;
 import nadeuli.dto.OpenAITravelResponse;
 import nadeuli.service.OpenAITravelService;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/travel", produces = "application/json")
 @RequiredArgsConstructor
@@ -32,6 +34,7 @@ public class OpenAITravelController {
 
     @PostMapping
     public ResponseEntity<OpenAITravelResponse> postRecommendedRoute(@RequestBody OpenAITravelRequest request) {
+        log.warn("AI 추천 진입");
         OpenAITravelResponse response = travelService.recommendRoute(request);
         return ResponseEntity.ok(response);
     }

@@ -80,12 +80,14 @@ public class PlaceDTO {
     }
 
     public String toPromptString() {
-        return String.format("%s (%s) / 위도: %.4f, 경도: %.4f / place-id : %s",
+        return String.format(
+                "{\"name\": \"%s\", \"type\": \"%s\", \"latitude\": %.4f, \"longitude\": %.4f, \"placeId\": \"%s\"}",
                 placeName,
                 placeType.name(),
                 latitude,
                 longitude,
-                googlePlaceId
+                id
         );
     }
+
 }

@@ -18,6 +18,7 @@ package nadeuli.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import nadeuli.dto.response.ItineraryCreateResponseDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,9 @@ import java.util.Map;
 @Getter
 @Setter
 public class OpenAITravelRequest {
-    private List<PlaceDTO> route;
-    private String mode;
-    private Map<String, List<String>> fixedDays;
+    private ItineraryDTO itinerary;
+    private List<ItineraryPerDayDTO> itineraryPerDays;
+    private List<PlaceDTO> placeDTOList;
+//    private String mode;
+//    private Map<String, List<String>> fixedDays;
 }

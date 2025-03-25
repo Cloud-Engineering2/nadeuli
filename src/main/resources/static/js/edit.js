@@ -21,7 +21,8 @@ let selectedRegionRadius = null;
 let googleRegionLat = null;
 let googleRegionLng = null;
 let googleRegionRadius = null;
-
+let editMode = 1; // 1 = 일반모드, 2 = AI 추천 모드
+const placeDTOMap = new Map();
 
 // 모달 전역변수
 let currentModalStep = 1;
@@ -93,6 +94,25 @@ $(document).ready(function () {
             dataReady = true;
             tryGoogleMapMove();
             tryRenderMarkerAll();
+
+            // ✅ 조건 만족 시 AI 추천 모드 제안
+            if (shouldTriggerAIRecommendation()) {
+                Swal.fire({
+                    icon: 'question',
+                    title: 'AI 기반 추천 여행 경로 생성을 시작하시겠습니까?',
+                    text: 'AI를 활용해 여행 경로를 자동으로 추천해드립니다. (Beta)',
+                    showCancelButton: true,
+                    confirmButtonText: '시작하기',
+                    cancelButtonText: '취소',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        editMode = 2;
+                        toggleUIByEditMode();
+                        forcePlaceContainerOnIfEditMode2();
+                    }
+                });
+            }
         },
         error: function (xhr, status, error) {
             console.error("Error fetching itinerary:", error);
@@ -126,7 +146,7 @@ function createData(data) {
         editedEvent.stayMinute = editedEvent.endMinuteSinceStartDay - editedEvent.startMinuteSinceStartDay;
 
         let eventHashId = addEvent(editedEvent); // 이벤트 추가 후 ID 생성
-
+        console.log(event);
         groupedByDay[dayKey].push({
             hashId: eventHashId,
             dayCount : event.dayCount,
@@ -211,7 +231,7 @@ function renderItinerary() {
                 eventElement.find('.event-time').detach();
             }
 
-            // ✅ 마지막 이벤트가 숙소 && 첫 이벤트가 아닐 때: "시작시간 ~" 처리
+
             const isLastEvent = index === groupedByDay[dayKey].length - 1;
             if (!isSavedPlace && isLastEvent && groupedByDay[dayKey].length > 1 && event.placeDTO.placeType === 'LODGING') {
                 const eventTimeElement = eventElement.find(".event-time");
@@ -889,7 +909,6 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
 
     if (eventPairs.length === 0) return;
 
-    console.log("eventPairs", eventPairs);
 
     eventPairs.forEach(([from, to]) => {
         if (from && to && from.placeDTO && to.placeDTO) {
@@ -1272,6 +1291,29 @@ backButton.addEventListener("click", function () {
 
 // 🎛️ 일정 저장 및 API 통신
 //------------------------------------------
+function generateRecommendReqJson() {
+    // 🎯 불필요한 필드 제거 (createdDate, modifiedDate, role 제외)
+    const {createdDate, modifiedDate, role, ...filteredItinerary} = itinerary;
+
+    // 📅 perDayMap을 배열 형태로 변환
+    const itineraryPerDays = Array.from(perDayMap.values());
+
+    const placeDTOList = Array.from(eventMap.values())
+        .map(event => event.placeDTO)
+        .filter(place => place !== undefined); // 혹시 undefined 제거
+
+    placeDTOList.forEach(place => {
+        if (place.id) {
+            placeDTOMap.set(`${place.id}`, place);
+        }
+    });
+
+    // 🏁 최종 JSON 반환
+    return JSON.stringify({itinerary: filteredItinerary, itineraryPerDays, placeDTOList:placeDTOList});
+}
+
+
+
 
 // JSON 데이터 생성 함수
 function generateItineraryJson() {
@@ -1293,6 +1335,173 @@ function generateItineraryJson() {
     // 🏁 최종 JSON 반환
     return JSON.stringify({itinerary: filteredItinerary, itineraryPerDays, itineraryEvents});
 }
+
+
+function recommend() {
+    const jsonData = generateRecommendReqJson();
+
+    // 1️⃣ 저장 중 로딩 모달 띄우기
+    Swal.fire({
+        title: 'AI 추천경로 생성 중...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    console.log(jsonData);
+    apiWithAutoRefresh({
+        url: "/travel",
+        method: "POST",
+        contentType: "application/json",
+        data: jsonData,
+        success: async function (response) {
+            const recommendedRoute = response.recommendedRoute;
+
+            // 👉 최종 결과를 담을 구조: { "day-1": [placeDTO, ...], "day-2": [placeDTO, ...], ... }
+            const recommendedPlaceDTOsByDay = {};
+
+            for (const [day, placeIds] of Object.entries(recommendedRoute)) {
+                recommendedPlaceDTOsByDay[day] = placeIds.map(pid => {
+                    const place = placeDTOMap.get(pid);
+                    if (!place) {
+                        console.warn(`placeDTOMap에 존재하지 않는 pid: ${pid}`);
+                    }
+                    return place ?? null; // 혹은 필터링하거나 에러 처리
+                }).filter(place => place !== null); // null 제거
+            }
+
+            console.log('✅ 매핑된 추천 경로:', recommendedPlaceDTOsByDay);
+
+            const eventListByDay = {};
+
+            Object.entries(recommendedPlaceDTOsByDay).forEach(([dayKey, placeDTOList]) => {
+                const dayCount = parseInt(dayKey.replace("day-", ""), 10) - 1;
+
+                eventListByDay[dayKey] = placeDTOList.map((placeDTO, index) => {
+                    const isFirstOfDay = index === 0;
+                    const isLodging = placeDTO.placeType === "LODGING";
+                    const stayMinute = (isLodging && isFirstOfDay) ? 0 : 60;
+                    const newEvent = {
+                        dayCount: dayCount,
+                        stayMinute: stayMinute,
+                        placeDTO: placeDTO
+                    };
+                    addEvent(newEvent);
+                    return newEvent;
+                });
+            });
+
+            console.log('✅ EVENT로의 변환:',eventListByDay);
+
+
+            eventPairs.length = 0;
+
+            // Event Pair만들어서 경로계산
+            Object.values(eventListByDay).forEach(eventList => {
+                for (let i = 0; i < eventList.length - 1; i++) {
+                    const event1 = eventList[i];
+                    const event2 = eventList[i + 1];
+
+                    // hashId가 존재한다고 가정하고 push
+                    if (event1.hashId && event2.hashId) {
+                        eventPairs.push([event1, event2]);
+                    } else {
+                        console.warn("⛔ 이벤트에 hashId가 없습니다:", event1, event2);
+                    }
+                }
+            });
+
+            console.log(eventPairs);
+            console.log(perDayMap);
+            await requestDistanceCalculationEventPairs();
+
+            console.log('✅ 거리 계산이 완료된 EVENT들:',eventListByDay);
+            Object.entries(eventListByDay).forEach(([dayKey, eventList]) => {
+            const dayCount = parseInt(dayKey.replace("day-", ""), 10) - 1;
+            const baseStartTime = perDayMap.get(dayCount)?.startTime || "00:00:00";
+            const baseStartMinutes = timeToMinutes(baseStartTime); // 분 단위로 변환
+
+
+
+                // 이벤트별 시간 누적 (이동시간 + 체류시간)
+                let currentTime = 0;
+                eventList.forEach(event => {
+                    event.startMinuteSinceStartDay = currentTime;
+                    event.endMinuteSinceStartDay = currentTime + event.stayMinute;
+                    event.startMinute = baseStartMinutes + event.startMinuteSinceStartDay;
+                    event.endMinute = baseStartMinutes + event.endMinuteSinceStartDay;
+                    event.movingMinute = event.movingMinuteFromPrevPlace || 0;
+
+                    currentTime = event.endMinuteSinceStartDay + event.movingMinute;
+                });
+            });
+
+            Object.entries(eventListByDay).forEach(([dayKey, events]) => {
+                const dayNumber = parseInt(dayKey.replace("day-", ""), 10);
+
+                // 이미 존재하는 dayColumn DOM 찾기
+                const dayColumn = $(`.day-column[data-day-number='${dayNumber}']`);
+
+                if (dayColumn.length === 0) {
+                    console.warn(`❗ day-column[data-day-number='${dayNumber}'] 요소를 찾을 수 없습니다.`);
+                    return;
+                }
+
+                const isSavedPlace = dayNumber === 0;
+
+                const eventContainer = dayColumn.find('.event-container');
+                if (eventContainer.length === 0) {
+                    console.warn(`❗ day-${dayNumber}에 해당하는 .event-container가 없습니다.`);
+                    return;
+                }
+
+                // 이벤트 렌더링
+                events.forEach((event, index) => {
+                    const eventElement = createEventElement(event, index, events.length, isSavedPlace);
+                    eventContainer.append(eventElement);
+                });
+            });
+
+            $(".event-container").each(function () {
+                $(this).find(".event .travel-info").first().css("display", "none");
+            });
+
+            const savedPlaceColumn = $(".day-column[data-day-number='0']"); // dayCount 0
+            if (savedPlaceColumn.length > 0) {
+                savedPlaceColumn.find(".event-container").empty(); // 내부 이벤트 요소 전체 제거
+            }
+
+            for (const [hashId, event] of eventMap.entries()) {
+                if (event.dayCount === 0) {
+                    eventMap.delete(hashId);
+                }
+            }
+            editMode = 1;
+            toggleUIByEditMode()
+
+            // 2️⃣ 저장 완료 모달 띄우기 (버튼 2개)
+            Swal.fire({
+                icon: 'success',
+                title: '생성 완료!',
+                text: '일정이 성공적으로 생성되었습니다.',
+                confirmButtonText: '확인',
+                reverseButtons: true
+            }).then((result) => {
+                // ❌ 취소 선택 → 아무 것도 안 함 (계속 수정)
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error("생성 실패:", error);
+            Swal.fire({
+                icon: 'error',
+                title: '생성 실패',
+                text: '일정 생성 중 오류가 발생했습니다. 다시 시도해 주세요.'
+            });
+        }
+    });
+}
+
+
 
 function saveItinerary() {
     const jsonData = generateItineraryJson();
@@ -1381,6 +1590,7 @@ function formatTime(minutes) {
 
 //  🎭 이벤트 핸들링
 //------------------------------------------
+$(".recommend-button").click(recommend);
 
 $(".save-button").click(saveItinerary);
 
@@ -2925,3 +3135,64 @@ function precomputeDayOfWeekMap() {
 }
 
 
+function toggleUIByEditMode() {
+    const shouldHide = editMode === 2;
+
+    // 일반 버튼들 (editMode === 2일 때 숨김)
+    const selectorsToToggle = [
+        '.place-container-close',
+        '.place-toggle-button',
+        '.save-button',
+        '.navigate-view-button',
+        '.marker-total-button',
+        '.event-options-button'
+    ];
+
+    selectorsToToggle.forEach(selector => {
+        if (shouldHide) {
+            $(selector).hide();
+        } else {
+            $(selector).show();
+        }
+    });
+
+    // recommend-button은 반대로 editMode === 2일 때만 보이게
+    if (shouldHide) {
+        $('.recommend-button').show();
+    } else {
+        $('.recommend-button').hide();
+    }
+
+    // day-0 제외한 day-column 숨김/보임
+    $(".day-column").each(function () {
+        const dayNumber = $(this).data("day-number");
+        if (dayNumber !== 0) {
+            if (shouldHide) {
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        }
+    });
+}
+
+function shouldTriggerAIRecommendation() {
+    if (eventMap.size === 0) return true;
+
+    // 모든 이벤트가 dayCount === 0인지 확인
+    for (const event of eventMap.values()) {
+        if (event.dayCount !== 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function forcePlaceContainerOnIfEditMode2() {
+    if (editMode === 2) {
+        $('.place-container').addClass('active'); // 장소 패널 강제 열기
+        $('.place-toggle-button')
+            .addClass('active')                 // 버튼 상태도 active로 맞추고
+            .text('완료');                      // 버튼 텍스트도 '완료'로 갱신
+    }
+}
