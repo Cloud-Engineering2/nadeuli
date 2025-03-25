@@ -1249,3 +1249,15 @@
     position: relative;
     width:100%;
 }
+
+.close-expense
+{
+    user-select: none;
+    display: flex;
+    background: #ffffff7a;
+    font-size: 15px;
+    padding: 6px 12px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    align-items: center;
+}
