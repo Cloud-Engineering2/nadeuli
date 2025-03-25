@@ -350,6 +350,30 @@ public class ItineraryService {
         return new SaveEventResult(eventDtoList, createdMappings);
     }
 
+    @Transactional
+    public void deleteAllItinerary(Long userId) {
+        // 1. 사용자의 모든 협업자 레코드 조회
+        List<ItineraryCollaborator> collaborators = itineraryCollaboratorRepository.findByUser_Id(userId);
+
+        // 2. ROLE_GUEST 먼저 처리 (협업자 레코드만 삭제)
+        List<ItineraryCollaborator> guests = collaborators.stream()
+                .filter(c -> "ROLE_GUEST".equals(c.getIcRole()))
+                .toList();
+
+        itineraryCollaboratorRepository.deleteAll(guests);
+
+        // 3. ROLE_OWNER 처리 (전체 일정 삭제)
+        List<ItineraryCollaborator> owners = collaborators.stream()
+                .filter(c -> "ROLE_OWNER".equals(c.getIcRole()))
+                .toList();
+
+        for (ItineraryCollaborator owner : owners) {
+            deleteItinerary(owner.getItinerary().getId(), userId);
+        }
+    }
+
+
+
 
     @Transactional
     public void deleteItinerary(Long itineraryId, Long userId) {
