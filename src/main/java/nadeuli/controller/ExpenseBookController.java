@@ -93,7 +93,7 @@ public class ExpenseBookController {
     }
 
     // ExpenseBook 예산 설정
-    @PostMapping("/{iid}/expense")
+    @PostMapping("/{iid}/budget")
     public ResponseEntity<ExpenseBookDTO> setBudget(@PathVariable("iid") Integer iid, @RequestBody @Valid BudgetRequestDTO budgetRequestDto) {
         Long itineraryId = Long.valueOf(iid);
         Long budget = Long.valueOf(budgetRequestDto.getTotalBudget());
