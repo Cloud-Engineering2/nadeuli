@@ -192,11 +192,6 @@ function renderTotalBudgetExpenseSummary() {
     const $wrap = $('.total-budget-expense-wrap');
     $wrap.empty();
 
-    // 여행 id 추출
-    let pathSegments = window.location.pathname.split("/");
-    let iid = pathSegments[pathSegments.length - 1];
-
-
     // 예산 출력
     const budgetHtml = `
 <!--        <div class="total-budget">예산: ${totalBudget.toLocaleString()} 원</div>-->
@@ -208,9 +203,8 @@ function renderTotalBudgetExpenseSummary() {
     `;
 
     // 지출/수익 계산
-
     $.ajax({
-        url: `/api/itineraries/${iid}/adjustment`,
+        url: `/api/itineraries/${itineraryId}/adjustment`,
         method: "GET",
         dataType: "json",
         success: function (response) {
@@ -231,11 +225,9 @@ function renderTotalBudgetExpenseSummary() {
     $wrap.append(budgetHtml);
     $wrap.append(expenseHtml);
 
-
-
-
+    // 예산
     $.ajax({
-        url: `/api/itineraries/${iid}/expense-book`,
+        url: `/api/itineraries/${itineraryId}/expense-book`,
         method: "GET",
         dataType: "json",
         success: function (response) {
@@ -254,60 +246,30 @@ function renderTotalBudgetExpenseSummary() {
             }
         }
     });
-
-
-
-    // 지출 / 수익 계산
-    // $.ajax({
-    //     url: `/api/itineraries/${iid}/adjustment` ,
-    //     method: "GET",
-    //     dataType: "json",
-    //     success: function (response) {
-    //         const displayTotalBudget = response.expenseBookDTO.totalBudget;
-    //         const displayTotalExpense = response.expenseBookDTO.totalExpenses;
-    //
-    //         // 지출/수익 계산
-    //         let expenseHtml = '';
-    //         // if (totalExpense === 0) {
-    //         //     expenseHtml = `<div class="total-expense">지출: 0 원</div>`;
-    //         // } else {
-    //         //     const isProfit = totalExpense < 0;
-    //             const isProfit = displayTotalExpense < 0;
-    //             const displayAmount = isProfit ? `+ ${Math.abs(displayTotalExpense).toLocaleString()}` : `- ${displayTotalExpense.toLocaleString()}`;
-    //             const colorClass = isProfit ? "profit-expense" : "cost-expense";
-    //
-    //             expenseHtml = `<div class="total-expense ${colorClass}">지출: ${displayAmount} 원</div>`;
-    //         // }
-    //
-    //         $wrap.append(budgetHtml);
-    //         $wrap.append(expenseHtml);
-    //     },
-    //     error: function (xhr, status, error) {
-    //         console.error("Error refreshing expense summary:", error);
-    //         console.log("🔥 서버 응답:", xhr.responseText); // 응답 내용을 확인!
-    //     }
-    // });
-
 }
 
 
 // 예산 입력 Enter 이벤트
 $(document).on("click", ".budget-confirm-button", function() {
-    // 여행 ID 가져오기
-    let pathSegments = window.location.pathname.split("/");
-    let iid = pathSegments[pathSegments.length - 1];
+    // 변수
+    let user = null;
+    let userId = null;
+    let userEmail = null;
+    let travelerList = null;
 
+    // 예산 입력값
     const budgetInput = document.getElementById("totalBudget");
     const budget = budgetInput.value.trim();
 
+    // 예산 입력
     $.ajax({
-        url: `/api/itineraries/${iid}/budget`,
+        url: `/api/itineraries/${itineraryId}/budget`,
         method: "POST",
         contentType: "application/json",
         data: JSON.stringify({
             totalBudget: budget // 예산 값 설정
         }),
-        success: function (response) {
+        success: function (expensebook) {
 
             const div = document.createElement("div");
             div.textContent = budget + " 원";
@@ -316,12 +278,61 @@ $(document).on("click", ".budget-confirm-button", function() {
             div.style.marginTop = "5px";
 
             document.getElementById("budgetConfirmButton").style.display = "none";
+
+            // user -> traveler에 추가
+            $.ajax({  // user 조회
+                url: `/api/itinerary/${itineraryId}/user/owner`,
+                method: "GET",
+                dataType: "json",
+                success: function (userInfo) {
+                    user = userInfo.userName;
+                    userId = userInfo.id
+                    userEmail = userInfo.userEmail;
+
+                    $.ajax({  // traveler에 user가 존재하는지 확인
+                        url: `/api/itinerary/${itineraryId}/travelers`,
+                        method: "GET",
+                        dataType: "json",
+                        success: function (travelersInfo) {
+                            travelerList = travelersInfo.travelers.map(traveler => traveler.name)
+                            if (travelerList.includes(user)) {
+                                console.log(`${user}는 여행자 목록에 있습니다.`);
+                            } else {
+                                console.log(`${user}를 여행자 목록에 추가합니다.`);
+
+                                $.ajax({ // traveler에 추가
+                                    url: `/api/itinerary/${itineraryId}/traveler`,
+                                    method: "POST",
+                                    contentType: "application/json",
+                                    data: JSON.stringify({
+                                        travelerName: user,
+                                        totalBudget: budget // 예산 값 설정
+                                    }),
+                                    success: function (response) {
+                                        console.log(`${user}를 여행자 목록에 추가했습니다.`);
+                                        location.reload();
+                                    },
+                                    error: function (error) {
+                                        console.error(`${user}를 여행자 목록에 추가하지 못했습니다`);
+                                    }
+                                });
+                            }
+                            console.log("여기는 여행자 목록");
+                        },
+                        error: function (error) {
+                            console.error(`${user}를 조회하지 못했습니다`);
+                        }
+                    });
+                },
+                error: function (error) {
+                    console.log(`${user}가 존재하지 않습니다`);
+                }
+            });
         },
         error: function (status, error) {
-            console.log(error);
+            console.log("예산 설정에 실패하였습니다");
         }
     });
-
 });
 
 
