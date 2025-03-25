@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nadeuli.entity.User;
-import nadeuli.entity.constant.UserRole;
+import nadeuli.common.enums.UserRole;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,11 +35,18 @@ public class UserDTO {
     private String profileImage;
     private String provider;
     private UserRole userRole;
-    private String userToken;
+    private String providerId;
+    private String providerAccessToken;
     private String lastLoginAt;
     private String createdAt;
-    private String refreshToken;
-    private String refreshTokenExpiryAt;
+
+
+    // 새로운 생성자 추가 (프로필용)
+    public UserDTO(String userName, String userEmail, String profileImage) {
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.profileImage = profileImage;
+    }
 
     public static UserDTO from(User user) {
         return new UserDTO(
@@ -49,11 +56,10 @@ public class UserDTO {
                 user.getProfileImage(),
                 user.getProvider(),
                 user.getUserRole(),
-                user.getUserToken(),
+                user.getProviderId(),
+                user.getProviderAccessToken(),
                 formatDateTime(user.getLastLoginAt()),
-                formatDateTime(user.getCreatedAt()),
-                user.getRefreshToken(),
-                formatDateTime(user.getRefreshTokenExpiryAt())
+                formatDateTime(user.getCreatedAt())
         );
     }
 
@@ -65,11 +71,10 @@ public class UserDTO {
                 this.userName,
                 this.profileImage,
                 this.userRole,
-                this.userToken,
+                this.providerId,
+                this.providerAccessToken,
                 parseDateTime(this.lastLoginAt),
-                parseDateTime(this.createdAt),
-                this.refreshToken,
-                parseDateTime(this.refreshTokenExpiryAt)
+                parseDateTime(this.createdAt)
         );
     }
 

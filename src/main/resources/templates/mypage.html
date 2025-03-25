@@ -11,15 +11,16 @@
 </head>
 <body>
 <div th:replace="~{fragments/header :: headerFragment}"></div>
+
 <div class="container">
     <div class="mypage-container">
-        <!-- 프로필 제목과 회원탈퇴 버튼 -->
+        <!-- ✅ 프로필 제목 + 드롭다운 버튼 -->
         <div class="profile-header">
-            <span class="profile-title">Profile</span>
-            <button id="deleteAccount" class="delete-btn">회원탈퇴</button>
+            <button id="profileDropdownBtn" class="profile-title">내 정보</button>
+            <button id="deleteAccount" class="delete-btn" onclick="unlink()">회원 탈퇴</button>
         </div>
 
-        <!-- 프로필 이미지 (업로드 가능) -->
+        <!-- ✅ 프로필 이미지 -->
         <label for="profileInput" id="profileLabel">
             <img id="profileImage"
                  th:src="${profileImage != null && !#strings.isEmpty(profileImage) ? profileImage : '/images/default_profile.png'}"
@@ -28,19 +29,34 @@
             <input type="file" id="profileInput" accept="image/*" style="display: none;">
         </label>
 
-        <!-- 사용자 정보 -->
+        <!-- ✅ 드롭다운 메뉴 -->
+        <div id="profileDropdown" class="dropdown-menu">
+            <button onclick="triggerNameEdit()">이름 변경</button>
+            <button id="downloadProfileBtn" onclick="downloadProfileImage()">사진 받기</button>
+            <button onclick="triggerFileUpload()">사진 변경</button>
+        </div>
+
+        <!-- ✅ 사용자 정보 -->
         <div class="profile-info">
+            <!-- 이름 -->
             <div class="info-row">
-                <label class="info-label">NAME</label>
-                <input type="text" id="userName" th:value="${userName}" readonly>
+                <label class="info-label name-label">이 름</label>
+                <div class="input-group">
+                    <input type="text" id="userName" th:value="${userName}" readonly>
+                    <button id="saveNameBtn" style="display: none;">저장</button>
+                </div>
             </div>
+
+
+            <!-- 이메일 -->
             <div class="info-row">
-                <label class="info-label">EMAIL</label>
+                <label class="info-label email-label">이 메 일</label>
                 <input type="email" id="userEmail" th:value="${userEmail}" readonly>
             </div>
         </div>
     </div>
 </div>
+
 <script src="/js/mypage.js"></script>
 </body>
 </html>

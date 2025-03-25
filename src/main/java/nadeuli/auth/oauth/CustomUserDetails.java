@@ -1,4 +1,18 @@
-package nadeuli.security;
+/* CustomUserDetails.java
+ * nadeuli Service - 여행
+ * Spring Security UserDetails 커스텀 구현 클래스
+ * 작성자 : 김대환, 국경민
+ * 최초 작성 일자 : 2025.03.18
+ *
+ * ========================================================
+ * 프로그램 수정 / 보완 이력
+ * ========================================================
+ * 작업자        날짜        수정 / 보완 내용
+ * ========================================================
+ * 김대환,국경민   2025.03.18     최초 작성 : User 엔티티 기반 UserDetails 구현
+ */
+
+package nadeuli.auth.oauth;
 
 import lombok.Getter;
 import nadeuli.entity.User;

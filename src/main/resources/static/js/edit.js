@@ -10,7 +10,7 @@ let allMarkers = [];
 let allPolylines = [];
 let markerState = 0;
 let infoWindow=null;
-let isDirty = false;
+window.isDirty = false;
 let mapReady = false;
 let dataReady = false;
 let isPlacePageInitialLoad = false;
@@ -48,8 +48,39 @@ $(document).ready(function () {
     let pathSegments = window.location.pathname.split('/');
     let itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
 
+    $(document).on('click', '.navigate-view-button', function () {
+        if(window.isDirty){
+            Swal.fire({
+                title: '저장되지 않은 변경 사항이 있습니다.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '나가기',
+                cancelButtonText: '취소',
+                reverseButtons: true,
+                customClass: {
+                    title: 'swal2-sm-title'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/auth/logout", {
+                        method: "POST",
+                        credentials: "include"
+                    }).then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.isDirty = false;
+                                window.location.href = `/itinerary/view/${itineraryId}`;
+                            }
+                        });
+                }
+            });
+        } else {
+            window.location.href = `/itinerary/view/${itineraryId}`;
+        }
 
-    $.ajax({
+    });
+
+    apiWithAutoRefresh({
         url: `/api/itinerary/${itineraryId}`,
         method: "GET",
         dataType: "json",
@@ -67,8 +98,6 @@ $(document).ready(function () {
             console.error("Error fetching itinerary:", error);
         }
     });
-
-
 });
 
 // 일정 데이터 생성 함수
@@ -531,7 +560,7 @@ function createSortableInstance(element) {
                 clearSavedPlaceMarker();
                 markerState = extractDayId(toDayId);
                 renderMarkerByMarkerState();
-                isDirty = true;
+                window.isDirty = true;
 
             })();
 
@@ -858,22 +887,18 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
     const requestData = [];
     const validToEvents = [];
 
-    if(eventPairs.length === 0 )
-        return;
+    if (eventPairs.length === 0) return;
 
-    console.log("eventPairs",eventPairs);
+    console.log("eventPairs", eventPairs);
 
-    // 유효한 쌍 추출 및 기본값 처리
     eventPairs.forEach(([from, to]) => {
         if (from && to && from.placeDTO && to.placeDTO) {
-            // 같은 장소라면 거리/시간 0 설정
             if (from.placeDTO.id === to.placeDTO.id) {
                 to.movingDistanceFromPrevPlace = 0;
                 to.movingMinuteFromPrevPlace = 0;
                 return;
             }
 
-            // 이동 거리 계산 대상이면 기본값 설정하고 push
             to.movingDistanceFromPrevPlace = 0;
             to.movingMinuteFromPrevPlace = 0;
 
@@ -884,10 +909,9 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
                 destinationLongitude: to.placeDTO.longitude,
             });
             validToEvents.push(to);
-        } else if(from === null && to){
-                to.movingDistanceFromPrevPlace = 0;
-                to.movingMinuteFromPrevPlace = 0;
-
+        } else if (from === null && to) {
+            to.movingDistanceFromPrevPlace = 0;
+            to.movingMinuteFromPrevPlace = 0;
         }
     });
 
@@ -897,7 +921,7 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
     }
 
     try {
-        const response = await fetch('/api/place/routes', {
+        const response = await fetchWithAutoRefresh('/api/place/routes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -909,7 +933,6 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
 
         responseData.forEach((route, index) => {
             const toEvent = validToEvents[index];
-
             toEvent.movingDistanceFromPrevPlace = route.distanceMeters || 0;
             toEvent.movingMinuteFromPrevPlace = route.duration;
             console.log(route);
@@ -920,6 +943,7 @@ async function requestDistanceCalculationEventPairs(travelMode = "DRIVE") {
         console.error("거리 계산 중 오류:", error);
     }
 }
+
 
 
 
@@ -1155,7 +1179,7 @@ function dateChangeSubmit() {
         }
     }
     precomputeDayOfWeekMap();
-    isDirty = true;
+    window.isDirty = true;
     console.log("Updated perDayMap:", perDayMap);
 }
 
@@ -1282,7 +1306,7 @@ function saveItinerary() {
         }
     });
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: "/api/itinerary/update",
         method: "POST",
         contentType: "application/json",
@@ -1299,7 +1323,7 @@ function saveItinerary() {
                 });
             }
 
-            isDirty = false;
+            window.isDirty = false;
 
             // 2️⃣ 저장 완료 모달 띄우기 (버튼 2개)
             Swal.fire({
@@ -1437,7 +1461,7 @@ $(document).on("click", ".event-remove", function () {
 
 
     }
-    isDirty = true;
+    window.isDirty = true;
 });
 
 
@@ -1487,7 +1511,7 @@ $(document).on("click", ".event-duplicate", function (event) {
     if (!eventData) return;
 
     cloneAndInsertBelow(eventId);
-    isDirty = true;
+    window.isDirty = true;
 });
 
 
@@ -1513,7 +1537,7 @@ $(document).on("click", ".event-duration-save", function (event) {
     // ⏳ 값 저장
     eventData.stayMinute = totalMinutes;
     eventData.isStayMinuteModified = true;
-    isDirty = true;
+    window.isDirty = true;
     // 📌 UI 업데이트
     updateEventDisplay(`day-${eventData.dayCount}`, 0);
 
@@ -1558,7 +1582,7 @@ $(document).on("change", ".travel-minute-input", function () {
     if (!eventData) return;
 
     eventData.movingMinuteFromPrevPlace = newValue;
-    isDirty = true;
+    window.isDirty = true;
 
     updateEventDisplay(`day-${eventData.dayCount}`, 0); // 전체 시간 재계산
 });
@@ -1636,7 +1660,7 @@ function fetchRecommendedPlaces(pageSize = 10) {
     if (isLastPage) return; // 더 이상 가져올 데이터 없음
 
     const searchEnabled = isSearchTriggered && activeSearchQuery.length > 0;
-    const searchQuery = activeSearchQuery; // ✅ 고정된 검색어만 서버로 보냄
+    const searchQuery = activeSearchQuery;
 
     const requestData = {
         userLng: selectedRegionLng,
@@ -1651,7 +1675,8 @@ function fetchRecommendedPlaces(pageSize = 10) {
     };
 
     console.log(requestData);
-    $.ajax({
+
+    apiWithAutoRefresh({
         url: "/api/place/recommend",
         type: "POST",
         contentType: "application/json",
@@ -1683,6 +1708,7 @@ function fetchRecommendedPlaces(pageSize = 10) {
         }
     });
 }
+
 
 //필터 타입 맵핑
 function getKoreanLabel(filterType) {
@@ -1771,7 +1797,7 @@ function searchGooglePlaces() {
     };
     let radius = Math.min(googleRegionRadius ?? 50000, 50000);
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: "/api/google-places/search",
         type: "GET",
         data: {
@@ -1782,8 +1808,8 @@ function searchGooglePlaces() {
         },
         success: function (data) {
             try {
-                let parsedData = typeof data === "string" ? JSON.parse(data) : data; // JSON 문자열인지 확인 후 변환
-                let results = parsedData.places || []; // `places` 키에서 데이터 가져오기
+                let parsedData = typeof data === "string" ? JSON.parse(data) : data;
+                let results = parsedData.places || [];
                 clearGoogleMarkers();
                 displayGoogleSearchResults(results);
             } catch (error) {
@@ -1795,6 +1821,7 @@ function searchGooglePlaces() {
         }
     });
 }
+
 
 // 구글 Place Text Search 결과 출력
 function displayGoogleSearchResults(places) {
@@ -1900,16 +1927,13 @@ function registerPlace(button) {
             }
         });
 
-        $.ajax({
+        apiWithAutoRefresh({
             url: "/api/place/register",
             type: "POST",
-            xhrFields: {
-                withCredentials: true
-            },
             contentType: "application/json",
             data: JSON.stringify({ placeId: placeId }),
             success: function (response) {
-                const place = response.place; // 백엔드에서 내려준 PlaceDTO
+                const place = response.place;
 
                 if (response.status === 201) {
                     Swal.fire({
@@ -1957,6 +1981,7 @@ function registerPlace(button) {
         });
     });
 }
+
 
 //구글 검색창에서 엔터키 누를시 검색
 function handleGoogleKeyPress(event) {
@@ -2466,7 +2491,7 @@ function placeToSavedPlace(place) {
     };
 
     addEvent(event);
-    isDirty = true;
+    window.isDirty = true;
     console.log(event.hashId);
     updateSavedPlaceUI([event]);
 }
@@ -2474,7 +2499,7 @@ function placeToSavedPlace(place) {
 
 // 수정 후 브라우저 뒤로가기,나가기, 새로고침시 경고 메세지
 window.addEventListener("beforeunload", function (e) {
-    if (isDirty) {
+    if (window.isDirty) {
         e.preventDefault();  // 크롬 기준 필요
         e.returnValue = '저장되지 않은 변경 사항이 있습니다. 정말 페이지를 나가시겠습니까?';
     }
@@ -2482,7 +2507,7 @@ window.addEventListener("beforeunload", function (e) {
 
 // 수정후 링크 이동시 경고 메세지
 function handleDirtyNavigation(targetUrl) {
-    if (!isDirty) {
+    if (!window.isDirty) {
         window.location.href = targetUrl;
         return;
     }
@@ -2506,7 +2531,17 @@ function handleDirtyNavigation(targetUrl) {
 
 
 // 수정 후 링크 이동시 경고 메세지 event 핸들러
-$("a[href]").click(function(e) {
+// $("a[href]").click(function(e) {
+//     const href = $(this).attr("href");
+//     const target = $(this).attr("target");
+//
+//     if (!href || e.ctrlKey || e.metaKey || target === "_blank") return;
+//
+//     e.preventDefault();
+//     handleDirtyNavigation(href);
+// });
+
+$(document).on("click", "a[href]", function(e) {
     const href = $(this).attr("href");
     const target = $(this).attr("target");
 
@@ -2520,6 +2555,9 @@ $("a[href]").click(function(e) {
 $(document).on("dblclick", ".event", function (e) {
 
     if (
+
+        $(e.target).hasClass("travel-info") ||
+        $(e.target).closest(".travel-minute-input").length > 0 ||
         $(e.target).hasClass("event-options-button") ||
         $(e.target).closest(".event-options-button").length > 0 ||
         $(e.target).closest(".event-duration-input-container").length > 0
@@ -2548,7 +2586,8 @@ $(document).on("dblclick", ".event", function (e) {
         // 맵이 꺼져있으면 바로 모달 띄우기
         showPlaceModal(eventId);
     } else {
-        // 맵이 켜져있으면 마커 강조 + InfoWindow 열기
+        // 맵이 켜져있으면 모달 + 마커 강조 + InfoWindow 열기
+        showPlaceModal(eventId);
         const marker = allMarkers.find(m => m.hashId === eventId);
         if (marker) {
             enlargeMarkerTemporarily(marker);
@@ -2837,24 +2876,26 @@ function isWithinOpeningHours(event) {
         }
 
         const baseStartMinutes = timeToMinutes(perDayMap.get(dayCount)?.startTime || "00:00:00");
-        const eventStart = baseStartMinutes + event.startMinuteSinceStartDay;
-        const eventEnd = baseStartMinutes + event.endMinuteSinceStartDay;
+        const eventStartMinutes = dayOfWeek * 1440 + (baseStartMinutes + event.startMinuteSinceStartDay);
+        const eventEndMinutes = dayOfWeek * 1440 + (baseStartMinutes + event.endMinuteSinceStartDay);
 
-        console.log(`[영업 시간 체크][${placeName}] 요일: ${dayOfWeek}, 일정 시간: ${formatTime(eventStart)} ~ ${formatTime(eventEnd)}`);
+        console.log(`[영업 시간 체크][${placeName}] 요일: ${dayOfWeek}, 일정 시간: ${formatTime(eventStartMinutes)} ~ ${formatTime(eventEndMinutes)}`);
 
-        const isWithin = matchingPeriods.some((period, idx) => {
-            const openTime = period.open.hour * 60 + period.open.minute;
-            let closeTime;
+        const isWithin = periods.some((period, idx) => {
+            const openDay = period.open.day;
+            const openMinutes = openDay * 1440 + (period.open.hour * 60 + period.open.minute);
+
+            let closeDay = openDay;
+            let closeMinutes = openMinutes + 1440; // 기본 24시간 후 종료
 
             if (period.close) {
-                closeTime = period.close.hour * 60 + period.close.minute;
-            } else {
-                closeTime = 1440;
-                console.log(` → [타임${idx + 1}] close 없음 → 24시간 처리`);
+                closeDay = period.close.day;
+                closeMinutes = closeDay * 1440 + (period.close.hour * 60 + period.close.minute);
             }
 
-            const match = eventStart >= openTime && eventEnd <= closeTime;
-            console.log(` → [타임${idx + 1}] ${formatTime(openTime)} ~ ${formatTime(closeTime)} : ${match ? '✅ 포함됨' : '❌ 불포함'}`);
+            const match = eventStartMinutes >= openMinutes && eventEndMinutes <= closeMinutes;
+
+            console.log(` → [타임${idx + 1}] ${formatTime(openMinutes)} ~ ${formatTime(closeMinutes)} : ${match ? '✅ 포함됨' : '❌ 불포함'}`);
             return match;
         });
 
@@ -2882,3 +2923,5 @@ function precomputeDayOfWeekMap() {
         dayOfWeekMap.set(dayCount, dayOfWeek);
     }
 }
+
+

@@ -15,7 +15,7 @@
  * ========================================================
  */
 
-package nadeuli.common;
+package nadeuli.common.enums;
 
 public enum PhotoType {
     ETC, // 그 외

@@ -1,3 +1,5 @@
+window.isJournalModal = true;
+
 // Event 전역변수
 let itinerary = null;
 const perDayMap = new Map();
@@ -38,23 +40,23 @@ $(document).ready(function () {
     let pathSegments = window.location.pathname.split('/');
     itineraryId = pathSegments[pathSegments.length - 1]; // 마지막 부분이 ID라고 가정
 
+    $(document).on('click', '.navigate-edit-button', function () {
+        window.location.href = `/itinerary/edit/${itineraryId}`;
+    });
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itinerary/${itineraryId}`,
         method: "GET",
         dataType: "json",
         success: function (data) {
-            itineraryData = data; // 전역 변수 저장
-            createData(data);     // 필요한 사전 작업
+            itineraryData = data;
+            createData(data);
 
-            // 두 번째 AJAX: expense summary 호출
-            $.ajax({
+            apiWithAutoRefresh({
                 url: `/api/itineraries/${itineraryId}/expense-summary`,
                 method: "GET",
                 dataType: "json",
                 success: function (expenseSummary) {
-                    // 전역 변수에 저장
-
                     expenseSummary.summaries.forEach(item => {
                         summaryMap.set(item.eventId, item.totalExpense);
                     });
@@ -62,7 +64,6 @@ $(document).ready(function () {
                     totalExpense = expenseSummary.totalExpenses;
 
                     console.log(summaryMap);
-                    // 이후 렌더링 실행
                     renderItinerary();
                     refreshJournalUI();
                     dataReady = true;
@@ -77,6 +78,7 @@ $(document).ready(function () {
             console.error("Error fetching itinerary:", error);
         }
     });
+
 
 
 });
@@ -391,7 +393,7 @@ function createEventElement(event, index = null, totalEvents = null, isSavedPlac
 }
 
 function refreshExpenseSummary() {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itineraries/${itineraryId}/expense-summary`,
         method: "GET",
         dataType: "json",
@@ -402,7 +404,6 @@ function refreshExpenseSummary() {
             summaryMap = new Map(summaries.map(item => [item.eventId, item.totalExpense]));
 
             renderTotalBudgetExpenseSummary();
-            // 모든 day-column 순회하면서 각 event의 비용 표시 갱신
             $('.day-column').each(function () {
                 const $dayColumn = $(this);
                 if ($dayColumn.hasClass('savedPlace')) return;
@@ -415,7 +416,7 @@ function refreshExpenseSummary() {
 
                     const total = summaryMap.get(eventId) ?? 0;
                     const $wrap = $event.find('.expense-wrap');
-                    $wrap.empty(); // 기존 내용 제거
+                    $wrap.empty();
 
                     if (total === 0) {
                         $wrap.append(`
@@ -1478,7 +1479,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function refreshJournalUI() {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itineraries/${itineraryId}/journals`,
         method: "GET",
         dataType: "json",
@@ -1492,9 +1493,9 @@ function refreshJournalUI() {
 
             console.log('journalMap', journalMap);
             eventIdToHashIdMap.forEach((hashId, eventId) => {
-                console.log(`hashId ${hashId}, eventId ${eventId}` )
+                console.log(`hashId ${hashId}, eventId ${eventId}`);
                 const journal = journalMap.get(eventId);
-                console.log(`journal`, journal )
+                console.log(`journal`, journal);
                 const $eventEl = $(`.event[data-id='${hashId}']`);
                 const $imageEl = $eventEl.find(".event-image");
                 const $memoIconEl = $eventEl.find(".event-memo-icon");
@@ -1539,3 +1540,5 @@ $(document).on("click", ".event-image-wrap", async function () {
     await fetchJournal(itineraryId, eventId); // 저널 데이터 가져오기
     openJournalModal(); // 모달 열기
 });
+
+

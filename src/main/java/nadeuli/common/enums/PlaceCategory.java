@@ -16,7 +16,7 @@
  */
 
 
-package nadeuli.entity.constant;
+package nadeuli.common.enums;
 
 import java.util.HashMap;
 import java.util.List;
@@ -126,7 +126,7 @@ public class PlaceCategory {
         addPlaceType("rest_stop", PlaceType.TRANSPORTATION, 6);
         addPlaceType("truck_stop", PlaceType.TRANSPORTATION, 5);
 
-        // 여가 시설 (Entertainment & Activity)
+        // 어트랙션 (Entertainment & Activity)
         addPlaceType("amusement_park", PlaceType.ATTRACTION, 20);
         addPlaceType("water_park", PlaceType.ATTRACTION, 20);
         addPlaceType("casino", PlaceType.ATTRACTION, 20);
@@ -141,7 +141,7 @@ public class PlaceCategory {
         addPlaceType("hiking_area", PlaceType.ATTRACTION, 20);
         addPlaceType("playground", PlaceType.ATTRACTION, 20);
 
-        // 편의 시설 (Convenience & Services)
+        // 편의시설 (Convenience & Services)
         addPlaceType("bank", PlaceType.CONVENIENCE, 19);
         addPlaceType("public_bathroom", PlaceType.CONVENIENCE, 19);
         addPlaceType("public_bath", PlaceType.CONVENIENCE, 18);

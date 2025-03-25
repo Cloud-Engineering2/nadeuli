@@ -20,7 +20,7 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.response.ItineraryStatusResponse;
 import nadeuli.dto.response.JoinItineraryResponseDto;
-import nadeuli.security.CustomUserDetails;
+import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.service.ShareService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -14,7 +14,7 @@
  * ========================================================
  */
 
-package nadeuli.entity.constant;
+package nadeuli.common.enums;
 
 import lombok.Getter;
 import lombok.ToString;

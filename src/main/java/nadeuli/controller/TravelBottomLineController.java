@@ -19,7 +19,7 @@ package nadeuli.controller;
 
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.response.ItineraryTotalReadResponseDTO;
-import nadeuli.security.CustomUserDetails;
+import nadeuli.auth.oauth.CustomUserDetails;
 import nadeuli.service.ItineraryCollaboratorService;
 import nadeuli.service.ItineraryService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

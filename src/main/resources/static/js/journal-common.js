@@ -1,23 +1,29 @@
-/* journal-modal.js
+/* journal-common.js
  * nadeuli Service - 여행
- * view.html 에서 사용할 journal-modal 관련 js 함수 정리
- * 작성자 : 박한철
- * 최종 수정 날짜 : 2025.03.22
+ * journal.html,journal모달 에서 사용할 js 함수 정리
+ * 작성자 : 이홍비
+ * 최종 수정 날짜 : 2025.02.27
  *
  * ========================================================
  * 프로그램 수정 / 보완 이력
  * ========================================================
  * 작업자        날짜        수정 / 보완 내용
  * ========================================================
+ * 이홍비    2025.02.27     최초 작성 : journal.js
+ * 이홍비    2025.03.02     journal.html 에서 사용할 함수 정리
+ * 이홍비    2025.03.03     사진 crud 관련 js 처리 + 다운로드 처리
+ *                         첨부 가능한 사진 파일, 파일 크기 제약 추가
+ *                         url 에서 iid, ieid 추출
+ * 이홍비    2025.03.13     no-content 일 때 매번 innerText 작성하던 것
+ *                         html 에 문구 작성해 두고 그냥 display block, none 만 하는 것으로 처리
  * 박한철    2025.03.22     최초 작성 : journal.js 에서 필요한 부분 추출
  *                         axios -> $.ajax로 수정
  * 이홍비    2025.03.23     showNadeuliAlert import 처리
  *                         window.fetchJournal = fetchJournal; - 전역 범위 할당
+ * 박한철    2025.03.23     $.ajax를 토큰만료시 재발급받는 apiWithAutoRefresh로 감쌈
+ * 박한철    2025.03.23     journal과 jounal-modal의 공통된 파트를 journal-common.js로 분리(window.isJournalModal로 구분함) + showNadeuliAlert를 코드에 포함시킴
  * ========================================================
  */
-
-import { showNadeuliAlert } from "./common.js";
-
 
 var journal = {};
 var this_iid;
@@ -40,7 +46,7 @@ function fetchJournal(iid, ieid) {
     this_iid = iid;
     this_ieid = ieid;
 
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itineraries/${iid}/events/${ieid}/journal`,
         type: 'GET',
         dataType: 'json',
@@ -103,7 +109,7 @@ function saveContent() {
 
     // 최초 작성 (POST)
     if (originalContent === null) {
-        $.ajax({
+        apiWithAutoRefresh({
             url: `/api/itineraries/${this_iid}/events/${this_ieid}/content`,
             type: 'POST',
             data: formData,
@@ -112,7 +118,7 @@ function saveContent() {
             success: function(response) {
                 journal = response;
                 updateContentView();
-                if (window.refreshJournalUI) {
+                if (window.isJournalModal && window.refreshJournalUI) {
                     window.refreshJournalUI();
                 }
             },
@@ -128,7 +134,7 @@ function saveContent() {
             return;
         }
 
-        $.ajax({
+        apiWithAutoRefresh({
             url: `/api/itineraries/${this_iid}/events/${this_ieid}/content`,
             type: 'PUT',
             data: formData,
@@ -137,7 +143,7 @@ function saveContent() {
             success: function(response) {
                 journal = response;
                 updateContentView();
-                if (window.refreshJournalUI) {
+                if (window.isJournalModal && window.refreshJournalUI) {
                     window.refreshJournalUI();
                 }
             },
@@ -187,13 +193,13 @@ function confirmDelete() {
 }
 
 function deleteContent() {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itineraries/${this_iid}/events/${this_ieid}/content`,
         type: 'DELETE',
         success: function(response) {
             journal = response;
             updateContentView();
-            if (window.refreshJournalUI) {
+            if (window.isJournalModal && window.refreshJournalUI) {
                 window.refreshJournalUI();
             }
         },
@@ -229,7 +235,7 @@ function uploadPhoto() {
         const formData = new FormData();
         formData.append("file", file);
 
-        $.ajax({
+        apiWithAutoRefresh({
             url: `/api/itineraries/${this_iid}/events/${this_ieid}/photo`,
             type: 'POST',
             data: formData,
@@ -238,7 +244,7 @@ function uploadPhoto() {
             success: function(response) {
                 journal = response;
                 updatePhotoView();
-                if (window.refreshJournalUI) {
+                if (window.isJournalModal && window.refreshJournalUI) {
                     window.refreshJournalUI();
                 }
             },
@@ -275,7 +281,7 @@ function modifyPhoto() {
         const formData = new FormData();
         formData.append("file", file);
 
-        $.ajax({
+        apiWithAutoRefresh({
             url: `/api/itineraries/${this_iid}/events/${this_ieid}/photo`,
             type: 'PUT',
             data: formData,
@@ -284,7 +290,7 @@ function modifyPhoto() {
             success: function(response) {
                 journal = response;
                 updatePhotoView();
-                if (window.refreshJournalUI) {
+                if (window.isJournalModal && window.refreshJournalUI) {
                     window.refreshJournalUI();
                 }
             },
@@ -292,6 +298,7 @@ function modifyPhoto() {
                 console.error(error);
             }
         });
+
     };
     fileInput.click();
 }
@@ -304,13 +311,13 @@ function confirmPhotoDelete() {
 }
 
 function deletePhoto() {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itineraries/${this_iid}/events/${this_ieid}/photo`,
         type: 'DELETE',
         success: function(response) {
             journal = response;
             updatePhotoView();
-            if (window.refreshJournalUI) {
+            if (window.isJournalModal && window.refreshJournalUI) {
                 window.refreshJournalUI();
             }
         },
@@ -351,7 +358,7 @@ function updatePhotoView() {
 }
 
 function downloadPhoto() {
-    $.ajax({
+    apiWithAutoRefresh({
         url: `/api/itineraries/${this_iid}/events/${this_ieid}/photo/download`,
         method: 'GET',
         xhrFields: {
@@ -380,40 +387,6 @@ function downloadPhoto() {
 }
 
 
-// function downloadPhoto() {
-//     axios.get(`/api/itineraries/${this_iid}/events/${this_ieid}/photo/download`, { responseType: 'arraybuffer' })
-//         .then(response => {
-//             // console.log(response.data);
-//             // console.log(response.headers);
-//             // console.log("Response data type: ", response.data instanceof ArrayBuffer);
-//             // console.log("Response data type: ", response.data instanceof Blob);
-//
-//             const disposition = response.headers['content-disposition'];
-//             // const matches = disposition && disposition.match(/filename="?([^";]+)"?/);
-//             // const fileName = matches && matches[1] ? matches[1].trim() : 'photo.jpg'
-//
-//             const matches = disposition && disposition.match(/filename\*?=['"]?UTF-8''([^;]+)['"]?|filename="?([^";]+)"?/);
-//             const encodedFileName = matches && (matches[1] || matches[2]) ? (matches[1] || matches[2]).trim() : 'photo.jpg';
-//             const fileName = decodeURIComponent(encodedFileName);
-//
-//             // console.log("disposition : " + disposition);
-//             // console.log("matches : " + matches);
-//             // console.log("fileName : " + fileName);
-//
-//             const blob = new Blob([response.data], { type: 'application/octet-stream' });
-//             const imageUrl = URL.createObjectURL(blob); // Blob을 URL로 변환
-//             // const imageUrl = URL.createObjectURL(response.data); // Blob을 URL로 변환
-//             const link = document.createElement('a'); // 다운로드 링크 생성
-//             link.href = imageUrl; // 이미지 URL을 링크에 설정
-//             link.download = fileName; // 파일 이름 설정
-//             link.click(); // 다운로드 실행
-//
-//             // URL 객체 해제 (메모리 누수 방지)
-//             URL.revokeObjectURL(imageUrl);
-//         })
-//         .catch(error => console.error("Error deleting photo:", error));
-// }
-
 // 전역 범위 할달
 window.fetchJournal = fetchJournal;
 window.enableEditMode = enableEditMode;
@@ -424,7 +397,16 @@ window.uploadPhoto = uploadPhoto;
 window.modifyPhoto = modifyPhoto;
 window.confirmPhotoDelete = confirmPhotoDelete;
 window.downloadPhoto = downloadPhoto;
+window.closeNadeuliAlert = closeNadeuliAlert;
 
+
+function showNadeuliAlert(id) {
+    document.getElementById(`${id}`).style.display = 'block';
+}
+
+function closeNadeuliAlert(id) {
+    document.getElementById(`${id}`).style.display = 'none';
+}
 
 window.openJournalModal = function () {
     document.getElementById('journal-modal').style.display = 'flex';

@@ -33,4 +33,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findFirstByOrderByCreatedAtDesc();
 
     Optional<User> findByUserEmailAndProvider(String userEmail, String provider);
+
+    Optional<User> findByProviderIdAndProvider(String providerId, String provider);
 }

@@ -15,9 +15,10 @@
  * ========================================================
  */
 
-package nadeuli.exception;
+package nadeuli.common.exception;
 
 import nadeuli.controller.*;
+import nadeuli.dto.response.ErrorResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -34,8 +35,6 @@ import java.util.NoSuchElementException;
         IndexController.class,
         ItineraryRestController.class,
         JournalRestController.class,
-        KakaoMapController.class,
-        KakaoOAuthController.class,
         KakaoOAuthUnlinkController.class,
         OAuthController.class,
         OpenAITravelController.class,

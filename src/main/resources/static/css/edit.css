@@ -185,6 +185,8 @@
 
 
 .schedule-header-right {
+    display:flex;
+    align-items: center;
     margin-left: auto; /* 버튼을 오른쪽 끝으로 이동 */
 }
 
@@ -219,11 +221,23 @@
 }
 
 
+.navigate-view-button{
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.navigate-view-button:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
 
 .save-button{
     background: none;
     border: none;
-    font-size: 25px;
+    font-size: 18px;
     cursor: pointer;
     padding: 5px 10px;
     border-radius: 5px;

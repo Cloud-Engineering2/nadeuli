@@ -15,7 +15,8 @@
 
 package nadeuli.service;
 
-import nadeuli.common.PhotoType;
+
+import nadeuli.common.enums.PhotoType;
 import nadeuli.dto.RegionTreeDTO;
 import nadeuli.dto.request.AdminRegionUpdateRequestDTO;
 import nadeuli.dto.response.RegionImageResponseDTO;

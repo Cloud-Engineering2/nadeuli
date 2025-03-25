@@ -24,7 +24,7 @@ import nadeuli.dto.request.PlaceListResponseDto;
 import nadeuli.dto.request.RouteRequestDto;
 import nadeuli.dto.response.PlaceResponseDto;
 import nadeuli.dto.response.RouteResponseDto;
-import nadeuli.entity.constant.PlaceCategory;
+import nadeuli.common.enums.PlaceCategory;
 import nadeuli.repository.PlaceNativeQueryExecutor;
 import org.springframework.http.*;
 import com.fasterxml.jackson.databind.JsonNode;
