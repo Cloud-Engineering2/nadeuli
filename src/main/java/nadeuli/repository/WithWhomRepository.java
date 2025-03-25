@@ -15,11 +15,25 @@
 package nadeuli.repository;
 
 import nadeuli.entity.ExpenseItem;
+import nadeuli.entity.Traveler;
 import nadeuli.entity.WithWhom;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface WithWhomRepository extends JpaRepository<WithWhom, Integer> {
     List<WithWhom> findAllByEmid(ExpenseItem expenseItem);
+    @Query("""
+    select distinct ww.tid.id
+    from WithWhom ww
+    join ww.emid ei
+    join ei.ieid ie
+    join ie.itineraryPerDay ipd
+    where ipd.itinerary.id = :itineraryId
+""")
+    List<Integer> findConsumerIdsByItinerary(@Param("itineraryId") Long itineraryId);
+
+    boolean existsByTid(Traveler traveler);
 }
