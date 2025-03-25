@@ -14,6 +14,7 @@
  * 박한철    2025.03.11     테스트 페이지 정리
  * 박한철    2025.03.15     템플릿 리턴 경로 수정 "/.../..." -> ".../..."
  * 박한철    2025.03.17     view 페이지 추가
+ * 고민정    2025.03.25     view title 데이터 전송
  * ========================================================
  */
 
@@ -22,12 +23,16 @@ package nadeuli.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nadeuli.auth.oauth.CustomUserDetails;
+import nadeuli.dto.ItineraryDTO;
 import nadeuli.service.ItineraryCollaboratorService;
+import nadeuli.service.ItineraryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Slf4j
 @Controller
@@ -36,6 +41,7 @@ import org.springframework.web.bind.annotation.*;
 public class ItineraryController {
 
     private final ItineraryCollaboratorService collaboratorService;
+    private final ItineraryService itineraryService;
     @Value("${google.api.key}")
     private String googleMapsApiKey;
     // ===========================
@@ -71,6 +77,9 @@ public class ItineraryController {
 
         // 일정 읽기 권한 체크
         collaboratorService.checkViewPermission(userId, itineraryId);
+
+        ItineraryDTO itineraryDto = itineraryService.getItinerary(itineraryId);
+        model.addAttribute("itineraryName", itineraryDto.getItineraryName());
 
         return "itinerary/view";  // 정적 HTML 페이지 반환
     }
