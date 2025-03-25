@@ -1,5 +1,5 @@
-/* Travler.java
- * Travler 엔티티
+/* traveler.java
+ * traveler 엔티티
  * 작성자 : 박한철
  * 최초 작성 날짜 : 2025-02-25
  *
