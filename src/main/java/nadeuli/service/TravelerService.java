@@ -127,6 +127,7 @@ public class TravelerService {
     public List<TravelerDTO> deleteTraveler(Long itineraryId, Integer tid) {
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 Itinerary가 존재하지 않습니다"));
+
         ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
                 .orElseThrow(() -> new EntityNotFoundException("해당 Itinerary가 존재하지 않습니다"));
         // 삭제 대상 조회
@@ -154,6 +155,7 @@ public class TravelerService {
 
         // 남아 있는 여행자 리스트 변환 후 반환
         List<Traveler> remainedTravelers = travelerRepository.findAllByIid(itinerary);
+
         return remainedTravelers.stream()
                                     .map(TravelerDTO::from)
                                     .collect(Collectors.toList());
