@@ -22,6 +22,7 @@
  * 이홍비    2025.03.22     공동 경비 예산, 잔액 출력 주석 처리
  * 이홍비    2025.03.23     기행문 쪽 사진 null => 사진 등록 버튼 추가
  * 이홍비    2025.03.25     지출, 정산 내역 없을 때 관련 처리
+ * 이홍비    2025.03.26     화폐 , 표시 3자리로 수정
  * ========================================================
  */
 
@@ -1144,5 +1145,6 @@ function formatKoreanMoney(value) {
     const stringValue = String(value);
 
     // 정규식을 사용하여 4자리 단위로 나눔
-    return stringValue.replace(/\B(?=(\d{4})+(?!\d))/g, ',');
+    //return stringValue.replace(/\B(?=(\d{4})+(?!\d))/g, ',');
+    return stringValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
