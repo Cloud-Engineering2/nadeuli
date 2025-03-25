@@ -2,12 +2,8 @@
 name: nadeuli With Github Actions - develop
 
 on:
-  # workflow_dispatch
-  push:
-    branches:
-      - develop
-  #  paths-ignore:
-  #    - 'manifest/**'
+  push
+
       
 jobs:
   ci:
