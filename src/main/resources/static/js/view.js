@@ -307,6 +307,8 @@ function renderTotalBudgetExpenseSummary() {
     });
 
 
+
+
     // 지출 / 수익 계산
     // $.ajax({
     //     url: `/api/itineraries/${iid}/adjustment` ,
@@ -371,6 +373,7 @@ $(document).on("click", ".budget-confirm-button", function() {
             console.log(error);
         }
     });
+    location.reload();
 
 });
 
