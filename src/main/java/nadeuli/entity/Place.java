@@ -106,4 +106,5 @@ public class Place implements Serializable {
                            String imageUrl, PlaceType placeType, String regularOpeningHours) {
         return new Place(googlePlaceId, placeName, address, latitude, longitude, explanation, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
     }
+
 }

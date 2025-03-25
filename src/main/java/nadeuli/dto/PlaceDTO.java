@@ -78,4 +78,16 @@ public class PlaceDTO {
     public Place toEntity() {
         return new Place(googlePlaceId, placeName, address, latitude, longitude, explanation, googleRating, googleRatingCount, googleURL, imageUrl, placeType, regularOpeningHours);
     }
+
+    public String toPromptString() {
+        return String.format(
+                "{\"name\": \"%s\", \"type\": \"%s\", \"latitude\": %.4f, \"longitude\": %.4f, \"placeId\": \"%s\"}",
+                placeName,
+                placeType.name(),
+                latitude,
+                longitude,
+                id
+        );
+    }
+
 }
