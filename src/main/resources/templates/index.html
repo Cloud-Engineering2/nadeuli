@@ -27,8 +27,8 @@
         </div>
     </div>
     <div class="side-panel">
-        <div class="img-wrapper">
-            <img class="home-image" src="/images/home.gif"/>
+        <div class="img-wrapper" style="background-color: transparent;">
+            <img class="home-image" src="/images/home.gif" style="object-fit: contain;"/>
         </div>
         <div class="sub-header">여행 계획부터 결산까지 <strong>나들이</strong>와 함께</div>
         <a th:href="${loggedIn} ? '/itinerary/create' : '/login?redirect=/itinerary/create'" class="plan-button">

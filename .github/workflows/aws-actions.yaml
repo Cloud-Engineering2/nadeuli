@@ -2,12 +2,7 @@
 name: nadeuli With Github Actions - develop
 
 on:
-  push:
-    branches:
-      - main
-  #  paths-ignore:
-  #    - 'manifest/**'
-      
+  push
 jobs:
   ci:
     runs-on: ubuntu-latest
