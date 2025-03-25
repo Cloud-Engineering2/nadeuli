@@ -1315,7 +1315,7 @@ document.getElementById("travelerSendButton").addEventListener("click", function
 
                     const travelerName = document.getElementById("travelerName").value;
                     const travelerBudget = document.getElementById("travelerBudget").value;
-                    if (travelerName) { // 입력값이 모두 있는지 확인
+                    if (travelerName && travelerBudget) { // 입력값이 모두 있는지 확인
                         // if (!travelerList.includes(travelerName)) {
                         // 서버로 전송하는 경우
                         $.ajax({
@@ -1346,7 +1346,7 @@ document.getElementById("travelerSendButton").addEventListener("click", function
                         document.getElementById("travelerBudget").value = 0;
                     } else {
                         // 입력값이 비어 있으면 알림 표시
-                        alert("이름을 입력해주세요.");
+                        alert("여행자의 이름과 예산을 모두 입력해주세요.");
                     }
 
 
