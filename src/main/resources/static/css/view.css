@@ -1053,7 +1053,6 @@
 .traveler-list {
     max-height: 100px; /* 원하는 높이 설정 */
     overflow-y: auto; /* 세로 스크롤 활성화 */
-
 }
 .traveler-name {
     /*border: 1px solid #E9DCBE;*/
