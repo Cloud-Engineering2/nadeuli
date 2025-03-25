@@ -1,7 +1,8 @@
 /************* 🧳 전역 변수 선언 🧳 *************/
 let eventElementForTab = null;
 
-
+let iid;
+let ieid;
 
 
 
@@ -10,21 +11,15 @@ let eventElementForTab = null;
 /* 🎈 정산 탭 클릭했을 때 */
 $(document).on("click", "#adjustmentTab", async function () {
 
-    const itineraryId = eventElementForTab.data("iid");
-    const eventId = eventElementForTab.data("ieid");
-
-
     // 페이지 로드
-    await loadAdjustmentPage(itineraryId, eventId);
+    await loadAdjustmentPage();
 });
 
 /* 🎈 경비 탭 클릭했을 때 */
 $(document).on("click", "#expenditureTab", async function () {
 
-    const itineraryId = eventElementForTab.data("iid");
-    const eventId = eventElementForTab.data("ieid");
 
-    await loadExpensePage(itineraryId, eventId);
+    await loadExpensePage();
 });
 
 
@@ -33,61 +28,92 @@ $(document).on("click", "#expenditureTab", async function () {
 
 //🎈 왼쪽 패널 - +경비 내역 추가 클릭 시 -> 오른쪽 패널에 경비 내역 로드
 $(document).on("click", ".expense-item-list-addition", async function () {
-    const iid = $(this).data("iid");   // itinerary ID 가져오기
-    const ieid = $(this).data("ieid"); // event ID 가져오기
-
+    iid = $(this).data("iid");   // itinerary ID 가져오기
+    ieid = $(this).data("ieid"); // event ID 가져오기
     eventElementForTab = $(this);
-
-    await loadExpensePage(iid, ieid);
+    await loadExpensePage();
+    $(".right-side-map, .right-side-expense").removeClass("notclicked");
+});
+$(document).on("click", ".close-expense", async function () {
+    $(".right-side-map, .right-side-expense").addClass("notclicked");
 });
 
 
-async function loadExpensePage(iid, ieid) {
-    let travelers = [];
+
+async function loadExpensePage() {
     try {
-        // 여행자 정보 가져오기
         const travelersResponse = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
-
-        // API에서 받은 여행자 데이터로 travelers 배열 채우기
-        for (let t of travelersResponse.travelers) {
-            travelers.push(t.name);
-        }
-
-        // 여행자 정보 화면에 업데이트
-        const expenseBasicInfoTraveler = $("#expenseBasicInfoTraveler");
-        expenseBasicInfoTraveler.html(`${travelers.length} 명과 함께하고 있습니다`);
-
-        // 남은 예산 정보 가져오기
         const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
-        const remainedBudget = totalAdjustmentData.totalBalance;
-        const expenseBasicInfoRemainedBudget = $("#expenseBasicInfoRemainedBudget");
-        expenseBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
+        const travelers = travelersResponse.travelers.map(t => t.name);
 
+        $("#expenseBasicInfoRemainedBudget").html(`남은 예산 : ${totalAdjustmentData.totalBalance} 원`);
+
+        // Expense Item 목록 렌더링
+        await getExpenseBookForWritingByItineraryEvent(iid, ieid);
+
+        // 생성 폼 렌더링
+        $("#expenseItemCreation").html(getExpenseItemForm(iid, ieid));
+        await createTravelerOption(iid, "expenseItemCreationWithWhom", "👥 함께한 사람 선택");
+        await createTravelerOption(iid, "expenseItemCreationPayer", "😄지불한 사람");
+
+        // 탭 스타일 업데이트
+        $("#adjustmentTab").css({ "background-color": "#8e8b82", "color": "#e9dcbe" });
+        $("#expenditureTab").css({ "background-color": "#ffffff", "color": "#8e8b82" });
+
+        $("#adjustmentHeaderBackground").hide();
+        $("#expenseHeaderBackground").show();
     } catch (error) {
         console.error("에러 발생:", error);
     }
-
-    // expense-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
-    fetch(`/itinerary/${iid}/events/${ieid}/expense-right`) // fetch("/expense-book/expense-right.html")
-        .then(response => response.text())
-        .then(async html => {
-            $("#detailContainer").html(html);
-            await getExpenseBookForWritingByItineraryEvent(iid, ieid);
-
-            document.getElementById("expenseItemCreation").innerHTML = getExpenseItemForm(iid, ieid);
-            const withWhomOptions = await createTravelerOption(iid, "expenseItemCreationWithWhom", "👥 함께한 사람 선택");
-            const payerOptions = await createTravelerOption(iid, "expenseItemCreationPayer", "😄지불한 사람");
-            // await waitForTagifyToLoad();
-            // createTag(iid);
-
-            // "정산" 탭을 비활성화(css), "경비" 탭을 활성화(css)
-            document.getElementById("adjustmentTab").setAttribute("style", "background-color: #8e8b82; color: #e9dcbe;");
-            document.getElementById("expenditureTab").setAttribute("style", "background-color: #ffffff; color: #8e8b82;");
-        })
-        .catch(error => console.error("Error loading expense-right.html:", error)
-        );
-
 }
+
+
+// async function loadExpensePage(iid, ieid) {
+//     let travelers = [];
+//     try {
+//         // 여행자 정보 가져오기
+//         const travelersResponse = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
+//
+//         // API에서 받은 여행자 데이터로 travelers 배열 채우기
+//         for (let t of travelersResponse.travelers) {
+//             travelers.push(t.name);
+//         }
+//
+//         // 여행자 정보 화면에 업데이트
+//         const expenseBasicInfoTraveler = $("#expenseBasicInfoTraveler");
+//         expenseBasicInfoTraveler.html(`${travelers.length} 명과 함께하고 있습니다`);
+//
+//         // 남은 예산 정보 가져오기
+//         const totalAdjustmentData = await callApiAt(`/api/itineraries/${iid}/adjustment`, "GET", null);
+//         const remainedBudget = totalAdjustmentData.totalBalance;
+//         const expenseBasicInfoRemainedBudget = $("#expenseBasicInfoRemainedBudget");
+//         expenseBasicInfoRemainedBudget.html(`남은 예산 : ${remainedBudget} 원`);
+//
+//     } catch (error) {
+//         console.error("에러 발생:", error);
+//     }
+//
+//     // expense-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
+//     fetch(`/itinerary/${iid}/events/${ieid}/expense-right`) // fetch("/expense-book/expense-right.html")
+//         .then(response => response.text())
+//         .then(async html => {
+//             $("#detailContainer").html(html);
+//             await getExpenseBookForWritingByItineraryEvent(iid, ieid);
+//
+//             document.getElementById("expenseItemCreation").innerHTML = getExpenseItemForm(iid, ieid);
+//             const withWhomOptions = await createTravelerOption(iid, "expenseItemCreationWithWhom", "👥 함께한 사람 선택");
+//             const payerOptions = await createTravelerOption(iid, "expenseItemCreationPayer", "😄지불한 사람");
+//             // await waitForTagifyToLoad();
+//             // createTag(iid);
+//
+//             // "정산" 탭을 비활성화(css), "경비" 탭을 활성화(css)
+//             document.getElementById("adjustmentTab").setAttribute("style", "background-color: #8e8b82; color: #e9dcbe;");
+//             document.getElementById("expenditureTab").setAttribute("style", "background-color: #ffffff; color: #8e8b82;");
+//         })
+//         .catch(error => console.error("Error loading expense-right.html:", error)
+//         );
+//
+// }
 
 // Tagify - tag 생성
 // async function createTag(itineraryId) {
@@ -253,9 +279,6 @@ async function createTravelerOption(itineraryId, selectElement, explainText=null
 $(document).off("click", ".expense-item-addition-button").on("click", ".expense-item-addition-button", async function(event) {
     event.preventDefault(); // 폼 제출 방지
 
-    const iid = $(this).data("iid");   // itinerary ID
-    const ieid = $(this).data("ieid"); // event ID
-
     // Request Data
     const content = $("#expenseItemCreationContent").val() || null;
     const expenditure = $("#expenseItemCreationExpenditure").val();
@@ -301,7 +324,9 @@ $(document).off("click", ".expense-item-addition-button").on("click", ".expense-
         $("#expenseItemCreationForm")[0].reset();
 
         // 🎯 페이지 새로고침 (데이터 반영을 위해)
-        location.reload();
+        await loadExpensePage();
+        window.refreshExpenseSummary();
+
     } catch (error) {
         console.error("🚨 데이터 저장 중 오류 발생:", error);
         alert("지출 항목을 추가하는 중 오류가 발생했습니다.");
@@ -335,21 +360,20 @@ async function addWithWhom(iid, emid, withWhomRequestData) {
 $(document).off("click", ".expense-item-delete-button").on("click", ".expense-item-delete-button", async function(event) {
     event.preventDefault(); // 폼 제출 방지
 
-    const iid = $(this).data("iid");   // itinerary ID
-    const ieid = $(this).data("ieid"); // event ID
     const emid = $(this).data("emid"); // expense item ID
 
     await callApiAt(`/api/itineraries/${iid}/events/${ieid}/expense/${emid}`, "DELETE", null);
 
-    location.reload();
+
+    await loadExpensePage();
+    window.refreshExpenseSummary();
 });
 
 //💡 오른쪽 패널 - 연필 버튼 클릭 시 -> 경비 내역(expense item, with whom) 수정
 $(document).off("click", ".expense-item-edit-button").on("click", ".expense-item-edit-button", async function(event) {
     event.preventDefault(); // 폼 제출 방지
 
-    const iid = $(this).data("iid");   // itinerary ID
-    const ieid = $(this).data("ieid"); // event ID
+
     const emid = $(this).data("emid"); // expense item ID
 
     // 기존 값 가져오기
@@ -411,8 +435,8 @@ $(document).off("click", ".expense-item-edit-button").on("click", ".expense-item
 $(document).off("click", ".expense-item-confirm-button").on("click", ".expense-item-confirm-button", async function(event) {
     event.preventDefault(); // 폼 제출 방지
 
-    const iid = $(this).data("iid");   // itinerary ID
-    const ieid = $(this).data("ieid"); // event ID
+    // const iid = $(this).data("iid");   // itinerary ID
+    // const ieid = $(this).data("ieid"); // event ID
     const emid = $(this).data("emid"); // expense item ID
 
 
@@ -453,11 +477,13 @@ $(document).off("click", ".expense-item-confirm-button").on("click", ".expense-i
         await callApiAt(`/api/itineraries/${iid}/expense/${emid}/withWhom`, "POST", withWhomData);
 
         // 🎯 페이지 새로고침 (데이터 반영을 위해)
-        location.reload();
+        await loadExpensePage();
+        window.refreshExpenseSummary();
     } catch (error) {
         console.error("🚨 데이터 수정 중 오류 발생:", error);
         alert("지출 항목을 수정하는 중 오류가 발생했습니다.");
     }
+
 
 
 });
@@ -498,7 +524,7 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
             expenseItems.map(expenseItem =>
                 `<div class="expense-item-box" id="expenseItemBox-${expenseItem.id}" style="display: flex;">
                     <div class="expense-item-content" id="expenseItemContent">${expenseItem.content}</div>
-                    <div class="expense-item-expenditure" id="expenseItemExpenditure">${expenseItem.expense} 원</div>
+                    <div class="expense-item-expenditure" id="expenseItemExpenditure">${formatKoreanMoney(expenseItem.expense)} 원</div>
                     <div class="expense-item-payer" id="expenseItemPayer">@${expenseItem.travelerDTO.travelerName}</div>
                     <div class="expense-item-with-whom" id="expenseItemWithWhom-${expenseItem.id}"><span class="with-whom" data-emid="${expenseItem.id}">💡 함께한 사람: 로딩 중...</span></div>
                     <button type="button" class="expense-item-edit-button" id="expenseItemEditButton" data-iid="${iid}", data-ieid="${ieid}" data-emid="${expenseItem.id}">
@@ -538,34 +564,59 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
 
 // 🎈왼쪽 패널 - 현재 총 지출액 클릭 : Itinerary Event 별 정산 정보 오른쪽 패널에 로드
 $(document).on("click", ".event-total-expense", async function () {
-    const iid = $(this).data("iid");   // itinerary ID 가져오기
-    const ieid = $(this).data("ieid"); // event ID 가져오기
+    iid = $(this).data("iid");   // itinerary ID 가져오기
+    ieid = $(this).data("ieid"); // event ID 가져오기
     eventElementForTab = $(this);
-
+    $(".right-side-map, .right-side-expense").removeClass("notclicked");
     await loadAdjustmentPage(iid, ieid);
 });
 
-async function loadAdjustmentPage(itineraryId, itineraryEventId) {
-    // adjustment-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
-    fetch(`/itinerary/${itineraryId}/events/${itineraryEventId}/adjustment-right`)
-        .then(response => {
-            // response.text()
-            if (!response.ok) throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
-            return response.text();
-        })
-        .then(html => {
-            $("#detailContainer").html(html);
-            // "정산" 탭을 활성화(css), "경비" 탭을 비활성화(css)
-            document.getElementById("adjustmentTab").setAttribute("style", "background-color: #ffffff; color: #8e8b82;");
-            document.getElementById("expenditureTab").setAttribute("style", "background-color: #8e8b82; color: #e9dcbe;");
-            if ($("#itineraryEventAdjustmentInfo").length === 0) {
-                console.error("❌ itineraryEventAdjustmentInfo 요소를 찾을 수 없습니다.");
-                return;
-            }
-            getAdjustmentByItineraryEvent(itineraryId, itineraryEventId);
-        })
-        .catch(error => console.error("Error loading adjustment-right.html:", error));
+async function loadAdjustmentPage() {
+    try {
+        // 탭 스타일 업데이트
+        document.getElementById("adjustmentTab").style = "background-color: #ffffff; color: #8e8b82;";
+        document.getElementById("expenditureTab").style = "background-color: #8e8b82; color: #e9dcbe;";
+
+        const adjustmentInfo = document.getElementById("itineraryEventAdjustmentInfo");
+        if (!adjustmentInfo) {
+            console.error("❌ itineraryEventAdjustmentInfo 요소를 찾을 수 없습니다.");
+            return;
+        }
+
+        // 데이터 바인딩 함수 호출
+        await getAdjustmentByItineraryEvent(itineraryId, ieid);
+
+        // 필요한 경우 display 설정
+        document.getElementById("adjustmentHeaderBackground").style.display = "block";
+        document.getElementById("expenseHeaderBackground").style.display = "none";
+    } catch (error) {
+        console.error("🚨 loadAdjustmentPage 에러:", error);
+    }
 }
+
+
+// async function loadAdjustmentPage(itineraryId, itineraryEventId) {
+//     // adjustment-right.html을 오른쪽 화면`#detailContainer` 영역에 로드
+//     fetch(`/itinerary/${itineraryId}/events/${itineraryEventId}/adjustment-right`)
+//         .then(response => {
+//             // response.text()
+//             if (!response.ok) throw new Error(`HTTP 오류! 상태 코드: ${response.status}`);
+//             return response.text();
+//         })
+//         .then(html => {
+//             $("#detailContainer").html(html);
+//             // "정산" 탭을 활성화(css), "경비" 탭을 비활성화(css)
+//             document.getElementById("adjustmentTab").setAttribute("style", "background-color: #ffffff; color: #8e8b82;");
+//             document.getElementById("expenditureTab").setAttribute("style", "background-color: #8e8b82; color: #e9dcbe;");
+//             if ($("#itineraryEventAdjustmentInfo").length === 0) {
+//                 console.error("❌ itineraryEventAdjustmentInfo 요소를 찾을 수 없습니다.");
+//                 return;
+//             }
+//             getAdjustmentByItineraryEvent(itineraryId, itineraryEventId);
+//         })
+//         .catch(error => console.error("Error loading adjustment-right.html:", error));
+// }
+
 
 
 // 💡 itinerary Event 별 정산 정보 조회
@@ -599,19 +650,21 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
         const placeName = placeData.placeDTO.placeName;
 
 
+        console.log(travelerData);
+        console.log(numberOfTravelers);
         // 장소
         adjustmentBasicInfoPlace.html(`현재 위치 : ${placeName}`);
         // 지출 렌더링
             // 함께하는 traveler
         adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
             // 총 지출
-        let totalExpenditureDetails = `<p class="total-expenditure-money-align"><span class="total-expenditure-money-label">총 지출</span>    <span class="total-expenditure-money">${totalExpense} 원</span></p>`;
+        let totalExpenditureDetails = `<p class="total-expenditure-money-align"><span class="total-expenditure-money-label">총지출</span>    <span class="total-expenditure-money">${formatKoreanMoney(totalExpense)} 원</span></p>`;
         totalExpenditure.html(totalExpenditureDetails);
 
             // 개인 지출
         let individualExpenditureDetails = "";
         for (const [name, expense] of Object.entries(eachExpenses)) {
-            individualExpenditureDetails += `<p class="individual-expenditure"><span class="individual-expenditure-label">@${name}</span><br><!--<span class="individual-expenditure-label">지출</span>--> <span class="total-expenditure-money">${expense.toLocaleString()} 원</span></p>`;
+            individualExpenditureDetails += `<p class="individual-expenditure"><span class="individual-expenditure-label">@${name}</span><br><!--<span class="individual-expenditure-label">지출</span>--> <span class="total-expenditure-money">${formatKoreanMoney(expense)} 원</span></p>`;
         }
         individualExpenditureList.html(individualExpenditureDetails);
 
@@ -626,7 +679,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
                 .map(([from, amount], index) => `
                     <div class="adjustment-received-row">
                         ${index === 0 ? '<div class="adjustment-received-label">수금</div>' : '<div class="adjustment-received-label"></div>'} <!-- 첫 번째만 "수금" 표시 -->
-                        <div class="adjustment-received"><span class="adjustment-received-from">@${from}</span> <span class="adjustment-received-amount">${amount.toLocaleString()} 원</span></div>
+                        <div class="adjustment-received"><span class="adjustment-received-from">@${from}</span> <span class="adjustment-received-amount">${formatKoreanMoney(amount.toLocaleString())} 원</span></div>
                     </div>
         `)
         .join("") || `
@@ -642,7 +695,7 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
             .map(([to, amount], index) => `
                     <div class="adjustment-send-row">
                         ${index === 0 ? '<div class="adjustment-send-label">송금</div>' : '<div class="adjustment-send-label"></div>'} <!-- 첫 번째만 "송금" 표시 -->
-                        <div class="adjustment-send"><span class="adjustment-send-to">@${to}</span> <span class="adjustment-send-amount">${amount.toLocaleString()} 원</span></div>
+                        <div class="adjustment-send"><span class="adjustment-send-to">@${to}</span> <span class="adjustment-send-amount">${formatKoreanMoney(amount.toLocaleString())} 원</span></div>
                     </div>
                     `)
                 .join("") || `
@@ -698,4 +751,17 @@ async function callApiAt(url, method, requestData) {
         console.error("에러 발생:", error);
         throw error;
     }
+}
+
+
+
+// 원화 단위(,)
+// let moneyFormat = formatKoreanMoney(partialSettlement.totalExpense);
+function formatKoreanMoney(value) {
+    // 숫자를 문자열로 변환
+    const stringValue = String(value);
+    console.log("formatKoreanMoney", stringValue);
+
+    // 정규식을 사용하여 4자리 단위로 나눔
+    return stringValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }

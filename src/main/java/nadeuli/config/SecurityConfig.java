@@ -14,6 +14,7 @@
  * 이홍비     2025.03.24    .requestMatchers("/actuator/**").permitAll()로 변경
  *                         .requestMatchers("/actuator/**").hasAnyAuthority("ACTUATOR_ADMIN") 으로 변경
  *                         permitAll() 로 다시 변경
+ * 이홍비     2025.03.25    myPage 지우기
  * ========================================================
  */
 
@@ -58,7 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/auth/unlink/**").permitAll()
                         .requestMatchers("/auth/refresh", "/auth/refresh/**").permitAll()
                         .requestMatchers("/join/**").permitAll()
-                        .requestMatchers("/login", "/mypage").permitAll()
+                        .requestMatchers("/login").permitAll()
 //                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/share/join").permitAll()
                         .requestMatchers("/api/place/register").permitAll()
