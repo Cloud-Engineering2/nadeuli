@@ -45,7 +45,7 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/region")
     public String loadRegionPage(Model model) {
-        model.addAttribute("adminContent", "/admin/admin-region"); // 오른쪽 패널 변경
+        model.addAttribute("adminContent", "admin/admin-region"); // 오른쪽 패널 변경
         model.addAttribute("adminScript", "/js/admin-region.js");  // JS 추가
         model.addAttribute("adminStyle", "/css/admin-region.css"); // 동적 CSS 추가
         model.addAttribute("googleApiKey", googleMapsApiKey); //
