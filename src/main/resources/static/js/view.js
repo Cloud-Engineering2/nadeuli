@@ -1194,7 +1194,7 @@ document.getElementById("travelerSendButton").addEventListener("click", function
             contentType: "application/json",
             data: JSON.stringify({
                 travelerName: travelerName,
-                // totalBudget: travelerBudget // 예산 값 설정
+                totalBudget: 0 // 예산 값 설정
             }),
             success: function (response) {
                 console.log("여행자 추가 성공:", response);
@@ -1294,22 +1294,36 @@ $(document).off("click", ".traveler-confirm-button").on("click", ".traveler-conf
 
 // 여행자 목록을 모달에 로드하는 함수
 function loadTravelerList() {
+    let user = null;
+    let userId = null;
+    let userEmail = null;
 
-    $.ajax({
-        url: `/api/itinerary/${itineraryId}/travelers`,
+    $.ajax({  // user 조회
+        url: `/api/itinerary/${itineraryId}/user/owner`,
         method: "GET",
         dataType: "json",
-        success: function(response) {
-            const travelerList = document.getElementById("travelerList");
-            travelerList.innerHTML = ""; // 기존 리스트 초기화
-            travelerMap.clear(); // 기존 travelerMap도 초기화
+        success: function (userInfo) {
+            user = userInfo.userName;
+            userId = userInfo.id
+            userEmail = userInfo.userEmail;
 
-            // 여행자 배열을 순회하여 HTML 요소로 추가
-            travelerList.innerHTML =
-                response.travelers.map(traveler => {
-                    const isDeletable = !(traveler.consumer || traveler.payer); // 삭제 가능 여부
-                    travelerMap.set(traveler.id, traveler);
-                return `
+            $.ajax({
+                url: `/api/itinerary/${itineraryId}/travelers`,
+                method: "GET",
+                dataType: "json",
+                success: function(response) {
+                    const travelerList = document.getElementById("travelerList");
+                    travelerList.innerHTML = ""; // 기존 리스트 초기화
+                    travelerMap.clear(); // 기존 travelerMap도 초기화
+
+                    // 여행자 배열을 순회하여 HTML 요소로 추가
+                    travelerList.innerHTML =
+                        response.travelers.map(traveler => {
+                            const isDeletable = !(traveler.consumer || traveler.payer); // 삭제 가능 여부
+                            const hideDeleteButton = traveler.name === user ? "display: none;" : ""; // ❗ user와 traveler.name이 같으면 숨김
+
+                            travelerMap.set(traveler.id, traveler);
+                            return `
                 <div class="traveler-box" id="travelerBox" style="display: flex; align-items: center;">
                     <div class="traveler-name-wrap">
                         <div class="traveler-name">${traveler.name}</div>
@@ -1334,20 +1348,29 @@ function loadTravelerList() {
         
                     <button type="button" class="traveler-delete-button ${isDeletable ? "" : "disabled"}"
                             
-                            data-iid="${itineraryId}" data-tid="${traveler.id}" data-tname="${traveler.name}">
+                            data-iid="${itineraryId}" data-tid="${traveler.id}" data-tname="${traveler.name}" style="${hideDeleteButton}">
                             <i class="fa fa-trash traveler-delete-icon"></i>
                         </button>
                 </div>
                 `;
                         }).join("");
 
+                },
+                error: function(error) {
+                    console.error("여행자 목록 조회 실패:", error);
+                }
+            });
         },
         error: function(error) {
-            console.error("여행자 목록 조회 실패:", error);
+            console.log(error);
         }
     });
 }
 
+
+$(document).on("click", ".traveler-close", function() {
+    location.reload();
+});
 
 $(document).on("click", ".toggle-map-button", function () {
     const $mapPanel = $(".right-side-map");
