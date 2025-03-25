@@ -47,9 +47,10 @@ public class TravelerController {
     public ResponseEntity<Void> registerTraveler(@RequestBody @Valid TravelerRequestDTO travelerRequestDTO,
                                                 @PathVariable("iid") Integer iid) {
         Long itineraryId = Long.valueOf(iid);
-
+        String budgetLetter = travelerRequestDTO.getTotalBudget();
+        Long budget = Long.valueOf(budgetLetter);
         String travelerName = travelerRequestDTO.getTravelerName();
-        Long budget = travelerRequestDTO.getTotalBudget();
+
         TravelerDTO travelerDto = TravelerDTO.of(itineraryId, travelerName, budget);
         travelerService.addTraveler(travelerDto);
         return ResponseEntity.ok().build();

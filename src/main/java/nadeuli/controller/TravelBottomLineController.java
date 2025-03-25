@@ -12,6 +12,7 @@
  * ========================================================
  * 이홍비    2025.03.20     최초 작성 : Controller 와 RestController 분리
  *                         로그인 인증 관련 처리
+ * 이홍비    2025.03.25     방문지 o, x 관련 제약
  * ========================================================
  */
 
@@ -50,7 +51,12 @@ public class TravelBottomLineController {
         System.out.println("📌 최종 결과물 - 페이지 이동 : " + itineraryTotalReadResponseDTO.getItineraryPerDays());
         System.out.println("📌 최종 결과물 - 페이지 이동 : " + itineraryTotalReadResponseDTO.getItineraryEvents());
 
-
-        return "itinerary/bottomline";
+        if (itineraryTotalReadResponseDTO.getItineraryEvents().isEmpty())
+        {
+            return "itinerary/bottomline-noEvent";
+        }
+        else {
+            return "itinerary/bottomline";
+        }
     }
 }

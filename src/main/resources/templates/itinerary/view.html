@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>일정 드래그 앤 드롭</title>
+    <title th:text="${itineraryName}">여행 일정</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-date-range-picker/dist/daterangepicker.min.css">
 
@@ -161,8 +161,7 @@
 <!--                            <label for="travelerName">이름</label>-->
                             <div class="traveler-input-form">
                                 <input type="text" id="travelerName" placeholder="여행자 이름">
-                                <!--                            <label for="travelerBudget">예산</label>-->
-                                <!--                            <input type="number" id="travelerBudget" placeholder="예산 입력">-->
+                                <input type="number" id="travelerBudget" placeholder="예산 입력">
                                 <button id="travelerSendButton" class="traveler-send-button">추가</button>
                             </div>
 

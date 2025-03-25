@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/header-footer.css">
+  <link rel="stylesheet" href="/css/bottomline-noEvent.css">
+  <title>일정 - 최종 결과물 열람</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+<div th:replace="~{fragments/header}"></div>
+
+
+<div class="container">
+  <!-- 왼쪽 공간 -->
+  <div class="left-space">
+    <a href="/" class="logo-link">
+      <img src="/images/pic-icon/logo-letter-o.png" alt="나들이" class="logo">
+    </a>
+  </div>
+
+  <!-- 오른쪽 공간 -->
+  <div class="right-space">
+    <p class="message">등록된 방문지가 없습니다.</p>
+    <a href="/itinerary/mylist" class="return-link">내 일정으로 돌아가기</a>
+  </div>
+</div>
+
+<div class="footer-div mt-4 flex flex-col space-y-0.5 text-xs text-gray-500 md:mt-1 md:flex-row md:space-x-2 md:space-y-0 lg:mt-1">
+  <span>© 2025 나들이 & 멋쟁이사자처럼 All rights reserved.</span>
+</div>
+</body>

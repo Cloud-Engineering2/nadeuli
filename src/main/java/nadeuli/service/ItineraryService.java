@@ -394,4 +394,11 @@ public class ItineraryService {
         itineraryRepository.delete(itinerary);
     }
 
+    public ItineraryDTO getItinerary(Long itineraryId) {
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("일정을 찾을 수 없습니다. ID: " + itineraryId));
+        ItineraryDTO itineraryDto = ItineraryDTO.from(itinerary);
+
+        return itineraryDto;
+    }
 }

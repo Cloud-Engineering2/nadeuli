@@ -28,7 +28,7 @@ public class TravelerRequestDTO {
     private String travelerName;
 
     @NotNull
-    private Long totalBudget;
+    private String totalBudget;
 }
 
 
