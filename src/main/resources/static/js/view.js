@@ -184,55 +184,104 @@ function renderItinerary() {
     updateTabs();
 }
 
-
 function renderTotalBudgetExpenseSummary() {
     const $wrap = $('.total-budget-expense-wrap');
     $wrap.empty();
 
+    // 예산 출력
+    const budgetHtml = `
+<!--        <div class="total-budget">예산: ${totalBudget.toLocaleString()} 원</div>-->
+        <label for="total-budget-label">예산 : </label>
+        <input type="text" class="total-budget" id="totalBudget" name="name" placeholder="(원)">
+        <button type="button" class="budget-confirm-button" id="budgetConfirmButton">
+            <i class="fa-solid fa-check budget-confirm-icon"></i> <!-- 체크 아이콘 -->
+        </button>
+    `;
+
+    // 지출/수익 계산
+    let expenseHtml = '';
+    if (totalExpense === 0) {
+        expenseHtml = `<div class="total-expense">지출: 0 원</div>`;
+    } else {
+        const isProfit = totalExpense < 0;
+        const displayAmount = isProfit ? `+ ${Math.abs(totalExpense).toLocaleString()}` : `- ${totalExpense.toLocaleString()}`;
+        const colorClass = isProfit ? "profit-expense" : "cost-expense";
+
+        expenseHtml = `<div class="total-expense ${colorClass}">지출: ${displayAmount} 원</div>`;
+    }
+
+    $wrap.append(budgetHtml);
+    $wrap.append(expenseHtml);
+
+    // let pathSegments = window.location.pathname.split("/");
+    // let iid = pathSegments[pathSegments.length - 1]; // 마지막 값이 ID
+
+    // 지출 / 수익 계산
+    // $.ajax({
+    //     url: `/api/itineraries/${iid}/adjustment` ,
+    //     method: "GET",
+    //     dataType: "json",
+    //     success: function (response) {
+    //         const displayTotalBudget = response.expenseBookDTO.totalBudget;
+    //         const displayTotalExpense = response.expenseBookDTO.totalExpenses;
+    //
+    //         // 지출/수익 계산
+    //         let expenseHtml = '';
+    //         // if (totalExpense === 0) {
+    //         //     expenseHtml = `<div class="total-expense">지출: 0 원</div>`;
+    //         // } else {
+    //         //     const isProfit = totalExpense < 0;
+    //             const isProfit = displayTotalExpense < 0;
+    //             const displayAmount = isProfit ? `+ ${Math.abs(displayTotalExpense).toLocaleString()}` : `- ${displayTotalExpense.toLocaleString()}`;
+    //             const colorClass = isProfit ? "profit-expense" : "cost-expense";
+    //
+    //             expenseHtml = `<div class="total-expense ${colorClass}">지출: ${displayAmount} 원</div>`;
+    //         // }
+    //
+    //         $wrap.append(budgetHtml);
+    //         $wrap.append(expenseHtml);
+    //     },
+    //     error: function (xhr, status, error) {
+    //         console.error("Error refreshing expense summary:", error);
+    //         console.log("🔥 서버 응답:", xhr.responseText); // 응답 내용을 확인!
+    //     }
+    // });
+
+}
+
+
+// 예산 입력 Enter 이벤트
+$(document).on("click", ".budget-confirm-button", function() {
+    // 여행 ID 가져오기
     let pathSegments = window.location.pathname.split("/");
-    let iid = pathSegments[pathSegments.length - 1]; // 마지막 값이 ID
-    console.log("여기 itinerary Id 출력");
-    console.log(iid); // '12'가 출력되어야 합니다.
+    let iid = pathSegments[pathSegments.length - 1];
 
-
+    const budgetInput = document.getElementById("totalBudget");
+    const budget = budgetInput.value.trim();
 
     $.ajax({
-        url: `/api/itineraries/${iid}/adjustment` ,
-        method: "GET",
-        dataType: "json",
+        url: `/api/itineraries/${iid}/expense`,
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            totalBudget: budget // 예산 값 설정
+        }),
         success: function (response) {
-            const displayTotalBudget = response.expenseBookDTO.totalBudget;
-            const displayTotalExpense = response.expenseBookDTO.totalExpenses;
-            console.log("여기 response");
+            console.log("여기부터 $$$$$$$$$$$$$$$$$$$$$$$$");
             console.log(response);
 
-            // 예산 출력
-            const budgetHtml = `
-                                        <div class="total-budget">예산: ${displayTotalBudget.toLocaleString()} 원</div>
-                                    `;
-            // 지출/수익 계산
-            let expenseHtml = '';
-            // if (totalExpense === 0) {
-            //     expenseHtml = `<div class="total-expense">지출: 0 원</div>`;
-            // } else {
-            //     const isProfit = totalExpense < 0;
-                const isProfit = displayTotalExpense < 0;
-                const displayAmount = isProfit ? `+ ${Math.abs(displayTotalExpense).toLocaleString()}` : `- ${displayTotalExpense.toLocaleString()}`;
-                const colorClass = isProfit ? "profit-expense" : "cost-expense";
-
-                expenseHtml = `<div class="total-expense ${colorClass}">지출: ${displayAmount} 원</div>`;
-            // }
-
-            $wrap.append(budgetHtml);
-            $wrap.append(expenseHtml);
+            const div = document.createElement("div");
+            div.textContent = budget + " 원";
+            budgetInput.replaceWith(div);
+            document.getElementById("budgetConfirmButton").style.display = "none";
         },
-        error: function (xhr, status, error) {
-            console.error("Error refreshing expense summary:", error);
-            console.log("🔥 서버 응답:", xhr.responseText); // 응답 내용을 확인!
+        error: function (status, error) {
+            console.log(error);
         }
     });
 
-}
+});
+
 
 // 이벤트 요소 생성 함수 (장소 보관함 & 일반 이벤트 공통 사용)
 function createEventElement(event, index = null, totalEvents = null, isSavedPlace = false) {
@@ -1085,7 +1134,6 @@ $(document).on("click", ".traveler-addition-button", function() {
         method: "GET",
         dataType: "json",
         success: function(response) {
-            console.log(response);
 
             if (response.length === 0) {
                 // 여행자 삭제 버튼 숨기기
@@ -1110,7 +1158,6 @@ document.getElementById("travelerSendButton").addEventListener("click", function
     let user = null;
     let travelerList = null;
 
-    console.log("Itinerary ID:", iid);
     $.ajax({
         url: `/api/itinerary/${iid}/user/owner`,
         method: "GET",
@@ -1144,7 +1191,6 @@ document.getElementById("travelerSendButton").addEventListener("click", function
 
                     const travelerName = document.getElementById("travelerName").value;
                     if (travelerName) { // 입력값이 모두 있는지 확인
-                        console.log("여행자 이름:", travelerName);
                         // if (!travelerList.includes(travelerName)) {
                         // 서버로 전송하는 경우
                         $.ajax({

@@ -218,6 +218,19 @@ public class ExpenseBookService {
 
     }
 
+    public ExpenseBookDTO updateBudget(Long itineraryId, Long budget) {
+        // Itinerary 조회
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Itinerary가 존재하지 않습니다."));
+
+        ExpenseBook expenseBook = expenseBookRepository.findByIid(itinerary)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ExpenseBook이 존재하지 않습니다."));
+        expenseBook.updateBudget(budget);
+        ExpenseBookDTO responseDto = ExpenseBookDTO.from(expenseBook);
+        return responseDto;
+
+    }
+
 
 
     // ExpenseBookDTO 반환

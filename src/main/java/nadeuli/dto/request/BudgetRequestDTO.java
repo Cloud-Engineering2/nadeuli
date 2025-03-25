@@ -14,7 +14,7 @@
 
 package nadeuli.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 
@@ -23,8 +23,8 @@ import lombok.*;
 @Getter
 @Builder
 public class BudgetRequestDTO {
-    @NotNull()
-    private Long totalBudget;
+    @NotBlank()
+    private String totalBudget;
 }
 
 

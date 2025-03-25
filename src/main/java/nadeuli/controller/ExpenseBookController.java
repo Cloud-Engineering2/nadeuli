@@ -17,18 +17,17 @@
 
 package nadeuli.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nadeuli.dto.ExpenseBookDTO;
 import nadeuli.dto.ExpenseItemDTO;
+import nadeuli.dto.request.BudgetRequestDTO;
 import nadeuli.dto.response.AdjustmentResponseDTO;
 import nadeuli.dto.response.EventExpenseSummaryTotalResponseDTO;
 import nadeuli.dto.response.FinanceResponseDTO;
 import nadeuli.service.ExpenseBookService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -93,5 +92,12 @@ public class ExpenseBookController {
         return ResponseEntity.ok(expenseItemDtos);
     }
 
-
+    // ExpenseBook 예산 설정
+    @PostMapping("/{iid}/expense")
+    public ResponseEntity<ExpenseBookDTO> setBudget(@PathVariable("iid") Integer iid, @RequestBody @Valid BudgetRequestDTO budgetRequestDto) {
+        Long itineraryId = Long.valueOf(iid);
+        Long budget = Long.valueOf(budgetRequestDto.getTotalBudget());
+        ExpenseBookDTO expenseBookDto = expenseBookService.updateBudget(itineraryId, budget);
+        return ResponseEntity.ok(expenseBookDto);
+    }
 }

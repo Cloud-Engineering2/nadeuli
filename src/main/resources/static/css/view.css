@@ -895,18 +895,48 @@
 }
 
 .total-budget{
-    margin-top: 5px;
-    margin-right: 5px;
+    /*margin-top: 5px;*/
+    margin-right: 10px;
     font-size: 0.90em;
-    color: #000000;
+    color: #8E8B82;
     font-weight: bold;
     cursor: pointer;
+    background-color: #ffffff;
+    width: 100px;
+    border: 1px solid #8E8B82;
+    border-radius: 5px;
+}
+.total-budget-label {
+    margin-right: 10px;
 }
 
 .total-budget-expense-wrap{
     display:flex;
     margin-left: 10px;
 
+}
+
+.total-expense {
+    margin-left: 20px;
+}
+
+
+.budget-confirm-button {
+    display: flex;
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    border-radius: 10px; /* 둥근 모서리 */
+    background-color: #E9DCBE;
+    width: 35px;
+    height: 35px;
+    border-color: #ffffff;
+}
+
+.budget-confirm-icon {
+    color: white; /* 아이콘 색상 */
+    font-size: 15px; /* 아이콘 크기 */
+    padding: 10px 15px; /* 패딩 */
+    border-radius: 5px; /* 아이콘 둥근 모서리 */
 }
 
 
