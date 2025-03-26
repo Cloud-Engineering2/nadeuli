@@ -10,7 +10,7 @@
 }
 /* 왼쪽 패널 */
 #sidebar {
-    background: #E9DCBE; /* 기존 배경을 Beige 계열로 변경 */
+    background: #e9e9e9; /* 기존 배경을 Beige 계열로 변경 */
     color: #343434; /* 텍스트를 Black 계열로 변경하여 가독성 향상 */
     flex-grow: 1;
     min-width: 500px;
@@ -128,7 +128,7 @@
     display: flex;
     justify-content: space-between; /* 좌우 정렬 */
     align-items: center; /* 세로 중앙 정렬 */
-    background-color: #efe9db;
+    background-color: #fbfbfb;
     /*background: linear-gradient(88deg, #d5d3cf, #ffffff00); !* White와 Beige 그라디언트 적용 *!*/
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     width: 100%;
@@ -183,7 +183,7 @@
 }
 
 .navigate-edit-button:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.03);
 }
 
 .toggle-map-button{
@@ -740,7 +740,8 @@
 }
 
 .right-side-wrap{
-    width: 100%;         /* 사이드 지도 너비 */
+    /*width: 100%;         !* 사이드 지도 너비 *!*/
+    width: calc(100vw - 500px);
     height: calc(100vh - 50px);        /* 전체 화면 높이 */
     border-left: 1px solid #ddd;
     display: flex;
@@ -749,24 +750,42 @@
     flex-direction: column;
 }
 
+.right-side-expense {
+    transition: height 0.3s ease;
+}
+
 .right-side-map {
     width:100%;
     height:34%;
     background-color: #fff;
+    transition: height 0.3s ease;
 }
+
+.right-side-map.small{
+    height:66%;
+}
+
 
 .right-side-map.notclicked  {
     height:100%;
 }
 
+.right-side-map.no-transition {
+    transition: none !important;
+}
+
 .right-side-expense{
     width:100%;
+    font-size: 0.95em;
     height:66%;
     background-color: #ffffff;
     display:block;
 }
-
+.right-side-expense.small{
+    height:44%;
+}
 .right-side-expense.notclicked{
+    height:34%;
     display:none;
 }
 
@@ -872,6 +891,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    margin-left: 4px;
     margin-top: 5px;
     margin-bottom: 15px;
     /* gap: 10px; 버튼 사이 간격 */
@@ -1023,14 +1043,19 @@
 }
 
 .traveler-addition-button {
-    background-color: #efe9d8;
+    background-color: #fbfbfb;
     border: none;
     padding: 0;
+    border-radius: 5px;
     margin-right: 10px;
     scrollbar-color: #efe9d8 #efe9d8;
     width: 30px;
     height: 30px;
 }
+.traveler-addition-button:hover{
+    background: rgb(0 0 0 / 3%);
+}
+
 .fa-person-walking-luggage::before {
     font-size: 25px;
 }
@@ -1093,7 +1118,7 @@
 
 .traveler-delete-button.disabled {
     color: #a3a3a3; /* 아이콘 색상 */
-    cursor: none;
+    cursor: default;
 }
 
 .traveler-delete-icon {
@@ -1233,6 +1258,7 @@
     gap: 8px;
     font-weight: bold;
     cursor: pointer;
+    align-items: flex-end;
 }
 .adjustment-expense-tab-container .adjustment-tab,
 .adjustment-expense-tab-container .expenditure-tab {
@@ -1250,12 +1276,31 @@
 
 .close-expense
 {
+    height: 35px;
+    color: #656461;
     user-select: none;
     display: flex;
-    background: #ffffff7a;
+    background: #fdfdfd;
     font-size: 15px;
-    padding: 6px 12px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    box-shadow: 0 0 3px 0px rgb(0 0 0 / 18%);
+    padding: 3px 15px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    /* border-top-right-radius: 6px; */
+    align-items: center;
+}
+
+.resize-expense{
+    height: 35px;
+    color: #656461;
+    user-select: none;
+    display: flex;
+    background: #fdfdfd;
+    font-size: 15px;
+    box-shadow: 0 0 3px 0px rgb(0 0 0 / 18%);
+    padding: 3px 15px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    /* border-top-right-radius: 6px; */
     align-items: center;
 }
