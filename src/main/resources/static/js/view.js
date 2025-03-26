@@ -219,7 +219,7 @@ function renderTotalBudgetExpenseSummary() {
         const displayAmount = isProfit ? `+ ${Math.abs(totalExpense).toLocaleString()}` : `- ${totalExpense.toLocaleString()}`;
         const colorClass = isProfit ? "profit-expense" : "cost-expense";
 
-        expenseHtml = `<div class="total-expense ${colorClass}">지출 : ${displayAmount} 원</div>`;
+        expenseHtml = `<div class="total-expense">지출 : ${displayAmount} 원</div>`;
     }
 
     $wrap.append(budgetHtml);
@@ -1588,6 +1588,7 @@ $(document).off("click", ".traveler-budget-confirm-button").on("click", ".travel
             budgetWrap.find(".traveler-budget-edit-button").show();
             budgetWrap.find(".traveler-budget-confirm-button").hide();
             loadTravelerList();
+            refreshExpenseSummary();
             // 예산 텍스트 혹시 동기화 필요 시 여기에 적용 가능
             // 예: budgetWrap.find(".traveler-budget-display").text(newBudget.toLocaleString());
         },
