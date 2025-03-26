@@ -4,7 +4,7 @@ let eventElementForTab = null;
 let iid;
 let ieid;
 
-
+let isSectionSmall = false;
 
 /************** 🧳 경비 & 정산 안내 탭 🧳 **************/
 
@@ -34,10 +34,36 @@ $(document).on("click", ".expense-item-list-addition", async function () {
     await loadExpensePage();
     $(".right-side-map, .right-side-expense").removeClass("notclicked");
 });
+
+
 $(document).on("click", ".close-expense", async function () {
-    $(".right-side-map, .right-side-expense").addClass("notclicked");
+    const mapEl = document.querySelector('.right-side-map');
+
+// 트랜지션 없이 notclicked 추가
+    mapEl.classList.add('no-transition');
+    mapEl.classList.add('notclicked');
+
+// 강제로 리플로우 → 다시 트랜지션 활성화
+// (안하면 브라우저가 최적화해버려 transition 없앰)
+    void mapEl.offsetHeight;
+
+    mapEl.classList.remove('no-transition');
+
+    $(".right-side-expense").addClass("notclicked");
+
 });
 
+$(document).on("click", ".resize-expense", async function () {
+    if (!isSectionSmall) {
+        $(".right-side-expense, .right-side-map").addClass("small");
+        $(".resize-expense").text("확 대"); // 텍스트 바꿈
+        isSectionSmall = true;
+    } else {
+        $(".right-side-map, .right-side-expense").removeClass("small");
+        $(".resize-expense").text("축 소"); // 텍스트 바꿈
+        isSectionSmall = false;
+    }
+});
 
 
 async function loadExpensePage() {
@@ -60,8 +86,8 @@ async function loadExpensePage() {
         $("#adjustmentTab").css({ "background-color": "#8e8b82", "color": "#e9dcbe" });
         $("#expenditureTab").css({ "background-color": "#ffffff", "color": "#8e8b82" });
 
-        $("#adjustmentHeaderBackground").hide();
-        $("#expenseHeaderBackground").show();
+        $("#adjustment-header-background-wrap").hide();
+        $("#expense-header-background-wrap").show();
     } catch (error) {
         console.error("에러 발생:", error);
     }
@@ -444,7 +470,9 @@ $(document).off("click", ".expense-item-confirm-button").on("click", ".expense-i
     const expenseItemBox = document.getElementById(`expenseItemBox-${emid}`);
 
     const content = expenseItemBox.querySelector(".expense-item-content").textContent.trim();
-    const expenditure = parseInt(expenseItemBox.querySelector(".expense-item-expenditure").textContent.trim());
+    const expenditureText = expenseItemBox.querySelector(".expense-item-expenditure").textContent.trim();
+    const expenditure = parseInt(expenditureText.replace(/,/g, ''));
+    console.log("금액 디버깅", expenditure )
     const payer = expenseItemBox.querySelector(".expense-item-payer-replace").value;
     const withWhomSelect = expenseItemBox.querySelector(".expense-item-with-whom-replace");
     const withWhomList = [...withWhomSelect.selectedOptions].map(option => option.value);
@@ -498,19 +526,19 @@ async function getExpenseBookForWritingByItineraryEvent(iid, ieid) {
         const travelerData = await callApiAt(`/api/itinerary/${iid}/travelers`, "GET", null);
         const placeData = await callApiAt(`/api/itinerary/${iid}/events/${ieid}`, "GET", null);
 
-        const adjustmentBasicInfoPlace = $("#adjustmentBasicInfoPlace");
-        const adjustmentBasicInfoTraveler = $("#adjustmentBasicInfoTraveler");
+        const parent = $(".itinerary-event-expense-item-info");
+
+        const adjustmentBasicInfoPlace = parent.find("#adjustmentBasicInfoPlace");
+        const adjustmentBasicInfoTraveler = parent.find("#adjustmentBasicInfoTraveler");
             // 값 가져오기
         // 남은 예산
         const remainedBudget = totalAdjustmentData.totalBalance;
-        // 함께하는 traveler
         const numberOfTravelers = travelerData.numberOfTravelers;
         const placeName = placeData.placeDTO.placeName;
 
             // 렌더링
         // 장소
         adjustmentBasicInfoPlace.html(`현재 위치 : ${placeName}`);
-        // 함께하는 traveler
         adjustmentBasicInfoTraveler.html(`${numberOfTravelers} 명과 함께하고 있습니다`);
 
         const expenseItemList = $("#expenseItemList");
@@ -587,8 +615,8 @@ async function loadAdjustmentPage() {
         await getAdjustmentByItineraryEvent(itineraryId, ieid);
 
         // 필요한 경우 display 설정
-        document.getElementById("adjustmentHeaderBackground").style.display = "block";
-        document.getElementById("expenseHeaderBackground").style.display = "none";
+        document.getElementById("adjustment-header-background-wrap").style.display = "block";
+        document.getElementById("expense-header-background-wrap").style.display = "none";
     } catch (error) {
         console.error("🚨 loadAdjustmentPage 에러:", error);
     }
@@ -632,8 +660,10 @@ async function getAdjustmentByItineraryEvent(iid, ieid) {
         const totalExpenditure = $("#totalExpenditure");
         const adjustmentInfo = $("#itineraryEventAdjustmentInfo");
         const individualExpenditureList = $("#individualExpenditureList");
-        const adjustmentBasicInfoPlace = $("#adjustmentBasicInfoPlace");
-        const adjustmentBasicInfoTraveler = $("#adjustmentBasicInfoTraveler");
+        const parent = $(".itinerary-event-adjustment-info");
+
+        const adjustmentBasicInfoPlace = parent.find("#adjustmentBasicInfoPlace");
+        const adjustmentBasicInfoTraveler = parent.find("#adjustmentBasicInfoTraveler");
 
         if (!adjustmentInfo.length) {
             console.error("ItineraryEvent Adjustment Info element not found!");

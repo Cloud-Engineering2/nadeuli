@@ -23,7 +23,7 @@
 }
 
 /* 안내 탭 : 정산 탭(adjustment-tab)  */
- .expenditure-tab{
+.expenditure-tab{
     background-color: #8e8b82;
     color: #e9dcbe;
     font-size: 30px;
@@ -51,38 +51,47 @@
 
 /* 💡 배경 */
 .expense-item-container {
-    height: 100%;
-    background-color: white;
+    /* overflow: auto; */
+    display: flex;
+    flex-grow: 1;
+    height: calc( 100% - 30px);
+    /* background-color: white; */
+    flex-direction: column;
+    background-color: #ffffff;
 }
 
 /* 콘텐츠 배경 */
 .itinerary-event-expense-item-info {
+    height: 100%;
     background-color: #ffffff;
     border-radius: 5px 5px 0 0;
     padding-left: 20px;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    /* min-height: 100vh; */
 }
 
 /* 💡 기본 정보 */
 .adjustment-basic-info {
+    display: flex;
     padding-top: 10px;
+    justify-content: space-between;
 }
 .adjustment-basic-info-traveler {
     color: #8E8B82;
-    margin-left: 400px;
+    margin-right: 10px;
 }
 .adjustment-basic-info-place {
     color: #8E8B82;
-    margin-right: 400px;
-    margin-left: 20px;
+    /* margin-right: 400px; */
+    /* margin-left: 20px; */
 }
 
 
 /* 💡 스크롤 바 */
 .expense-item-list {
-    height: 350px;
+    /* height: 350px; */
+    flex-grow: 1;
     overflow-y: auto;  /* 세로 스크롤 추가 */
     padding: 10px;
     border: 1px solid #ddd;
@@ -238,20 +247,30 @@
 
 /* 입력 폼 : creation */
 .expense-item-creation-form {
+    width: calc(100vw - 500px);
+    background-color: #ffffff;
+    /* height: 100px; */
     display: flex;
-    gap: 3px;
+    gap: 9px;
     align-items: center;
-    position: fixed;
-    bottom: 30px;   /* 화면 하단에서 20px 떨어짐 */
-    margin-left: 10px;
+    /* position: fixed; */
+    /* min-height: 30px; */
+    /* bottom: 30px; */   /* 화면 하단에서 20px 떨어짐 */
+    /* margin-left: 10px; */
+    /* flex-shrink: 1; */
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 .expense-item-creation-content {
+    border-radius: 5px;
     border: 1px solid #8e8b82;
     padding: 2px;
     width: 250px;
     height: 40px;
+    border: none;
     margin-left: 3px;
-    margin-right: 50px;
+    /* margin-right: 50px; */
 }
 
 .expense-item-creation-withWhom {
@@ -259,15 +278,16 @@
     padding: 2px;
     width: 250px;
     height: 70px;
-    margin-right: 53px;
+    /* margin-right: 53px; */
     overflow-y: auto;
 }
 .expense-item-creation-expenditure {
-    border: 1px solid #8e8b82;
+    border-radius: 5px;
+    border: none;
     padding: 2px;
     width: 150px;
     height: 40px;
-    margin-right: 50px;
+    /* margin-right: 50px; */
 }
 
 .expense-item-creation-payer {
@@ -275,7 +295,7 @@
     padding: 2px;
     width: 150px;
     height: 40px;
-    margin-right: 47px;
+    /* margin-right: 47px; */
 }
 
 /* 💡 폼 제출 버튼 */
@@ -310,12 +330,18 @@
 
 /* 콘텐츠 배경 */
 .itinerary-event-adjustment-info {
+    height: 100%;
+    display: flex;
+    user-select: none;
     background-color: #ffffff;
     border-radius: 5px 5px 0 0;
     padding-left: 20px;
+    flex-direction: column;
 }
 
 .part-container {
+    height: calc(100% - 30px);
+    flex-grow: 1;
     display: flex;
 }
 
@@ -326,6 +352,7 @@
 /* 아이콘 + "지출", (타이틀 컨테이너) */
 .expenditure-part {
     padding: 10px;
+    height: 100%;
 }
 /* 아이콘 + "지출", (타이틀) */
 .expenditure-part-title {
@@ -345,23 +372,23 @@
 /* 개인 지출 */
 .individual-expenditure-label {
     color: #8E8B82;
-    font-size: 20px;
+    font-size: 1em;
     font-weight: bold;
 }
 
 /* font : 지출 */
 .total-expenditure-money-label {
-    font-size: 20px;
+    font-size: 1em;
     margin-right: 10px;
     font-weight: bold;
-    border-bottom: 1px #9c9c9c solid ;
+    border-bottom: 1px #9c9c9c solid;
 }
 
 
 
 /* font : 돈  */
 .total-expenditure-money, .individual-expenditure-money {
-    font-size: 20px;
+    font-size: 1em;
     font-weight: bold;
 }
 
@@ -376,7 +403,10 @@
 /* 💡 정산  */
 /* 아이콘 + "경비정산" (타이틀 컨테이너) */
 .adjustment-part {
+    display: flex;
+    height: 100%;
     padding: 10px;
+    flex-direction: column;
 }
 
 /* 아이콘 + "경비정산" (타이틀) */
@@ -389,7 +419,8 @@
 /* 정산 스크롤 */
 .adjustment-scroll {
     padding: 20px;
-    height: 400px;
+    flex-grow: 1;
+    /* height: 100%; */
     overflow-y: auto;
 }
 
@@ -405,7 +436,7 @@
     border-radius: 8px;
     padding: 5px;
     margin-top: 3px;
-    font-size: 20px;
+    font-size: 1em;
 }
 
 
@@ -426,7 +457,7 @@
 .adjustment-received-from {
     flex: 2;
     color: #8E8B82;
-    font-size: 20px;
+    font-size: 1em;
     background-color: #E9DCBE;
     border-radius: 7px;
     padding: 5px;
@@ -453,9 +484,9 @@
 }
 .adjustment-send-to {
     color: #8E8B82;
-    font-size: 20px;
+    font-size: 1em;
     background-color: #E9DCBE;
-    border-radius: 7px;
+    border-radius: 10px;
     padding: 5px;
 }
 .adjustment-send-amount {
@@ -474,23 +505,57 @@
 /********************************** 🧳 오른쪽 패널 🧳 **********************************/
 /* 🎈 오른쪽 패널 */
 #right {
-background-color: #e9dcbe;
-width: 100%;
-height: 100%;
+    background-color: #e9dcbe;
+    width: 100%;
+    height: 100%;
 }
 
 /* 🎈 지도 영역 */
 .detail-container {
-margin-left: 5px;
-padding-left: 5px;
+    margin-left: 5px;
+    padding-left: 5px;
 }
 
 .expense-background {
-display: flex; /* 플렉스 레이아웃으로 자식 요소들을 정렬 */
-flex-direction: column; /* 세로로 배치 */
-height: 100vh; /* 화면 전체 높이로 설정 */
-position: relative;
-background-color: #ffffff;
+    display: flex; /* 플렉스 레이아웃으로 자식 요소들을 정렬 */
+    flex-direction: column; /* 세로로 배치 */
+    height: 100vh; /* 화면 전체 높이로 설정 */
+    position: relative;
+    background-color: #ffffff;
 }
 
+div#expenseItemCreation {
+    /* flex-shrink: 1; */
+    /* min-height: 100px; */
+    display: flex;
+}
 
+/*div#expenseItemListScroll {*/
+/*    background: blue;*/
+/*    flex-grow: 1;*/
+/*    display: flex;*/
+/*    !* height: 100%; *!*/
+/*    overflow: auto;*/
+/*    flex-direction: column;*/
+/*    justify-content: space-between;*/
+/*    flex-wrap: wrap;*/
+/*}*/
+
+div#expenseHeaderBackground {
+    height: 100%;
+}
+
+div#detailContainer {
+    height: 100%;
+}
+
+#expense-header-background-wrap{
+    height:100%;
+}
+#adjustment-header-background-wrap{
+    height:100%;
+}
+
+.budget-and-traveler-info{
+    height : 30px;
+}
