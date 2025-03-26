@@ -238,9 +238,6 @@ function renderTotalBudgetExpenseSummary() {
                 document.getElementById("budgetConfirmButton").style.display = "none";
                 const div = document.createElement("div");
                 div.textContent = formatKoreanMoney(response.totalBudget) + " 원";
-                div.style.fontWeight = "bold";
-                div.style.marginTop = "5px";
-
                 const budgetInput = document.getElementById("totalBudget");
                 budgetInput.replaceWith(div);
             }
@@ -275,8 +272,6 @@ $(document).on("click", ".budget-confirm-button", function() {
             const div = document.createElement("div");
             div.textContent = budget + " 원";
             budgetInput.replaceWith(div);
-            div.style.fontWeight = "bold";
-            div.style.marginTop = "5px";
 
             document.getElementById("budgetConfirmButton").style.display = "none";
 
@@ -311,7 +306,7 @@ $(document).on("click", ".budget-confirm-button", function() {
                                     }),
                                     success: function (response) {
                                         console.log(`${user}를 여행자 목록에 추가했습니다.`);
-                                        location.reload();
+                                        // location.reload();
                                     },
                                     error: function (error) {
                                         console.error(`${user}를 여행자 목록에 추가하지 못했습니다`);
@@ -334,7 +329,7 @@ $(document).on("click", ".budget-confirm-button", function() {
             console.log("예산 설정에 실패하였습니다");
         }
     });
-    location.reload();
+    // location.reload();
 
 });
 
@@ -1397,9 +1392,6 @@ function loadTravelerList() {
 }
 
 
-$(document).on("click", ".traveler-close", function() {
-    location.reload();
-});
 
 $(document).on("click", ".toggle-map-button", function () {
     const $mapPanel = $(".right-side-map");
@@ -1456,6 +1448,9 @@ function showSchedule(day) {
     allEvents.forEach(container => {
         container.parentElement.style.display = ((day === "all" && container.id !== 'day-0') || container.id === `day-${day}`) ? "block" : "none";
     });
+
+    markerState = (day === "all") ? 0 : day;
+    renderMarkerByMarkerState();
 }
 
 

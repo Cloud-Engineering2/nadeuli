@@ -1,9 +1,9 @@
-<div th:fragment="adjustment-expense-right">
-    <div class="adjustment-header-background" id="adjustmentHeaderBackground" style="display: none;">
+<div id="adjustment-header-background-wrap" style="display: none;" th:fragment="adjustment-expense-right">
+    <div class="adjustment-header-background" id="adjustmentHeaderBackground">
         <div class="itinerary-event-adjustment-info" id="itineraryEventAdjustmentInfo">
             <div th:replace="expense-book/expense-book-basic-info :: budget-and-traveler-info"></div>
 
-            <div class="container-fluid part-container">
+            <div class="part-container">
                 <!-- 지출 -->
                 <div class="col-md-6 expenditure-part" id="expenditurePart">
                     <h4 class="expenditure-part-title" id="expenditurePartTitle">
